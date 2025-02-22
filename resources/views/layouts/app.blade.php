@@ -126,8 +126,9 @@
 <body>
 
 
-    @include('users.layouts.navigation')
-@yield('content')
+    @include('layouts.navigation')
+    @yield('content')
+
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

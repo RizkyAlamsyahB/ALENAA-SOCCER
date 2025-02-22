@@ -17,15 +17,49 @@
         </a>
 
 
-        <!-- Mobile Toggle -->
-        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarNav">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                const navbarCollapse = document.querySelector('.navbar-collapse');
+
+                function closeNavbar() {
+                    let bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                        toggle: false
+                    });
+                    bsCollapse.hide();
+                }
+
+                // Toggle navbar secara manual
+                navbarToggler.addEventListener('click', function() {
+                    if (navbarCollapse.classList.contains('show')) {
+                        closeNavbar();
+                    } else {
+                        let bsCollapse = new bootstrap.Collapse(navbarCollapse);
+                    }
+                });
+
+                // Menutup navbar saat klik di luar
+                document.addEventListener('click', function(event) {
+                    if (!navbarToggler.contains(event.target) && !navbarCollapse.contains(event.target)) {
+                        closeNavbar();
+                    }
+                });
+
+                // Menutup navbar saat klik link di dalam navbar
+                document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                    link.addEventListener('click', () => closeNavbar());
+                });
+            });
+        </script>
+
+
+        <!-- Mobile Toggle (Tanpa data-bs-toggle) -->
+        <button class="navbar-toggler border-0 shadow-none" type="button" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Navigation -->
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="#dashboard">
@@ -37,6 +71,9 @@
                         <i class="fas fa-calendar-alt me-2"></i> <span>Booking</span>
                     </a>
                 </li>
+
+
+
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="#membership">
                         <i class="fas fa-star me-2"></i> <span>Membership</span>
@@ -590,21 +627,7 @@
     }
 </style>
 
-<script>
-    // Add this after your existing navbar scripts
 
-    // Adjust promo banner position when navbar height changes
-    window.addEventListener('resize', function() {
-        const navbar = document.querySelector('.navbar');
-        const promoBanner = document.querySelector('.promo-banner');
-        if (navbar && promoBanner) {
-            promoBanner.style.marginTop = navbar.offsetHeight + 'px';
-        }
-    });
-
-    // Run once on load
-    window.dispatchEvent(new Event('resize'));
-</script>
 <script>
     // JavaScript untuk mendeteksi scroll
     window.addEventListener('scroll', function() {
@@ -616,6 +639,5 @@
             navbar.classList.remove('navbar-scroll');
         }
     });
-
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
