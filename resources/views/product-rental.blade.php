@@ -1,15 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jersey Set - SportVue</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+@extends('layouts.app')
+@section('content')
     <style>
         :root {
             --primary-color: #9E0620;
@@ -21,20 +11,6 @@
             background: #f8f9fa;
         }
 
-        .breadcrumb-custom {
-            background: linear-gradient(45deg, var(--primary-color), #c51b32);
-            padding: 1rem 0;
-        }
-
-        .breadcrumb-item a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .breadcrumb-item a:hover {
-            color: white;
-        }
 
         .product-gallery {
             border-radius: 15px;
@@ -63,7 +39,7 @@
 
         .feature-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .size-selector input[type="radio"] {
@@ -78,7 +54,7 @@
             transition: all 0.3s ease;
         }
 
-        .size-selector input[type="radio"]:checked + label {
+        .size-selector input[type="radio"]:checked+label {
             background: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
@@ -93,7 +69,7 @@
 
         .related-product-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .btn-rent {
@@ -113,171 +89,742 @@
             border-radius: 50px;
         }
     </style>
-</head>
 
-<body>
-    @include('partials.navbar')
 
     <!-- Breadcrumb -->
-    <nav class="breadcrumb-custom">
-        <div class="container">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                <li class="breadcrumb-item"><a href="/products">Products</a></li>
-                <li class="breadcrumb-item active text-white">Jersey Set</li>
+    <nav class="breadcrumb-wrapper " style="margin-top: 50px;">
+        <div class="container py-2">
+            <ol class="custom-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/" class="breadcrumb-link">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/venues" class="breadcrumb-link">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Venues</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="fas fa-futbol"></i>
+                    <span>Field A</span>
+                </li>
             </ol>
         </div>
     </nav>
+
+    <style>
+        .breadcrumb-wrapper {
+            background: linear-gradient(to right, #9E0620, #bb2d3b);
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+        }
+
+        .custom-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 800;
+            /* Increased from 700 to 800 */
+            font-size: 1.3rem;
+            /* Added explicit font size */
+        }
+
+        .breadcrumb-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            font-weight: 800;
+            /* Increased from 700 to 800 */
+            font-size: 1.3rem;
+            /* Increased from 1.1rem to 1.3rem */
+        }
+
+        .breadcrumb-item.active {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 800;
+            /* Increased from 700 to 800 */
+            font-size: 1.3rem;
+            /* Increased from 1.1rem to 1.3rem */
+        }
+
+        /* Updated media query for mobile responsiveness */
+        @media (max-width: 768px) {
+
+            .breadcrumb-link,
+            .breadcrumb-item.active {
+                padding: 6px;
+                font-size: 1.2rem;
+                /* Slightly smaller on mobile but still larger than original */
+            }
+
+            .breadcrumb-item i {
+                font-size: 1.2rem;
+                /* Increased from 1.1rem to 1.2rem */
+            }
+        }
+    </style>
 
     <!-- Main Content -->
     <div class="container py-5">
         <div class="row g-4">
             <!-- Product Gallery -->
+            <!-- Product Gallery -->
             <div class="col-lg-6">
-                <div class="product-gallery shadow-sm">
-                    <!-- Main Image -->
-                    <div class="mb-3">
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
-                            class="img-fluid rounded" alt="Jersey Set Main">
+                <div class="product-gallery">
+                    <!-- Main Carousel -->
+                    <div id="productCarousel" class="carousel slide mb-4" data-bs-ride="false">
+                        <div class="carousel-inner rounded-4 overflow-hidden position-relative">
+                            <div class="carousel-item active">
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
+                                    class="d-block w-100" alt="Jersey Set Main">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
+                                    class="d-block w-100" alt="Jersey Set 1">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
+                                    class="d-block w-100" alt="Jersey Set 2">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
+                                    class="d-block w-100" alt="Jersey Set 3">
+                            </div>
+
+                            <!-- Image Counter Badge -->
+                            <div class="image-counter">
+                                <i class="fas fa-camera"></i>
+                                <span class="counter-text">1/4</span>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Arrows -->
+                        <button class="carousel-control carousel-control-prev" type="button"
+                            data-bs-target="#productCarousel" data-bs-slide="prev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="carousel-control carousel-control-next" type="button"
+                            data-bs-target="#productCarousel" data-bs-slide="next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
-                    <!-- Thumbnail Images -->
-                    <div class="row g-2">
-                        <div class="col-3">
-                            <div class="product-thumbnail">
+
+                    <!-- Thumbnails -->
+                    <div class="thumbnails-wrapper">
+                        <div class="thumbnails-container">
+                            <div class="product-thumbnail active" role="button" data-bs-target="#productCarousel"
+                                data-bs-slide-to="0">
                                 <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
-                                    class="img-fluid rounded" alt="Jersey Set 1">
+                                    class="img-fluid" alt="Jersey Set Main">
                             </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="product-thumbnail">
+                            <div class="product-thumbnail" role="button" data-bs-target="#productCarousel"
+                                data-bs-slide-to="1">
                                 <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
-                                    class="img-fluid rounded" alt="Jersey Set 2">
+                                    class="img-fluid" alt="Jersey Set 1">
                             </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="product-thumbnail">
+                            <div class="product-thumbnail" role="button" data-bs-target="#productCarousel"
+                                data-bs-slide-to="2">
                                 <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
-                                    class="img-fluid rounded" alt="Jersey Set 3">
+                                    class="img-fluid" alt="Jersey Set 2">
                             </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="product-thumbnail">
+                            <div class="product-thumbnail" role="button" data-bs-target="#productCarousel"
+                                data-bs-slide-to="3">
                                 <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
-                                    class="img-fluid rounded" alt="Jersey Set 4">
+                                    class="img-fluid" alt="Jersey Set 3">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Product Details -->
+            <style>
+                .product-gallery {
+                    background: white;
+                    padding: 1.5rem;
+                    border-radius: 24px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+                    transition: all 0.3s ease;
+                }
+
+                .product-gallery:hover {
+                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+                }
+
+                /* Main Carousel */
+                .carousel-inner {
+                    border-radius: 20px;
+                    overflow: hidden;
+                    aspect-ratio: 4/3;
+                }
+
+                .carousel-inner img {
+                    object-fit: cover;
+                    height: 100%;
+                    width: 100%;
+                }
+
+                /* Image Counter Badge */
+                .image-counter {
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    background: rgba(0, 0, 0, 0.6);
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-size: 0.9rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    backdrop-filter: blur(4px);
+                }
+
+                /* Navigation Controls */
+                .carousel-control {
+                    width: 48px;
+                    height: 48px;
+                    background: rgba(255, 255, 255, 0.9);
+                    border-radius: 50%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    border: none;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #1a1a1a;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                }
+
+                .carousel-control:hover {
+                    background: white;
+                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+                    transform: translateY(-50%) scale(1.05);
+                }
+
+                .carousel-control-prev {
+                    left: 20px;
+                }
+
+                .carousel-control-next {
+                    right: 20px;
+                }
+
+                /* Thumbnails */
+                .thumbnails-wrapper {
+                    margin-top: 1.5rem;
+                    position: relative;
+                }
+
+                .thumbnails-container {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 1rem;
+                }
+
+                .product-thumbnail {
+                    position: relative;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+
+                .product-thumbnail::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.2);
+                    opacity: 1;
+                    transition: all 0.3s ease;
+                }
+
+                .product-thumbnail.active::before,
+                .product-thumbnail:hover::before {
+                    opacity: 0;
+                }
+
+                .product-thumbnail img {
+                    aspect-ratio: 1;
+                    object-fit: cover;
+                    width: 100%;
+                }
+
+                .product-thumbnail:hover {
+                    transform: translateY(-4px);
+                }
+
+                .product-thumbnail.active {
+                    box-shadow: 0 0 0 3px #9e0620;
+                    transform: translateY(-4px);
+                }
+
+                /* Responsive Design */
+                @media (max-width: 768px) {
+                    .product-gallery {
+                        padding: 1rem;
+                    }
+
+                    .carousel-control {
+                        width: 40px;
+                        height: 40px;
+                    }
+
+                    .image-counter {
+                        bottom: 15px;
+                        right: 15px;
+                        padding: 6px 12px;
+                        font-size: 0.8rem;
+                    }
+
+                    .thumbnails-container {
+                        gap: 0.5rem;
+                    }
+                }
+            </style>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const carousel = document.getElementById('productCarousel');
+                    const counter = document.querySelector('.counter-text');
+                    const thumbnails = document.querySelectorAll('.product-thumbnail');
+
+                    // Update counter and thumbnails when carousel slides
+                    carousel.addEventListener('slide.bs.carousel', function(e) {
+                        counter.textContent = `${e.to + 1}/4`;
+                        thumbnails.forEach((thumb, i) => {
+                            thumb.classList.toggle('active', i === e.to);
+                        });
+                    });
+
+                    // Initialize counter
+                    counter.textContent = '1/4';
+                });
+            </script>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Get all thumbnails
+                    const thumbnails = document.querySelectorAll('.product-thumbnail');
+
+                    // Add click event to thumbnails
+                    thumbnails.forEach(thumb => {
+                        thumb.addEventListener('click', function() {
+                            // Remove active class from all thumbnails
+                            thumbnails.forEach(t => t.classList.remove('active'));
+                            // Add active class to clicked thumbnail
+                            this.classList.add('active');
+                        });
+                    });
+
+                    // Listen for carousel slide event to update active thumbnail
+                    const carousel = document.getElementById('productCarousel');
+                    carousel.addEventListener('slide.bs.carousel', function(e) {
+                        thumbnails.forEach(t => t.classList.remove('active'));
+                        thumbnails[e.to].classList.add('active');
+                    });
+                });
+            </script>
+
+            <!-- Product Details Card -->
             <div class="col-lg-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h1 class="h2 mb-2">Jersey Set Premium</h1>
-                                <div class="product-rating d-inline-flex align-items-center gap-2">
-                                    <div class="text-warning">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star-half-alt"></i>
+                <div class="product-card">
+                    <div class="card-content">
+                        <!-- Header Section -->
+                        <div class="product-header">
+                            <div class="title-section">
+                                <h1 class="product-title">Jersey Set Premium</h1>
+                                <div class="product-meta">
+                                    <div class="rating-badge">
+                                        <div class="stars">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <span class="rating-value">4.8</span>
+                                        </div>
+                                        <span class="review-count">(128 reviews)</span>
                                     </div>
-                                    <span>4.8</span>
-                                    <span class="text-muted">(128 reviews)</span>
+                                    <div class="stock-badge">In Stock</div>
                                 </div>
                             </div>
-                            <span class="badge bg-success-subtle text-success px-3 py-2">In Stock</span>
                         </div>
 
-                        <div class="mb-4">
-                            <h3 class="h5 mb-3">Product Description</h3>
-                            <p class="text-muted">Experience premium comfort with our high-quality jersey set. Perfect for both professional matches and casual games. Made with moisture-wicking fabric to keep you cool during intense activities.</p>
+                        <!-- Description Section -->
+                        <div class="product-description">
+                            <h3 class="section-title">Product Description</h3>
+                            <p>Experience premium comfort with our high-quality jersey set. Perfect for both professional
+                                matches and casual games. Made with moisture-wicking fabric to keep you cool during intense
+                                activities.</p>
                         </div>
 
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="h3 mb-0">Rp 50.000</span>
-                                <span class="text-muted">/day</span>
+                        <!-- Price Section -->
+                        <div class="price-section">
+                            <div class="price-tag">
+                                <span class="amount">Rp 50.000</span>
+                                <span class="duration">/day</span>
                             </div>
                         </div>
 
-                        <!-- Size Selection -->
-                        <div class="mb-4">
-                            <h3 class="h5 mb-3">Select Size</h3>
-                            <div class="size-selector d-flex gap-2">
-                                <input type="radio" name="size" id="sizeS">
-                                <label for="sizeS">All Size</label>
-
-
+                        <!-- Selection Section -->
+                        <div class="selection-group">
+                            <div class="size-section">
+                                <h3 class="section-title">Select Size</h3>
+                                <div class="size-options">
+                                    <input type="radio" name="size" id="sizeS" checked>
+                                    <label for="sizeS" class="size-chip">All Size</label>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Rental Duration -->
-                        <div class="mb-4">
-                            <h3 class="h5 mb-3">Rental Duration</h3>
-                            <select class="form-select mb-3">
-                                <option>1 Day</option>
-                                <option>2 Days</option>
-                                <option>3 Days</option>
-                                <option>1 Week</option>
-                            </select>
+                            <div class="duration-section">
+                                <h3 class="section-title">Rental Duration</h3>
+                                <select class="duration-select">
+                                    <option>1 Day</option>
+                                    <option>2 Days</option>
+                                    <option>3 Days</option>
+                                    <option>1 Week</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-danger btn-rent">
-                                Rent Now
-                                <i class="fas fa-arrow-right ms-2"></i>
+                        <div class="action-buttons">
+                            <button class="btn-primary">
+                                <span>Rent Now</span>
+                                <i class="fas fa-arrow-right"></i>
                             </button>
-                            <button class="btn btn-outline-danger btn-rent">
-                                <i class="fas fa-shopping-cart me-2"></i>
-                                Add to Cart
+                            <button class="btn-secondary">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Add to Cart</span>
                             </button>
                         </div>
 
-                        <!-- Features -->
-                        <div class="mt-4">
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <div class="feature-item">
-                                        <i class="fas fa-tshirt text-danger mb-2"></i>
-                                        <h6 class="mb-1">Premium Material</h6>
-                                        <small class="text-muted">High-quality fabric</small>
-                                    </div>
+                        <!-- Features Grid -->
+                        <div class="features-grid">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-tshirt"></i>
                                 </div>
-                                <div class="col-6">
-                                    <div class="feature-item">
-                                        <i class="fas fa-spray-can text-danger mb-2"></i>
-                                        <h6 class="mb-1">Fresh & Clean</h6>
-                                        <small class="text-muted">Sanitized daily</small>
-                                    </div>
+                                <div class="feature-content">
+                                    <h6>Premium Material</h6>
+                                    <p>High-quality fabric</p>
                                 </div>
-                                <div class="col-6">
-                                    <div class="feature-item">
-                                        <i class="fas fa-exchange-alt text-danger mb-2"></i>
-                                        <h6 class="mb-1">Easy Return</h6>
-                                        <small class="text-muted">Hassle-free process</small>
-                                    </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-spray-can"></i>
                                 </div>
-                                <div class="col-6">
-                                    <div class="feature-item">
-                                        <i class="fas fa-shield-alt text-danger mb-2"></i>
-                                        <h6 class="mb-1">Safe Payment</h6>
-                                        <small class="text-muted">Secure transaction</small>
-                                    </div>
+                                <div class="feature-content">
+                                    <h6>Fresh & Clean</h6>
+                                    <p>Sanitized daily</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Easy Return</h6>
+                                    <p>Hassle-free process</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Safe Payment</h6>
+                                    <p>Secure transaction</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <style>
+                /* Modern Product Card Styles */
+                .product-card {
+                    background: #ffffff;
+                    border-radius: 24px;
+                    padding: 2rem;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+                    transition: all 0.3s ease;
+                }
+
+                .product-card:hover {
+                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+                }
+
+                /* Header Styles */
+                .product-header {
+                    margin-bottom: 2rem;
+                }
+
+                .product-title {
+                    font-size: 2rem;
+                    font-weight: 700;
+                    margin-bottom: 1rem;
+                    color: #1a1a1a;
+                }
+
+                .product-meta {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 1rem;
+                }
+
+                .rating-badge {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    background: #f8f9fa;
+                    padding: 0.5rem 1rem;
+                    border-radius: 12px;
+                }
+
+                .stars {
+                    color: #ffc107;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                }
+
+                .rating-value {
+                    margin-left: 0.5rem;
+                    font-weight: 600;
+                    color: #1a1a1a;
+                }
+
+                .review-count {
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                }
+
+                .stock-badge {
+                    background: #e8f5e9;
+                    color: #2e7d32;
+                    padding: 0.5rem 1rem;
+                    border-radius: 12px;
+                    font-weight: 500;
+                }
+
+                /* Section Styles */
+                .section-title {
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: #1a1a1a;
+                    margin-bottom: 1rem;
+                }
+
+                .product-description {
+                    margin-bottom: 2rem;
+                }
+
+                .product-description p {
+                    color: #6c757d;
+                    line-height: 1.6;
+                }
+
+                /* Price Section */
+                .price-section {
+                    margin-bottom: 2rem;
+                }
+
+                .price-tag {
+                    display: flex;
+                    align-items: baseline;
+                    gap: 0.5rem;
+                }
+
+                .amount {
+                    font-size: 2rem;
+                    font-weight: 700;
+                    color: #9e0620;
+                }
+
+                .duration {
+                    color: #6c757d;
+                }
+
+                /* Selection Group */
+                .selection-group {
+                    display: grid;
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .size-options {
+                    display: flex;
+                    gap: 1rem;
+                }
+
+                .size-chip {
+                    background: #f8f9fa;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+
+                input[type="radio"]:checked+.size-chip {
+                    background: #9e0620;
+                    color: white;
+                }
+
+                .duration-select {
+                    width: 100%;
+                    padding: 0.75rem;
+                    border: 1px solid #dee2e6;
+                    border-radius: 12px;
+                    appearance: none;
+                    background: url("data:image/svg+xml,...") no-repeat right 1rem center;
+                }
+
+                /* Action Buttons */
+                .action-buttons {
+                    display: grid;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+
+                .btn-primary,
+                .btn-secondary {
+                    padding: 1rem;
+                    border-radius: 12px;
+                    border: none;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    transition: all 0.3s ease;
+                }
+
+                .btn-primary {
+                    background: #9e0620;
+                    color: white;
+                }
+
+                .btn-primary:hover {
+                    background: #7d051a;
+                    transform: translateY(-2px);
+                }
+
+                .btn-secondary {
+                    background: #f8f9fa;
+                    color: #1a1a1a;
+                }
+
+                .btn-secondary:hover {
+                    background: #e9ecef;
+                    transform: translateY(-2px);
+                }
+
+                /* Features Grid */
+                .features-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1.5rem;
+                }
+
+                .feature-item {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 1rem;
+                    padding: 1.5rem;
+                    background: #f8f9fa;
+                    border-radius: 16px;
+                    transition: all 0.3s ease;
+                }
+
+                .feature-item:hover {
+                    transform: translateY(-3px);
+                    background: #fff;
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+                }
+
+                .feature-icon {
+                    background: white;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #9e0620;
+                }
+
+                .feature-content h6 {
+                    font-weight: 600;
+                    margin-bottom: 0.25rem;
+                    color: #1a1a1a;
+                }
+
+                .feature-content p {
+                    font-size: 0.9rem;
+                    color: #6c757d;
+                    margin: 0;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 768px) {
+                    .product-card {
+                        padding: 1.5rem;
+                    }
+
+                    .features-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .product-title {
+                        font-size: 1.5rem;
+                    }
+
+                    .amount {
+                        font-size: 1.5rem;
+                    }
+                }
+            </style>
         </div>
 
         <!-- Related Products -->
-        <div class="mt-5">
+        {{-- <div class="mt-5">
             <h3 class="mb-4">You May Also Like</h3>
             <div class="row g-4">
                 <!-- Product 1 -->
@@ -382,69 +929,147 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Product Information Tabs -->
         <div class="mt-5">
-            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+            <!-- Modern Tab Navigation -->
+            <ul class="nav nav-tabs border-0 gap-2" id="productTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">Description</button>
+                    <button class="nav-link active rounded-pill px-4 py-2 border-0" data-bs-toggle="tab"
+                        data-bs-target="#description"
+                        style="background: #f8f9fa; color: #1a1a1a; transition: all 0.3s ease;">
+                        Description
+                    </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#specifications">Specifications</button>
+                    <button class="nav-link rounded-pill px-4 py-2 border-0" data-bs-toggle="tab"
+                        data-bs-target="#specifications"
+                        style="background: #f8f9fa; color: #1a1a1a; transition: all 0.3s ease;">
+                        Specifications
+                    </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">Reviews</button>
+                    <button class="nav-link rounded-pill px-4 py-2 border-0" data-bs-toggle="tab"
+                        data-bs-target="#reviews" style="background: #f8f9fa; color: #1a1a1a; transition: all 0.3s ease;">
+                        Reviews
+                    </button>
                 </li>
             </ul>
-            <div class="tab-content p-4 bg-white rounded-bottom shadow-sm">
+
+            <!-- Modern Tab Content -->
+            <div class="tab-content p-4 bg-white rounded-3 shadow-sm" style="border-radius: 24px; margin-top: 1rem;">
                 <!-- Description Tab -->
                 <div class="tab-pane fade show active" id="description">
-                    <h4 class="mb-4">Product Description</h4>
-                    <p>Experience ultimate comfort and style with our premium jersey set. Made from high-quality moisture-wicking material, this set is perfect for both professional matches and casual games. The breathable fabric ensures you stay cool and comfortable during intense activities.</p>
-                    <div class="row mt-4">
+                    <h4 class="mb-4 fw-bold">Product Description</h4>
+                    <p class="text-muted">Experience ultimate comfort and style with our premium jersey set. Made from
+                        high-quality moisture-wicking material, this set is perfect for both professional matches and casual
+                        games. The breathable fabric ensures you stay cool and comfortable during intense activities.</p>
+
+                    <div class="row mt-4 g-4">
                         <div class="col-md-6">
-                            <h5 class="mb-3">Key Features</h5>
-                            <ul class="list-unstyled">
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Premium quality fabric</li>
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Moisture-wicking technology</li>
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Breathable material</li>
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Comfortable fit</li>
-                            </ul>
+                            <div class="p-4 rounded-3" style="background: #f8f9fa;">
+                                <h5 class="mb-3 fw-semibold">Key Features</h5>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-3 d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Premium quality fabric
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Moisture-wicking technology
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Breathable material
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Comfortable fit
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
+
                         <div class="col-md-6">
-                            <h5 class="mb-3">Package Includes</h5>
-                            <ul class="list-unstyled">
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Jersey Top</li>
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Matching Shorts</li>
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Team Logo</li>
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Number Customization</li>
-                            </ul>
+                            <div class="p-4 rounded-3" style="background: #f8f9fa;">
+                                <h5 class="mb-3 fw-semibold">Package Includes</h5>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-3 d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Jersey Top
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Matching Shorts
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Team Logo
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <span
+                                            class="me-2 rounded-circle bg-success p-1 d-flex align-items-center justify-content-center"
+                                            style="width: 24px; height: 24px;">
+                                            <i class="fas fa-check text-white small"></i>
+                                        </span>
+                                        Number Customization
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Specifications Tab -->
                 <div class="tab-pane fade" id="specifications">
-                    <h4 class="mb-4">Product Specifications</h4>
+                    <h4 class="mb-4 fw-bold">Product Specifications</h4>
                     <div class="table-responsive">
-                        <table class="table table-bordered">
+                        <table class="table">
                             <tbody>
-                                <tr>
-                                    <th style="width: 30%">Material</th>
-                                    <td>100% Polyester</td>
+                                <tr class="border-0">
+                                    <th class="ps-0 py-3 border-0 text-muted" style="width: 30%">Material</th>
+                                    <td class="pe-0 py-3 border-0">100% Polyester</td>
                                 </tr>
                                 <tr>
-                                    <th>Available Sizes</th>
-                                    <td>S, M, L, XL</td>
+                                    <th class="ps-0 py-3 border-0 text-muted">Available Sizes</th>
+                                    <td class="pe-0 py-3 border-0">S, M, L, XL</td>
                                 </tr>
                                 <tr>
-                                    <th>Care Instructions</th>
-                                    <td>Machine washable, Tumble dry low</td>
+                                    <th class="ps-0 py-3 border-0 text-muted">Care Instructions</th>
+                                    <td class="pe-0 py-3 border-0">Machine washable, Tumble dry low</td>
                                 </tr>
                                 <tr>
-                                    <th>Features</th>
-                                    <td>Moisture-wicking, Quick-dry, Breathable</td>
+                                    <th class="ps-0 py-3 border-0 text-muted">Features</th>
+                                    <td class="pe-0 py-3 border-0">Moisture-wicking, Quick-dry, Breathable</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -454,17 +1079,17 @@
                 <!-- Reviews Tab -->
                 <div class="tab-pane fade" id="reviews">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">Customer Reviews</h4>
-                        <button class="btn btn-outline-danger rounded-pill">
+                        <h4 class="mb-0 fw-bold">Customer Reviews</h4>
+                        <button class="btn btn-outline-danger rounded-pill px-4 py-2">
                             <i class="fas fa-pencil-alt me-2"></i>Write a Review
                         </button>
                     </div>
 
                     <!-- Review Summary -->
-                    <div class="row mb-4">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-4 border-end">
                             <div class="text-center">
-                                <h1 class="display-4 fw-bold">4.8</h1>
+                                <h1 class="display-4 fw-bold mb-2">4.8</h1>
                                 <div class="text-warning mb-2">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
@@ -472,58 +1097,31 @@
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star-half-alt"></i>
                                 </div>
-                                <p class="text-muted">Based on 128 reviews</p>
+                                <p class="text-muted mb-0">Based on 128 reviews</p>
                             </div>
                         </div>
+
                         <div class="col-md-8">
-                            <div class="ps-4">
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="text-muted me-2">5 stars</span>
+                            <div class="ps-md-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="text-muted me-3" style="min-width: 60px">5 stars</span>
                                     <div class="progress flex-grow-1" style="height: 8px;">
-                                        <div class="progress-bar bg-warning" style="width: 85%"></div>
+                                        <div class="progress-bar" style="width: 85%; background-color: #9e0620;"></div>
                                     </div>
-                                    <span class="text-muted ms-2">85%</span>
+                                    <span class="text-muted ms-3" style="min-width: 40px">85%</span>
                                 </div>
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="text-muted me-2">4 stars</span>
-                                    <div class="progress flex-grow-1" style="height: 8px;">
-                                        <div class="progress-bar bg-warning" style="width: 10%"></div>
-                                    </div>
-                                    <span class="text-muted ms-2">10%</span>
-                                </div>
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="text-muted me-2">3 stars</span>
-                                    <div class="progress flex-grow-1" style="height: 8px;">
-                                        <div class="progress-bar bg-warning" style="width: 3%"></div>
-                                    </div>
-                                    <span class="text-muted ms-2">3%</span>
-                                </div>
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="text-muted me-2">2 stars</span>
-                                    <div class="progress flex-grow-1" style="height: 8px;">
-                                        <div class="progress-bar bg-warning" style="width: 1%"></div>
-                                    </div>
-                                    <span class="text-muted ms-2">1%</span>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <span class="text-muted me-2">1 star</span>
-                                    <div class="progress flex-grow-1" style="height: 8px;">
-                                        <div class="progress-bar bg-warning" style="width: 1%"></div>
-                                    </div>
-                                    <span class="text-muted ms-2">1%</span>
-                                </div>
+                                <!-- Repeat for other star ratings -->
                             </div>
                         </div>
                     </div>
 
                     <!-- Individual Reviews -->
                     <div class="review-list">
-                        <!-- Review Item -->
-                        <div class="card border-0 shadow-sm mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
+                        <div class="card border-0 shadow-sm mb-3 rounded-3">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between mb-3">
                                     <div>
-                                        <h6 class="mb-0">John Doe</h6>
+                                        <h6 class="mb-1 fw-semibold">John Doe</h6>
                                         <div class="text-warning">
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
@@ -534,34 +1132,15 @@
                                     </div>
                                     <small class="text-muted">2 days ago</small>
                                 </div>
-                                <p class="mb-0">Great quality jersey! The material is comfortable and breathable. Perfect for my soccer matches.</p>
-                            </div>
-                        </div>
-
-                        <!-- More Review Items -->
-                        <div class="card border-0 shadow-sm mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <div>
-                                        <h6 class="mb-0">Jane Smith</h6>
-                                        <div class="text-warning">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="far fa-star"></i>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">1 week ago</small>
-                                </div>
-                                <p class="mb-0">The jersey fits perfectly and the rental process was very smooth. Would rent again!</p>
+                                <p class="mb-0 text-muted">Great quality jersey! The material is comfortable and
+                                    breathable. Perfect for my soccer matches.</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Load More Button -->
                     <div class="text-center mt-4">
-                        <button class="btn btn-outline-danger rounded-pill px-4">
+                        <button class="btn btn-outline-danger rounded-pill px-4 py-2">
                             Load More Reviews
                             <i class="fas fa-chevron-down ms-2"></i>
                         </button>
@@ -569,9 +1148,57 @@
                 </div>
             </div>
         </div>
+
+        <!-- Add this CSS to your stylesheet -->
+        <style>
+            .nav-tabs .nav-link.active {
+                background-color: #9e0620 !important;
+                color: white !important;
+            }
+
+            .nav-tabs .nav-link:hover:not(.active) {
+                background-color: #e9ecef !important;
+            }
+
+            .progress {
+                border-radius: 10px;
+                background-color: #f8f9fa;
+            }
+
+            .btn-outline-danger {
+                border-color: #9e0620;
+                color: #9e0620;
+            }
+
+            .btn-outline-danger:hover {
+                background-color: #9e0620;
+                border-color: #9e0620;
+            }
+
+            .card {
+                transition: all 0.3s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-2px);
+            }
+
+            @media (max-width: 768px) {
+                .nav-tabs {
+                    gap: 0.5rem !important;
+                }
+
+                .nav-link {
+                    padding: 0.5rem 1rem !important;
+                }
+            }
+        </style>
+
+
+
+
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection

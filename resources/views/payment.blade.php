@@ -1,355 +1,382 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
+@section('content')
+<style>
+/* Modern Checkout Styling */
+:root {
+    --primary-color: #9e0620;
+    --primary-light: #fff8f8;
+    --gray-light: #f8f9fa;
+    --gray-medium: #6c757d;
+    --border-color: #eee;
+}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - SportVue</title>
+/* Card Base Styles */
+.checkout-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
 
-    <!-- CSS & Fonts -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+.checkout-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
 
-    <style>
-        :root {
-            --primary-color: #9E0620;
-            --secondary-color: #2A2A2A;
-            --danger-color: #9E0620;
-            /* Custom danger color */
-        }
+/* Progress Steps */
+.progress-track {
+    position: relative;
+    padding: 2rem 0;
+    margin-bottom: 3rem;
+}
 
+.progress-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--border-color);
+    transform: translateY(-50%);
+}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f8f9fa;
-            min-height: 100vh;
-        }
+.progress-line .filled {
+    position: absolute;
+    height: 100%;
+    width: 50%;
+    background: var(--primary-color);
+    transition: width 0.3s ease;
+}
 
-        /* Override Bootstrap danger color */
-        .btn-danger {
-            background-color: var(--danger-color) !important;
-            border-color: var(--danger-color) !important;
-        }
+.progress-steps {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1;
+}
 
-        .text-danger {
-            color: var(--danger-color) !important;
-        }
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
 
-        .bg-danger {
-            background-color: var(--danger-color) !important;
-        }
+.step-indicator {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: white;
+    border: 2px solid var(--border-color);
+}
 
-        .border-danger {
-            border-color: var(--danger-color) !important;
-        }
+.step-item.completed .step-indicator {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
 
-       
-    </style>
-</head>
+.step-item.active .step-indicator {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
 
-<body>
-    @include('partials.navbar')
+.step-label {
+    font-size: 0.875rem;
+    color: var(--gray-medium);
+    font-weight: 500;
+}
 
-    <div class="container py-5">
-        <!-- Checkout Progress Bar -->
-        <div class="checkout-header position-relative py-4 border-bottom border-3 border-danger mb-4">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <div class="progress-track">
-                            <ul class="list-unstyled d-flex justify-content-between position-relative">
-                                <li class="progress-step completed">
-                                    <div class="step-indicator">
-                                        <i class="fas fa-check"></i>
+/* Form Styling */
+.form-control {
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(158, 6, 32, 0.1);
+}
+
+.form-control[readonly] {
+    background: var(--gray-light);
+}
+
+/* Payment Method Cards */
+.payment-method-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method-card .card {
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.payment-method-card:hover .card {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+}
+
+.payment-method-card .form-check-input:checked + .form-check-label .card {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+.payment-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.payment-icon.bank {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.payment-icon.wallet {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Order Summary */
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--gray-medium);
+}
+
+.summary-total {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Buttons */
+.btn-primary {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #7d051a;
+    transform: translateX(5px);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Security Badges */
+.security-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    color: var(--gray-medium);
+}
+
+.security-badge i {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    font-size: 0.875rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .checkout-card {
+        padding: 1rem;
+    }
+
+    .step-indicator {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<div class="container py-5">
+    <!-- Progress Steps -->
+    <div class="progress-track">
+        <div class="progress-line">
+            <div class="filled"></div>
+        </div>
+        <div class="progress-steps">
+            <div class="step-item completed">
+                <div class="step-indicator">
+                    <i class="fas fa-check"></i>
+                </div>
+                <span class="step-label">Select Plan</span>
+            </div>
+            <div class="step-item active">
+                <div class="step-indicator">2</div>
+                <span class="step-label">Fill Details</span>
+            </div>
+            <div class="step-item">
+                <div class="step-indicator">3</div>
+                <span class="step-label">Payment</span>
+            </div>
+            <div class="step-item">
+                <div class="step-indicator">4</div>
+                <span class="step-label">Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Personal Info -->
+            <div class="checkout-card">
+                <h5 class="mb-4">Informasi Pribadi</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input type="text" class="form-control" value="John Doe" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" value="john@example.com" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">No. Telepon</label>
+                        <input type="tel" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="checkout-card">
+                <h5 class="mb-4">Metode Pembayaran</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="payment-method-card">
+                            <input type="radio" class="form-check-input" name="payment" id="bank" checked>
+                            <label class="form-check-label w-100" for="bank">
+                                <div class="card border p-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="payment-icon bank">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Transfer Bank</h6>
+                                            <small class="text-muted">BCA, Mandiri, BNI</small>
+                                        </div>
                                     </div>
-                                    <span class="step-label">Select Plan</span>
-                                </li>
-                                <li class="progress-step active">
-                                    <div class="step-indicator">2</div>
-                                    <span class="step-label">Fill Details</span>
-                                </li>
-                                <li class="progress-step">
-                                    <div class="step-indicator">3</div>
-                                    <span class="step-label">Payment</span>
-                                </li>
-                                <li class="progress-step">
-                                    <div class="step-indicator">4</div>
-                                    <span class="step-label">Confirmation</span>
-                                </li>
-                            </ul>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="payment-method-card">
+                            <input type="radio" class="form-check-input" name="payment" id="ewallet">
+                            <label class="form-check-label w-100" for="ewallet">
+                                <div class="card border p-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="payment-icon wallet">
+                                            <i class="fas fa-wallet"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">E-Wallet</h6>
+                                            <small class="text-muted">GoPay, OVO, DANA</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <style>
-            /* Checkout Header Styling */
-            .checkout-header {
-                background: #fff;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                margin-top: 72px;
-                /* Adjusts spacing from navbar */
-            }
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="checkout-card">
+                <h5 class="mb-4">Ringkasan Pesanan</h5>
 
-            /* Progress Track */
-            .progress-track {
-                padding: 0 10%;
-            }
-
-            .progress-track ul {
-                margin: 0;
-                padding: 0;
-            }
-
-            /* Progress Line */
-            .progress-track ul::before {
-                content: '';
-                position: absolute;
-                top: 23px;
-                left: 15%;
-                width: 70%;
-                height: 2px;
-                background-color: #e9ecef;
-                z-index: 1;
-            }
-
-            /* Progress Steps */
-            .progress-step {
-                text-align: center;
-                position: relative;
-                z-index: 2;
-            }
-
-            .step-indicator {
-                width: 45px;
-                height: 45px;
-                background: #fff;
-                border: 2px solid #e9ecef;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto 10px;
-                color: #6c757d;
-                font-weight: 600;
-                transition: all 0.3s ease;
-            }
-
-            .step-label {
-                font-size: 0.875rem;
-                color: #6c757d;
-                margin-top: 0.5rem;
-            }
-
-            /* Active Step */
-            .progress-step.active .step-indicator {
-                border-color: var(--primary-color);
-                background: var(--primary-color);
-                color: #fff;
-            }
-
-            .progress-step.active .step-label {
-                color: var(--primary-color);
-                font-weight: 600;
-            }
-
-            /* Completed Step */
-            .progress-step.completed .step-indicator {
-                border-color: var(--primary-color);
-                background: var(--primary-color);
-                color: #fff;
-            }
-
-            /* Responsive */
-            @media (max-width: 768px) {
-                .progress-track {
-                    padding: 0;
-                }
-
-                .step-label {
-                    font-size: 0.75rem;
-                }
-
-                .step-indicator {
-                    width: 35px;
-                    height: 35px;
-                }
-
-                .progress-track ul::before {
-                    top: 18px;
-                }
-            }
-        </style>
-
-        <!-- Main Content Area -->
-        <div class="container py-4">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <!-- Content goes here -->
+                <div class="summary-item">
+                    <span>Subtotal</span>
+                    <span>Rp 150.000</span>
                 </div>
-            </div>
-        </div>
-        <div class="row g-4">
-            <!-- Main Content -->
-            <div class="col-lg-8">
-                <!-- Personal Info -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body p-4">
-                        <h5 class="card-title mb-4">Informasi Pribadi</h5>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Nama Lengkap</label>
-                                <input type="text" class="form-control" value="John Doe" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" value="john@example.com" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">No. Telepon</label>
-                                <input type="tel" class="form-control" required>
-                            </div>
-                        </div>
+                <div class="summary-item">
+                    <span>Diskon Member</span>
+                    <span class="text-success">- Rp 30.000</span>
+                </div>
+                <div class="summary-item">
+                    <span>Biaya Admin</span>
+                    <span>Rp 5.000</span>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="summary-item">
+                    <span class="fw-bold">Total</span>
+                    <span class="summary-total">Rp 125.000</span>
+                </div>
+
+                <div class="mt-4">
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" placeholder="Kode Promo">
+                        <button class="btn btn-outline-primary">Apply</button>
                     </div>
-                </div>
 
-                <!-- Booking Details -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body p-4">
-                        <h5 class="card-title mb-4">Detail Pemesanan</h5>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Tanggal</th>
-                                        <th>Waktu</th>
-                                        <th class="text-end">Harga</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/60/60" class="rounded me-3" alt="Field">
-                                                <div>
-                                                    <h6 class="mb-0">Lapangan A</h6>
-                                                    <small class="text-muted">Indoor Field • 5v5</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>12 Jan 2024</td>
-                                        <td>15:00 - 17:00</td>
-                                        <td class="text-end">Rp 150.000</td>
-                                    </tr>
-                                    <!-- More items... -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <button class="btn btn-primary w-100 mb-4">
+                        Lanjut ke Pembayaran
+                        <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Pembayaran Aman & Terenkripsi</span>
                     </div>
-                </div>
-
-                <!-- Payment Method -->
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <h5 class="card-title mb-4">Metode Pembayaran</h5>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-check card border rounded-3 p-3">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" id="transfer"
-                                        checked>
-                                    <label class="form-check-label w-100" for="transfer">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-university fa-lg text-primary me-3"></i>
-                                            <div>
-                                                <h6 class="mb-0">Transfer Bank</h6>
-                                                <small class="text-muted">BCA, Mandiri, BNI</small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check card border rounded-3 p-3">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" id="ewallet">
-                                    <label class="form-check-label w-100" for="ewallet">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-wallet fa-lg text-success me-3"></i>
-                                            <div>
-                                                <h6 class="mb-0">E-Wallet</h6>
-                                                <small class="text-muted">GoPay, OVO, DANA</small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Summary -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <h5 class="card-title mb-4">Ringkasan Pesanan</h5>
-
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Subtotal</span>
-                            <span>Rp 150.000</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Diskon Member</span>
-                            <span class="text-success">- Rp 30.000</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Biaya Admin</span>
-                            <span>Rp 5.000</span>
-                        </div>
-
-                        <hr>
-
-                        <div class="d-flex justify-content-between mb-4">
-                            <span class="fw-bold">Total</span>
-                            <span class="fw-bold text-danger">Rp 125.000</span>
-                        </div>
-
-                        <!-- Promo Code -->
-                        <div class="mb-4">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Kode Promo">
-                                <button class="btn btn-outline-danger">Aplikasikan</button>
-                            </div>
-                        </div>
-
-                        <!-- Checkout Button -->
-                        <div class="d-grid">
-                            <a href="/payment" class="btn btn-danger btn-lg">
-                                Lanjut ke Pembayaran
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
-                        </div>
-
-                        <!-- Notes -->
-                        <div class="mt-4">
-                            <div class="d-flex align-items-center text-muted small mb-2">
-                                <i class="fas fa-shield-alt me-2"></i>
-                                Pembayaran Aman & Terenkripsi
-                            </div>
-                            <div class="d-flex align-items-center text-muted small">
-                                <i class="fas fa-undo me-2"></i>
-                                Kebijakan Pembatalan
-                            </div>
-                        </div>
+                    <div class="security-badge">
+                        <i class="fas fa-undo"></i>
+                        <span>Kebijakan Pembatalan</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
-</html>
+</div>
+@endsection

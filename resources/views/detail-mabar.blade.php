@@ -1,15 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTAKU BADMINTON : HANJOY SPORT - SportVue</title>
-
-    <!-- CSS & Fonts -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+@extends('layouts.app')
+@section('content')
     <style>
         :root {
             --primary-color: #9E0620;
@@ -21,30 +11,6 @@
             padding-top: 72px;
         }
 
-        .breadcrumb-section {
-            background: var(--primary-color);
-            padding: 1rem 0;
-            color: white;
-        }
-
-        .breadcrumb-item a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-        }
-
-        .breadcrumb-item.active {
-            color: white;
-        }
-
-        .breadcrumb-item+.breadcrumb-item::before {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .header-section {
-            background: var(--primary-color);
-            color: white;
-            padding: 2rem 0;
-        }
 
         .sport-badge {
             background: rgba(255, 255, 255, 0.1);
@@ -54,13 +20,132 @@
             font-size: 0.875rem;
         }
 
-        .member-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid white;
-        }
+      /* Breadcrumb Styles */
+.breadcrumb-wrapper {
+    background: linear-gradient(to right, var(--primary-color), #bb2d3b);
+    padding: 1rem 0;
+    color: white;
+}
+
+.custom-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    gap: 1rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.breadcrumb-link:hover {
+    color: white;
+}
+
+.breadcrumb-item.active {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.25rem 1rem;
+    border-radius: 50px;
+}
+
+/* Header Section Styles */
+.header-section {
+    background: var(--primary-color);
+    color: white;
+    padding: 2.5rem 0;
+}
+
+.sport-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.member-list {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-right: -8px;
+    object-fit: cover;
+    background: #fff;
+}
+
+.more-members {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.slots-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+}
+
+.header-info {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .header-title {
+        font-size: 1.5rem;
+    }
+
+    .member-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .breadcrumb-item span {
+        font-size: 0.9rem;
+    }
+}
 
         .slots-badge {
             background: rgba(255, 255, 255, 0.2);
@@ -115,52 +200,175 @@
             font-size: 0.75rem;
         }
     </style>
-</head>
-<body>
-    @include('partials.navbar')
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb-section">
-        <div class="container">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
-                    <li class="breadcrumb-item"><a href="/main-bareng">Main Bareng</a></li>
-                    <li class="breadcrumb-item active">OTAKU BADMINTON : HANJOY SPORT</li>
-                </ol>
-            </nav>
-        </div>
+    <style>
+        .facility-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .facility-badge:hover {
+            background: rgba(158, 6, 32, 0.05);
+            transform: translateX(5px);
+        }
+
+        .facility-badge i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .facility-badge:hover i {
+            transform: scale(1.2);
+        }
+
+        .facility-badge span {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(158, 6, 32, 0.1);
+            color: var(--primary-color);
+            margin-right: 0.75rem;
+        }
+
+        .payment-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .payment-option {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover,
+        .payment-option.active {
+            border-color: var(--primary-color);
+            background: rgba(158, 6, 32, 0.05);
+        }
+
+        .btn-outline-danger {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-danger:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .map-container {
+            height: 300px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .facility-badge {
+                padding: 0.75rem;
+            }
+
+            .payment-card {
+                margin-top: 1rem;
+            }
+
+            .info-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-wrapper">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="custom-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/" class="breadcrumb-link">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/main-bareng" class="breadcrumb-link">
+                        <i class="fas fa-users"></i>
+                        <span>Main Bareng</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="fas fa-volleyball-ball"></i>
+                    <span>OTAKU BADMINTON : HANJOY SPORT</span>
+                </li>
+            </ol>
+        </nav>
     </div>
+</div>
 
-    <!-- Header Section -->
-    <div class="header-section">
-        <div class="container">
-            <div class="sport-badge mb-3">
-                <i class="fas fa-volleyball-ball me-2"></i>
-                Badminton • Newbie - Intermediate
+<!-- Header Section -->
+<div class="header-section">
+    <div class="container">
+        <div class="sport-badge mb-3">
+            <i class="fas fa-volleyball-ball me-2"></i>
+            <span>Badminton • Newbie - Intermediate</span>
+        </div>
+
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <h1 class="header-title mb-3">Otaku Badminton : Hanjoy Sport</h1>
+                <div class="d-flex align-items-center flex-wrap gap-3">
+                    <div class="member-list d-flex align-items-center">
+                        <img src="/api/placeholder/40/40" class="member-avatar" alt="AD">
+                        <img src="/api/placeholder/40/40" class="member-avatar" alt="E">
+                        <img src="/api/placeholder/40/40" class="member-avatar" alt="AP">
+                        <div class="member-avatar more-members d-flex align-items-center justify-content-center">
+                            <span>+2</span>
+                        </div>
+                    </div>
+                    <div class="slots-badge">
+                        <i class="fas fa-users me-2"></i>
+                        <span>6/8 Bergabung!</span>
+                    </div>
+                </div>
             </div>
-
-            <!-- Event Title & Members -->
-            <div class="row align-items-center mb-4">
-                <div class="col-lg-8">
-                    <h1 class="h2 mb-3">Otaku Badminton : Hanjoy Sport</h1>
-                    <div class="d-flex align-items-center">
-                        <div class="d-flex align-items-center me-4">
-                            <img src="/api/placeholder/40/40" class="member-avatar me-2" alt="AD">
-                            <img src="/api/placeholder/40/40" class="member-avatar me-2" alt="E">
-                            <img src="/api/placeholder/40/40" class="member-avatar me-2" alt="AP">
-                        </div>
-                        <div class="slots-badge">
-                            6/8 Bergabung!
-                        </div>
+            <div class="col-lg-4">
+                <div class="header-info">
+                    <div class="info-item mb-2">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <span>Sel, 14 Jan 2025 • 19:00 - 21:00</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <span>Wins 63 Badminton • Jakarta Selatan</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+</div>
     <!-- Main Content -->
-    <div class="container py-4">
+    <div class="container py-5">
         <div class="row g-4">
             <!-- Left Content -->
             <div class="col-lg-8">
@@ -171,33 +379,102 @@
                         <div class="mb-4">
                             <div class="d-flex align-items-center mb-2">
                                 <div class="info-icon">
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-users"></i>
                                 </div>
-                                <span>1 lapangan 2 jam ( Wins 63 )</span>
+                                <span>8 slot tersedia</span>
                             </div>
                             <div class="d-flex align-items-center mb-2">
                                 <div class="info-icon">
-                                    <i class="fas fa-users"></i>
+                                    <i class="fas fa-star"></i>
                                 </div>
-                                <span>Fun play Newbie - intermediate</span>
+                                <span>Level: Newbie - Intermediate</span>
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="info-icon">
-                                    <i class="fas fa-volleyball-ball"></i>
+                                    <i class="fas fa-clock"></i>
                                 </div>
-                                <span>Sudah termasuk Shuttlecock</span>
+                                <span>Durasi: 2 jam</span>
                             </div>
                         </div>
 
-                        <p class="mb-3">
-                            Olahraga sambil nyari relasi 🙂
-                        </p>
-                        <p class="text-danger mb-0">
-                            daftar dan tidak datang tampa info apa2 akan di banned.
-                        </p>
-                        <p class="mb-0">
-                            Online payment 30k ( WAJIB REVIEW dan Join Community di AYO)
-                        </p>
+                        <p class="mb-3">Fun game untuk semua level! Mari bergabung dan bersenang-senang bersama.</p>
+                        <p class="text-danger mb-0">*Pembatalan H-1 tidak dapat direfund</p>
+                    </div>
+                </div>
+
+                <!-- Jadwal Section -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4">Jadwal Main</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="info-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Tanggal</small>
+                                        <span>Sel, 14 Jan 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="info-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Waktu</small>
+                                        <span>19:00 - 21:00 WIB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fasilitas Section -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4">Fasilitas</h5>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-4">
+                                <div class="facility-badge">
+                                    <i class="fas fa-parking"></i>
+                                    <span>Parkir Gratis</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="facility-badge">
+                                    <i class="fas fa-wifi"></i>
+                                    <span>WiFi Gratis</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="facility-badge">
+                                    <i class="fas fa-shower"></i>
+                                    <span>Kamar Mandi</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="facility-badge">
+                                    <i class="fas fa-tshirt"></i>
+                                    <span>Ruang Ganti</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="facility-badge">
+                                    <i class="fas fa-store"></i>
+                                    <span>Mini Store</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="facility-badge">
+                                    <i class="fas fa-first-aid"></i>
+                                    <span>P3K</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -206,19 +483,11 @@
                     <div class="card-body p-4">
                         <h5 class="mb-4">Lokasi</h5>
                         <p class="mb-3">Jl. Sma 63 No. 6 Petukangan Utara, Pesanggrahan Jakarta Selatan</p>
-
-                        <!-- Map Container -->
                         <div class="map-container mb-3">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.0269457788045!2d112.76238777575094!3d-7.35087059265795!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7e52a24e495d7%3A0x243c2e1056011f20!2sAlena%20Soccer!5e0!3m2!1sen!2sid!4v1735891963050!5m2!1sen!2sid"
-                                width="100%"
-                                height="100%"
-                                style="border:0;"
-                                allowfullscreen=""
-                                loading="lazy">
+                            <iframe src="https://www.google.com/maps/embed?..." width="100%" height="100%"
+                                style="border:0;" allowfullscreen="" loading="lazy">
                             </iframe>
                         </div>
-
                         <a href="#" class="btn btn-outline-danger rounded-pill">
                             <i class="fas fa-location-arrow me-2"></i>
                             Petunjuk Jalan
@@ -229,65 +498,40 @@
 
             <!-- Right Sidebar -->
             <div class="col-lg-4">
-                <!-- Payment Card -->
                 <div class="payment-card shadow-sm sticky-top" style="top: 90px;">
-                    <h5 class="mb-4">Pilih metode pembayaran:</h5>
-
-                    <!-- Payment Options -->
-                    <div class="payment-option active mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="paymentOption" id="online" checked>
-                            <label class="form-check-label" for="online">
-                                Online
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="payment-option mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="paymentOption" id="tunai">
-                            <label class="form-check-label" for="tunai">
-                                Tunai
-                            </label>
-                        </div>
-                    </div>
+                    <h5 class="mb-4">Detail Pembayaran</h5>
 
                     <!-- Price Info -->
-                    <div class="mb-2">
-                        <h4 class="mb-1">Rp30.000 <small class="text-muted">/peserta</small></h4>
-                        <small class="text-danger">Hanya tersisa 2 slot!</small>
-                    </div>
-
-                    <!-- Date & Location -->
                     <div class="mb-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-calendar-alt text-muted me-2"></i>
-                            <div>
-                                <small class="text-muted d-block">Waktu & Tanggal</small>
-                                <span>Sel, 14 Jan 2025 • 19:00 - 21:00</span>
+                        <div class="payment-option active mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="paymentOption" id="online"
+                                    checked>
+                                <label class="form-check-label" for="online">Pembayaran Online</label>
                             </div>
                         </div>
-                        <div class="d-flex align-items-start">
-                            <i class="fas fa-map-marker-alt text-muted me-2 mt-1"></i>
-                            <div>
-                                <small class="text-muted d-block">Lapangan</small>
-                                <span>Lapangan 1 • Wins 63 Badminton</span>
-                                <small class="d-block">Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta</small>
+                        <div class="payment-option mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="paymentOption" id="cash">
+                                <label class="form-check-label" for="cash">Pembayaran Tunai</label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Host Info -->
+                    <!-- Price Summary -->
                     <div class="mb-4">
-                        <div class="d-flex align-items-center">
-                            <img src="/api/placeholder/48/48" alt="Host" class="rounded-circle me-3">
-                            <div>
-                                <div class="d-flex align-items-center mb-1">
-                                    <h6 class="mb-0 me-2">Hanjoy Sport</h6>
-                                    <span class="host-badge">Penyelenggara</span>
-                                </div>
-                                <small class="text-muted">Dibuat oleh Abay</small>
-                            </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Biaya Main</span>
+                            <span class="fw-bold">Rp30.000</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Biaya Admin</span>
+                            <span class="fw-bold">Rp1.000</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Total</span>
+                            <span class="fw-bold text-danger">Rp31.000</span>
                         </div>
                     </div>
 
@@ -301,5 +545,4 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection

@@ -1,694 +1,312 @@
 @extends('layouts.app')
 @section('content')
-
-    <style>
-
-        @keyframes slideLeft {
-            0% {
-                transform: translateX(0);
-            }
-
-            100% {
-                transform: translateX(-300%);
-                /* 3 slides */
-            }
-        }
-
-        .hero-bg img {
-            filter: brightness(0.6);
-            /* Membuat gambar sedikit lebih gelap */
-        }
-
-        .overlay {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
-        }
-
-        .text-shadow {
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-danger {
-            background-color: #9E0620;
-            border: none;
-            border-radius: 4px;
-            /* Sudut yang lebih tajam */
-            padding: 12px 30px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .btn-danger:hover {
-            background-color: #8a051c;
-            transform: translateY(-2px);
-        }
-
-        .bg-danger {
-            background-color: #8a051c;
-        }
-
-        .lead {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .tournament-card {
-            transition: transform 0.3s ease;
-        }
-
-        .tournament-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .carousel-control-prev,
-        .carousel-control-next {
-            width: auto;
-            padding: 0 10px;
-        }
-
-        .testimonial-item {
-            min-height: 200px;
-        }
-
-        .footer {
-            background-color: #212529;
-        }
-
-        .footer-links a {
-            transition: all 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: white !important;
-            padding-left: 5px;
-        }
-
-        .btn-outline-light {
-            width: 36px;
-            height: 36px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-light:hover {
-            transform: translateY(-3px);
-        }
-
-        .footer-contact li {
-            transition: all 0.3s ease;
-        }
-
-        .footer-contact li:hover {
-            transform: translateX(5px);
-        }
-
-        .hover-text-white {
-            transition: color 0.3s ease;
-        }
-
-        .hover-text-white:hover {
-            color: white !important;
-        }
-    </style>
+<link rel="stylesheet" href="{{ asset('css/users/welcome.css') }}">
+<!-- Promo Banner -->
+<div class="promo-banner text-white" style="background-color: #9E0620; margin-top:60px;">
+    <div class="promo-slider">
+        <div class="d-flex promo-slide-container mt-3">
+            <div class="promo-slide">
+                <i class="fas fa-gift me-2"></i>
+                New Member Discount 20% Off! Use code: SPORTVUE20
+            </div>
+            <div class="promo-slide">
+                <i class="fas fa-trophy me-2"></i>
+                Special Weekend Price! Book Now and Save 15%
+            </div>
+            <div class="promo-slide">
+                <i class="fas fa-bolt me-2"></i>
+                Flash Deal: Book 3 Hours Get 1 Hour Free!
+            </div>
+            <!-- Duplicate first slide for smooth transition -->
+            <div class="promo-slide">
+                <i class="fas fa-gift me-2"></i>
+                New Member Discount 20% Off! Use code: SPORTVUE20
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    :root {
+        --primary-color: #9E0620;
+        --secondary-color: #2A2A2A;
+        --danger-color: #9E0620;
+    }
 
 
+    .promo-slider .d-flex {
+        display: flex !important;
+        animation: slideLeft 240s linear infinite;
+        width: max-content;
+    }
 
-
-    <!-- Hero Section -->
+</style>
+    {{-- Hero Section --}}
     <section class="hero position-relative vh-100 d-flex align-items-center">
-        <!-- Hero Background -->
+        {{-- Hero Background --}}
         <div class="hero-bg position-absolute w-100 h-100">
             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/225f207f34ecb422ea74c38dd5016adc852e34aafdae3247df704fa28c8f307d"
                 class="w-100 h-100 object-fit-cover" alt="Indoor Sport Field">
             <div class="overlay position-absolute top-0 start-0 w-100 h-100"></div>
         </div>
 
-        <!-- Hero Content -->
-        <div class="container position-relative z-3">
-            <div class="col-lg-12 mx-auto text-left">
-                <!-- Main Text -->
-                <h1 class="display-1 fw-bold text-white  text-shadow">
+        {{-- Hero Content --}}
+        <div class="container position-relative z-3 text-left">
+            <div class="col-lg-12 mx-auto">
+                {{-- Main Text --}}
+                <h1 class="display-1 fw-bold text-white text-shadow">
                     ALENA SOCCER
                 </h1>
                 <h1 class="display-1 fw-bold text-white mb-3 text-shadow">
                     SUPER SPORT FUTSAL
                 </h1>
 
-                <p class="lead text-white mb-4 text-shadow ">
-                    Platform all-in-one untuk sewa lapangan, cari lawan sparring, atau cari kawan main bareng. Olahraga
-                    makin mudah dan menyenangkan!
+                <p class="lead text-white mb-4 text-shadow">
+                    Platform all-in-one untuk sewa lapangan, cari lawan sparring, atau cari kawan main bareng.
+                    Olahraga makin mudah dan menyenangkan!
                 </p>
 
-                <!-- Tombol CTA Sederhana -->
-                <a href="#booking" class="btn btn-danger btn-lg px-4 ">
+                {{-- CTA Button --}}
+                <a href="#booking" class="btn btn-danger btn-lg px-4 animate-btn">
                     Cek Ketersediaan
                 </a>
-
             </div>
         </div>
     </section>
 
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const heroSection = document.querySelector('.hero');
+                const heroBackground = heroSection.querySelector('.hero-bg img');
 
-    <!-- Booking Section -->
-    <section id="booking" class="py-5">
+                // Parallax effect
+                window.addEventListener('scroll', function() {
+                    const scrollPosition = window.pageYOffset;
+                    heroBackground.style.transform = `translateY(${scrollPosition * 0.5}px)`;
+                });
+            });
+        </script>
+    @endpush
+
+    <!-- resources/views/components/booking-section.blade.php -->
+    <section class="booking-section py-5">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="display-4 fw-bold">Pesan Lapangan Anda</h2>
-                <p class="text-muted">Pilih lapangan yang Anda inginkan dan cek ketersediaan secara real-time</p>
-
+                <p class="section-subtitle">Pilih lapangan yang Anda inginkan dan cek ketersediaan secara real-time</p>
             </div>
 
-            <div class="row g-4">
-                <!-- Lapangan A -->
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-lg rounded-4 hover-scale">
-                        <!-- Status Badge -->
-                        <div class="position-absolute top-0 end-0 m-3">
-                            <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">
-                                <i class="fas fa-circle text-success me-1"></i>Tersedia Sekarang
-                            </span>
-                        </div>
+            <div class="row overflow-auto pb-3">
+                @php
+                    $courts = [
+                        [
+                            'id' => 'A',
+                            'name' => 'Lapangan A',
+                            'type' => 'Indoor',
+                            'capacity' => '5v5',
+                            'price' => 150000,
+                            'status' => 'available',
+                            'icon' => 'warehouse',
+                        ],
+                        [
+                            'id' => 'B',
+                            'name' => 'Lapangan B',
+                            'type' => 'Outdoor',
+                            'capacity' => '7v7',
+                            'price' => 200000,
+                            'status' => 'limited',
+                            'icon' => 'sun',
+                        ],
+                        [
+                            'id' => 'C',
+                            'name' => 'Lapangan C',
+                            'type' => 'Premium',
+                            'capacity' => '11v11',
+                            'price' => 300000,
+                            'status' => 'booked',
+                            'icon' => 'star',
+                        ],
+                    ];
+                @endphp
 
-                        <div class="position-relative">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="card-img-top rounded-top-4" style="height: 200px; object-fit: cover;"
-                                alt="Lapangan A">
+                @foreach ($courts as $court)
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm border-0 @if ($court['status'] == 'booked') opacity-75 @endif">
+                            <div class="position-relative">
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="card-img-top" alt="{{ $court['name'] }}">
 
-                            <!-- Overlay Info -->
-                            <div class="position-absolute bottom-0 start-0 w-100 p-3 text-white"
-                                style="background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));">
-                                <h3 class="h4 mb-0">Lapangan A</h3>
-                                <p class="mb-0"><small>Lapangan Indoor • 5v5</small></p>
+                                @switch($court['status'])
+                                    @case('available')
+                                        <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                            <i class="fas fa-circle me-1"></i> Tersedia Sekarang
+                                        </span>
+                                    @break
+
+                                    @case('limited')
+                                        <span class="badge bg-warning position-absolute top-0 end-0 m-2">
+                                            <i class="fas fa-clock me-1"></i> Slot Terbatas
+                                        </span>
+                                    @break
+
+                                    @case('booked')
+                                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                            <i class="fas fa-ban me-1"></i> Penuh Terisi
+                                        </span>
+                                    @break
+                                @endswitch
                             </div>
-                        </div>
 
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="row g-2 text-center">
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-ruler-combined text-muted"></i>
-                                            <small class="d-block text-muted">25x15m</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-volleyball-ball text-muted"></i>
-                                            <small class="d-block text-muted">Indoor</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-star text-muted"></i>
-                                            <small class="d-block text-muted">4.8/5</small>
-                                        </div>
-                                    </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $court['name'] }}</h5>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-{{ $court['icon'] }} me-1"></i>
+                                        Lapangan {{ $court['type'] }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-users me-1"></i>
+                                        {{ $court['capacity'] }}
+                                    </small>
                                 </div>
-                            </div>
 
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="h5 mb-0">Rp 150K</span>
-                                    <small class="text-muted">/jam</small>
-                                </div>
-                                <a href="/maincourt" class="btn btn-danger rounded-pill px-4">
-                                    Pesan Sekarang
-                                    <i class="fas fa-arrow-right ms-2"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lapangan B -->
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-lg rounded-4 hover-scale">
-                        <!-- Status Badge -->
-                        <div class="position-absolute top-0 end-0 m-3">
-                            <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">
-                                <i class="fas fa-clock text-warning me-1"></i>Slot Terbatas
-                            </span>
-                        </div>
-
-                        <div class="position-relative">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="card-img-top rounded-top-4" style="height: 200px; object-fit: cover;"
-                                alt="Lapangan B">
-
-                            <!-- Overlay Info -->
-                            <div class="position-absolute bottom-0 start-0 w-100 p-3 text-white"
-                                style="background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));">
-                                <h3 class="h4 mb-0">Lapangan B</h3>
-                                <p class="mb-0"><small>Lapangan Outdoor • 7v7</small></p>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="row g-2 text-center">
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-ruler-combined text-muted"></i>
-                                            <small class="d-block text-muted">30x20m</small>
-                                        </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="h5 text-danger mb-0">Rp
+                                            {{ number_format($court['price'], 0, ',', '.') }}</span>
+                                        <small class="text-muted">/jam</small>
                                     </div>
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-sun text-muted"></i>
-                                            <small class="d-block text-muted">Outdoor</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-star text-muted"></i>
-                                            <small class="d-block text-muted">4.6/5</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="h5 mb-0">Rp 200K</span>
-                                    <small class="text-muted">/jam</small>
-                                </div>
-                                <button class="btn btn-danger rounded-pill px-4">
-                                    Pesan Sekarang
-                                    <i class="fas fa-arrow-right ms-2"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lapangan C -->
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-lg rounded-4 hover-scale opacity-75">
-                        <!-- Status Badge -->
-                        <div class="position-absolute top-0 end-0 m-3">
-                            <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">
-                                <i class="fas fa-ban text-danger me-1"></i>Penuh Terisi
-                            </span>
-                        </div>
-
-                        <div class="position-relative">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="card-img-top rounded-top-4" style="height: 200px; object-fit: cover;"
-                                alt="Lapangan C">
-
-                            <!-- Overlay Info -->
-                            <div class="position-absolute bottom-0 start-0 w-100 p-3 text-white"
-                                style="background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));">
-                                <h3 class="h4 mb-0">Lapangan C</h3>
-                                <p class="mb-0"><small>Lapangan Premium • 11v11</small></p>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="row g-2 text-center">
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-ruler-combined text-muted"></i>
-                                            <small class="d-block text-muted">40x20m</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-medal text-muted"></i>
-                                            <small class="d-block text-muted">Premium</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="p-2 bg-light rounded-3">
-                                            <i class="fas fa-star text-muted"></i>
-                                            <small class="d-block text-muted">4.9/5</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="h5 mb-0">Rp 300K</span>
-                                    <small class="text-muted">/jam</small>
-                                </div>
-                                <button class="btn btn-secondary rounded-pill px-4" disabled>
-                                    Tidak Tersedia
-                                    <i class="fas fa-ban ms-2"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Informasi Booking -->
-            <div class="row mt-5">
-                <div class="col-12">
-                    <div class="card border-0 bg-light rounded-4 p-4">
-                        <div class="row g-4 text-center">
-                            <!-- Jam Operasional -->
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-clock text-danger fa-2x me-3"></i>
-                                    <div class="text-start">
-                                        <h5 class="mb-1">Jam Operasional</h5>
-                                        <p class="mb-0 text-muted">08:00 - 22:00</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Booking di Muka -->
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-calendar-check text-danger fa-2x me-3"></i>
-                                    <div class="text-start">
-                                        <h5 class="mb-1">Booking di Muka</h5>
-                                        <p class="mb-0 text-muted">Hingga 2 minggu sebelumnya</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Pembayaran Aman -->
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-shield-alt text-danger fa-2x me-3"></i>
-                                    <div class="text-start">
-                                        <h5 class="mb-1">Pembayaran Aman</h5>
-                                        <p class="mb-0 text-muted">100% terjamin keamanannya</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Dukungan 24/7 -->
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-headset text-danger fa-2x me-3"></i>
-                                    <div class="text-start">
-                                        <h5 class="mb-1">Dukungan 24/7</h5>
-                                        <p class="mb-0 text-muted">Selalu siap membantu Anda</p>
-                                    </div>
+                                    @if ($court['status'] != 'booked')
+                                        <a href="/maincourt" class="btn btn-danger rounded-pill">
+                                            Pesan Sekarang <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    @else
+                                        <button class="btn btn-secondary rounded-pill" disabled>
+                                            Tidak Tersedia <i class="fas fa-ban ms-1"></i>
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
+    {{-- End Booking Section --}}
 
-    <!-- Equipment Section -->
-    <section id="equipment" class="py-5">
+    <!-- resources/views/components/equipment-rental.blade.php -->
+    <section class="equipment-section py-5">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="display-4 fw-bold">Equipment Rental</h2>
-                <p class="text-muted">Quality sports equipment for your game</p>
+                <p class="section-subtitle">Quality sports equipment for your game</p>
             </div>
 
-            <div class="row g-4">
-                <!-- Jersey Set -->
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-lg rounded-4 hover-scale h-100">
-                        <div class="position-relative">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b"
-                                class="card-img-top rounded-top-4" style="height: 200px; object-fit: cover;"
-                                alt="Jersey Set">
+            <div class="row overflow-auto pb-3">
+                @php
+                    $equipments = [
+                        [
+                            'id' => 'jersey',
+                            'name' => 'Jersey Set',
+                            'price' => 50000,
+                            'status' => 'available',
+                            'features' => [
+                                ['icon' => 'tshirt', 'text' => 'All Sizes'],
+                                ['icon' => 'layer-group', 'text' => 'Full Set'],
+                                ['icon' => 'shield-alt', 'text' => 'Clean & Fresh'],
+                                ['icon' => 'sync-alt', 'text' => 'Daily Wash'],
+                            ],
+                            'image' =>
+                                'https://cdn.builder.io/api/v1/image/assets/TEMP/5aa5ed7450a6694778d31686a44411c5b806b174bc5c0c366ecd748d4b3dfe9b',
+                        ],
+                        [
+                            'id' => 'ball',
+                            'name' => 'Soccer Ball',
+                            'price' => 30000,
+                            'status' => 'available',
+                            'features' => [
+                                ['icon' => 'certificate', 'text' => 'Official Size'],
+                                ['icon' => 'star', 'text' => 'Premium'],
+                                ['icon' => 'check-circle', 'text' => 'Match Quality'],
+                                ['icon' => 'pump-soap', 'text' => 'Sanitized'],
+                            ],
+                            'image' => 'assets/ball.avif',
+                        ],
+                        [
+                            'id' => 'shoes',
+                            'name' => 'Soccer Shoes',
+                            'price' => 40000,
+                            'status' => 'limited',
+                            'features' => [
+                                ['icon' => 'ruler', 'text' => 'Size 39-45'],
+                                ['icon' => 'shoe-prints', 'text' => 'Studs/Turf'],
+                                ['icon' => 'spray-can', 'text' => 'Deodorized'],
+                                ['icon' => 'shield-alt', 'text' => 'Sanitized'],
+                            ],
+                            'image' => 'assets/shoes.avif',
+                        ],
+                    ];
+                @endphp
 
-                            <!-- Stock Badge -->
-                            <div class="position-absolute top-0 end-0 m-3">
-                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">
-                                    <i class="fas fa-check-circle me-1"></i>In Stock
-                                </span>
-                            </div>
-                        </div>
+                @foreach ($equipments as $equipment)
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="position-relative">
+                                <img src="{{ $equipment['image'] }}" class="card-img-top" alt="{{ $equipment['name'] }}">
 
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="h4 mb-0">Jersey Set</h3>
-                                <div class="text-end">
-                                    <span class="h5 text-danger mb-0">Rp50K</span>
-                                    <small class="text-muted">/day</small>
-                                </div>
-                            </div>
+                                @switch($equipment['status'])
+                                    @case('available')
+                                        <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                            <i class="fas fa-check-circle me-1"></i> In Stock
+                                        </span>
+                                    @break
 
-                            <div class="mb-4">
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-tshirt text-muted me-2"></i>
-                                            <small class="text-muted">All Sizes</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-layer-group text-muted me-2"></i>
-                                            <small class="text-muted">Full Set</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-shield-alt text-muted me-2"></i>
-                                            <small class="text-muted">Clean & Fresh</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-sync-alt text-muted me-2"></i>
-                                            <small class="text-muted">Daily Wash</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <a href="/product-rental" class="btn btn-danger rounded-pill w-100 py-2">
-                                Rent Now
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Soccer Ball -->
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-lg rounded-4 hover-scale h-100">
-                        <div class="position-relative">
-                            <img src="assets/ball.avif" class="card-img-top rounded-top-4"
-                                style="height: 200px; object-fit: cover;" alt="Soccer Ball">
-
-                            <!-- Stock Badge -->
-                            <div class="position-absolute top-0 end-0 m-3">
-                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">
-                                    <i class="fas fa-check-circle me-1"></i>In Stock
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="h4 mb-0">Soccer Ball</h3>
-                                <div class="text-end">
-                                    <span class="h5 text-danger mb-0">Rp30K</span>
-                                    <small class="text-muted">/day</small>
-                                </div>
+                                    @case('limited')
+                                        <span class="badge bg-warning position-absolute top-0 end-0 m-2">
+                                            <i class="fas fa-clock me-1"></i> Limited Stock
+                                        </span>
+                                    @break
+                                @endswitch
                             </div>
 
-                            <div class="mb-4">
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-certificate text-muted me-2"></i>
-                                            <small class="text-muted">Official Size</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-star text-muted me-2"></i>
-                                            <small class="text-muted">Premium</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-check-circle text-muted me-2"></i>
-                                            <small class="text-muted">Match Quality</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-pump-soap text-muted me-2"></i>
-                                            <small class="text-muted">Sanitized</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-danger rounded-pill w-100 py-2">
-                                Rent Now
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Soccer Shoes -->
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-lg rounded-4 hover-scale h-100">
-                        <div class="position-relative">
-                            <img src="assets/shoes.avif" class="card-img-top rounded-top-4"
-                                style="height: 200px; object-fit: cover;" alt="Soccer Shoes">
-
-                            <!-- Stock Badge -->
-                            <div class="position-absolute top-0 end-0 m-3">
-                                <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">
-                                    <i class="fas fa-clock me-1"></i>Limited Stock
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="h4 mb-0">Soccer Shoes</h3>
-                                <div class="text-end">
-                                    <span class="h5 text-danger mb-0">Rp40K</span>
-                                    <small class="text-muted">/day</small>
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-ruler text-muted me-2"></i>
-                                            <small class="text-muted">Size 39-45</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-shoe-prints text-muted me-2"></i>
-                                            <small class="text-muted">Studs/Turf</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-spray-can text-muted me-2"></i>
-                                            <small class="text-muted">Deodorized</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-shield-alt text-muted me-2"></i>
-                                            <small class="text-muted">Sanitized</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-danger rounded-pill w-100 py-2">
-                                Rent Now
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rental Information -->
-            <div class="row mt-5">
-                <div class="col-12">
-                    <div class="card border-0 bg-light rounded-4 p-4">
-                        <div class="row g-4">
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-clock text-danger fa-2x me-3"></i>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">{{ $equipment['name'] }}</h5>
                                     <div>
-                                        <h5 class="mb-1">24H Rental</h5>
-                                        <p class="mb-0 text-muted">Full day usage</p>
+                                        <span class="h5 text-danger mb-0">Rp
+                                            {{ number_format($equipment['price'], 0, ',', '.') }}</span>
+                                        <small class="text-muted">/day</small>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-shield-alt text-danger fa-2x me-3"></i>
-                                    <div>
-                                        <h5 class="mb-1">Clean & Safe</h5>
-                                        <p class="mb-0 text-muted">Sanitized daily</p>
-                                    </div>
+
+                                <div class="row g-2 mb-3">
+                                    @foreach ($equipment['features'] as $feature)
+                                        <div class="col-6 d-flex align-items-center">
+                                            <i class="fas fa-{{ $feature['icon'] }} me-2 text-muted"></i>
+                                            <small>{{ $feature['text'] }}</small>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-undo text-danger fa-2x me-3"></i>
-                                    <div>
-                                        <h5 class="mb-1">Easy Return</h5>
-                                        <p class="mb-0 text-muted">No hassle return</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-medal text-danger fa-2x me-3"></i>
-                                    <div>
-                                        <h5 class="mb-1">Quality Items</h5>
-                                        <p class="mb-0 text-muted">Premium brands</p>
-                                    </div>
-                                </div>
+
+                                @if ($equipment['status'] != 'limited')
+                                    <a href="/product-rental" class="btn btn-danger w-100 rounded-pill">
+                                        Rent Now <i class="fas fa-arrow-right ms-2"></i>
+                                    </a>
+                                @else
+                                    <button class="btn btn-secondary w-100 rounded-pill" disabled>
+                                        Limited Stock <i class="fas fa-clock ms-2"></i>
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
-
-    <section class="bg-light py-5">
-        <div class="container text-center">
-            <h2 class="text-primary fw-bold mb-4">Jasa Fotografer Futsal</h2>
-            <p class="text-muted mb-5">Abadikan momen seru pertandingan futsal Anda dengan fotografer profesional.</p>
-
-            <div class="row g-4">
-                <!-- Dummy Photographer Service 1 -->
-                <div class="col-md-4">
-                    <div class="card shadow-sm">
-                        <img src="https://via.placeholder.com/400" class="card-img-top" alt="Fotografer 1">
-                        <div class="card-body">
-                            <h5 class="card-title">Paket Standard</h5>
-                            <p class="card-text">Dokumentasi pertandingan selama 1 jam.</p>
-                            <p class="fw-bold">Rp 500.000</p>
-                            <a href="#" class="btn btn-primary btn-modern">Pesan Sekarang</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dummy Photographer Service 2 -->
-                <div class="col-md-4">
-                    <div class="card shadow-sm">
-                        <img src="https://via.placeholder.com/400" class="card-img-top" alt="Fotografer 2">
-                        <div class="card-body">
-                            <h5 class="card-title">Paket Premium</h5>
-                            <p class="card-text">Dokumentasi full pertandingan + editing profesional.</p>
-                            <p class="fw-bold">Rp 800.000</p>
-                            <a href="#" class="btn btn-primary btn-modern">Pesan Sekarang</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dummy Photographer Service 3 -->
-                <div class="col-md-4">
-                    <div class="card shadow-sm">
-                        <img src="https://via.placeholder.com/400" class="card-img-top" alt="Fotografer 3">
-                        <div class="card-body">
-                            <h5 class="card-title">Paket VIP</h5>
-                            <p class="card-text">Dokumentasi eksklusif + album cetak.</p>
-                            <p class="fw-bold">Rp 1.200.000</p>
-                            <a href="#" class="btn btn-primary btn-modern">Pesan Sekarang</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    {{-- End Equipment Section --}}
 
     <!-- Community Section -->
     <section id="community" class="py-5">
@@ -702,10 +320,10 @@
                 <!-- Testimonials Card -->
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-lg rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h3 class="h4 mb-4">
-                                <i class="fas fa-quote-left text-danger me-2"></i>
-                                What Our Members Say
+                        <div class="card-body p-4 text-center">
+                            <h3 class="h4 mb-4 d-flex align-items-center justify-content-center gap-2">
+                                <i class="fas fa-quote-left text-danger fa-2x"></i>
+                                <span>What Our Members Say</span>
                             </h3>
 
                             <!-- Testimonial Carousel -->
@@ -713,61 +331,57 @@
                                 <div class="carousel-inner">
                                     <!-- Testimonial 1 -->
                                     <div class="carousel-item active">
-                                        <div class="testimonial-item">
-                                            <div class="d-flex align-items-center gap-3 mb-4">
-                                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2290ec8fa1d076a31ffece3da471c470b91bfd20a12a271551ae12f28bf93760"
-                                                    class="rounded-circle" width="60" height="60"
-                                                    alt="John Doe">
-                                                <div>
-                                                    <h4 class="h5 mb-1">John Doe</h4>
-                                                    <div class="text-warning">
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star"></i>
-                                                    </div>
-                                                </div>
+                                        <div class="testimonial-item text-center">
+                                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2290ec8fa1d076a31ffece3da471c470b91bfd20a12a271551ae12f28bf93760"
+                                                class="rounded-circle mb-3 shadow-sm" width="70" height="70"
+                                                alt="John Doe">
+                                            <h4 class="h5">John Doe</h4>
+                                            <div class="text-warning mb-2">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
                                             </div>
-                                            <p class="mb-0 text-muted fst-italic">"Amazing facilities and great
-                                                service! The courts are always well-maintained and the staff is
-                                                incredibly helpful. Best sports venue in the area!"</p>
+                                            <p class="mb-0 text-muted fst-italic px-3">"Amazing facilities and great
+                                                service! The courts are always well-maintained and the staff is incredibly
+                                                helpful. Best sports venue in the area!"</p>
                                         </div>
                                     </div>
 
                                     <!-- Testimonial 2 -->
                                     <div class="carousel-item">
-                                        <div class="testimonial-item">
-                                            <div class="d-flex align-items-center gap-3 mb-4">
-                                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2290ec8fa1d076a31ffece3da471c470b91bfd20a12a271551ae12f28bf93760"
-                                                    class="rounded-circle" width="60" height="60"
-                                                    alt="Jane Smith">
-                                                <div>
-                                                    <h4 class="h5 mb-1">Jane Smith</h4>
-                                                    <div class="text-warning">
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star"></i>
-                                                        <i class="fas fa-star-half-alt"></i>
-                                                    </div>
-                                                </div>
+                                        <div class="testimonial-item text-center">
+                                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2290ec8fa1d076a31ffece3da471c470b91bfd20a12a271551ae12f28bf93760"
+                                                class="rounded-circle mb-3 shadow-sm" width="70" height="70"
+                                                alt="Jane Smith">
+                                            <h4 class="h5">Jane Smith</h4>
+                                            <div class="text-warning mb-2">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star-half-alt"></i>
                                             </div>
-                                            <p class="mb-0 text-muted fst-italic">"The membership benefits are
-                                                fantastic! Love the community events and tournaments. It's more than
-                                                just a sports facility - it's a community."</p>
+                                            <p class="mb-0 text-muted fst-italic px-3">"The membership benefits are
+                                                fantastic! Love the community events and tournaments. It's more than just a
+                                                sports facility - it's a community."</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Carousel Controls -->
-                                <div class="d-flex justify-content-between mt-4">
-                                    <button class="btn btn-sm btn-outline-danger rounded-circle"
-                                        data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                                <div class="d-flex justify-content-center gap-3 mt-4">
+                                    <button
+                                        class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center"
+                                        data-bs-target="#testimonialCarousel" data-bs-slide="prev"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-arrow-left"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger rounded-circle"
-                                        data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                                    <button
+                                        class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center"
+                                        data-bs-target="#testimonialCarousel" data-bs-slide="next"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-arrow-right"></i>
                                     </button>
                                 </div>
@@ -776,89 +390,90 @@
                     </div>
                 </div>
 
-                <!-- Tournament Card -->
+
+                <!-- Open Mabar Card -->
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-lg rounded-4 h-100">
                         <div class="card-body p-4">
                             <h3 class="h4 mb-4">
-                                <i class="fas fa-trophy text-danger me-2"></i>
-                                Upcoming Tournament
+                                <i class="fas fa-gamepad text-danger me-2"></i>
+                                Open Mabar Event
                             </h3>
 
-                            <div class="tournament-card bg-danger bg-opacity-10 rounded-4 p-4 mb-4">
+                            <div class="mabar-card bg-danger bg-opacity-10 rounded-4 p-4 mb-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
-                                        <h4 class="h3 mb-2">SportVue Cup 2025</h4>
+                                        <h4 class="h3 mb-2">SportVue Open Play</h4>
                                         <p class="mb-0 text-muted">
                                             <i class="fas fa-calendar-alt me-2"></i>March 15-20, 2025
                                         </p>
                                     </div>
-                                    <span class="badge bg-danger">Registrations Open</span>
+                                    <span class="badge bg-danger">Join Now</span>
                                 </div>
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-6">
                                         <div class="bg-white rounded-3 p-3 text-center">
                                             <i class="fas fa-users text-danger mb-2"></i>
-                                            <h5 class="h6 mb-1">32 Teams</h5>
-                                            <small class="text-muted">Participating</small>
+                                            <h5 class="h6 mb-1">12 Teams</h5>
+                                            <small class="text-muted">Available to Join</small>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="bg-white rounded-3 p-3 text-center">
-                                            <i class="fas fa-award text-danger mb-2"></i>
-                                            <h5 class="h6 mb-1">Rp 10M</h5>
-                                            <small class="text-muted">Prize Pool</small>
+                                            <i class="fas fa-gamepad text-danger mb-2"></i>
+                                            <h5 class="h6 mb-1">5v5 / 7v7</h5>
+                                            <small class="text-muted">Game Mode</small>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="d-grid">
                                     <a href="/mabar" class="btn btn-danger rounded-pill">
-                                        Register Now
+                                        Join a Team
                                         <i class="fas fa-arrow-right ms-2"></i>
                                     </a>
                                 </div>
                             </div>
 
-                            <!-- Tournament Features -->
+                            <!-- Open Mabar Features -->
                             <div class="row g-3">
                                 <div class="col-6">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-medal text-danger me-2"></i>
-                                        <span>Professional Referees</span>
+                                        <i class="fas fa-comments text-danger me-2"></i>
+                                        <span>Team Matching</span>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-video text-danger me-2"></i>
-                                        <span>Live Streaming</span>
+                                        <i class="fas fa-random text-danger me-2"></i>
+                                        <span>Auto Balancing</span>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-first-aid text-danger me-2"></i>
-                                        <span>Medical Support</span>
+                                        <i class="fas fa-clock text-danger me-2"></i>
+                                        <span>Flexible Schedule</span>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-camera text-danger me-2"></i>
-                                        <span>Professional Coverage</span>
+                                        <i class="fas fa-headset text-danger me-2"></i>
+                                        <span>Voice Chat Support</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
-
+    {{-- End Comunity Section --}}
 
     <!-- Footer -->
     <footer class="footer position-relative bg-dark text-white">
-
         <!-- Main Footer Content -->
         <div class="py-5">
             <div class="container">
@@ -867,18 +482,16 @@
                     <div class="col-lg-4 mb-4">
                         <div class="pe-lg-5">
                             <div class="d-flex align-items-center mb-4">
-
                                 <span class="fw-bold fs-4">
                                     ALENA<span class="text-white">
-                                        S<img
+                                        S <img
                                             src="https://cdn.builder.io/api/v1/image/assets/TEMP/3bc3f968d66dd0c368130525f00d42ec550c3ea8f6304c68cbb117fa6eb8dc08"
-                                            width="30" height="30" class=""
-                                            alt="Alena Soccer Logo">CCER
+                                            width="30" height="30" class="" alt="Alena Soccer Logo"> CCER
                                     </span>
                                 </span>
                             </div>
-                            <p class="text-white-50 mb-4">Your premier destination for sports facility bookings and
-                                equipment rentals. Experience quality service and premium facilities.</p>
+                            <p class="text-white-50 mb-4">A vibrant community of sports enthusiasts connecting, playing,
+                                and growing together. Join us in celebrating the spirit of sports!</p>
                             <div class="d-flex gap-3">
                                 <a href="#" class="btn btn-outline-light btn-sm rounded-circle">
                                     <i class="fab fa-facebook-f"></i>
@@ -896,78 +509,93 @@
                         </div>
                     </div>
 
-
-                    <!-- Quick Links -->
+                    <!-- Community Links -->
                     <div class="col-lg-2 col-md-4">
-                        <h5 class="text-white mb-4">Quick Links</h5>
+                        <h5 class="text-white mb-4">Community</h5>
                         <ul class="list-unstyled footer-links">
                             <li class="mb-2">
-                                <a href="/about" class="text-white-50 text-decoration-none hover-text-white">About
-                                    Us</a>
+                                <a href="/events" class="text-white-50 text-decoration-none hover-text-white">Upcoming
+                                    Events</a>
                             </li>
                             <li class="mb-2">
-                                <a href="/fields" class="text-white-50 text-decoration-none hover-text-white">Our
-                                    Fields</a>
+                                <a href="/teams" class="text-white-50 text-decoration-none hover-text-white">Team
+                                    Matching</a>
                             </li>
                             <li class="mb-2">
-                                <a href="/membership"
-                                    class="text-white-50 text-decoration-none hover-text-white">Membership</a>
+                                <a href="/tournaments"
+                                    class="text-white-50 text-decoration-none hover-text-white">Tournaments</a>
                             </li>
                             <li class="mb-2">
-                                <a href="/equipment"
-                                    class="text-white-50 text-decoration-none hover-text-white">Equipment Rental</a>
+                                <a href="/forum" class="text-white-50 text-decoration-none hover-text-white">Community
+                                    Forum</a>
                             </li>
                             <li class="mb-2">
-                                <a href="/contact" class="text-white-50 text-decoration-none hover-text-white">Contact
-                                    Us</a>
+                                <a href="/support" class="text-white-50 text-decoration-none hover-text-white">Community
+                                    Support</a>
                             </li>
                         </ul>
                     </div>
 
                     <!-- Contact Information -->
                     <div class="col-lg-3 col-md-4">
-                        <h5 class="text-white mb-4">Contact Us</h5>
+                        <h5 class="text-white mb-4">Contact Community</h5>
                         <ul class="list-unstyled footer-contact">
                             <li class="d-flex align-items-center mb-3">
-                                <div class=" p-2  me-3">
-                                    <i class="fas fa-phone-alt text-white"></i>
+                                <div class="p-2 me-3">
+                                    <i class="fas fa-headset text-white"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-0 text-white-50">Phone</p>
-                                    <a href="https://wa.link/0qvfmn" class="text-white text-decoration-none">+62 8784
-                                        0177 803</a>
+                                    <p class="mb-0 text-white-50">Community Support</p>
+                                    <a href="tel:+628784017803" class="text-white text-decoration-none">+62 8784 0177
+                                        803</a>
                                 </div>
                             </li>
                             <li class="d-flex align-items-center mb-3">
-                                <div class=" p-2 rounded-circle me-3">
+                                <div class="p-2 rounded-circle me-3">
                                     <i class="fas fa-envelope text-white"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-0 text-white-50">Email</p>
-                                    <a href="mailto:info@sportvue.com"
-                                        class="text-white text-decoration-none">info@sportvue.com</a>
+                                    <p class="mb-0 text-white-50">Community Email</p>
+                                    <a href="mailto:community@sportvue.com"
+                                        class="text-white text-decoration-none">community@sportvue.com</a>
                                 </div>
                             </li>
                             <li class="d-flex align-items-center">
-                                <div class=" p-2 rounded-circle me-3">
-                                    <i class="fas fa-map-marker-alt text-white"></i>
+                                <div class="p-2 rounded-circle me-3">
+                                    <i class="fas fa-users text-white"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-0 text-white-50">Location</p>
-                                    <span class="text-white">Jakarta, Indonesia</span>
+                                    <p class="mb-0 text-white-50">Community Members</p>
+                                    <span class="text-white">120+ Active Members</span>
                                 </div>
                             </li>
                         </ul>
                     </div>
 
-                    <!-- Map Section -->
+                    <!-- Community Highlight -->
                     <div class="col-lg-3 col-md-4">
-                        <h5 class="text-white mb-4">Find Us</h5>
+                        <h5 class="text-white mb-4">Community Highlights</h5>
                         <div class="rounded-3 overflow-hidden">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.0269457788045!2d112.76238777575094!3d-7.35087059265795!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7e52a24e495d7%3A0x243c2e1056011f20!2sAlena%20Soccer!5e0!3m2!1sen!2sid!4v1735891963050!5m2!1sen!2sid"
-                                width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            <div id="communityHighlightCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    <div class="carousel-item active">
+                                        <img src="assets/community-event-1.jpg" class="d-block w-100"
+                                            alt="Community Event 1">
+                                        <div class="carousel-caption d-none d-md-block">
+                                            <h5>Open Play Tournament</h5>
+                                            <p>March 15-20, 2025</p>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-item">
+                                        <img src="assets/community-event-2.jpg" class="d-block w-100"
+                                            alt="Community Event 2">
+                                        <div class="carousel-caption d-none d-md-block">
+                                            <h5>Team Matching Night</h5>
+                                            <p>Connecting players across Jakarta</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -976,15 +604,15 @@
                 <div class="mt-5 pt-4 border-top border-secondary">
                     <div class="row align-items-center">
                         <div class="col-md-6">
-                            <p class="text-white-50 mb-md-0">© 2024 SportVue. All rights reserved.</p>
+                            <p class="text-white-50 mb-md-0">© 2024 SportVue Community. All rights reserved.</p>
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex justify-content-md-end align-items-center">
-                                <span class="text-white-50 me-3">Payment Partners:</span>
+                                <span class="text-white-50 me-3">Community Partners:</span>
                                 <div class="d-flex gap-3">
-                                    <i class="fab fa-cc-visa fs-3 text-white-50"></i>
-                                    <i class="fab fa-cc-mastercard fs-3 text-white-50"></i>
-                                    <i class="fab fa-cc-paypal fs-3 text-white-50"></i>
+                                    <i class="fas fa-futbol fs-3 text-white-50"></i>
+                                    <i class="fas fa-trophy fs-3 text-white-50"></i>
+                                    <i class="fas fa-medal fs-3 text-white-50"></i>
                                 </div>
                             </div>
                         </div>
@@ -1000,17 +628,10 @@
             <img src="assets/whatsapp.png" width="70">
         </a>
     </footer>
-
     <!-- Floating Chat Button -->
-    <button id="chat-button"
-        class="btn   position-fixed bottom-0 end-0 m-4  d-flex align-items-center justify-content-center"
-        style="width: 60px; height: 60px;">
-        <img src="assets/whatsapp.png" width="70">
-    </button>
+    {{-- End Footer Section --}}
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-</script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection
