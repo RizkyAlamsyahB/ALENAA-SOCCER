@@ -3,37 +3,62 @@
 @section('content')
     <div class="py-5">
         <div class="container">
-            <!-- Profile Header -->
-            <div class="card mb-4">
-                <div style="height: 128px; background-color: #9E0620;"></div>
-                <div class="px-4 px-sm-5 pb-4">
-                    <div class="d-flex flex-column flex-sm-row align-items-center" style="margin-top: -64px;">
-                        <div class="position-relative">
-                            <div class="rounded-circle border-4 bg-light d-flex align-items-center justify-content-center"
-                                style="width: 128px; height: 128px; border: 4px solid #9E0620; border-radius: 50%; overflow: hidden;">
-                                <i class="fas fa-user text-secondary fs-1"></i>
-                            </div>
-                            <button class="position-absolute bottom-0 end-0 btn rounded-circle p-2 shadow"
-                                style="background-color: #9E0620; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-camera"></i>
-                            </button>
-                        </div>
-                        <div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
-                            style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
-                            <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
-                            <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
-                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
-                                <span class="badge text-white" style="background-color: #9E0620;">
-                                    <i class="fas fa-crown me-1"></i> Premium Member
-                                </span>
-                                <span class="badge bg-success">
-                                    <i class="fas fa-check-circle me-1"></i> Verified
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+          <!-- Profile Header with Points -->
+<div class="card mb-4">
+    <div style="height: 128px; background-color: #9E0620;"></div>
+    <div class="px-4 px-sm-5 pb-4">
+        <div class="d-flex flex-column flex-sm-row align-items-center" style="margin-top: -64px;">
+            <!-- User Avatar Section -->
+            <div class="position-relative">
+                <div class="rounded-circle border-4 bg-light d-flex align-items-center justify-content-center"
+                    style="width: 128px; height: 128px; border: 4px solid #9E0620; border-radius: 50%; overflow: hidden;">
+                    <i class="fas fa-user text-secondary fs-1"></i>
+                </div>
+                <button class="position-absolute bottom-0 end-0 btn rounded-circle p-2 shadow"
+                    style="background-color: #9E0620; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+
+            <!-- User Info Section -->
+            <div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
+                style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
+                <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
+                <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
+                <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
+                    <span class="badge text-white" style="background-color: #9E0620;">
+                        <i class="fas fa-crown me-1"></i> Premium Member
+                    </span>
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i> Verified
+                    </span>
                 </div>
             </div>
+
+            <!-- Points Card (Positioned to the right) -->
+            <div class="mt-4 mt-sm-0 ms-sm-auto text-center text-sm-start"
+                style="z-index: 1; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); min-width: 220px;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge p-2" style="background-color: #FFD700; color: #000;">
+                        <i class="fas fa-coins me-1"></i> Points
+                    </span>
+                    <span class="fw-bold text-dark">{{ Auth::user()->points ?? 0 }}</span>
+                </div>
+                <div class="progress mb-2" style="height: 10px; background-color: #f0f0f0;">
+                    <div class="progress-bar" role="progressbar" style="width: 65%; background-color: #9E0620;"
+                        aria-valuenow="{{ Auth::user()->points ?? 0 }}" aria-valuemin="0" aria-valuemax="1000">
+                    </div>
+                </div>
+                <small class="text-muted d-block">
+                    <i class="fas fa-info-circle me-1"></i> Next reward: 100 points
+                </small>
+                <button class="btn btn-sm w-100 mt-2 text-white" style="background-color: #9E0620;">
+                    <i class="fas fa-gift me-1"></i> Redeem Rewards
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- Settings Navigation -->
             <div class="card mb-4">
@@ -239,114 +264,117 @@
                     </div>
                     <!-- Notifications Tab -->
                     <!-- Notifications Tab -->
-<div id="content-notifications" class="tab-pane" style="display: none;">
-    <!-- Email Notifications -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">📧 Email Notifications</h5>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="emailNotifToggle" checked>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="mb-4">
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="emailMabar" checked>
-                    <label class="form-check-label" for="emailMabar">
-                        <div class="fw-bold">Notifikasi Mabar</div>
-                        <small class="text-muted">Dapatkan email untuk jadwal mabar dan update penting</small>
-                    </label>
-                </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="emailMarketing" checked>
-                    <label class="form-check-label" for="emailMarketing">
-                        <div class="fw-bold">Promo & Events</div>
-                        <small class="text-muted">Info tentang promo dan event spesial</small>
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="emailSecurity" checked>
-                    <label class="form-check-label" for="emailSecurity">
-                        <div class="fw-bold">Keamanan & Sistem</div>
-                        <small class="text-muted">Pemberitahuan login dan perubahan akun</small>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <div id="content-notifications" class="tab-pane" style="display: none;">
+                        <!-- Email Notifications -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">📧 Email Notifications</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="emailNotifToggle" checked>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="emailMabar" checked>
+                                        <label class="form-check-label" for="emailMabar">
+                                            <div class="fw-bold">Notifikasi Mabar</div>
+                                            <small class="text-muted">Dapatkan email untuk jadwal mabar dan update
+                                                penting</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="emailMarketing" checked>
+                                        <label class="form-check-label" for="emailMarketing">
+                                            <div class="fw-bold">Promo & Events</div>
+                                            <small class="text-muted">Info tentang promo dan event spesial</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="emailSecurity" checked>
+                                        <label class="form-check-label" for="emailSecurity">
+                                            <div class="fw-bold">Keamanan & Sistem</div>
+                                            <small class="text-muted">Pemberitahuan login dan perubahan akun</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-    <!-- Push Notifications -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">🔔 Push Notifications</h5>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="pushNotifToggle" checked>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="mb-4">
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="pushChat" checked>
-                    <label class="form-check-label" for="pushChat">
-                        <div class="fw-bold">Chat & Komentar</div>
-                        <small class="text-muted">Notifikasi pesan dan komentar baru</small>
-                    </label>
-                </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="pushMabar" checked>
-                    <label class="form-check-label" for="pushMabar">
-                        <div class="fw-bold">Update Mabar</div>
-                        <small class="text-muted">Pemberitahuan tentang sesi mabar yang akan datang</small>
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="pushBooking" checked>
-                    <label class="form-check-label" for="pushBooking">
-                        <div class="fw-bold">Status Booking</div>
-                        <small class="text-muted">Update status pembayaran dan booking</small>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
+                        <!-- Push Notifications -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">🔔 Push Notifications</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="pushNotifToggle" checked>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="pushChat" checked>
+                                        <label class="form-check-label" for="pushChat">
+                                            <div class="fw-bold">Chat & Komentar</div>
+                                            <small class="text-muted">Notifikasi pesan dan komentar baru</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="pushMabar" checked>
+                                        <label class="form-check-label" for="pushMabar">
+                                            <div class="fw-bold">Update Mabar</div>
+                                            <small class="text-muted">Pemberitahuan tentang sesi mabar yang akan
+                                                datang</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="pushBooking" checked>
+                                        <label class="form-check-label" for="pushBooking">
+                                            <div class="fw-bold">Status Booking</div>
+                                            <small class="text-muted">Update status pembayaran dan booking</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-    <!-- Notification Schedule -->
-    <div class="card">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0">⏰ Jadwal Notifikasi</h5>
-        </div>
-        <div class="card-body">
-            <div class="mb-3">
-                <label class="form-label">Waktu Pengingat Mabar</label>
-                <select class="form-select mb-3">
-                    <option value="15">15 menit sebelum mulai</option>
-                    <option value="30">30 menit sebelum mulai</option>
-                    <option value="60">1 jam sebelum mulai</option>
-                    <option value="120">2 jam sebelum mulai</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Zona Waktu</label>
-                <select class="form-select">
-                    <option value="WIB">WIB (GMT+7)</option>
-                    <option value="WITA">WITA (GMT+8)</option>
-                    <option value="WIT">WIT (GMT+9)</option>
-                </select>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="dndMode">
-                <label class="form-check-label" for="dndMode">
-                    <div class="fw-bold">Mode Jangan Ganggu</div>
-                    <small class="text-muted">Nonaktifkan semua notifikasi dari jam 22:00 - 07:00</small>
-                </label>
-            </div>
-        </div>
-    </div>
-</div>
+                        <!-- Notification Schedule -->
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="card-title mb-0">⏰ Jadwal Notifikasi</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Waktu Pengingat Mabar</label>
+                                    <select class="form-select mb-3">
+                                        <option value="15">15 menit sebelum mulai</option>
+                                        <option value="30">30 menit sebelum mulai</option>
+                                        <option value="60">1 jam sebelum mulai</option>
+                                        <option value="120">2 jam sebelum mulai</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Zona Waktu</label>
+                                    <select class="form-select">
+                                        <option value="WIB">WIB (GMT+7)</option>
+                                        <option value="WITA">WITA (GMT+8)</option>
+                                        <option value="WIT">WIT (GMT+9)</option>
+                                    </select>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="dndMode">
+                                    <label class="form-check-label" for="dndMode">
+                                        <div class="fw-bold">Mode Jangan Ganggu</div>
+                                        <small class="text-muted">Nonaktifkan semua notifikasi dari jam 22:00 -
+                                            07:00</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Billing Tab -->
                     <div id="content-billing" class="tab-pane" style="display: none;">

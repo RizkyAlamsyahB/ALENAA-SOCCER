@@ -36,15 +36,26 @@
         box-shadow: 0 2px 15px var(--navbar-shadow);
     }
 
-    /* Brand/Logo */
-    .navbar-brand {
-        font-weight: 700;
-        font-size: 1.5rem;
-        background: linear-gradient(45deg, var(--navbar-primary), #9E0620);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: -0.5px;
-    }
+   /* Brand/Logo */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    color: var(--navbar-text); /* Base color */
+}
+
+/* Style for the first part (ALENA) */
+.navbar-brand > span.fw-bold > span:not(.text-dark) {
+    color: var(--navbar-primary);
+}
+
+/* Or alternatively, add a class specifically for ALENA */
+.brand-primary {
+    color: var(--navbar-primary);
+}
+.navbar-brand .fw-bold {
+    font-size: 24px;
+}
 
     /* Navigation Items */
     .navbar-nav {

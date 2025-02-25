@@ -1,9 +1,37 @@
 @extends('layouts.app')
 @section('content')
-    <!-- Event Main Bareng Section -->
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-wrapper" style="margin-top: 50px;">
+        <div class="container py-2">
+            <ol class="custom-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/" class="breadcrumb-link">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Venues</span>
+                </li>
+            </ol>
+        </div>
+    </nav>
     <!-- Main Content -->
     <div class="main-content">
         <div class="container py-4">
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+                <h2 class="section-title fw-bold mb-3">Main Bareng</h2>
+                <p class="section-desc mx-auto" style="max-width: 700px;">
+                    Komunitas Bola Tanpa Batas
+                    Ingin bermain tapi tidak memiliki tim lengkap? Bergabunglah dengan program Main Bareng Alena Soccer!
+                    Temukan teman baru, tingkatkan kemampuan, dan nikmati serunya bermain bersama dalam suasana yang
+                    menyenangkan dan sportif.
+                </p>
+            </div>
+
+
             <!-- Filter & Sort Section -->
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-body p-4">
@@ -144,24 +172,6 @@
     </div>
 
     <style>
-        /* Root Variables */
-        :root {
-            --primary-color: #9E0620;
-            --bg-light: #f8f9fa;
-            --border-light: #e9ecef;
-            --border-lighter: #dee2e6;
-            --text-muted: #6c757d;
-            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Layout & Container Styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-light);
-            padding-top: 72px;
-        }
-
         .main-content {
             background: var(--bg-light);
             min-height: 100vh;
@@ -348,6 +358,74 @@
 
         .fade-in {
             animation: fadeIn 0.3s ease-in-out;
+        }
+
+
+        /* Breadcrumb Wrapper */
+        .breadcrumb-wrapper {
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .breadcrumb-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .breadcrumb-item.active {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        /* Section Styles */
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .section-desc {
+            font-size: 1.1rem;
+            color: #6c757d;
+            line-height: 1.6;
         }
     </style>
 

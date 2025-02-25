@@ -6,17 +6,10 @@
     <div class="container">
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center" href="/">
-
-            <span class="fw-bold" style="font-size: 24px;">
-                ALENA
-                <span class="text-dark">
-                    S
-                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/3bc3f968d66dd0c368130525f00d42ec550c3ea8f6304c68cbb117fa6eb8dc08"
-                        width="30" height="30" alt="SportVue Logo" class="align-text-bottom">
-                    CCER
-                </span>
+            <span class="fw-bold">
+                <span class="brand-primary">ALENA</span>
+                <span class="text-dark">SOCCER</span>
             </span>
-
         </a>
 
         <!-- Mobile Toggle (Tanpa data-bs-toggle) -->
@@ -28,32 +21,23 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="#dashboard">
+                    <a class="nav-link d-flex align-items-center px-3" href="/">
                         <i class="fas fa-home me-2"></i> <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="#booking">
-                        <i class="fas fa-calendar-alt me-2"></i> <span>Booking</span>
-                    </a>
-                </li>
-
-
-
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="#membership">
-                        <i class="fas fa-star me-2"></i> <span>Membership</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="#community">
-                        <i class="fas fa-users me-2"></i> <span>Community</span>
+                    <a class="nav-link d-flex align-items-center px-3" href="/lapangan">
+                        <i class="fas fa-calendar-alt me-2"></i> <span>Sewa Lapangan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="#contact">
-                        <i class="fas fa-envelope me-2"></i> <span>Contact</span>
+                    <a class="nav-link d-flex align-items-center px-3" href="/mabar">
+                        <i class="fas fa-users me-2"></i> <span>Main Bareng</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3" href="/rental">
+                        <i class="fas fa-basketball-ball me-2"></i> <span>Rental</span>
                     </a>
                 </li>
             </ul>

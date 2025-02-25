@@ -24,6 +24,34 @@
 
 
     <style>
+  :root {
+    --primary-color: #9e0620;
+    --danger-color: #9e0620;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #8a051c !important;
+    border-color: #8a051c !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background-color: #8a051c !important;
+    border-color: #8a051c !important;
+}
+
+
         .promo-banner {
             position: relative;
             height: 50px;
@@ -118,7 +146,7 @@
         .hover-text-white:hover {
             color: white !important;
         }
-        
+
     </style>
 
 </head>

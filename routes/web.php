@@ -36,6 +36,14 @@ Route::get('/mabar', function () {
 Route::get('/detail-mabar', function () {
     return view('detail-mabar');
 });
+
+Route::get('/lapangan', function () {
+    return view('lapangan');
+});
+
+Route::get('/rental', function () {
+    return view('rental');
+});
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
