@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+
     <link rel="stylesheet" href="{{ asset('css/users/welcome.css') }}">
     <!-- Promo Banner -->
     <div class="promo-banner text-white" style="background-color: #9E0620; margin-top:60px;">

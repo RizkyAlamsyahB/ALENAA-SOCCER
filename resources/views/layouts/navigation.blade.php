@@ -26,17 +26,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="/lapangan">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('lapangan') }}">
                         <i class="fas fa-calendar-alt me-2"></i> <span>Sewa Lapangan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="/mabar">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('mabar.index') }}">
                         <i class="fas fa-users me-2"></i> <span>Main Bareng</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="/rental">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('rental.index') }}">
                         <i class="fas fa-basketball-ball me-2"></i> <span>Rental</span>
                     </a>
                 </li>

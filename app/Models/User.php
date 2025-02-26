@@ -8,6 +8,7 @@ use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -46,6 +48,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
+
+    public function getRoleNames()
+    {
+        return collect([$this->role]);
+    }
+    
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
