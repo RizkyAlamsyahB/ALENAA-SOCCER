@@ -154,13 +154,7 @@
                                     </div><!--end col-->
                                 </div><!--end row-->
 
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h4 class="mt-0 header-title">Every Day Revenue</h4>
-                                        <p class="text-muted mb-4 font-14"></p>
-                                        <div id="morris-bar-stacked" class="morris-chart"></div>
-                                    </div><!--end card-body-->
-                                </div><!--end card-->
+
                             </div><!--end col-->
 
                             <div class="col-xl-4">

@@ -10,7 +10,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         $user = auth()->user();
         if ($user->role === 'admin' || $user->role === 'owner') {
-            return redirect()->route('dashboard');
+            return redirect()->route('admin.dashboard');
         }
     }
     return view('welcome');
@@ -74,13 +74,37 @@ Route::middleware(['auth', 'role:user'])->group(function () {
 // Admin/Owner Routes
 Route::middleware(['auth', 'role:admin,owner'])
     ->prefix('admin')
+    ->name('admin.')
     ->group(function () {
         // Admin Dashboard
         Route::get('/dashboard', function () {
-            return view('dashboard');
+            return view('admin.dashboard');
         })->name('dashboard');
 
-        // Tambahkan route admin lainnya di sini
+        // Routes untuk komponen admin lainnya
+        Route::prefix('auth')->name('auth.')->group(function () {
+            // Definisikan route untuk auth
+        });
+
+        Route::prefix('components')->name('components.')->group(function () {
+            // Definisikan route untuk components
+        });
+
+        Route::prefix('emails')->name('emails.')->group(function () {
+            // Definisikan route untuk emails
+        });
+
+        Route::prefix('layouts')->name('layouts.')->group(function () {
+            // Definisikan route untuk layouts
+        });
+
+        Route::prefix('profile')->name('profile.')->group(function () {
+            // Definisikan route untuk profile admin
+        });
+
+        Route::prefix('users')->name('users.')->group(function () {
+            // Definisikan route untuk manajemen users
+        });
     });
 
 // Auth Routes
