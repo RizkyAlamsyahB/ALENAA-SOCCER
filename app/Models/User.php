@@ -8,7 +8,6 @@ use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -24,6 +23,11 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'phone_number',
+        'address',
+        'birthdate',
+        'points',
+        'profile_picture',
     ];
 
     /**
@@ -46,19 +50,30 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birthdate' => 'date',
+            'points' => 'integer',
         ];
     }
 
+    /**
+     * Check if the user has a specific role.
+     */
     public function hasRole($role)
     {
         return $this->role === $role;
     }
 
+    /**
+     * Get the role names as a collection.
+     */
     public function getRoleNames()
     {
         return collect([$this->role]);
     }
-    
+
+    /**
+     * Send password reset notification.
+     */
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));

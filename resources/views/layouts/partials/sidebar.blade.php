@@ -32,7 +32,7 @@
                         <span class="float-right"><i class="mdi mdi-chevron-right"></i></span>
                     </a>
                     <ul class="list-unstyled">
-                        <li><a href="lapangan">Data Lapangan</a></li>
+                        <li><a href="{{ route('admin.fields.index') }}">Data Lapangan</a></li>
                         <li><a href="jadwal">Jadwal Lapangan</a></li>
                         <li><a href="booking">Pemesanan Lapangan</a></li>
                     </ul>

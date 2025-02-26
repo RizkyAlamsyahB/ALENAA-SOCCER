@@ -26,8 +26,10 @@ class CheckRole
         }
 
         // Redirect berdasarkan role jika tidak sesuai
-        if ($user->role === 'admin' || $user->role === 'owner') {
-            return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses');
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard')->with('error', 'Anda tidak memiliki akses');
+        } elseif ($user->role === 'owner') {
+            return redirect()->route('owner.dashboard')->with('error', 'Anda tidak memiliki akses');
         } else {
             return redirect()->route('welcome')->with('error', 'Anda tidak memiliki akses');
         }

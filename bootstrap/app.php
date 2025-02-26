@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Tambahkan definisi middleware role disini
         $middleware->alias([
-            'role' => CheckRole::class,
+            'checkRole' => CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
