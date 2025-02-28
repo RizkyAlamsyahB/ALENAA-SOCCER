@@ -21,7 +21,6 @@ class PhotoPackage extends Model
         'duration_minutes',
         'number_of_photos',
         'includes_editing',
-        'is_active',
     ];
 
     /**
@@ -30,7 +29,6 @@ class PhotoPackage extends Model
      * @var array
      */
     protected $casts = [
-        'is_active' => 'boolean',
         'includes_editing' => 'boolean',
         'price' => 'integer',
         'duration_minutes' => 'integer',
@@ -39,13 +37,6 @@ class PhotoPackage extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Scope untuk paket yang aktif
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
 
     /**
      * Relasi ke model TransactionDetail (jika dibutuhkan nanti)

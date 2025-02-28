@@ -19,7 +19,6 @@ return new class extends Migration {
             $table->integer('duration_minutes');
             $table->integer('number_of_photos');
             $table->boolean('includes_editing')->default(false);
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

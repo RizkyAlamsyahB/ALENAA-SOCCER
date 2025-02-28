@@ -26,9 +26,7 @@ class PhotoPackageController extends Controller
                             <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $photoPackage->id . '" data-name="' . $photoPackage->name . '">Hapus</button>
                         </div>';
                 })
-                ->editColumn('is_active', function ($photoPackage) {
-                    return $photoPackage->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Nonaktif</span>';
-                })
+
                 ->editColumn('includes_editing', function ($photoPackage) {
                     return $photoPackage->includes_editing ? '<span class="badge bg-success">Ya</span>' : '<span class="badge bg-secondary">Tidak</span>';
                 })
@@ -41,7 +39,7 @@ class PhotoPackageController extends Controller
                     }
                     return $photoPackage->duration_minutes . ' menit';
                 })
-                ->rawColumns(['action', 'is_active', 'includes_editing'])
+                ->rawColumns(['action','includes_editing'])
                 ->make(true);
         }
 
@@ -68,7 +66,6 @@ class PhotoPackageController extends Controller
             'duration_minutes' => 'required|numeric|min:1',
             'number_of_photos' => 'required|numeric|min:1',
             'includes_editing' => 'boolean',
-            'is_active' => 'boolean',
         ]);
 
         PhotoPackage::create($validatedData);
@@ -104,7 +101,6 @@ class PhotoPackageController extends Controller
             'duration_minutes' => 'required|numeric|min:1',
             'number_of_photos' => 'required|numeric|min:1',
             'includes_editing' => 'boolean',
-            'is_active' => 'boolean',
         ]);
 
         $photoPackage->update($validatedData);
@@ -130,15 +126,5 @@ class PhotoPackageController extends Controller
         }
     }
 
-    /**
-     * Mengubah status aktif paket foto
-     */
-    public function toggleStatus(PhotoPackage $photoPackage)
-    {
-        $photoPackage->update([
-            'is_active' => !$photoPackage->is_active,
-        ]);
-
-        return redirect()->route('admin.photo-packages.index')->with('success', 'Status paket foto berhasil diperbarui');
-    }
+ 
 }
