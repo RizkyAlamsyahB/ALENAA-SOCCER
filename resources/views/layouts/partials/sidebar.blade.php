@@ -57,7 +57,7 @@
                 {{-- Lapangan (Field Management) --}}
                 <li class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
-                        <i class="bi bi-soccer"></i>
+                        <i class="bi bi-geo-alt"></i>
                         <span>Lapangan</span>
                     </a>
                     <ul class="submenu {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
@@ -115,24 +115,28 @@
 
                 </li>
 
-             {{-- Photographer Management --}}
-<li class="sidebar-item has-sub {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
-    <a href="#" class="sidebar-link">
-        <i class="bi bi-camera"></i>
-        <span>Fotografer</span>
-    </a>
-    <ul class="submenu {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
-        <li class="submenu-item {{ request()->routeIs('admin.photo-packages.index') ? 'active' : '' }}">
-            <a href="{{ route('admin.photo-packages.index') }}" class="submenu-link">Data Fotografer</a>
-        </li>
-        <li class="submenu-item {{ request()->routeIs('admin.photo-packages.schedule') ? 'active' : '' }}">
-            <a href="" class="submenu-link">Jadwal Fotografer</a>
-        </li>
-        <li class="submenu-item {{ request()->routeIs('admin.photo-packages.booking') ? 'active' : '' }}">
-            <a href="" class="submenu-link">Pemesanan Fotografer</a>
-        </li>
-    </ul>
-</li>
+                {{-- Photographer Management --}}
+                <li class="sidebar-item has-sub {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
+                    <a href="#" class="sidebar-link">
+                        <i class="bi bi-camera"></i>
+                        <span>Fotografer</span>
+                    </a>
+                    <ul class="submenu {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
+                        <li
+                            class="submenu-item {{ request()->routeIs('admin.photo-packages.index') ? 'active' : '' }}">
+                            <a href="{{ route('admin.photo-packages.index') }}" class="submenu-link">Data
+                                Fotografer</a>
+                        </li>
+                        <li
+                            class="submenu-item {{ request()->routeIs('admin.photo-packages.schedule') ? 'active' : '' }}">
+                            <a href="" class="submenu-link">Jadwal Fotografer</a>
+                        </li>
+                        <li
+                            class="submenu-item {{ request()->routeIs('admin.photo-packages.booking') ? 'active' : '' }}">
+                            <a href="" class="submenu-link">Pemesanan Fotografer</a>
+                        </li>
+                    </ul>
+                </li>
 
 
                 {{-- Transaction Management --}}
@@ -225,8 +229,23 @@
                         <li class="submenu-item">
                             <a href="" class="submenu-link">Pengaturan Sistem</a>
                         </li>
+                        <li class="submenu-item">
+                            <a href="" class="submenu-link">Akun</a>
+                        </li>
+                        <li class="submenu-item">
+                            <a href="{{ route('logout') }}" class="submenu-link"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                Logout
+                            </a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                @csrf
+                            </form>
+                        </li>
                     </ul>
                 </li>
+
+
+
             </ul>
         </div>
     </div>

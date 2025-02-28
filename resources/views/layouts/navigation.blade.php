@@ -26,7 +26,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('lapangan') }}">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.fields.index') }}">
                         <i class="fas fa-calendar-alt me-2"></i> <span>Sewa Lapangan</span>
                     </a>
                 </li>

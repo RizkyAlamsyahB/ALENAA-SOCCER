@@ -35,8 +35,12 @@
             <div class="col-lg-8">
                 <div class="gallery-card main-gallery">
                     <div class="gallery-img">
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                            class="img-fluid w-100" alt="Main court">
+                        @if ($field->image)
+                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
+                        @else
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                class="img-fluid w-100" alt="{{ $field->name }}">
+                        @endif
                         <div class="gallery-overlay">
                             <button class="view-btn">
                                 <i class="fas fa-expand-alt"></i>
@@ -52,7 +56,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Side Images -->
             <div class="col-lg-4">
                 <div class="row g-3">
@@ -86,8 +89,8 @@
                     </div>
                 </div>
             </div>
-        </div>
 
+        </div>
 
         <!-- Mobile Gallery Carousel -->
         <div class="mobile-gallery d-lg-none">
@@ -96,8 +99,13 @@
                 <div class="carousel-inner rounded-4 overflow-hidden">
                     <div class="carousel-item active">
                         <div class="carousel-img-wrapper">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="d-block w-100" alt="Main court">
+                            @if ($field->image)
+                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                                    alt="{{ $field->name }}">
+                            @else
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="d-block w-100" alt="{{ $field->name }}">
+                            @endif
                             <div class="image-overlay"></div>
                         </div>
                         <div class="carousel-caption">
@@ -166,9 +174,6 @@
                 </div>
             </div>
         </div>
-
-
-
         <!-- Main Information -->
         <div class="row">
             <!-- Field Details Container -->
@@ -180,27 +185,28 @@
                             <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3 flex-column flex-md-row">
                                     <div>
-                                        <h1 class="h4 mb-2 text-center text-md-start fw-bold">Maincourt - Field A</h1>
+                                        <h1 class="h4 mb-2 text-center text-md-start fw-bold">{{ $field->name }}</h1>
                                         <div
                                             class="d-flex flex-column flex-md-row align-items-center gap-3 text-center text-md-start">
                                             <div class="d-flex align-items-center location-badge">
                                                 <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                                                <span class="text-secondary">Jakarta, Indonesia</span>
+                                                <span class="text-secondary">{{ 'Sidoarjo, Indonesia' }}</span>
                                             </div>
                                             <div class="d-flex align-items-center rating-badge">
                                                 <i class="fas fa-star text-warning me-2"></i>
-                                                <span class="text-secondary">4.8 (128 reviews)</span>
+                                                <span class="text-secondary">{{ $field->rating ?? '4.8' }}
+                                                    ({{ $field->reviews_count ?? '128' }} reviews)</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="text-md-end text-center price-tag">
-                                        <div class="h3 text-danger fw-bold mb-0">Rp 50.000</div>
+                                        <div class="h3 text-danger fw-bold mb-0">Rp
+                                            {{ number_format($field->price, 0, ',', '.') }}</div>
                                         <small class="text-muted">/hour</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
 
 
                         <!-- Field Overview Card -->

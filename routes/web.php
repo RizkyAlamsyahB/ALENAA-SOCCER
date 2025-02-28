@@ -4,6 +4,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\FieldController;
+use App\Http\Controllers\User\FieldsController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\Admin\MembershipController;
@@ -22,7 +23,7 @@ Route::get('/', function () {
         } elseif ($user->role === 'owner') {
             return redirect()->route('owner.dashboard');
         } elseif ($user->role === 'user') {
-            return redirect()->route('user.dashboard');
+            return redirect()->route('users.dashboard');
         }
     }
     return view('welcome');
@@ -32,16 +33,17 @@ Route::get('/', function () {
 Route::middleware(['auth', 'checkRole:user'])->group(function () {
     Route::get('/dashboard', function () {
         return view('users.dashboard');
-    })->name('user.dashboard');
+    })->name('users.dashboard');
 
     // Rute user lainnya (Mabar, Lapangan, dll.)
     Route::get('/mabar', function () {
         return view('users.mabar');
     })->name('mabar.index');
 
-    Route::get('/lapangan', function () {
-        return view('users.lapangan');
-    })->name('lapangan');
+
+    // Routes untuk lapangan
+    Route::get('/fields', [FieldsController::class, 'index'])->name('user.fields.index');
+    Route::get('/fields/{id}', [FieldsController::class, 'show'])->name('user.fields.show');
 
     Route::get('/membership', function () {
         return view('users.membership');
