@@ -1,20 +1,20 @@
 @extends('layouts.admin')
 
-@section('title', 'Tambah Lapangan Baru')
-@section('breadcrumb', 'Tambah Lapangan')
-@section('header-title', 'Tambah Lapangan Baru')
+@section('title', 'Tambah Produk Baru')
+@section('breadcrumb', 'Tambah Produk')
+@section('header-title', 'Tambah Produk Baru')
 
 @section('content')
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
             <div class="card-body">
-                <h4 class="mt-0 header-title">Form Tambah Lapangan</h4>
+                <h4 class="mt-0 header-title">Form Tambah Produk</h4>
 
-                <form action="{{ route('admin.fields.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="form-group">
-                        <label>Nama Lapangan</label>
+                        <label>Nama Produk</label>
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
                                value="{{ old('name') }}" required>
                         @error('name')
@@ -23,7 +23,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="image">Gambar Lapangan</label>
+                        <label for="image">Gambar Produk</label>
                         <input type="file" name="image" id="image" class="form-control-file" accept="image/*" onchange="previewImage(event)">
                         <div class="mt-2">
                             <img id="imagePreview" src="#" alt="Preview Gambar" style="display: none; max-width: 200px; height: auto;" class="img-thumbnail">
@@ -31,47 +31,50 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Tipe Lapangan</label>
-                        <select name="type" class="form-control @error('type') is-invalid @enderror" required>
-                            <option value="">Pilih Tipe Lapangan</option>
-                            <option value="Matras Standar" {{ old('type') == 'Matras Standar' ? 'selected' : '' }}>
-                                Matras Standar
+                        <label>Kategori Produk</label>
+                        <select name="category" class="form-control @error('category') is-invalid @enderror" required>
+                            <option value="">Pilih Kategori Produk</option>
+                            <option value="food" {{ old('category') == 'food' ? 'selected' : '' }}>
+                                Makanan
                             </option>
-                            <option value="Rumput Sintetis" {{ old('type') == 'Rumput Sintetis' ? 'selected' : '' }}>
-                                Rumput Sintetis
+                            <option value="beverage" {{ old('category') == 'beverage' ? 'selected' : '' }}>
+                                Minuman
                             </option>
-                            <option value="Matras Premium" {{ old('type') == 'Matras Premium' ? 'selected' : '' }}>
-                                Matras Premium
+                            <option value="equipment" {{ old('category') == 'equipment' ? 'selected' : '' }}>
+                                Peralatan
+                            </option>
+                            <option value="other" {{ old('category') == 'other' ? 'selected' : '' }}>
+                                Lainnya
                             </option>
                         </select>
-                        @error('type')
+                        @error('category')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label>Harga Regular</label>
-                        <input type="number" name="regular_price" class="form-control @error('regular_price') is-invalid @enderror"
-                               value="{{ old('regular_price') }}" required>
-                        @error('regular_price')
+                        <label>Harga</label>
+                        <input type="number" name="price" class="form-control @error('price') is-invalid @enderror"
+                               value="{{ old('price') }}" required>
+                        @error('price')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label>Harga Peak (Opsional)</label>
-                        <input type="number" name="peak_price" class="form-control @error('peak_price') is-invalid @enderror"
-                               value="{{ old('peak_price') }}">
-                        @error('peak_price')
+                        <label>Stok</label>
+                        <input type="number" name="stock" class="form-control @error('stock') is-invalid @enderror"
+                               value="{{ old('stock') }}" required>
+                        @error('stock')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label>Fasilitas</label>
-                        <textarea name="facilities" class="form-control @error('facilities') is-invalid @enderror"
-                                  rows="3">{{ old('facilities') }}</textarea>
-                        @error('facilities')
+                        <label>Deskripsi</label>
+                        <textarea name="description" class="form-control @error('description') is-invalid @enderror"
+                                  rows="3">{{ old('description') }}</textarea>
+                        @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -83,16 +86,16 @@
                                    name="is_active" value="1"
                                    {{ old('is_active', true) ? 'checked' : '' }}>
                             <label class="custom-control-label" for="is_active">
-                                Lapangan Aktif
+                                Produk Aktif
                             </label>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-save"></i> Simpan Lapangan
+                            <i class="fa fa-save"></i> Simpan Produk
                         </button>
-                        <a href="{{ route('admin.fields.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
                             <i class="fa fa-arrow-left"></i> Kembali
                         </a>
                     </div>

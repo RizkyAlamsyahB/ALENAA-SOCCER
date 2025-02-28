@@ -68,6 +68,9 @@
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary rounded-3">Simpan Perubahan</button>
+                    <a href="{{ route('admin.fields.index') }}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Kembali
+                    </a>
                 </form>
             </div>
         </div>

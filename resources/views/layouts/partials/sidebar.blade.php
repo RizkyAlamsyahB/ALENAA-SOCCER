@@ -102,7 +102,7 @@
                     </a>
                     <ul class="submenu {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
                         <li class="submenu-item">
-                            <a href="" class="submenu-link">Produk Jualan</a>
+                            <a href="{{route('admin.products.index')}}" class="submenu-link">Produk Jualan</a>
                         </li>
                         <li class="submenu-item">
                             <a href="" class="submenu-link">Produk Sewa</a>
