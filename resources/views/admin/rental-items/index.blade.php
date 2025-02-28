@@ -40,7 +40,6 @@
                                 <th>Harga Sewa</th>
                                 <th>Stok</th>
                                 <th>Kondisi</th>
-                                <th>Status</th>
                                 <th>Gambar</th>
                                 <th>Dibuat Pada</th>
                                 <th>Diperbarui Pada</th>
@@ -127,12 +126,6 @@
                     {
                         data: 'condition',
                         name: 'condition'
-                    },
-                    {
-                        data: 'is_active',
-                        name: 'is_active',
-                        orderable: false,
-                        searchable: false
                     },
                     {
                         data: 'image',

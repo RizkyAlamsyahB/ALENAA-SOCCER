@@ -22,7 +22,6 @@ class RentalItem extends Model
         'stock_total',
         'stock_available',
         'condition',
-        'is_active',
         'image',
     ];
 
@@ -32,7 +31,6 @@ class RentalItem extends Model
      * @var array
      */
     protected $casts = [
-        'is_active' => 'boolean',
         'rental_price' => 'integer',
         'stock_total' => 'integer',
         'stock_available' => 'integer',
@@ -40,21 +38,7 @@ class RentalItem extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Scope untuk item yang aktif
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
 
-    /**
-     * Scope untuk item yang tersedia
-     */
-    public function scopeAvailable($query)
-    {
-        return $query->where('stock_available', '>', 0)->where('is_active', true);
-    }
 
     /**
      * Relasi ke model ItemRental (rental records)

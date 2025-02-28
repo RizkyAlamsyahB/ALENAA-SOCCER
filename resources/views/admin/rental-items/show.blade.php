@@ -108,16 +108,6 @@
                                         <td>{{ $rentalItem->description ?? 'Tidak ada deskripsi' }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Status</th>
-                                        <td>
-                                            @if($rentalItem->is_active)
-                                                <span class="badge bg-success">Aktif</span>
-                                            @else
-                                                <span class="badge bg-danger">Nonaktif</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
                                         <th>Dibuat Pada</th>
                                         <td>{{ $rentalItem->created_at->format('d F Y H:i') }}</td>
                                     </tr>

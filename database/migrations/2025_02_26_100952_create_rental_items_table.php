@@ -20,7 +20,6 @@ return new class extends Migration {
             $table->integer('stock_total');
             $table->integer('stock_available');
             $table->string('condition')->nullable();
-            $table->boolean('is_active')->default(true);
             $table->string('image')->nullable();
             $table->timestamps();
         });

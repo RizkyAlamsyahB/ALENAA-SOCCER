@@ -28,9 +28,7 @@ class RentalItemController extends Controller
                             <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $rentalItem->id . '" data-name="' . $rentalItem->name . '">Hapus</button>
                         </div>';
                 })
-                ->editColumn('is_active', function ($rentalItem) {
-                    return $rentalItem->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Nonaktif</span>';
-                })
+
                 ->editColumn('category', function ($rentalItem) {
                     $badges = [
                         'ball' => 'bg-primary',
@@ -55,7 +53,7 @@ class RentalItemController extends Controller
 
                     return '<span class="badge ' . $badgeClass . '">' . $rentalItem->stock_available . ' / ' . $rentalItem->stock_total . '</span>';
                 })
-                ->rawColumns(['action', 'is_active', 'category', 'stock_available'])
+                ->rawColumns(['action', 'category', 'stock_available'])
                 ->make(true);
         }
 
@@ -82,7 +80,6 @@ class RentalItemController extends Controller
             'rental_price' => 'required|numeric|min:0',
             'stock_total' => 'required|numeric|min:0',
             'condition' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
@@ -130,7 +127,6 @@ class RentalItemController extends Controller
             'stock_total' => 'required|numeric|min:' . ($rentalItem->stock_total - $rentalItem->stock_available),
             'stock_available' => 'required|numeric|min:0|max:' . $request->input('stock_total', $rentalItem->stock_total),
             'condition' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
@@ -174,15 +170,5 @@ class RentalItemController extends Controller
         }
     }
 
-    /**
-     * Mengubah status aktif item sewa
-     */
-    public function toggleStatus(RentalItem $rentalItem)
-    {
-        $rentalItem->update([
-            'is_active' => !$rentalItem->is_active,
-        ]);
-
-        return redirect()->route('admin.rental-items.index')->with('success', 'Status item sewa berhasil diperbarui');
-    }
+ 
 }
