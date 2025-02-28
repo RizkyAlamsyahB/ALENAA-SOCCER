@@ -40,7 +40,6 @@
                                 <th>Durasi</th>
                                 <th>Jumlah Foto</th>
                                 <th>Termasuk Editing</th>
-                                <th>Status</th>
                                 <th>Dibuat Pada</th>
                                 <th>Diperbarui Pada</th>
                                 <th>Aksi</th>
@@ -126,12 +125,6 @@
                     {
                         data: 'includes_editing',
                         name: 'includes_editing'
-                    },
-                    {
-                        data: 'is_active',
-                        name: 'is_active',
-                        orderable: false,
-                        searchable: false
                     },
                     {
                         data: 'created_at',

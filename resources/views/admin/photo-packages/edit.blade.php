@@ -76,16 +76,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="is_active"
-                                   name="is_active" value="1"
-                                   {{ old('is_active', $photoPackage->is_active) ? 'checked' : '' }}>
-                            <label class="custom-control-label" for="is_active">
-                                Paket Aktif
-                            </label>
-                        </div>
-                    </div>
+           
 
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">

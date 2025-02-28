@@ -27,10 +27,7 @@
                                         <i class="fa fa-{{ $photoPackage->includes_editing ? 'check text-success' : 'times text-danger' }}"></i>
                                         {{ $photoPackage->includes_editing ? 'Termasuk Editing' : 'Tanpa Editing' }}
                                     </p>
-                                    <p>
-                                        <i class="fa fa-circle text-{{ $photoPackage->is_active ? 'success' : 'danger' }}"></i>
-                                        Status: {{ $photoPackage->is_active ? 'Aktif' : 'Nonaktif' }}
-                                    </p>
+                                  
                                 </div>
                             </div>
                         </div>
