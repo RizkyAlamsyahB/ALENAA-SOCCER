@@ -10,7 +10,7 @@ class RentalItem extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
+     * Atribut yang dapat diisi secara massal
      *
      * @var array
      */
@@ -23,38 +23,82 @@ class RentalItem extends Model
         'stock_available',
         'condition',
         'is_active',
-        'image'
+        'image',
     ];
 
     /**
-     * The attributes that should be cast.
+     * Atribut yang harus dikonversi ke tipe data tertentu
      *
      * @var array
      */
     protected $casts = [
+        'is_active' => 'boolean',
         'rental_price' => 'integer',
         'stock_total' => 'integer',
         'stock_available' => 'integer',
-        'is_active' => 'boolean'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
-     * Get the category options
-     *
-     * @return array
+     * Scope untuk item yang aktif
      */
-    public static function getCategoryOptions()
+    public function scopeActive($query)
     {
-        return ['ball', 'jersey', 'shoes', 'other'];
+        return $query->where('is_active', true);
     }
 
     /**
-     * Check if the item is available for rent
-     *
-     * @return bool
+     * Scope untuk item yang tersedia
      */
-    public function isAvailable()
+    public function scopeAvailable($query)
     {
-        return $this->stock_available > 0 && $this->is_active;
+        return $query->where('stock_available', '>', 0)->where('is_active', true);
+    }
+
+    /**
+     * Relasi ke model ItemRental (rental records)
+     */
+    // public function itemRentals()
+    // {
+    //     return $this->hasMany(ItemRental::class);
+    // }
+
+    /**
+     * Relasi ke model Review
+     */
+    // public function reviews()
+    // {
+    //     return $this->morphMany(Review::class, 'reviewable');
+    // }
+
+    /**
+     * Mendapatkan persentase ketersediaan item
+     */
+    public function getAvailabilityPercentageAttribute()
+    {
+        if ($this->stock_total <= 0) {
+            return 0;
+        }
+
+        return ($this->stock_available / $this->stock_total) * 100;
+    }
+
+    /**
+     * Mendapatkan status ketersediaan item
+     */
+    public function getAvailabilityStatusAttribute()
+    {
+        $percentage = $this->availability_percentage;
+
+        if ($percentage <= 0) {
+            return 'Habis';
+        } elseif ($percentage <= 20) {
+            return 'Hampir Habis';
+        } elseif ($percentage <= 50) {
+            return 'Terbatas';
+        } else {
+            return 'Tersedia';
+        }
     }
 }

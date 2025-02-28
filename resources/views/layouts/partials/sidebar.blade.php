@@ -56,24 +56,24 @@
                     </a>
                 </li>
 
-                {{-- Lapangan (Field Management) --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-soccer"></i>
-                        <span>Lapangan</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="{{ route('admin.fields.index') }}" class="submenu-link">Data Lapangan</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Jadwal Lapangan</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Pemesanan Lapangan</a>
-                        </li>
-                    </ul>
-                </li>
+              {{-- Lapangan (Field Management) --}}
+<li class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
+    <a href="#" class="sidebar-link">
+        <i class="bi bi-soccer"></i>
+        <span>Lapangan</span>
+    </a>
+    <ul class="submenu {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
+        <li class="submenu-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
+            <a href="{{ route('admin.fields.index') }}" class="submenu-link">Data Lapangan</a>
+        </li>
+        <li class="submenu-item {{ request()->routeIs('admin.fields.schedule') ? 'active' : '' }}">
+            <a href="" class="submenu-link">Jadwal Lapangan</a>
+        </li>
+        <li class="submenu-item {{ request()->routeIs('admin.fields.booking') ? 'active' : '' }}">
+            <a href="" class="submenu-link">Pemesanan Lapangan</a>
+        </li>
+    </ul>
+</li>
 
                 {{-- Membership Management --}}
                 <li class="sidebar-item has-sub {{ request()->routeIs('admin.membership.*') ? 'active' : '' }}">
@@ -95,22 +95,24 @@
                 </li>
 
                 {{-- Product Management --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+                <li class="sidebar-item has-sub {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
                         <i class="bi bi-cart"></i>
                         <span>Produk</span>
                     </a>
-                    <ul class="submenu {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="{{route('admin.products.index')}}" class="submenu-link">Produk Jualan</a>
+                    <ul class="submenu {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.products.index') }}" class="submenu-link">Produk Jualan</a>
                         </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Produk Sewa</a>
+                        <li class="submenu-item {{ request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.rental-items.index') }}" class="submenu-link">Produk Sewa</a>
                         </li>
+
                         <li class="submenu-item">
                             <a href="" class="submenu-link">Manajemen Stok</a>
                         </li>
                     </ul>
+
                 </li>
 
                 {{-- Photographer Management --}}
