@@ -115,24 +115,25 @@
 
                 </li>
 
-                {{-- Photographer Management --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-camera"></i>
-                        <span>Fotografer</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="{{route('admin.photo-packages.index')}}" class="submenu-link">Data Fotografer</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Jadwal Fotografer</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href=" class="submenu-link">Pemesanan Fotografer</a>
-                        </li>
-                    </ul>
-                </li>
+             {{-- Photographer Management --}}
+<li class="sidebar-item has-sub {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
+    <a href="#" class="sidebar-link">
+        <i class="bi bi-camera"></i>
+        <span>Fotografer</span>
+    </a>
+    <ul class="submenu {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
+        <li class="submenu-item {{ request()->routeIs('admin.photo-packages.index') ? 'active' : '' }}">
+            <a href="{{ route('admin.photo-packages.index') }}" class="submenu-link">Data Fotografer</a>
+        </li>
+        <li class="submenu-item {{ request()->routeIs('admin.photo-packages.schedule') ? 'active' : '' }}">
+            <a href="" class="submenu-link">Jadwal Fotografer</a>
+        </li>
+        <li class="submenu-item {{ request()->routeIs('admin.photo-packages.booking') ? 'active' : '' }}">
+            <a href="" class="submenu-link">Pemesanan Fotografer</a>
+        </li>
+    </ul>
+</li>
+
 
                 {{-- Transaction Management --}}
                 <li class="sidebar-item has-sub {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">

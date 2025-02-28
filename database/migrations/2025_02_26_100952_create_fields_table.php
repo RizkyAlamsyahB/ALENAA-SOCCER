@@ -15,10 +15,9 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->enum('type', ['Matras Standar', 'Rumput Sintetis', 'Matras Premium']);
-            $table->integer('regular_price');
-            $table->integer('peak_price')->nullable();
-            $table->text('facilities')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->integer('price');
+            // $table->text('facilities')->nullable();
+            // $table->boolean('is_active')->default(true);
             $table->string('image')->nullable();
             $table->timestamps();
         });

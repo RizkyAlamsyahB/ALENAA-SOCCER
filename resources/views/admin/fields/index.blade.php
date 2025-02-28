@@ -38,10 +38,7 @@
                                 <th>ID</th>
                                 <th>Nama</th>
                                 <th>Tipe</th>
-                                <th>Harga Normal</th>
-                                <th>Harga Puncak</th>
-                                <th>Fasilitas</th>
-                                <th>Status</th>
+                                <th>Harga </th>
                                 <th>Gambar</th>
                                 <th>Dibuat Pada</th>
                                 <th>Diperbarui Pada</th>
@@ -117,29 +114,11 @@
                         name: 'type'
                     },
                     {
-                        data: 'regular_price',
-                        name: 'regular_price',
+                        data: 'price',
+                        name: 'price',
                         render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
                     },
-                    {
-                        data: 'peak_price',
-                        name: 'peak_price',
-                        render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
-                    },
-                    {
-                        data: 'facilities',
-                        name: 'facilities'
-                    },
-                    {
-                        data: 'is_active',
-                        name: 'is_active',
-                        orderable: false,
-                        searchable: false,
-                        render: function(data) {
-                            return data ? '<span class="badge bg-success">Aktif</span>' :
-                                '<span class="badge bg-danger">Nonaktif</span>';
-                        }
-                    },
+
                     {
                         data: 'image',
                         name: 'image',

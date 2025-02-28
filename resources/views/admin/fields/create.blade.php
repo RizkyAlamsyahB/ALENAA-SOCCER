@@ -50,43 +50,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Harga Regular</label>
-                        <input type="number" name="regular_price" class="form-control @error('regular_price') is-invalid @enderror"
-                               value="{{ old('regular_price') }}" required>
-                        @error('regular_price')
+                        <label>Harga </label>
+                        <input type="number" name="price" class="form-control @error('price') is-invalid @enderror"
+                               value="{{ old('price') }}" required>
+                        @error('price')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <div class="form-group">
-                        <label>Harga Peak (Opsional)</label>
-                        <input type="number" name="peak_price" class="form-control @error('peak_price') is-invalid @enderror"
-                               value="{{ old('peak_price') }}">
-                        @error('peak_price')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label>Fasilitas</label>
-                        <textarea name="facilities" class="form-control @error('facilities') is-invalid @enderror"
-                                  rows="3">{{ old('facilities') }}</textarea>
-                        @error('facilities')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label>Status</label>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="is_active"
-                                   name="is_active" value="1"
-                                   {{ old('is_active', true) ? 'checked' : '' }}>
-                            <label class="custom-control-label" for="is_active">
-                                Lapangan Aktif
-                            </label>
-                        </div>
-                    </div>
 
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">

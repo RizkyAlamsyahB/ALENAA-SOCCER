@@ -53,10 +53,7 @@ class FieldController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:fields,name',
             'type' => ['required', Rule::in(['Matras Standar', 'Rumput Sintetis', 'Matras Premium'])],
-            'regular_price' => 'required|numeric|min:0',
-            'peak_price' => 'nullable|numeric|min:0',
-            'facilities' => 'nullable|string',
-            'is_active' => 'boolean',
+            'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
@@ -95,10 +92,7 @@ class FieldController extends Controller
         $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('fields')->ignore($field->id)],
             'type' => ['required', Rule::in(['Matras Standar', 'Rumput Sintetis', 'Matras Premium'])],
-            'regular_price' => 'required|numeric|min:0',
-            'peak_price' => 'nullable|numeric|min:0',
-            'facilities' => 'nullable|string',
-            'is_active' => 'boolean',
+            'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
@@ -136,15 +130,4 @@ class FieldController extends Controller
         }
     }
 
-    /**
-     * Mengubah status aktif lapangan
-     */
-    public function toggleStatus(Field $field)
-    {
-        $field->update([
-            'is_active' => !$field->is_active,
-        ]);
-
-        return redirect()->route('admin.fields.index')->with('success', 'Status lapangan berhasil diperbarui');
-    }
 }

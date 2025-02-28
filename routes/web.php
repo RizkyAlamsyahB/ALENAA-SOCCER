@@ -66,9 +66,6 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
     Route::get('/admin/fields', [FieldController::class, 'index'])->name('admin.fields.index');
     // Manajemen Lapangan
     Route::resource('fields', FieldController::class);
-    Route::put('/fields/{field}/toggle-status', [FieldController::class, 'toggleStatus'])
-        ->name('fields.toggle-status');
-
     // Rute admin lainnya untuk CRUD
     Route::resources([
         'products' => ProductController::class,

@@ -38,25 +38,9 @@
                             required>
                     </div>
                     <div class="mb-3">
-                        <label for="regular_price" class="form-label">Harga Normal</label>
-                        <input type="number" name="regular_price" id="regular_price" class="form-control"
-                            value="{{ $field->regular_price }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="peak_price" class="form-label">Harga Puncak</label>
-                        <input type="number" name="peak_price" id="peak_price" class="form-control"
-                            value="{{ $field->peak_price }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="facilities" class="form-label">Fasilitas</label>
-                        <textarea name="facilities" id="facilities" class="form-control" required>{{ $field->facilities }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="is_active" class="form-label">Status</label>
-                        <select name="is_active" id="is_active" class="form-control">
-                            <option value="1" {{ $field->is_active ? 'selected' : '' }}>Aktif</option>
-                            <option value="0" {{ !$field->is_active ? 'selected' : '' }}>Nonaktif</option>
-                        </select>
+                        <label for="price" class="form-label">Harga </label>
+                        <input type="number" name="price" id="price" class="form-control"
+                            value="{{ $field->price }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="image" class="form-label">Gambar</label>

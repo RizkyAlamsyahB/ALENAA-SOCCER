@@ -17,10 +17,9 @@ class Field extends Model
     protected $fillable = [
         'name',
         'type',
-        'regular_price',
-        'peak_price',
-        'facilities',
-        'is_active',
+        'price',
+        // 'facilities',
+        // 'is_active',
         'image'
     ];
 
@@ -30,9 +29,6 @@ class Field extends Model
      * @var array
      */
     protected $casts = [
-        'regular_price' => 'integer',
-        'peak_price' => 'integer',
-        'is_active' => 'boolean',
-        'facilities' => 'array'
+        'price' => 'integer',
     ];
 }

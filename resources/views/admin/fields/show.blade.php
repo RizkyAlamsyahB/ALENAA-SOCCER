@@ -35,19 +35,7 @@
                 </tr>
                 <tr>
                     <th>Harga Normal</th>
-                    <td>Rp {{ number_format($field->regular_price, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <th>Harga Puncak</th>
-                    <td>Rp {{ number_format($field->peak_price, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <th>Fasilitas</th>
-                    <td>{{ $field->facilities }}</td>
-                </tr>
-                <tr>
-                    <th>Status</th>
-                    <td>{!! $field->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Nonaktif</span>' !!}</td>
+                    <td>Rp {{ number_format($field->price, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
                     <th>Gambar</th>
