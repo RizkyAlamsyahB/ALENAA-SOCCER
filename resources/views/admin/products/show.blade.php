@@ -67,16 +67,7 @@
                                         <th>Deskripsi</th>
                                         <td>{{ $product->description ?? 'Tidak ada deskripsi' }}</td>
                                     </tr>
-                                    <tr>
-                                        <th>Status</th>
-                                        <td>
-                                            @if($product->is_active)
-                                                <span class="badge bg-success">Aktif</span>
-                                            @else
-                                                <span class="badge bg-danger">Nonaktif</span>
-                                            @endif
-                                        </td>
-                                    </tr>
+                                    
                                     <tr>
                                         <th>Dibuat Pada</th>
                                         <td>{{ $product->created_at->format('d F Y H:i') }}</td>

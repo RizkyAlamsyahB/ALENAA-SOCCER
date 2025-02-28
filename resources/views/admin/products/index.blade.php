@@ -39,7 +39,6 @@
                                 <th>Kategori</th>
                                 <th>Harga</th>
                                 <th>Stok</th>
-                                <th>Status</th>
                                 <th>Gambar</th>
                                 <th>Dibuat Pada</th>
                                 <th>Diperbarui Pada</th>
@@ -122,12 +121,6 @@
                     {
                         data: 'stock',
                         name: 'stock'
-                    },
-                    {
-                        data: 'is_active',
-                        name: 'is_active',
-                        orderable: false,
-                        searchable: false
                     },
                     {
                         data: 'image',

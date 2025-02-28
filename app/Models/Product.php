@@ -20,7 +20,6 @@ class Product extends Model
         'category',
         'price',
         'stock',
-        'is_active',
         'image'
     ];
 
@@ -32,7 +31,6 @@ class Product extends Model
     protected $casts = [
         'price' => 'integer',
         'stock' => 'integer',
-        'is_active' => 'boolean'
     ];
 
     /**

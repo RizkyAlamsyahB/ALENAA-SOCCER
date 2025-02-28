@@ -28,10 +28,8 @@ class FieldController extends Controller
                             <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $field->id . '" data-name="' . $field->name . '">Hapus</button>
                         </div>';
                 })
-                ->editColumn('is_active', function ($field) {
-                    return $field->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Nonaktif</span>';
-                })
-                ->rawColumns(['action', 'is_active'])
+
+                ->rawColumns(['action'])
                 ->make(true);
         }
 

@@ -86,18 +86,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Status</label>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="is_active"
-                                   name="is_active" value="1"
-                                   {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
-                            <label class="custom-control-label" for="is_active">
-                                Produk Aktif
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
                         <button type="submit" class="btn btn-primary">
                             <i class="fa fa-save"></i> Simpan Perubahan
                         </button>

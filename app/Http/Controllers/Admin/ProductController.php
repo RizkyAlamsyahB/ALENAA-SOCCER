@@ -28,9 +28,7 @@ class ProductController extends Controller
                             <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $product->id . '" data-name="' . $product->name . '">Hapus</button>
                         </div>';
                 })
-                ->editColumn('is_active', function ($product) {
-                    return $product->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Nonaktif</span>';
-                })
+
                 ->editColumn('category', function ($product) {
                     $badges = [
                         'food' => 'bg-primary',
@@ -42,7 +40,7 @@ class ProductController extends Controller
                     $badge = isset($badges[$product->category]) ? $badges[$product->category] : 'bg-secondary';
                     return '<span class="badge ' . $badge . '">' . ucfirst($product->category) . '</span>';
                 })
-                ->rawColumns(['action', 'is_active', 'category'])
+                ->rawColumns(['action',  'category'])
                 ->make(true);
         }
 
@@ -68,7 +66,6 @@ class ProductController extends Controller
             'category' => ['required', Rule::in(['food', 'beverage', 'equipment', 'other'])],
             'price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
@@ -111,7 +108,6 @@ class ProductController extends Controller
             'category' => ['required', Rule::in(['food', 'beverage', 'equipment', 'other'])],
             'price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
@@ -150,15 +146,5 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Mengubah status aktif produk
-     */
-    public function toggleStatus(Product $product)
-    {
-        $product->update([
-            'is_active' => !$product->is_active,
-        ]);
 
-        return redirect()->route('admin.products.index')->with('success', 'Status produk berhasil diperbarui');
-    }
 }
