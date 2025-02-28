@@ -10,7 +10,7 @@ class PhotoPackage extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
+     * Atribut yang dapat diisi secara massal
      *
      * @var array
      */
@@ -21,38 +21,58 @@ class PhotoPackage extends Model
         'duration_minutes',
         'number_of_photos',
         'includes_editing',
-        'is_active'
+        'is_active',
     ];
 
     /**
-     * The attributes that should be cast.
+     * Atribut yang harus dikonversi ke tipe data tertentu
      *
      * @var array
      */
     protected $casts = [
+        'is_active' => 'boolean',
+        'includes_editing' => 'boolean',
         'price' => 'integer',
         'duration_minutes' => 'integer',
         'number_of_photos' => 'integer',
-        'includes_editing' => 'boolean',
-        'is_active' => 'boolean'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
-     * Format duration in a human-readable format
-     *
-     * @return string
+     * Scope untuk paket yang aktif
      */
-    public function formatDuration()
+    public function scopeActive($query)
     {
-        $hours = floor($this->duration_minutes / 60);
-        $minutes = $this->duration_minutes % 60;
+        return $query->where('is_active', true);
+    }
 
-        if ($hours > 0 && $minutes > 0) {
-            return "{$hours} hour(s) and {$minutes} minute(s)";
-        } elseif ($hours > 0) {
-            return "{$hours} hour(s)";
-        } else {
-            return "{$minutes} minute(s)";
+    /**
+     * Relasi ke model TransactionDetail (jika dibutuhkan nanti)
+     */
+    // public function transactionDetails()
+    // {
+    //     return $this->morphMany(TransactionDetail::class, 'item');
+    // }
+
+    /**
+     * Relasi ke model PhotographerBooking (jika dibutuhkan nanti)
+     */
+    // public function photographerBookings()
+    // {
+    //     return $this->hasMany(PhotographerBooking::class);
+    // }
+
+    /**
+     * Mendapatkan durasi dalam format yang lebih manusiawi
+     */
+    public function getFormattedDurationAttribute()
+    {
+        if ($this->duration_minutes >= 60) {
+            $hours = floor($this->duration_minutes / 60);
+            $minutes = $this->duration_minutes % 60;
+            return $hours . ' jam ' . ($minutes > 0 ? $minutes . ' menit' : '');
         }
+        return $this->duration_minutes . ' menit';
     }
 }

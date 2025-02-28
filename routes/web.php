@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\Admin\MembershipController;
 use App\Http\Controllers\Admin\RentalItemController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\PhotoPackageController;
 use App\Http\Controllers\Admin\UserManagementController;
 
 // Public Routes
@@ -76,6 +77,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
         'transactions' => TransactionController::class,
         'users' => UserManagementController::class,
         'discounts' => DiscountController::class,
+        'photo-packages' => PhotoPackageController::class,
     ]);
 });
 
