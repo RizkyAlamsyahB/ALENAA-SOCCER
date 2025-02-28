@@ -2,23 +2,41 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Field;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\Facades\DataTables;
 
 class FieldController extends Controller
 {
     /**
-     * Menampilkan daftar lapangan
+     * Menampilkan daftar lapangan dengan server-side processing
      */
-    public function index()
+    public function index(Request $request)
     {
-        $fields = Field::all();
-        return view('admin.fields.index', compact('fields'));
-    }
+        if ($request->ajax()) {
+            $fields = Field::select('*');
 
+            return DataTables::of($fields)
+                ->addColumn('action', function ($field) {
+                    return '<div class="d-flex gap-1">
+                            <a href="' . route('admin.fields.show', $field->id) . '" class="btn btn-sm btn-info">Show</a>
+                            <a href="' . route('admin.fields.edit', $field->id) . '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $field->id . '" data-name="' . $field->name . '">Hapus</button>
+                        </div>';
+                })
+                ->editColumn('is_active', function ($field) {
+                    return $field->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Nonaktif</span>';
+                })
+                ->rawColumns(['action', 'is_active'])
+                ->make(true);
+        }
+
+        return view('admin.fields.index');
+    }
     /**
      * Menampilkan form tambah lapangan
      */
@@ -42,16 +60,16 @@ class FieldController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
+        // Cek jika ada file gambar yang diupload
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('public/fields');
-            $validatedData['image'] = str_replace('public/', 'storage/', $imagePath);
+            // Simpan gambar ke storage/app/public/fields
+            $path = $request->file('image')->store('fields', 'public');
+            $validatedData['image'] = $path; // Simpan path di database
         }
 
         Field::create($validatedData);
 
-        return redirect()->route('admin.fields.index')
-            ->with('success', 'Lapangan berhasil ditambahkan');
-    }
+        return redirect()->route('admin.fields.index')->with('success', 'Lapangan berhasil ditambahkan');    }
 
     /**
      * Menampilkan detail lapangan
@@ -81,24 +99,24 @@ class FieldController extends Controller
             'peak_price' => 'nullable|numeric|min:0',
             'facilities' => 'nullable|string',
             'is_active' => 'boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
+        // Cek jika ada file gambar yang diupload
         if ($request->hasFile('image')) {
             // Hapus gambar lama jika ada
-            if ($field->image && Storage::exists(str_replace('storage/', 'public/', $field->image))) {
-                Storage::delete(str_replace('storage/', 'public/', $field->image));
+            if ($field->image && Storage::exists('public/fields/' . basename($field->image))) {
+                Storage::delete('public/fields/' . basename($field->image));
             }
 
-            $imagePath = $request->file('image')->store('public/fields');
-            $validatedData['image'] = str_replace('public/', 'storage/', $imagePath);
+            // Simpan gambar baru ke storage/app/public/fields
+            $path = $request->file('image')->store('fields', 'public');
+            $validatedData['image'] = $path; // Simpan path di database
         }
 
         $field->update($validatedData);
 
-        return redirect()->route('admin.fields.index')
-            ->with('success', 'Lapangan berhasil diperbarui');
-    }
+        return redirect()->route('admin.fields.index')->with('success', 'Lapangan berhasil diperbarui');    }
 
     /**
      * Menghapus lapangan
@@ -112,11 +130,9 @@ class FieldController extends Controller
             }
 
             $field->delete();
-            return redirect()->route('admin.fields.index')
-                ->with('success', 'Lapangan berhasil dihapus');
+            return redirect()->route('admin.fields.index')->with('success', 'Lapangan berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->route('admin.fields.index')
-                ->with('error', 'Tidak dapat menghapus lapangan');
+            return redirect()->route('admin.fields.index')->with('error', 'Tidak dapat menghapus lapangan');
         }
     }
 
@@ -126,10 +142,9 @@ class FieldController extends Controller
     public function toggleStatus(Field $field)
     {
         $field->update([
-            'is_active' => !$field->is_active
+            'is_active' => !$field->is_active,
         ]);
 
-        return redirect()->route('admin.fields.index')
-            ->with('success', 'Status lapangan berhasil diperbarui');
+        return redirect()->route('admin.fields.index')->with('success', 'Status lapangan berhasil diperbarui');
     }
 }

@@ -1,118 +1,222 @@
 @extends('layouts.admin')
 
-@section('title', 'Lapangan Management')
-@section('breadcrumb', 'Lapangan Management')
-@section('header-title', 'Manage Lapangan')
+@section('page-title')
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3>DataTable</h3>
+                <p class="text-subtitle text-muted">A sortable, searchable, paginated table without dependencies thanks to
+                    simple-datatables.</p>
+            </div>
+            <div class="col-12 col-md-6 order-md-2 order-first">
+                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">DataTable</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+@endsection
 
 @section('content')
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="mt-0 header-title">List of Lapangan</h4>
-                    <a href="{{ route('admin.fields.create') }}" class="btn btn-success mt-2 mb-3">
-                        <i class="fas fa-plus"></i> Tambah Lapangan
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-tools">
+                    <a href="{{ route('admin.fields.create') }}" class="btn btn-primary btn-sm rounded-3">
+                        Tambah Lapangan Baru
                     </a>
-                    @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    <table class="table table-striped table-bordered table-responsive-sm mt-2">
+                </div>
+            </div>
+            <div class="card-body rounded-4">
+                <div class="table-responsive">
+                    <table id="fieldsTable" class="table table-striped">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>ID</th>
                                 <th>Nama</th>
-                                <th>Gambar</th>
                                 <th>Tipe</th>
-                                <th>Harga Regular</th>
-                                <th>Harga Peak</th>
+                                <th>Harga Normal</th>
+                                <th>Harga Puncak</th>
+                                <th>Fasilitas</th>
                                 <th>Status</th>
+                                <th>Gambar</th>
+                                <th>Dibuat Pada</th>
+                                <th>Diperbarui Pada</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach ($fields as $field)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $field->name }}</td>
-                                    <td>
-                                        @if($field->image)
-                                            <img src="{{ asset($field->image) }}" alt="Lapangan {{ $field->name }}" width="80">
-                                        @else
-                                            <span class="text-muted">Tidak ada gambar</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $field->type }}</td>
-                                    <td>Rp {{ number_format($field->regular_price, 0, ',', '.') }}</td>
-                                    <td>
-                                        @if ($field->peak_price)
-                                            Rp {{ number_format($field->peak_price, 0, ',', '.') }}
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="badge {{ $field->is_active ? 'bg-success' : 'bg-danger' }}">
-                                            {{ $field->is_active ? 'Aktif' : 'Non-Aktif' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ route('admin.fields.show', $field->id) }}"
-                                                class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.fields.edit', $field->id) }}"
-                                                class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('admin.fields.destroy', $field->id) }}" method="POST"
-                                                class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm"
-                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus lapangan ini?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('admin.fields.toggle-status', $field->id) }}"
-                                                method="POST" class="d-inline">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit"
-                                                    class="btn btn-{{ $field->is_active ? 'secondary' : 'success' }} btn-sm">
-                                                    {{ $field->is_active ? 'Non-Aktifkan' : 'Aktifkan' }}
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
                     </table>
-
-
                 </div>
             </div>
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            $(document).ready(function() {
-                $('#lapanganTable').DataTable({
-                    responsive: true,
-                    language: {
-                        paginate: {
-                            previous: '<i class="fas fa-chevron-left"></i>',
-                            next: '<i class="fas fa-chevron-right"></i>'
+    <!-- JS Dependencies -->
+    <script src="{{ asset('assets/extensions/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/extensions/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('assets/static/js/pages/datatables.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert@2"></script>
+    <link rel="stylesheet" href="{{ asset('assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
+
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Configure Toastr options
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-bottom-right", // Ubah posisi ke bottom-right
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Flash messages
+            @if (session('success'))
+                toastr.success('{{ session('success') }}', 'Berhasil');
+            @endif
+
+            @if (session('error'))
+                toastr.error('{{ session('error') }}', 'Error');
+            @endif
+
+            @if (session('info'))
+                toastr.info('{{ session('info') }}', 'Info');
+            @endif
+
+            @if (session('warning'))
+                toastr.warning('{{ session('warning') }}', 'Peringatan');
+            @endif
+
+            $('#fieldsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route('admin.fields.index') }}',
+                columns: [{
+                        data: 'id',
+                        name: 'id'
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'type',
+                        name: 'type'
+                    },
+                    {
+                        data: 'regular_price',
+                        name: 'regular_price',
+                        render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
+                    },
+                    {
+                        data: 'peak_price',
+                        name: 'peak_price',
+                        render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
+                    },
+                    {
+                        data: 'facilities',
+                        name: 'facilities'
+                    },
+                    {
+                        data: 'is_active',
+                        name: 'is_active',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            return data ? '<span class="badge bg-success">Aktif</span>' :
+                                '<span class="badge bg-danger">Nonaktif</span>';
+                        }
+                    },
+                    {
+                        data: 'image',
+                        name: 'image',
+                        render: function(data) {
+                            return data ? `<img src="/storage/${data}" width="50">` : 'No Image';
+                        }
+                    },
+                    {
+                        data: 'created_at',
+                        name: 'created_at'
+                    },
+                    {
+                        data: 'updated_at',
+                        name: 'updated_at'
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    }
+                ]
+            });
+
+            // Konfirmasi hapus menggunakan Toastr dengan tombol interaktif
+            $(document).on('click', '.delete-btn', function() {
+                var fieldId = $(this).data('id');
+                var fieldName = $(this).data('name');
+
+                toastr.warning(
+                    `<div>
+                        <p>Apakah Anda yakin ingin menghapus lapangan "<b>${fieldName}</b>"?</p>
+                        <button class="btn btn-danger btn-sm" id="confirmDelete" data-id="${fieldId}" style="margin-right:10px;">Ya, Hapus!</button>
+                        <button class="btn btn-secondary btn-sm" id="cancelDelete">Batal</button>
+                    </div>`,
+                    'Konfirmasi Hapus', {
+                        closeButton: true,
+                        onShown: function() {
+                            // Event listener untuk tombol hapus
+                            $('#confirmDelete').on('click', function() {
+                                var id = $(this).data('id');
+                                hapusLapangan(id);
+                            });
+
+                            // Event listener untuk tombol batal
+                            $('#cancelDelete').on('click', function() {
+                                toastr.clear(); // Hilangkan toastr jika dibatalkan
+                            });
                         }
                     }
-                });
+                );
             });
-        </script>
-    @endpush
+            // Fungsi untuk menghapus data (versi yang direvisi)
+            function hapusLapangan(fieldId) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('admin.fields.destroy', '') }}/' + fieldId;
+                form.style.display = 'none';
 
+                var csrfToken = document.createElement('input');
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                var methodField = document.createElement('input');
+                methodField.name = '_method';
+                methodField.value = 'DELETE';
+                form.appendChild(methodField);
+
+                document.body.appendChild(form);
+
+                // Hilangkan toastr success di sini
+                // toastr.success('Lapangan berhasil dihapus!', 'Berhasil'); -- HAPUS BARIS INI
+
+                // Kirim form dan biarkan controller mengembalikan flash message
+                form.submit();
+            }
+        });
+    </script>
 @endsection

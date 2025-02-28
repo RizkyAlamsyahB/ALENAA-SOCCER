@@ -1,71 +1,74 @@
 @extends('layouts.admin')
 
-@section('title', 'Detail Lapangan')
-@section('breadcrumb', 'Detail Lapangan')
-@section('header-title', 'Informasi Detail Lapangan')
+@section('page-title')
+<div class="page-title">
+    <div class="row">
+        <div class="col-12 col-md-6 order-md-1 order-last">
+            <h3>Detail Lapangan</h3>
+            <p class="text-subtitle text-muted">Informasi lengkap tentang lapangan.</p>
+        </div>
+        <div class="col-12 col-md-6 order-md-2 order-first">
+            <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.fields.index') }}">Lapangan</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Detail</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+@endsection
 
 @section('content')
-<div class="row">
-    <div class="col-lg-8 offset-lg-2">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="mt-0 header-title">Detail Lapangan</h4>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Nama Lapangan:</strong>
-                        <p>{{ $field->name }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Tipe Lapangan:</strong>
-                        <p>{{ $field->type }}</p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Harga Regular:</strong>
-                        <p>Rp. {{ number_format($field->regular_price, 0, ',', '.') }}/jam</p>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Harga Peak:</strong>
-                        <p>
-                            {{ $field->peak_price ? 'Rp. ' . number_format($field->peak_price, 0, ',', '.') . '/jam' : 'Tidak ada harga peak' }}
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <strong>Fasilitas:</strong>
-                        <p>{{ $field->facilities ?? 'Tidak ada informasi fasilitas' }}</p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Status:</strong>
-                        <p>
-                            <span class="badge {{ $field->is_active ? 'badge-success' : 'badge-danger' }}">
-                                {{ $field->is_active ? 'Aktif' : 'Tidak Aktif' }}
-                            </span>
-                        </p>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Terakhir Diperbarui:</strong>
-                        <p>{{ $field->updated_at->format('d M Y H:i') }}</p>
-                    </div>
-                </div>
-
-                <div class="form-group mt-3">
-                    <a href="{{ route('admin.fields.edit', $field->id) }}" class="btn btn-warning">
-                        <i class="fa fa-edit"></i> Edit
-                    </a>
-                    <a href="{{ route('admin.fields.index') }}" class="btn btn-secondary">
-                        <i class="fa fa-arrow-left"></i> Kembali
-                    </a>
-                </div>
-            </div>
+<div class="container-fluid">
+    <div class="card rounded-4">
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr>
+                    <th>Nama</th>
+                    <td>{{ $field->name }}</td>
+                </tr>
+                <tr>
+                    <th>Tipe</th>
+                    <td>{{ $field->type }}</td>
+                </tr>
+                <tr>
+                    <th>Harga Normal</th>
+                    <td>Rp {{ number_format($field->regular_price, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <th>Harga Puncak</th>
+                    <td>Rp {{ number_format($field->peak_price, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <th>Fasilitas</th>
+                    <td>{{ $field->facilities }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>{!! $field->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Nonaktif</span>' !!}</td>
+                </tr>
+                <tr>
+                    <th>Gambar</th>
+                    <td>
+                        @if($field->image)
+                            <img src="{{ asset('storage/' . $field->image) }}" width="200" class="img-thumbnail">
+                        @else
+                            Tidak ada gambar
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <th>Dibuat Pada</th>
+                    <td>{{ $field->created_at }}</td>
+                </tr>
+                <tr>
+                    <th>Diperbarui Pada</th>
+                    <td>{{ $field->updated_at }}</td>
+                </tr>
+            </table>
+            <a href="{{ route('admin.fields.index') }}" class="btn btn-secondary rounded-3">Kembali</a>
         </div>
     </div>
 </div>

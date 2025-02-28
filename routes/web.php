@@ -62,7 +62,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('dashboard');
-
+    Route::get('/admin/fields', [FieldController::class, 'index'])->name('admin.fields.index');
     // Manajemen Lapangan
     Route::resource('fields', FieldController::class);
     Route::put('/fields/{field}/toggle-status', [FieldController::class, 'toggleStatus'])

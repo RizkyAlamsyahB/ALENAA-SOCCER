@@ -1,97 +1,86 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Lapangan')
-@section('breadcrumb', 'Edit Lapangan')
-@section('header-title', 'Edit Data Lapangan')
+@section('page-title')
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3>Edit Lapangan</h3>
+                <p class="text-subtitle text-muted">Perbarui data lapangan yang sudah ada.</p>
+            </div>
+            <div class="col-12 col-md-6 order-md-2 order-first">
+                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.fields.index') }}">Lapangan</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+@endsection
 
 @section('content')
-<div class="row">
-    <div class="col-lg-8 offset-lg-2">
-        <div class="card">
+    <div class="container-fluid">
+        <div class="card rounded-4">
             <div class="card-body">
-                <h4 class="mt-0 header-title">Form Edit Lapangan</h4>
-
-                <form action="{{ route('admin.fields.update', $field->id) }}" method="POST">
+                <form action="{{ route('admin.fields.update', $field->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
-                    <div class="form-group">
-                        <label>Nama Lapangan</label>
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                               value="{{ old('name', $field->name) }}" required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nama</label>
+                        <input type="text" name="name" id="name" class="form-control" value="{{ $field->name }}"
+                            required>
                     </div>
-
-                    <div class="form-group">
-                        <label>Tipe Lapangan</label>
-                        <select name="type" class="form-control @error('type') is-invalid @enderror" required>
-                            <option value="">Pilih Tipe Lapangan</option>
-                            <option value="Matras Standar" {{ old('type', $field->type) == 'Matras Standar' ? 'selected' : '' }}>
-                                Matras Standar
-                            </option>
-                            <option value="Rumput Sintetis" {{ old('type', $field->type) == 'Rumput Sintetis' ? 'selected' : '' }}>
-                                Rumput Sintetis
-                            </option>
-                            <option value="Matras Premium" {{ old('type', $field->type) == 'Matras Premium' ? 'selected' : '' }}>
-                                Matras Premium
-                            </option>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Tipe</label>
+                        <input type="text" name="type" id="type" class="form-control" value="{{ $field->type }}"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="regular_price" class="form-label">Harga Normal</label>
+                        <input type="number" name="regular_price" id="regular_price" class="form-control"
+                            value="{{ $field->regular_price }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="peak_price" class="form-label">Harga Puncak</label>
+                        <input type="number" name="peak_price" id="peak_price" class="form-control"
+                            value="{{ $field->peak_price }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="facilities" class="form-label">Fasilitas</label>
+                        <textarea name="facilities" id="facilities" class="form-control" required>{{ $field->facilities }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="is_active" class="form-label">Status</label>
+                        <select name="is_active" id="is_active" class="form-control">
+                            <option value="1" {{ $field->is_active ? 'selected' : '' }}>Aktif</option>
+                            <option value="0" {{ !$field->is_active ? 'selected' : '' }}>Nonaktif</option>
                         </select>
-                        @error('type')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
                     </div>
-
-                    <div class="form-group">
-                        <label>Harga Regular</label>
-                        <input type="number" name="regular_price" class="form-control @error('regular_price') is-invalid @enderror"
-                               value="{{ old('regular_price', $field->regular_price) }}" required>
-                        @error('regular_price')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label>Harga Peak (Opsional)</label>
-                        <input type="number" name="peak_price" class="form-control @error('peak_price') is-invalid @enderror"
-                               value="{{ old('peak_price', $field->peak_price) }}">
-                        @error('peak_price')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label>Fasilitas</label>
-                        <textarea name="facilities" class="form-control @error('facilities') is-invalid @enderror"
-                                  rows="3">{{ old('facilities', $field->facilities) }}</textarea>
-                        @error('facilities')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label>Status</label>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="is_active"
-                                   name="is_active" value="1"
-                                   {{ old('is_active', $field->is_active) ? 'checked' : '' }}>
-                            <label class="custom-control-label" for="is_active">
-                                Lapangan Aktif
-                            </label>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Gambar</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                        <div class="mt-2">
+                            <img id="imagePreview"
+                                src="{{ $field->image ? asset('storage/' . $field->image) : 'https://via.placeholder.com/150' }}"
+                                width="150" class="img-thumbnail">
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-save"></i> Perbarui Lapangan
-                        </button>
-                        <a href="{{ route('admin.fields.index') }}" class="btn btn-secondary">
-                            <i class="fa fa-arrow-left"></i> Kembali
-                        </a>
-                    </div>
+                    <button type="submit" class="btn btn-primary rounded-3">Simpan Perubahan</button>
                 </form>
             </div>
         </div>
     </div>
-</div>
+    <script>
+        document.getElementById('image').addEventListener('change', function(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('imagePreview').src = reader.result;
+            }
+            if (event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        });
+    </script>
 @endsection
