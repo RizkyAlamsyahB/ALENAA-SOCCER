@@ -13,14 +13,14 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="/venues" class="breadcrumb-link">
+                    <a href="{{ route('user.fields.index') }}" class="breadcrumb-link">
                         <i class="fas fa-map-marker-alt"></i>
                         <span>Venues</span>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">
                     <i class="fas fa-futbol"></i>
-                    <span>Field A</span>
+                    <span>{{ $field->name }}</span>
                 </li>
             </ol>
         </div>
@@ -179,7 +179,7 @@
             <!-- Field Details Container -->
             <div class="container py-4">
                 <div class="row">
-                    <div class="col-lg-8">
+                    <div class="col">
                         <!-- Basic Information Card -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
                             <div class="card-body p-4">
@@ -207,7 +207,6 @@
                                 </div>
                             </div>
                         </div>
-
 
                         <!-- Field Overview Card -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
@@ -249,7 +248,7 @@
                                                 <i class="fas fa-volleyball-ball"></i>
                                             </div>
                                             <h6 class="mb-1 fw-semibold">Type</h6>
-                                            <small class="text-muted">Indoor Field</small>
+                                            <small class="text-muted">{{ $field->type }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -303,492 +302,423 @@
                             </div>
                         </div>
 
-                        <!-- Booking Calendar Card -->
+                        <!-- 1. Tambahkan CSS Flatpickr di header atau section head -->
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+                        <link rel="stylesheet"
+                            href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+
+                        <!-- 2. Ganti bagian HTML kalender lama dengan ini -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
                             <div class="card-header bg-white py-3 border-0 px-4">
                                 <h5 class="mb-0 fw-bold">Pilih Jadwal Booking</h5>
                             </div>
                             <div class="card-body p-4">
-                                <!-- Calendar Navigation -->
-                                <div class="calendar-navigation d-flex justify-content-between align-items-center mb-4">
-                                    <button class="nav-btn btn-prev">
-                                        <i class="fas fa-chevron-left"></i>
-                                        <span>Previous</span>
-                                    </button>
-                                    <h6 class="fw-semibold mb-0 month-display">January 2024</h6>
-                                    <button class="nav-btn btn-next">
-                                        <span>Next</span>
-                                        <i class="fas fa-chevron-right"></i>
-                                    </button>
+                                <!-- Flatpickr Calendar -->
+                                <div class="mb-4">
+                                    <label for="flatpickr-calendar" class="form-label fw-semibold">Pilih Tanggal</label>
+                                    <input type="text" id="flatpickr-calendar" class="form-control"
+                                        placeholder="Pilih tanggal" readonly>
+                                    <input type="hidden" id="selectedDate" name="selected_date">
+                                    <input type="hidden" id="fieldId" value="{{ $field->id }}">
                                 </div>
 
-                                <!-- Calendar Grid -->
-                                <div class="calendar-grid mb-4">
-                                    <!-- Days Header -->
-                                    <div class="calendar-header">
-                                        <div>Sun</div>
-                                        <div>Mon</div>
-                                        <div>Tue</div>
-                                        <div>Wed</div>
-                                        <div>Thu</div>
-                                        <div>Fri</div>
-                                        <div>Sat</div>
-                                    </div>
-
-                                    <!-- Calendar Dates -->
-                                    <div class="calendar-dates">
-                                        <!-- Dates will be populated by JS -->
+                                <!-- Time Slots Container -->
+                                <div id="time-slots-container" class="mt-4">
+                                    <div class="time-slot-loading text-center py-4">
+                                        <p>Silakan pilih tanggal untuk melihat slot waktu yang tersedia</p>
                                     </div>
                                 </div>
 
-                                <!-- Time Slots -->
-                                <div class="mt-4">
-                                    <h6 class="fw-semibold mb-3">Available Time Slots</h6>
-                                    <div class="time-slots-grid">
-                                        <div class="time-slot" data-time="08:00 - 10:00">
-                                            <div class="time-slot-content">
-                                                <i class="far fa-clock"></i>
-                                                <span>08:00 - 10:00</span>
-                                                <small class="status available">Available</small>
-                                            </div>
-                                        </div>
-                                        <div class="time-slot active" data-time="10:00 - 12:00">
-                                            <div class="time-slot-content">
-                                                <i class="far fa-clock"></i>
-                                                <span>10:00 - 12:00</span>
-                                                <small class="status available">Available</small>
-                                            </div>
-                                        </div>
-                                        <div class="time-slot disabled" data-time="13:00 - 15:00">
-                                            <div class="time-slot-content">
-                                                <i class="far fa-clock"></i>
-                                                <span>13:00 - 15:00</span>
-                                                <small class="status booked">Booked</small>
-                                            </div>
-                                        </div>
-                                        <div class="time-slot" data-time="15:00 - 17:00">
-                                            <div class="time-slot-content">
-                                                <i class="far fa-clock"></i>
-                                                <span>15:00 - 17:00</span>
-                                                <small class="status available">Available</small>
-                                            </div>
+                                <!-- Selected Slots -->
+                                <div id="selected-slots-container" class="mt-4 d-none">
+                                    <h6 class="fw-semibold mb-3">Slot Waktu Terpilih</h6>
+                                    <div class="selected-slots-list">
+                                        <ul id="selected-slots-list" class="list-group">
+                                            <!-- Selected slots will be added here -->
+                                        </ul>
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <span class="fw-bold">Total:</span>
+                                            <span id="total-price" class="text-danger fw-bold fs-5">Rp 0</span>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Hidden Input -->
-                                <input type="date" id="selectedDate" class="d-none">
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex justify-content-between mt-4 gap-3">
-                                    <button class="btn-action btn-back">
+                                    <a href="{{ route('user.fields.index') }}" class="btn-action btn-back">
                                         <i class="fas fa-arrow-left"></i>
-                                        <span>Back</span>
-                                    </button>
-                                    <button class="btn-action btn-continue">
-                                        <span>Continue to Payment</span>
-                                        <i class="fas fa-arrow-right"></i>
+                                        <span>Kembali</span>
+                                    </a>
+                                    <button id="add-to-cart-btn" class="btn-action btn-continue d-flex align-items-center"
+                                        disabled>
+                                        <span class="d-none d-md-inline me-2">Tambah ke Keranjang</span>
+                                        <i class="fas fa-cart-plus"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Photographer Services Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Jasa Fotografer</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-4">
-                                    <!-- Basic Package -->
-                                    <div class="col-md-4">
-                                        <div class="package-card p-4 border rounded-4 h-100">
-                                            <h6 class="fw-bold mb-3">Paket Foto Basic</h6>
-                                            <div class="price-tag mb-3">
-                                                <span class="fs-4 fw-bold">Rp 200.000</span>
-                                                <small class="text-muted">/sesi</small>
-                                            </div>
-                                            <p class="text-muted mb-2">1 jam</p>
-                                            <ul class="list-unstyled mb-4">
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    1 fotografer dengan kamera Mirrorless/DSLR
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    1 foto per orang
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    Foto 2 tim
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    File dikirim dalam 1x24 jam via Google Drive
-                                                </li>
-                                            </ul>
-                                            <button class="btn btn-outline-primary w-100 rounded-pill">Pilih Paket</button>
-                                        </div>
-                                    </div>
+                        <!-- 3. Tambahkan script Flatpickr di bagian script -->
+                        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 
-                                    <!-- Plus Package -->
-                                    <div class="col-md-4">
-                                        <div class="package-card p-4 border rounded-4 h-100 bg-primary bg-opacity-5 ">
-                                            <div class="position-absolute top-0 end-0 mt-3 me-3">
-                                                <span class="badge bg-primary">Popular</span>
-                                            </div>
-                                            <h6 class="fw-bold mb-3">Paket Foto Plus</h6>
-                                            <div class="price-tag mb-3">
-                                                <span class="fs-4 fw-bold">Rp 300.000</span>
-                                                <small class="text-muted">/sesi</small>
-                                            </div>
-                                            <p class="text-muted mb-2">2 jam</p>
-                                            <ul class="list-unstyled mb-4">
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    1 fotografer dengan kamera Mirrorless/DSLR
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    Unlimited photo
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    Foto 2 tim
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    File dikirim dalam 1x24 jam via Google Drive
-                                                </li>
-                                            </ul>
-                                            <button class="btn btn-primary w-100 rounded-pill">Pilih Paket</button>
-                                        </div>
-                                    </div>
+                        <!-- 4. Script untuk implementasi Flatpickr dan slot waktu -->
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const timeSlotContainer = document.getElementById('time-slots-container');
+                                const selectedSlotsContainer = document.getElementById('selected-slots-container');
+                                const selectedSlotsList = document.getElementById('selected-slots-list');
+                                const totalPriceElement = document.getElementById('total-price');
+                                const addToCartBtn = document.getElementById('add-to-cart-btn');
+                                const fieldId = document.getElementById('fieldId').value;
+                                const selectedDateInput = document.getElementById('selectedDate');
 
-                                    <!-- Exclusive Package -->
-                                    <div class="col-md-4">
-                                        <div class="package-card p-4 border rounded-4 h-100">
-                                            <h6 class="fw-bold mb-3">Paket Foto Exclusive</h6>
-                                            <div class="price-tag mb-3">
-                                                <span class="fs-4 fw-bold">Rp 400.000</span>
-                                                <small class="text-muted">/sesi</small>
-                                            </div>
-                                            <p class="text-muted mb-2">3 jam</p>
-                                            <ul class="list-unstyled mb-4">
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    1 fotografer dengan kamera Mirrorless/DSLR
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    Unlimited photo
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    Foto 2 tim
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    File dikirim dalam 1x24 jam via Google Drive
-                                                </li>
-                                            </ul>
-                                            <button class="btn btn-outline-primary w-100 rounded-pill">Pilih Paket</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                let selectedSlots = [];
+                                let pricePerHour = {{ $field->price }};
 
+                                // Inisialisasi Flatpickr
+                                const flatpickrCalendar = flatpickr("#flatpickr-calendar", {
+                                    locale: "id",
+                                    dateFormat: "Y-m-d",
+                                    minDate: "today",
+                                    maxDate: new Date().getFullYear() + "-12-31", // Hingga akhir tahun berjalan
+                                    disable: [
+                                        function(date) {
+                                            return false;
+                                        }
+                                    ],
+                                    onChange: function(selectedDates, dateStr) {
+                                        selectedDateInput.value = dateStr;
+                                        selectedSlots = [];
+                                        updateSelectedSlots();
+                                        loadAvailableSlots(dateStr);
+                                    },
+                                    // Tambahkan konfigurasi tema
+                                    theme: 'custom',
+                                    // Anda juga bisa menambahkan inline CSS
+                                    onReady: function(selectedDates, dateStr, instance) {
+                                        instance.calendarContainer.style.backgroundColor = '#9e0620';
+                                        instance.calendarContainer.style.color = 'white';
+                                    }
+                                });
+
+                                // Load available slots for the selected date
+                                function loadAvailableSlots(date) {
+                                    timeSlotContainer.innerHTML = `
+            <div class="time-slot-loading text-center py-4">
+                <div class="spinner-border text-danger" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Memuat slot waktu tersedia...</p>
+            </div>
+        `;
+
+                                    fetch(`/user/fields/${fieldId}/available-slots?date=${date}`)
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            displayTimeSlots(data);
+                                        })
+                                        .catch(error => {
+                                            console.error('Error loading time slots:', error);
+                                            timeSlotContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        Gagal memuat slot waktu. Silakan coba lagi.
                     </div>
-                    <!-- Membership Packages Sidebar -->
-                    <div class="col-lg-4">
-                        <div class="card border-0 rounded-4 shadow-sm">
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-4">Membership Packages</h5>
+                `;
+                                        });
+                                }
 
-                                <!-- Bronze Package -->
-                                <div class="membership-card bronze mb-4">
-                                    <div class="package-header">
-                                        <div class="package-info">
-                                            <div class="package-icon">
-                                                <i class="fas fa-award"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="package-title">Bronze Member</h6>
-                                                <p class="package-subtitle">Perfect for casual players</p>
-                                            </div>
-                                        </div>
-                                        <div class="save-badge bronze">
-                                            <i class="fas fa-percentage"></i>
-                                            Save 10%
-                                        </div>
-                                    </div>
-                                    <div class="package-features">
-                                        <div class="feature-item">
-                                            <i class="fas fa-clock"></i>
-                                            <span>10 hours of playtime</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            <span>Valid for 1 month</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-volleyball-ball"></i>
-                                            <span>Basic equipment rental</span>
-                                        </div>
-                                    </div>
-                                    <div class="package-footer">
-                                        <div class="price-info">
-                                            <span class="price">Rp 450.000</span>
-                                            <span class="duration">/month</span>
-                                        </div>
-                                        <button class="select-btn bronze">
-                                            <span>Select Plan</span>
-                                            <i class="fas fa-arrow-right"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                // Display time slots
+                                function displayTimeSlots(slots) {
+                                    if (!slots || slots.length === 0) {
+                                        timeSlotContainer.innerHTML = `
+                <div class="alert alert-info">
+                    Tidak ada slot waktu tersedia untuk tanggal ini.
+                </div>
+            `;
+                                        return;
+                                    }
 
-                                <!-- Silver Package -->
-                                <div class="membership-card silver mb-4">
-                                    <div class="package-header">
-                                        <div class="package-info">
-                                            <div class="package-icon">
-                                                <i class="fas fa-award"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="package-title">Silver Member</h6>
-                                                <p class="package-subtitle">Great for regular players</p>
-                                            </div>
-                                        </div>
-                                        <div class="save-badge silver">
-                                            <i class="fas fa-percentage"></i>
-                                            Save 20%
-                                        </div>
-                                    </div>
-                                    <div class="package-features">
-                                        <div class="feature-item">
-                                            <i class="fas fa-clock"></i>
-                                            <span>20 hours of playtime</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            <span>Valid for 2 months</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-volleyball-ball"></i>
-                                            <span>Premium equipment rental</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-coffee"></i>
-                                            <span>1 free drink per visit</span>
-                                        </div>
-                                    </div>
-                                    <div class="package-footer">
-                                        <div class="price-info">
-                                            <span class="price">Rp 850.000</span>
-                                            <span class="duration">/2 months</span>
-                                        </div>
-                                        <button class="select-btn silver">
-                                            <span>Select Plan</span>
-                                            <i class="fas fa-arrow-right"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                    let html = '<div class="row g-2">';
 
-                                <!-- Gold Package -->
-                                <div class="membership-card gold featured">
-                                    <div class="featured-label">Best Value</div>
-                                    <div class="package-header">
-                                        <div class="package-info">
-                                            <div class="package-icon">
-                                                <i class="fas fa-crown"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="package-title">Gold Member</h6>
-                                                <p class="package-subtitle">Best value for enthusiasts</p>
-                                            </div>
-                                        </div>
-                                        <div class="save-badge gold">
-                                            <i class="fas fa-percentage"></i>
-                                            Save 30%
-                                        </div>
-                                    </div>
-                                    <div class="package-features">
-                                        <div class="feature-item">
-                                            <i class="fas fa-clock"></i>
-                                            <span>40 hours of playtime</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            <span>Valid for 3 months</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-volleyball-ball"></i>
-                                            <span>Premium equipment rental</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-coffee"></i>
-                                            <span>2 free drinks per visit</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-star"></i>
-                                            <span>Priority booking</span>
-                                        </div>
-                                        <div class="feature-item">
-                                            <i class="fas fa-lock"></i>
-                                            <span>Free locker access</span>
-                                        </div>
-                                    </div>
-                                    <div class="package-footer">
-                                        <div class="price-info">
-                                            <span class="price">Rp 1.200.000</span>
-                                            <span class="duration">/3 months</span>
-                                        </div>
-                                        <button class="select-btn gold">
-                                            <span>Select Plan</span>
-                                            <i class="fas fa-arrow-right"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                                    slots.forEach((slot) => {
+                                        let slotClass = '';
+                                        let statusText = '';
+                                        let statusClass = '';
+
+                                        if (slot.in_cart) {
+                                            slotClass = 'disabled in-cart';
+                                            statusText = 'Sudah di keranjang';
+                                            statusClass = 'in-cart';
+                                        } else if (!slot.is_available) {
+                                            slotClass = 'disabled';
+                                            statusText = 'Terpesan';
+                                            statusClass = 'booked';
+                                        } else {
+                                            statusText = 'Tersedia';
+                                            statusClass = 'available';
+                                        }
+
+                                        html += `
+                <div class="col-md-4 col-sm-6">
+                    <div class="time-slot ${slotClass}" data-slot="${slot.display}" data-price="${slot.price}">
+                        <div class="time-slot-content">
+                            <i class="far fa-clock"></i>
+                            <span>${slot.display}</span>
+                            <small class="status ${statusClass}">${statusText}</small>
                         </div>
                     </div>
+                </div>
+            `;
+                                    });
 
+                                    html += '</div>';
+                                    timeSlotContainer.innerHTML = html;
 
+                                    // Tambahkan event listener untuk slot yang tersedia
+                                    document.querySelectorAll('.time-slot:not(.disabled):not(.in-cart)').forEach(slot => {
+                                        slot.addEventListener('click', function() {
+                                            const slotTime = this.getAttribute('data-slot');
+                                            const slotPrice = parseInt(this.getAttribute('data-price'));
+
+                                            if (this.classList.contains('active')) {
+                                                // Batalkan pilihan slot
+                                                this.classList.remove('active');
+                                                selectedSlots = selectedSlots.filter(s => s.time !== slotTime);
+                                            } else {
+                                                // Pilih slot
+                                                this.classList.add('active');
+                                                selectedSlots.push({
+                                                    time: slotTime,
+                                                    price: slotPrice
+                                                });
+                                            }
+
+                                            updateSelectedSlots();
+                                        });
+                                    });
+                                }
+
+                                // Update selected slots display
+                                function updateSelectedSlots() {
+                                    if (selectedSlots.length > 0) {
+                                        selectedSlotsContainer.classList.remove('d-none');
+                                        selectedSlotsList.innerHTML = '';
+
+                                        let totalPrice = 0;
+
+                                        selectedSlots.forEach(slot => {
+                                            const li = document.createElement('li');
+                                            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                            li.innerHTML = `
+                    <div>
+                        <i class="far fa-clock me-2"></i>
+                        <span>${slot.time}</span>
+                    </div>
+                    <span class="text-danger">Rp ${formatNumber(slot.price)}</span>
+                `;
+                                            selectedSlotsList.appendChild(li);
+
+                                            totalPrice += slot.price;
+                                        });
+
+                                        totalPriceElement.textContent = `Rp ${formatNumber(totalPrice)}`;
+                                        addToCartBtn.disabled = false;
+                                    } else {
+                                        selectedSlotsContainer.classList.add('d-none');
+                                        addToCartBtn.disabled = true;
+                                    }
+                                }
+
+                                // Fungsi untuk refresh cart sidebar
+                                function refreshCartSidebar() {
+                                    fetch('{{ route('user.fields.cart-sidebar') }}')
+                                        .then(response => response.text())
+                                        .then(html => {
+                                            // Ganti konten cart sidebar
+                                            const cartContainer = document.getElementById('cartSidebar');
+                                            if (cartContainer) {
+                                                cartContainer.outerHTML = html;
+
+                                                // Tambahkan event listener untuk tombol hapus
+                                                document.querySelectorAll('.remove-item-btn').forEach(button => {
+                                                    button.addEventListener('click', function(e) {
+                                                        e.preventDefault();
+                                                        const form = this.closest('form');
+                                                        const url = form.getAttribute('action');
+                                                        const itemElement = this.closest('.cart-item');
+
+                                                        fetch(url, {
+                                                                method: 'DELETE',
+                                                                headers: {
+                                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                    'Content-Type': 'application/json',
+                                                                    'Accept': 'application/json'
+                                                                }
+                                                            })
+                                                            .then(response => response.json())
+                                                            .then(data => {
+                                                                if (data.success) {
+                                                                    itemElement.remove();
+
+                                                                    // Update jumlah item di keranjang
+                                                                    const cartCountBadge = document
+                                                                        .querySelector('.cart-count');
+                                                                    if (cartCountBadge) {
+                                                                        cartCountBadge.textContent = data
+                                                                            .cart_count;
+                                                                    }
+
+                                                                    // Refresh slot waktu jika ada tanggal yang dipilih
+                                                                    if (selectedDateInput && selectedDateInput
+                                                                        .value) {
+                                                                        loadAvailableSlots(selectedDateInput
+                                                                            .value);
+                                                                    }
+                                                                }
+                                                            })
+                                                            .catch(error => {
+                                                                console.error('Error removing item:', error);
+                                                            });
+                                                    });
+                                                });
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error refreshing cart sidebar:', error);
+                                        });
+                                }
+
+                                // Panggil fungsi refreshCartSidebar di dalam blok addToCartBtn
+                                addToCartBtn.addEventListener('click', function() {
+                                    if (selectedSlots.length === 0 || !selectedDateInput.value) {
+                                        return;
+                                    }
+
+                                    const date = selectedDateInput.value;
+                                    const slots = selectedSlots.map(s => s.time);
+
+                                    fetch('{{ route('user.fields.add-to-cart') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                            },
+                                            body: JSON.stringify({
+                                                field_id: fieldId,
+                                                date: date,
+                                                slots: slots
+                                            })
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                const cartCountBadge = document.querySelector('.cart-count');
+                                                if (cartCountBadge) {
+                                                    cartCountBadge.textContent = data.cart_count;
+                                                }
+
+                                                // Tambahkan refresh cart sidebar
+                                                refreshCartSidebar();
+
+                                                alert('Booking berhasil ditambahkan ke keranjang');
+
+                                                selectedSlots = [];
+                                                document.querySelectorAll('.time-slot.active').forEach(slot => {
+                                                    slot.classList.remove('active');
+                                                });
+                                                updateSelectedSlots();
+
+                                                loadAvailableSlots(date);
+                                            } else {
+                                                alert('Gagal menambahkan booking ke keranjang: ' + data.message);
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error adding to cart:', error);
+                                            alert('Terjadi kesalahan. Silakan coba lagi.');
+                                        });
+                                });
+                                // Format number with thousand separator
+                                function formatNumber(number) {
+                                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                                }
+
+                                // Muat jumlah item keranjang saat halaman dimuat
+                                fetch('{{ route('user.fields.cart-count') }}')
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        const cartCountBadges = document.querySelectorAll('.cart-count');
+                                        cartCountBadges.forEach(badge => {
+                                            badge.textContent = data.count;
+                                        });
+                                    })
+                                    .catch(error => {
+                                        console.error('Error loading cart count:', error);
+                                    });
+                            });
+                        </script>
+                        <style>
+                            .flatpickr-calendar {
+                                background-color: #9e0620 !important;
+                            }
+
+                            .flatpickr-weekdays {
+                                background-color: #9e0620 !important;
+                            }
+
+                            .flatpickr-weekday {
+                                color: white !important;
+                                background-color: #9e0620 !important;
+                            }
+
+                            .flatpickr-months .flatpickr-month {
+                                background-color: #9e0620 !important;
+                                color: white !important;
+                            }
+
+                            .flatpickr-current-month .flatpickr-monthDropdown-months {
+                                background-color: #9e0620 !important;
+                                color: white !important;
+                            }
+
+                            .flatpickr-weekdays {
+                                background-color: #9e0620 !important;
+                                color: white !important;
+                            }
+
+                            .flatpickr-weekday {
+                                color: white !important;
+                            }
+
+                            .flatpickr-day:nth-of-type(7n) {
+                                color: #9e0620 !important;
+                                /* Warna teks tanggal untuk hari Minggu */
+                            }
+
+                            .flatpickr-day.selected,
+                            .flatpickr-day.selected:hover,
+                            .flatpickr-day.startRange,
+                            .flatpickr-day.endRange {
+                                background-color: white !important;
+                                color: #9e0620 !important;
+                                border-color: white !important;
+                            }
+
+                            .flatpickr-day:hover {
+                                background-color: rgba(255, 255, 255, 0.2) !important;
+                            }
+
+                            .flatpickr-day.prevMonthDay,
+                            .flatpickr-day.nextMonthDay {
+                                color: rgba(255, 255, 255, 0.5) !important;
+                                /* Warna hari di bulan sebelum/sesudahnya */
+                            }
+                        </style>
+
+                    </div>
                 </div>
             </div>
-
-
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const calendarDates = document.querySelector('.calendar-dates');
-                    const selectedDateInput = document.getElementById('selectedDate');
-                    const monthDisplay = document.querySelector('.calendar-navigation h6');
-                    let currentDate = new Date();
-
-                    // Format month and year
-                    function formatMonth(date) {
-                        return date.toLocaleDateString('en-US', {
-                            month: 'long',
-                            year: 'numeric'
-                        });
-                    }
-
-                    // Generate calendar dates
-                    function generateCalendar(date) {
-                        const year = date.getFullYear();
-                        const month = date.getMonth();
-
-                        // Update month and year display
-                        monthDisplay.textContent = formatMonth(date);
-
-                        const firstDay = new Date(year, month, 1).getDay();
-                        const lastDate = new Date(year, month + 1, 0).getDate();
-                        const lastMonthLastDate = new Date(year, month, 0).getDate();
-
-                        let html = '';
-
-                        // Previous month dates
-                        for (let i = firstDay - 1; i >= 0; i--) {
-                            html += `<div class="calendar-date disabled">${lastMonthLastDate - i}</div>`;
-                        }
-
-                        // Current month dates
-                        const today = new Date();
-                        for (let i = 1; i <= lastDate; i++) {
-                            const currentDate = new Date(year, month, i);
-                            const isDisabled = currentDate < today;
-                            const isToday = currentDate.toDateString() === today.toDateString();
-                            html +=
-                                `<div class="calendar-date ${isDisabled ? 'disabled' : ''} ${isToday ? 'active' : ''}">${i}</div>`;
-                        }
-
-                        calendarDates.innerHTML = html;
-
-                        // Add click handlers
-                        document.querySelectorAll('.calendar-date:not(.disabled)').forEach(date => {
-                            date.addEventListener('click', function() {
-                                document.querySelectorAll('.calendar-date').forEach(d => d.classList.remove(
-                                    'active'));
-                                this.classList.add('active');
-                                const selectedDate = new Date(year, month, parseInt(this.textContent));
-                                selectedDateInput.value = selectedDate.toISOString().split('T')[0];
-
-                                // Update booking summary if exists
-                                const bookingSummary = document.querySelector('.booking-summary');
-                                if (bookingSummary) {
-                                    const formattedDate = selectedDate.toLocaleDateString('en-US', {
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    });
-                                    bookingSummary.querySelector('.selected-date').textContent =
-                                        formattedDate;
-                                }
-                            });
-                        });
-
-                        // Fill in remaining calendar dates if needed
-                        const totalDays = document.querySelectorAll('.calendar-date').length;
-                        let remainingDays = 42 - totalDays; // 6 rows × 7 days = 42 total grid spaces
-                        let nextMonthDay = 1;
-
-                        while (remainingDays > 0) {
-                            html += `<div class="calendar-date disabled">${nextMonthDay}</div>`;
-                            nextMonthDay++;
-                            remainingDays--;
-                        }
-
-                        calendarDates.innerHTML = html;
-                    }
-
-                    // Calendar navigation
-                    document.querySelector('.btn-prev').addEventListener('click', function() {
-                        currentDate.setMonth(currentDate.getMonth() - 1);
-                        generateCalendar(currentDate);
-                    });
-
-                    document.querySelector('.btn-next').addEventListener('click', function() {
-                        currentDate.setMonth(currentDate.getMonth() + 1);
-                        generateCalendar(currentDate);
-                    });
-
-                    // Time slot selection
-                    document.querySelectorAll('.time-slot:not(.disabled)').forEach(slot => {
-                        slot.addEventListener('click', function() {
-                            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove(
-                                'active'));
-                            this.classList.add('active');
-
-                            // Update booking summary if exists
-                            const bookingSummary = document.querySelector('.booking-summary');
-                            if (bookingSummary) {
-                                const selectedTime = this.getAttribute('data-time');
-                                bookingSummary.querySelector('.selected-time').textContent = selectedTime;
-                            }
-                        });
-                    });
-
-                    // Initialize calendar
-                    generateCalendar(currentDate);
-
-
-                    // Add booking summary to sidebar if not exists
-                    const sidebarContent = document.querySelector('.col-lg-4 .card-body');
-                    if (sidebarContent) {
-                        sidebarContent.innerHTML = bookingSummaryTemplate;
-                    }
-                });
-            </script>
-
-
         </div>
-
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endsection

@@ -44,8 +44,22 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
     // Routes untuk lapangan
     Route::get('/fields', [FieldsController::class, 'index'])->name('user.fields.index');
     Route::get('/fields/{id}', [FieldsController::class, 'show'])->name('user.fields.show');
+    Route::get('/user/fields/{fieldId}/available-slots', [FieldsController::class, 'getAvailableSlots']);
+     // Cart management
+     Route::get('/fields/cart/sidebar', [FieldsController::class, 'getCartSidebar'])->name('user.fields.cart-sidebar');
+     Route::get('/fields/cart-slots', [FieldsController::class, 'getCartSlots'])->name('user.fields.cart-slots');
 
-    Route::get('/membership', function () {
+     Route::post('/fields/add-to-cart', [FieldsController::class, 'addToCart'])->name('user.fields.add-to-cart');
+     Route::get('/fields/cart', [FieldsController::class, 'viewCart'])->name('user.fields.view-cart');
+     Route::get('/fields/cart/count', [FieldsController::class, 'getCartCount'])->name('user.fields.cart-count');
+     Route::delete('/fields/cart/{itemId}', [FieldsController::class, 'removeFromCart'])->name('user.fields.remove-from-cart');
+     Route::get('/fields/cart/clear', [FieldsController::class, 'clearCart'])->name('user.fields.clear-cart');
+        Route::post('/fields/cart/checkout', [FieldsController::class, 'checkout'])->name('user.fields.checkout');
+
+
+
+
+        Route::get('/membership', function () {
         return view('users.membership');
     })->name('membership');
 
@@ -57,6 +71,11 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Tambahkan middleware api untuk request AJAX jika diperlukan
+Route::middleware(['api'])->group(function () {
+    Route::delete('/api/user/fields/cart/{itemId}', [FieldsController::class, 'apiRemoveFromCart']);
 });
 
 // Admin Routes

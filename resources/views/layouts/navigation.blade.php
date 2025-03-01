@@ -1,5 +1,6 @@
-<link rel="stylesheet" href="{{ asset('css/users/navigation.css') }}">
+<!-- File: resources/views/layouts/navigation.blade.php -->
 
+<link rel="stylesheet" href="{{ asset('css/users/navigation.css') }}">
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top ">
@@ -12,7 +13,7 @@
             </span>
         </a>
 
-        <!-- Mobile Toggle (Tanpa data-bs-toggle) -->
+        <!-- Mobile Toggle -->
         <button class="navbar-toggler border-0 shadow-none" type="button" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -42,112 +43,30 @@
                 </li>
             </ul>
 
-
             <!-- Right Side -->
             <div class="d-flex align-items-center gap-3">
                 @auth
                     <!-- Cart Button -->
+                    @php
+                        $cartItems = session()->get('booking_cart', []);
+                        $cartCount = count($cartItems);
+                    @endphp
                     <button class="btn btn-light rounded-circle position-relative p-2" type="button" id="cartButton"
                         onclick="toggleCart()">
                         <i class="fas fa-shopping-cart"></i>
                         <span
-                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary cart-count">
+                            {{ $cartCount }}
+                        </span>
                     </button>
 
-                    <!-- Cart Sidebar -->
-                    <div class="cart-sidebar" id="cartSidebar">
-                        <!-- Cart Header -->
-                        <div class="cart-header p-3 border-bottom bg-light">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0 fw-bold">Keranjang Saya</h6>
-                                <button class="btn-close" onclick="toggleCart()"></button>
-                            </div>
-                        </div>
-
-                        <!-- Cart Body -->
-                        <div class="cart-body">
-                            <!-- Cart Items -->
-                            <div class="cart-items p-2">
-                                <!-- Item template -->
-                                <div class="cart-item p-2 border-bottom">
-                                    <div class="d-flex gap-3">
-                                        <div class="cart-item-image">
-                                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                                class="rounded" alt="Field" width="80" height="80"
-                                                style="object-fit: cover;">
-                                        </div>
-                                        <div class="cart-item-details flex-grow-1">
-                                            <h6 class="mb-1 fw-semibold">Lapangan A</h6>
-                                            <p class="mb-1 text-muted small">Indoor Field • 5v5</p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="text-danger fw-semibold">Rp 30.000</span>
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <button type="button" class="btn btn-outline-secondary">-</button>
-                                                    <button type="button" class="btn btn-outline-secondary px-3">1</button>
-                                                    <button type="button" class="btn btn-outline-secondary">+</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button class="btn-close ms-auto align-self-start"></button>
-                                    </div>
-                                </div>
-                                <!-- Repeat items... -->
-                                <!-- Item template -->
-                                <div class="cart-item p-2 border-bottom">
-                                    <div class="d-flex gap-3">
-                                        <div class="cart-item-image">
-                                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                                class="rounded" alt="Field" width="80" height="80"
-                                                style="object-fit: cover;">
-                                        </div>
-                                        <div class="cart-item-details flex-grow-1">
-                                            <h6 class="mb-1 fw-semibold">Lapangan A</h6>
-                                            <p class="mb-1 text-muted small">Indoor Field • 5v5</p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="text-danger fw-semibold">Rp 30.000</span>
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <button type="button" class="btn btn-outline-secondary">-</button>
-                                                    <button type="button" class="btn btn-outline-secondary px-3">1</button>
-                                                    <button type="button" class="btn btn-outline-secondary">+</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button class="btn-close ms-auto align-self-start"></button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Cart Summary -->
-                            <div class="cart-summary p-3 border-top bg-light mt-auto">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Subtotal</span>
-                                    <span class="fw-semibold">Rp 90.000</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-3">
-                                    <span class="text-muted">Diskon</span>
-                                    <span class="text-success">- Rp 10.000</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-3">
-                                    <span class="fw-bold">Total</span>
-                                    <span class="fw-bold text-danger">Rp 80.000</span>
-                                </div>
-                                <div class="d-grid">
-                                    <button class="btn btn-danger" onclick="window.location.href='/payment'">
-                                        <i class="fas fa-shopping-cart me-2"></i>Checkout
-                                    </button>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Cart Overlay -->
-                    <div class="cart-overlay" onclick="toggleCart()"></div>
+                    <!-- Include Cart Sidebar Component -->
+                    @include('components.cart-sidebar')
 
                     <!-- User Dropdown -->
                     <div class="dropdown">
-                        <button class="btn btn-light rounded-pill px-4 py-2 d-flex align-items-center gap-2"
-                            type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false"
+                        <button class="btn btn-light rounded-pill px-4 py-2 d-flex align-items-center gap-2" type="button"
+                            id="userMenu" data-bs-toggle="dropdown" aria-expanded="false"
                             style="min-width: 150px; max-width: 220px;">
                             <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center"
                                 style="width: 40px; height: 40px; font-size: 18px;">
@@ -194,15 +113,14 @@
                     </a>
                 @endauth
             </div>
-
-
         </div>
     </div>
 </nav>
 
-{{-- Navbar Toggler --}}
+{{-- Navbar and Cart Scripts --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Navbar toggle script
         const navbarToggler = document.querySelector('.navbar-toggler');
         const navbarCollapse = document.querySelector('.navbar-collapse');
 
@@ -233,12 +151,48 @@
         document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
             link.addEventListener('click', () => closeNavbar());
         });
-    });
-</script>
-{{-- End Navbar Toggler --}}
 
-{{-- Cart Sidebar --}}
-<script>
+        // Cart integration for AJAX removal
+        document.querySelectorAll('.remove-item-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('form');
+                const url = form.getAttribute('action');
+                const itemElement = this.closest('.cart-item');
+                const itemId = itemElement.dataset.itemId;
+
+                fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove item from DOM
+                            itemElement.remove();
+
+                            // Update cart count
+                            updateCartCount(data.cart_count);
+
+                            // Update totals
+                            updateCartTotals();
+
+                            // Show empty message if needed
+                            checkEmptyCart();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing item from cart:', error);
+                    });
+            });
+        });
+    });
+
+    // Toggle cart sidebar
     function toggleCart() {
         const sidebar = document.getElementById('cartSidebar');
         const overlay = document.querySelector('.cart-overlay');
@@ -264,81 +218,64 @@
         }
     });
 
-    // Initialize quantity buttons
-    document.querySelectorAll('.btn-group').forEach(group => {
-        const minusBtn = group.querySelector('button:first-child');
-        const plusBtn = group.querySelector('button:last-child');
-        const quantityBtn = group.querySelector('button:nth-child(2)');
+    // Update cart count badge
+    function updateCartCount(count) {
+        const badge = document.querySelector('.cart-count');
+        if (badge) {
+            badge.textContent = count;
+        }
+    }
 
-        minusBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            let quantity = parseInt(quantityBtn.textContent);
-            if (quantity > 1) {
-                quantityBtn.textContent = quantity - 1;
-                updateCartTotal();
-            }
-        });
-
-        plusBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            let quantity = parseInt(quantityBtn.textContent);
-            quantityBtn.textContent = quantity + 1;
-            updateCartTotal();
-        });
-    });
-
-    function updateCartTotal() {
+    // Update cart totals
+    function updateCartTotals() {
         const cartItems = document.querySelectorAll('.cart-item');
         let subtotal = 0;
 
         cartItems.forEach(item => {
-            const price = parseInt(item.querySelector('.text-danger').textContent.replace(/[^0-9]/g, ''));
-            const quantity = parseInt(item.querySelector('.btn-group button:nth-child(2)').textContent);
-            subtotal += price * quantity;
+            const priceText = item.querySelector('.text-danger').textContent;
+            const price = parseInt(priceText.replace(/[^0-9]/g, ''));
+            subtotal += price;
         });
 
-        document.querySelector('.cart-summary .fw-semibold').textContent = `Rp ${subtotal.toLocaleString()}`;
-
-        const discount = 10000;
-        const total = subtotal - discount;
-        document.querySelector('.cart-summary .fw-bold.text-danger').textContent = `Rp ${total.toLocaleString()}`;
-    }
-
-    // Remove cart items
-    document.querySelectorAll('.cart-item .btn-close').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const item = e.target.closest('.cart-item');
-            item.remove();
-            updateCartTotal();
-            updateCartBadge();
-        });
-    });
-
-    function updateCartBadge() {
-        const itemCount = document.querySelectorAll('.cart-item').length;
-        const badge = document.querySelector('#cartButton .badge');
-
-        if (badge) {
-            badge.textContent = itemCount;
+        // Update subtotal
+        const subtotalElement = document.querySelector('.cart-summary .fw-semibold');
+        if (subtotalElement) {
+            subtotalElement.textContent = `Rp ${formatNumber(subtotal)}`;
         }
 
-        // Show empty cart message if no items
-        const cartItems = document.querySelector('.cart-items');
-        if (itemCount === 0 && cartItems) {
-            cartItems.innerHTML = `
-                                <div class="cart-empty p-4 text-center">
-                                 <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                                <p class="mb-0 text-muted">Keranjang Anda kosong</p>
-                                </div>
-                                `;
+        // Update total (add any discounts here if needed)
+        const totalElement = document.querySelector('.cart-summary .fw-bold.text-danger');
+        if (totalElement) {
+            totalElement.textContent = `Rp ${formatNumber(subtotal)}`;
         }
     }
-</script>
-{{-- End Cart Sidebar --}}
 
-{{-- Navbar Scroll --}}
-<script>
+    // Check if cart is empty and show message if needed
+    function checkEmptyCart() {
+        const cartItems = document.querySelectorAll('.cart-item');
+        const cartItemsContainer = document.querySelector('.cart-items');
+        const cartSummary = document.querySelector('.cart-summary');
+
+        if (cartItems.length === 0 && cartItemsContainer) {
+            cartItemsContainer.innerHTML = `
+                <div class="cart-empty p-4 text-center">
+                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                    <p class="mb-0 text-muted">Keranjang Anda kosong</p>
+                </div>
+            `;
+
+            // Hide summary if cart is empty
+            if (cartSummary) {
+                cartSummary.style.display = 'none';
+            }
+        }
+    }
+
+    // Format number with thousand separator
+    function formatNumber(number) {
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
     // JavaScript untuk mendeteksi scroll
     window.addEventListener('scroll', function() {
         const navbar = document.querySelector('.navbar');
@@ -350,7 +287,3 @@
         }
     });
 </script>
-{{-- End Navbar Scroll --}}
-
-{{-- Bootstrap JS --}}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
