@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Cart;
+use App\Models\CartItem;
 
 class FieldsController extends Controller
 {
@@ -66,13 +68,25 @@ class FieldsController extends Controller
                 ['start' => '22:00', 'end' => '23:00'],
             ];
 
-            // Get cart items for the current date and field
-            $cartItems = session()->get('booking_cart', []);
-            $cartSlots = collect($cartItems)
-                ->where('field_id', $fieldId)
-                ->where('date', $date)
-                ->pluck('time_slot')
-                ->toArray();
+            // Get cart items for current user, field, and date
+            $cartSlots = [];
+            if (Auth::check()) {
+                $userCart = Cart::where('user_id', Auth::id())->first();
+
+                if ($userCart) {
+                    $cartItems = CartItem::where('cart_id', $userCart->id)
+                        ->where('type', 'field_booking')
+                        ->where('item_id', $fieldId)
+                        ->whereDate('start_time', $date)
+                        ->get();
+
+                    foreach ($cartItems as $item) {
+                        $startFormatted = Carbon::parse($item->start_time)->format('H:i');
+                        $endFormatted = Carbon::parse($item->end_time)->format('H:i');
+                        $cartSlots[] = $startFormatted . ' - ' . $endFormatted;
+                    }
+                }
+            }
 
             // Dapatkan booking yang sudah ada pada tanggal tersebut
             $bookedSlots = FieldBooking::where('field_id', $fieldId)
@@ -133,220 +147,6 @@ class FieldsController extends Controller
     }
 
     /**
-     * Menambahkan booking ke keranjang
-     */
-    public function addToCart(Request $request)
-    {
-        $request->validate([
-            'field_id' => 'required|exists:fields,id',
-            'date' => 'required|date|after_or_equal:today',
-            'slots' => 'required|array|min:1',
-        ]);
-
-        $field = Field::findOrFail($request->field_id);
-        $date = $request->date;
-        $selectedSlots = $request->slots;
-
-        // Simpan data booking ke session cart
-        $cart = session()->get('booking_cart', []);
-
-        foreach ($selectedSlots as $slot) {
-            // Parse slot info (format: "08:00-10:00")
-            list($startTime, $endTime) = explode(' - ', $slot);
-
-            // Generate unique item ID
-            $itemId = uniqid();
-
-            $cart[$itemId] = [
-                'id' => $itemId,
-                'field_id' => $field->id,
-                'field_name' => $field->name,
-                'field_type' => $field->type,
-                'field_image' => $field->image,
-                'price' => $field->price * 1, // 1 hours per slot
-                'date' => $date,
-                'formatted_date' => Carbon::parse($date)->format('d M Y'),
-                'start_time' => $startTime,
-                'end_time' => $endTime,
-                'time_slot' => $slot,
-            ];
-        }
-
-        session()->put('booking_cart', $cart);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Slot waktu berhasil ditambahkan ke keranjang',
-            'cart_count' => count($cart)
-        ]);
-    }
-
-    /**
-     * Menampilkan halaman keranjang booking
-     */
-    public function viewCart()
-    {
-        $cartItems = session()->get('booking_cart', []);
-        $totalPrice = 0;
-
-        foreach ($cartItems as $item) {
-            $totalPrice += $item['price'];
-        }
-
-        return view('users.fields.cart', compact('cartItems', 'totalPrice'));
-    }
-
-    // Tambahkan metode ini ke FieldsController
-
-    /**
-     * API untuk menghapus item dari keranjang (untuk AJAX)
-     */
-    public function apiRemoveFromCart($itemId)
-    {
-        $cart = session()->get('booking_cart', []);
-
-        if (isset($cart[$itemId])) {
-            unset($cart[$itemId]);
-            session()->put('booking_cart', $cart);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Item berhasil dihapus dari keranjang',
-                'cart_count' => count($cart)
-            ]);
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Item tidak ditemukan'
-        ], 404);
-    }
-
-    // Ubah metode removeFromCart untuk mendukung respons JSON jika diminta AJAX
-    public function removeFromCart($itemId)
-    {
-        $cart = session()->get('booking_cart', []);
-
-        if (isset($cart[$itemId])) {
-            unset($cart[$itemId]);
-            session()->put('booking_cart', $cart);
-
-            // Check if this is an AJAX request
-            if (request()->ajax() || request()->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Item berhasil dihapus dari keranjang',
-                    'cart_count' => count($cart)
-                ]);
-            }
-        }
-
-        return back()->with('success', 'Item berhasil dihapus dari keranjang');
-    }
-    /**
-     * Mendapatkan HTML untuk cart sidebar (untuk AJAX refresh)
-     */
-    public function getCartSidebar()
-    {
-        $cartItems = session()->get('booking_cart', []);
-        $totalPrice = 0;
-
-        foreach ($cartItems as $item) {
-            $totalPrice += $item['price'];
-        }
-
-        return view('components.cart-sidebar', compact('cartItems', 'totalPrice'))->render();
-    }
-
-    /**
-     * Memproses checkout dari keranjang
-     */
-    public function checkout()
-    {
-        $cartItems = session()->get('booking_cart', []);
-
-        if (empty($cartItems)) {
-            return redirect()->route('user.fields.index')
-                ->with('error', 'Keranjang booking kosong');
-        }
-
-        // Simpan semua booking dari keranjang
-        $bookingIds = [];
-        $totalPrice = 0;
-
-        foreach ($cartItems as $item) {
-            $startDateTime = Carbon::parse("{$item['date']} {$item['start_time']}");
-            $endDateTime = Carbon::parse("{$item['date']} {$item['end_time']}");
-
-            // Check if slot is still available
-            $conflictBooking = FieldBooking::where('field_id', $item['field_id'])
-                ->where(function ($query) use ($startDateTime, $endDateTime) {
-                    $query->whereBetween('start_time', [$startDateTime, $endDateTime])
-                        ->orWhereBetween('end_time', [$startDateTime, $endDateTime])
-                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '<=', $startDateTime)
-                                ->where('end_time', '>=', $endDateTime);
-                        });
-                })
-                ->where('status', '!=', 'cancelled')
-                ->first();
-
-            if ($conflictBooking) {
-                return back()->with('error', 'Maaf, beberapa slot yang Anda pilih sudah tidak tersedia. Silakan periksa kembali keranjang Anda.');
-            }
-
-            // Create booking
-            $booking = new FieldBooking();
-            $booking->user_id = Auth::id();
-            $booking->field_id = $item['field_id'];
-            $booking->start_time = $startDateTime;
-            $booking->end_time = $endDateTime;
-            $booking->total_price = $item['price'];
-            $booking->status = 'pending';
-            $booking->save();
-
-            $bookingIds[] = $booking->id;
-            $totalPrice += $item['price'];
-        }
-
-        // Clear cart after successful booking
-        session()->forget('booking_cart');
-
-        // Redirect to payment page
-        return redirect()->route('user.payment.checkout', [
-            'bookings' => $bookingIds,
-            'total_price' => $totalPrice
-        ])->with('success', 'Booking berhasil dibuat. Silakan selesaikan pembayaran.');
-    }
-    public function getCartSlots(Request $request)
-    {
-        $request->validate([
-            'date' => 'required|date',
-            'field_id' => 'required|exists:fields,id'
-        ]);
-
-        $cart = session()->get('booking_cart', []);
-        $cartSlots = [];
-
-        // Get slots from cart for this specific field and date
-        foreach ($cart as $item) {
-            if ($item['field_id'] == $request->field_id && $item['date'] == $request->date) {
-                $cartSlots[] = $item['time_slot'];
-            }
-        }
-
-        // Optionally, also retrieve booked slots from database
-        $bookedSlots = Booking::where('field_id', $request->field_id)
-            ->where('booking_date', $request->date)
-            ->pluck('time_slot')
-            ->toArray();
-
-        // Merge cart and booked slots
-        $allReservedSlots = array_merge($cartSlots, $bookedSlots);
-
-        return response()->json($allReservedSlots);
-    }
-    /**
      * Membatalkan booking
      */
     public function cancelBooking($bookingId)
@@ -365,26 +165,48 @@ class FieldsController extends Controller
         return back()->with('error', 'Maaf, booking tidak dapat dibatalkan');
     }
 
-    /**
-     * Mendapatkan jumlah item di keranjang
-     */
-    public function getCartCount()
+    public function getCartSlots(Request $request)
     {
-        $cartItems = session()->get('booking_cart', []);
-
-        return response()->json([
-            'count' => count($cartItems)
+        $request->validate([
+            'date' => 'required|date',
+            'field_id' => 'required|exists:fields,id'
         ]);
-    }
 
-    /**
-     * Menghapus semua item dari keranjang
-     */
-    public function clearCart()
-    {
-        session()->forget('booking_cart');
+        $fieldId = $request->field_id;
+        $date = $request->date;
+        $reservedSlots = [];
 
-        return redirect()->route('user.fields.cart')
-            ->with('success', 'Keranjang berhasil dikosongkan');
+        // Get slots from user's cart for this specific field and date
+        if (Auth::check()) {
+            $userCart = Cart::where('user_id', Auth::id())->first();
+
+            if ($userCart) {
+                $cartItems = CartItem::where('cart_id', $userCart->id)
+                    ->where('type', 'field_booking')
+                    ->where('item_id', $fieldId)
+                    ->whereDate('start_time', $date)
+                    ->get();
+
+                foreach ($cartItems as $item) {
+                    $startFormatted = Carbon::parse($item->start_time)->format('H:i');
+                    $endFormatted = Carbon::parse($item->end_time)->format('H:i');
+                    $reservedSlots[] = $startFormatted . ' - ' . $endFormatted;
+                }
+            }
+        }
+
+        // Also get booked slots from FieldBooking table
+        $bookedSlots = FieldBooking::where('field_id', $fieldId)
+            ->whereDate('start_time', $date)
+            ->where('status', '!=', 'cancelled')
+            ->get();
+
+        foreach ($bookedSlots as $booking) {
+            $startFormatted = Carbon::parse($booking->start_time)->format('H:i');
+            $endFormatted = Carbon::parse($booking->end_time)->format('H:i');
+            $reservedSlots[] = $startFormatted . ' - ' . $endFormatted;
+        }
+
+        return response()->json($reservedSlots);
     }
 }

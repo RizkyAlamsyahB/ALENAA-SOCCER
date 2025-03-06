@@ -48,20 +48,20 @@
                 @auth
                     <!-- Cart Button -->
                     @php
-                        $cartItems = session()->get('booking_cart', []);
-                        $cartCount = count($cartItems);
+                        $cartCount = \App\Models\CartItem::where('cart_id', function($query) {
+                            $query->select('id')
+                                ->from('carts')
+                                ->where('user_id', Auth::id())
+                                ->limit(1);
+                        })->count();
                     @endphp
-                    <button class="btn btn-light rounded-circle position-relative p-2" type="button" id="cartButton"
-                        onclick="toggleCart()">
+                    <a href="{{ route('user.cart.view') }}" class="btn btn-light rounded-circle position-relative p-2" type="button" id="cartButton">
                         <i class="fas fa-shopping-cart"></i>
                         <span
                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary cart-count">
                             {{ $cartCount }}
                         </span>
-                    </button>
-
-                    <!-- Include Cart Sidebar Component -->
-                    @include('components.cart-sidebar')
+                    </a>
 
                     <!-- User Dropdown -->
                     <div class="dropdown">
@@ -117,7 +117,7 @@
     </div>
 </nav>
 
-{{-- Navbar and Cart Scripts --}}
+{{-- Navbar Scripts --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Navbar toggle script
@@ -151,130 +151,7 @@
         document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
             link.addEventListener('click', () => closeNavbar());
         });
-
-        // Cart integration for AJAX removal
-        document.querySelectorAll('.remove-item-btn').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const form = this.closest('form');
-                const url = form.getAttribute('action');
-                const itemElement = this.closest('.cart-item');
-                const itemId = itemElement.dataset.itemId;
-
-                fetch(url, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Remove item from DOM
-                            itemElement.remove();
-
-                            // Update cart count
-                            updateCartCount(data.cart_count);
-
-                            // Update totals
-                            updateCartTotals();
-
-                            // Show empty message if needed
-                            checkEmptyCart();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error removing item from cart:', error);
-                    });
-            });
-        });
     });
-
-    // Toggle cart sidebar
-    function toggleCart() {
-        const sidebar = document.getElementById('cartSidebar');
-        const overlay = document.querySelector('.cart-overlay');
-
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-
-        // Toggle body scroll
-        if (sidebar.classList.contains('active')) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-    }
-
-    // Close cart when pressing ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const sidebar = document.getElementById('cartSidebar');
-            if (sidebar.classList.contains('active')) {
-                toggleCart();
-            }
-        }
-    });
-
-    // Update cart count badge
-    function updateCartCount(count) {
-        const badge = document.querySelector('.cart-count');
-        if (badge) {
-            badge.textContent = count;
-        }
-    }
-
-    // Update cart totals
-    function updateCartTotals() {
-        const cartItems = document.querySelectorAll('.cart-item');
-        let subtotal = 0;
-
-        cartItems.forEach(item => {
-            const priceText = item.querySelector('.text-danger').textContent;
-            const price = parseInt(priceText.replace(/[^0-9]/g, ''));
-            subtotal += price;
-        });
-
-        // Update subtotal
-        const subtotalElement = document.querySelector('.cart-summary .fw-semibold');
-        if (subtotalElement) {
-            subtotalElement.textContent = `Rp ${formatNumber(subtotal)}`;
-        }
-
-        // Update total (add any discounts here if needed)
-        const totalElement = document.querySelector('.cart-summary .fw-bold.text-danger');
-        if (totalElement) {
-            totalElement.textContent = `Rp ${formatNumber(subtotal)}`;
-        }
-    }
-
-    // Check if cart is empty and show message if needed
-    function checkEmptyCart() {
-        const cartItems = document.querySelectorAll('.cart-item');
-        const cartItemsContainer = document.querySelector('.cart-items');
-        const cartSummary = document.querySelector('.cart-summary');
-
-        if (cartItems.length === 0 && cartItemsContainer) {
-            cartItemsContainer.innerHTML = `
-                <div class="cart-empty p-4 text-center">
-                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                    <p class="mb-0 text-muted">Keranjang Anda kosong</p>
-                </div>
-            `;
-
-            // Hide summary if cart is empty
-            if (cartSummary) {
-                cartSummary.style.display = 'none';
-            }
-        }
-    }
-
-    // Format number with thousand separator
-    function formatNumber(number) {
-        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
 
     // JavaScript untuk mendeteksi scroll
     window.addEventListener('scroll', function() {
@@ -286,4 +163,7 @@
             navbar.classList.remove('navbar-scroll');
         }
     });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
 </script>

@@ -14,14 +14,15 @@ return new class extends Migration
         Schema::create('cart_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cart_id')->constrained()->onDelete('cascade');
-            $table->string('item_type'); // 'field_slot', 'photographer_package', dll
-            $table->unsignedBigInteger('item_id');
-            $table->integer('quantity')->default(1);
+            $table->enum('type', ['field_booking', 'rental_item', 'membership', 'photographer']);
+            $table->foreignId('item_id'); // ID dari tabel terkait (field_id, rental_item_id, membership_id, photographer_id)
+            $table->dateTime('start_time')->nullable(); // Untuk booking lapangan & fotografer
+            $table->dateTime('end_time')->nullable(); // Untuk booking lapangan & fotografer
+            $table->integer('quantity')->default(1); // Untuk rental produk (jumlah barang)
             $table->decimal('price', 10, 2);
             $table->timestamps();
-
-            $table->index(['item_type', 'item_id']);
         });
+
     }
 
     /**

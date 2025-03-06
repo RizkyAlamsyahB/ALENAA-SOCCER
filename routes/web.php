@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\Admin\FieldController;
 use App\Http\Controllers\User\FieldsController;
 use App\Http\Controllers\Admin\ProductController;
@@ -41,23 +42,27 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
     })->name('mabar.index');
 
 
-    // Routes untuk lapangan
-    Route::get('/fields', [FieldsController::class, 'index'])->name('user.fields.index');
-    Route::get('/fields/{id}', [FieldsController::class, 'show'])->name('user.fields.show');
-    Route::get('/user/fields/{fieldId}/available-slots', [FieldsController::class, 'getAvailableSlots']);
-     // Cart management
-     Route::get('/fields/cart/sidebar', [FieldsController::class, 'getCartSidebar'])->name('user.fields.cart-sidebar');
-     Route::get('/fields/cart-slots', [FieldsController::class, 'getCartSlots'])->name('user.fields.cart-slots');
+    Route::prefix('fields')->name('user.fields.')->group(function () {
+        Route::get('/', [FieldsController::class, 'index'])->name('index');
+        Route::get('/{id}', [FieldsController::class, 'show'])->name('show');
+        Route::get('/{fieldId}/available-slots', [FieldsController::class, 'getAvailableSlots'])->name('availableSlots');
+        Route::get('/cart-slots', [FieldsController::class, 'getCartSlots'])->name('cartSlots');
+    });
 
-     Route::post('/fields/add-to-cart', [FieldsController::class, 'addToCart'])->name('user.fields.add-to-cart');
-     Route::get('/fields/cart', [FieldsController::class, 'viewCart'])->name('user.fields.view-cart');
-     Route::get('/fields/cart/count', [FieldsController::class, 'getCartCount'])->name('user.fields.cart-count');
-     Route::delete('/fields/cart/{itemId}', [FieldsController::class, 'removeFromCart'])->name('user.fields.remove-from-cart');
-     Route::get('/fields/cart/clear', [FieldsController::class, 'clearCart'])->name('user.fields.clear-cart');
-        Route::post('/fields/cart/checkout', [FieldsController::class, 'checkout'])->name('user.fields.checkout');
+// Routes untuk booking
+Route::post('/bookings/{bookingId}/cancel', [FieldsController::class, 'cancelBooking'])->name('user.bookings.cancel');
 
-
-
+// Routes untuk cart
+Route::prefix('cart')->name('user.cart.')->group(function () {
+    Route::post('/add', [CartController::class, 'addToCart'])->name('add');
+    Route::get('/', [CartController::class, 'viewCart'])->name('view');
+    Route::delete('/{itemId}', [CartController::class, 'removeFromCart'])->name('remove');
+    Route::delete('/{itemId}/api', [CartController::class, 'apiRemoveFromCart'])->name('api.remove');
+    Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
+    Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
+    Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
+    Route::delete('/', [CartController::class, 'clearCart'])->name('clear');
+});
 
         Route::get('/membership', function () {
         return view('users.membership');

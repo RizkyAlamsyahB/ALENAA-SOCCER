@@ -9,6 +9,9 @@
         --btn-outline-danger-hover: rgba(158, 6, 32, 0.1);
         /* 10% opacity dari #9E0620 */
     }
+    .bg-primary {
+        background-color: var(--primary-color) !important;
+    }
 
     .btn-outline-danger {
         color: var(--btn-outline-danger);
