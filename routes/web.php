@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\Admin\FieldController;
 use App\Http\Controllers\User\FieldsController;
+use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\Admin\MembershipController;
@@ -29,42 +30,49 @@ Route::get('/', function () {
     }
     return view('welcome');
 })->name('welcome');
-
 // User Routes
 Route::middleware(['auth', 'checkRole:user'])->group(function () {
+    // Dashboard
     Route::get('/dashboard', function () {
         return view('users.dashboard');
     })->name('users.dashboard');
 
-    // Rute user lainnya (Mabar, Lapangan, dll.)
-    Route::get('/mabar', function () {
-        return view('users.mabar');
-    })->name('mabar.index');
-
-
+    // Fields (Lapangan) Management
     Route::prefix('fields')->name('user.fields.')->group(function () {
         Route::get('/', [FieldsController::class, 'index'])->name('index');
         Route::get('/{id}', [FieldsController::class, 'show'])->name('show');
         Route::get('/{fieldId}/available-slots', [FieldsController::class, 'getAvailableSlots'])->name('availableSlots');
         Route::get('/cart-slots', [FieldsController::class, 'getCartSlots'])->name('cartSlots');
+        Route::post('/bookings/{bookingId}/cancel', [FieldsController::class, 'cancelBooking'])->name('bookings.cancel');
     });
 
-// Routes untuk booking
-Route::post('/bookings/{bookingId}/cancel', [FieldsController::class, 'cancelBooking'])->name('user.bookings.cancel');
+    // Cart Management
+    Route::prefix('cart')->name('user.cart.')->group(function () {
+        Route::post('/add', [CartController::class, 'addToCart'])->name('add');
+        Route::get('/', [CartController::class, 'viewCart'])->name('view');
+        Route::delete('/{itemId}', [CartController::class, 'removeFromCart'])->name('remove');
+        Route::delete('/api/{itemId}', [CartController::class, 'apiRemoveFromCart'])->name('api.remove');
+        Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
+        Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
+        Route::get('/clear', [CartController::class, 'clearCart'])->name('clear');
+        Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
+    });
 
-// Routes untuk cart
-Route::prefix('cart')->name('user.cart.')->group(function () {
-    Route::post('/add', [CartController::class, 'addToCart'])->name('add');
-    Route::get('/', [CartController::class, 'viewCart'])->name('view');
-    Route::delete('/{itemId}', [CartController::class, 'removeFromCart'])->name('remove');
-    Route::delete('/{itemId}/api', [CartController::class, 'apiRemoveFromCart'])->name('api.remove');
-    Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
-    Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
-    Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
-    Route::delete('/', [CartController::class, 'clearCart'])->name('clear');
-});
+    // Payment Pages (Protected routes - require authentication)
+    Route::prefix('payment')->name('user.payment.')->group(function () {
+        Route::get('/success', [PaymentController::class, 'finish'])->name('success');
+        Route::get('/unfinish', [PaymentController::class, 'unfinish'])->name('unfinish');
+        Route::get('/history', [PaymentController::class, 'history'])->name('history');
+        Route::get('/detail/{id}', [PaymentController::class, 'detail'])->name('detail');
+        Route::get('/error', [PaymentController::class, 'error'])->name('error');
+    });
 
-        Route::get('/membership', function () {
+    // Other Features
+    Route::get('/mabar', function () {
+        return view('users.mabar');
+    })->name('mabar.index');
+
+    Route::get('/membership', function () {
         return view('users.membership');
     })->name('membership');
 
@@ -78,9 +86,18 @@ Route::prefix('cart')->name('user.cart.')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Tambahkan middleware api untuk request AJAX jika diperlukan
-Route::middleware(['api'])->group(function () {
-    Route::delete('/api/user/fields/cart/{itemId}', [FieldsController::class, 'apiRemoveFromCart']);
+// Payment Notification Endpoints (Diakses oleh Midtrans, tidak memerlukan auth)
+Route::prefix('payment')->name('payment.')->group(function () {
+    // Midtrans notification handler
+    Route::post('/notification', [PaymentController::class, 'notification'])->name('notification');
+
+    // Recurring payment notification
+    Route::post('/recurring-notification', [PaymentController::class, 'recurringNotification'])
+        ->name('recurring.notification');
+
+    // Pay account notification
+    Route::post('/pay-account-notification', [PaymentController::class, 'payAccountNotification'])
+        ->name('pay-account.notification');
 });
 
 // Admin Routes

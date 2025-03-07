@@ -19,6 +19,7 @@ class FieldBooking extends Model
         'end_time',
         'total_price',
         'status',
+        'payment_id',
     ];
 
     protected $casts = [

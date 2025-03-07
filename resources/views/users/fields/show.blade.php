@@ -829,409 +829,467 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize variables
-    const fieldId = document.getElementById('fieldId').value;
-    let selectedDate = '';
-    const selectedSlots = new Set();
-    let selectedSlotsData = [];
-    let totalPrice = 0;
-    let currentStep = 1;
-    const totalSteps = 3;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize variables
+        const fieldId = document.getElementById('fieldId').value;
+        let selectedDate = '';
+        const selectedSlots = new Set();
+        let selectedSlotsData = [];
+        let totalPrice = 0;
+        let currentStep = 1;
+        const totalSteps = 3;
 
-    // DOM Elements
-    const progressBar = document.getElementById('wizard-progress-bar');
-    const wizardSteps = document.querySelectorAll('.wizard-step');
-    const wizardPanels = document.querySelectorAll('.wizard-panel');
+        // DOM Elements
+        const progressBar = document.getElementById('wizard-progress-bar');
+        const wizardSteps = document.querySelectorAll('.wizard-step');
+        const wizardPanels = document.querySelectorAll('.wizard-panel');
 
-    const prevBtn = document.getElementById('wizard-prev-btn');
-    const nextBtn = document.getElementById('wizard-next-btn');
-    const submitBtn = document.getElementById('wizard-submit-btn');
+        const prevBtn = document.getElementById('wizard-prev-btn');
+        const nextBtn = document.getElementById('wizard-next-btn');
+        const submitBtn = document.getElementById('wizard-submit-btn');
 
-    // Initialize Flatpickr inline calendar
-    const calendar = flatpickr("#inline-calendar", {
-        inline: true,
-        locale: 'id',
-        dateFormat: 'Y-m-d',
-        minDate: 'today',
-        disableMobile: true,
-        onChange: function(selectedDates, dateStr) {
-            selectedDate = dateStr;
-            document.getElementById('selectedDate').value = dateStr;
+        // Initialize Flatpickr inline calendar
+        const calendar = flatpickr("#inline-calendar", {
+            inline: true,
+            locale: 'id',
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            disableMobile: true,
+            onChange: function(selectedDates, dateStr) {
+                selectedDate = dateStr;
+                document.getElementById('selectedDate').value = dateStr;
 
-            // Enable next button
-            nextBtn.disabled = false;
-        }
-    });
-
-    // Update progress bar
-    function updateProgressBar() {
-        const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-        progressBar.style.width = `${progressPercentage}%`;
-    }
-
-    // Update step states
-    function updateSteps() {
-        wizardSteps.forEach((step, index) => {
-            const stepNumber = index + 1;
-
-            // Remove all states
-            step.classList.remove('active', 'completed');
-
-            // Set appropriate state
-            if (stepNumber === currentStep) {
-                step.classList.add('active');
-            } else if (stepNumber < currentStep) {
-                step.classList.add('completed');
+                // Enable next button
+                nextBtn.disabled = false;
             }
         });
-    }
 
-    // Show/hide panels
-    function showPanel() {
-        wizardPanels.forEach((panel, index) => {
-            const panelNumber = index + 1;
-
-            if (panelNumber === currentStep) {
-                panel.classList.add('active');
-            } else {
-                panel.classList.remove('active');
-            }
-        });
-    }
-
-    // Update buttons
-    function updateButtons() {
-        prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
-        nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
-        submitBtn.style.display = currentStep === totalSteps ? 'flex' : 'none';
-
-        // Disable next button on date selection step if no date is selected
-        if (currentStep === 1) {
-            nextBtn.disabled = !selectedDate;
+        // Update progress bar
+        function updateProgressBar() {
+            const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
         }
 
-        // Disable next button on time selection step if no slots are selected
-        if (currentStep === 2) {
-            nextBtn.disabled = selectedSlots.size === 0;
-        }
-    }
+        // Update step states
+        function updateSteps() {
+            wizardSteps.forEach((step, index) => {
+                const stepNumber = index + 1;
 
-    // Navigate to step
-    function goToStep(step) {
-        currentStep = step;
-        updateProgressBar();
-        updateSteps();
-        showPanel();
-        updateButtons();
+                // Remove all states
+                step.classList.remove('active', 'completed');
 
-        // Additional actions based on step
-        if (step === 2 && selectedDate) {
-            // Format date for display
-            const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-            document.getElementById('selected-date-display').textContent = formattedDate;
-
-            // Load available time slots
-            loadAvailableSlots(selectedDate);
-        }
-
-        if (step === 3) {
-            // Update confirmation details
-            const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-            document.getElementById('confirm-date').textContent = formattedDate;
-
-            // Render selected slots in confirmation
-            renderSelectedSlots();
-        }
-    }
-
-    // Next button click handler
-    nextBtn.addEventListener('click', function() {
-        if (currentStep < totalSteps) {
-            goToStep(currentStep + 1);
-        }
-    });
-
-    // Previous button click handler
-    prevBtn.addEventListener('click', function() {
-        if (currentStep > 1) {
-            goToStep(currentStep - 1);
-        }
-    });
-
-    // Submit button click handler (Add to Cart)
-    submitBtn.addEventListener('click', function() {
-        // Disable button and show loading state
-        this.disabled = true;
-        const originalText = this.innerHTML;
-        this.innerHTML = `
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            <span class="ms-2">Menambahkan...</span>
-        `;
-
-        // Prepare data for API request
-        const requestData = {
-            field_id: fieldId,
-            date: selectedDate,
-            slots: Array.from(selectedSlots)
-        };
-
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        // Send request to add to cart
-        fetch('/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(requestData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Show success message
-                showToast('Success', data.message, 'success');
-
-                // Redirect to cart page or stay on current page based on preference
-                setTimeout(() => {
-                    window.location.href = '/cart';
-                }, 1500);
-            } else {
-                throw new Error(data.message || 'Failed to add to cart');
-            }
-        })
-        .catch(error => {
-            console.error('Error adding to cart:', error);
-            showToast('Error', 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
-
-            // Restore button state
-            this.disabled = false;
-            this.innerHTML = originalText;
-        });
-    });
-
-    // Function to load available slots
-    function loadAvailableSlots(date) {
-        const slotsWrapper = document.getElementById('time-slots-wrapper');
-
-        // Show loading state
-        slotsWrapper.innerHTML = `
-            <div class="text-center py-4 slot-placeholder">
-                <div class="spinner-border text-danger" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
-            </div>
-        `;
-
-        // Fetch available slots from the server
-        fetch(`/fields/${fieldId}/available-slots?date=${date}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                // Set appropriate state
+                if (stepNumber === currentStep) {
+                    step.classList.add('active');
+                } else if (stepNumber < currentStep) {
+                    step.classList.add('completed');
                 }
-                return response.json();
-            })
-            .then(data => {
-                renderTimeSlots(data);
-            })
-            .catch(error => {
-                console.error('Error fetching available slots:', error);
-                slotsWrapper.innerHTML = `
-                    <div class="alert alert-danger" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        Gagal memuat slot waktu. Silakan coba lagi nanti.
-                    </div>
-                `;
             });
-    }
-
-    // Function to render time slots
-    function renderTimeSlots(slots) {
-        const slotsWrapper = document.getElementById('time-slots-wrapper');
-        const availableSlotsCount = document.getElementById('available-slots-count');
-
-        // Clear previous content
-        slotsWrapper.innerHTML = '';
-
-        // Count available slots
-        const availableCount = slots.filter(slot => slot.is_available).length;
-        availableSlotsCount.textContent = `${availableCount} slot`;
-
-        // If no available slots
-        if (availableCount === 0) {
-            slotsWrapper.innerHTML = `
-                <div class="alert alert-warning" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
-                </div>
-            `;
-            return;
         }
 
-        // Create grid for slots
-        const slotGrid = document.createElement('div');
-        slotGrid.classList.add('time-slots-grid');
+        // Show/hide panels
+        function showPanel() {
+            wizardPanels.forEach((panel, index) => {
+                const panelNumber = index + 1;
 
-        // Add slots to grid
-        slots.forEach(slot => {
-            const slotDiv = document.createElement('div');
-
-            let statusClass = '';
-            let statusIcon = '';
-            let isDisabled = false;
-
-            switch (slot.status) {
-                case 'booked':
-                    statusClass = 'slot-booked';
-                    statusIcon = '<i class="fas fa-lock"></i>';
-                    isDisabled = true;
-                    break;
-                case 'in_cart':
-                    statusClass = 'slot-in-cart';
-                    statusIcon = '<i class="fas fa-shopping-cart"></i>';
-                    break;
-                case 'available':
-                    statusClass = 'slot-available';
-                    statusIcon = '<i class="fas fa-clock"></i>';
-                    break;
-            }
-
-            const isSelected = selectedSlots.has(slot.display);
-            if (isSelected) {
-                statusClass = 'slot-selected';
-                statusIcon = '<i class="fas fa-check"></i>';
-            }
-
-            slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
-            slotDiv.dataset.slot = slot.display;
-            slotDiv.dataset.price = slot.price;
-            slotDiv.dataset.status = slot.status;
-
-            slotDiv.innerHTML = `
-                <div class="slot-time">
-                    ${statusIcon}
-                    <span>${slot.display}</span>
-                </div>
-                <div class="slot-price">Rp ${slot.price.toLocaleString('id')}</div>
-            `;
-
-            slotGrid.appendChild(slotDiv);
-        });
-
-        slotsWrapper.appendChild(slotGrid);
-
-        // Add slot click event listeners
-        document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
-            slotElement.addEventListener('click', function() {
-                const slotTime = this.dataset.slot;
-                const slotPrice = parseFloat(this.dataset.price);
-                const slotStatus = this.dataset.status;
-
-                // If already in cart, show message and skip
-                if (slotStatus === 'in_cart') {
-                    alert('Slot waktu ini sudah ada di keranjang Anda');
-                    return;
-                }
-
-                // Toggle selection
-                if (selectedSlots.has(slotTime)) {
-                    // Remove from selected slots
-                    selectedSlots.delete(slotTime);
-                    this.classList.remove('slot-selected');
-
-                    // Update icon
-                    const iconElement = this.querySelector('.slot-time i');
-                    iconElement.className = 'fas fa-clock';
-
-                    // Update selectedSlotsData
-                    selectedSlotsData = selectedSlotsData.filter(s => s.slot !== slotTime);
-
-                    // Update total price
-                    totalPrice -= slotPrice;
+                if (panelNumber === currentStep) {
+                    panel.classList.add('active');
                 } else {
-                    // Add to selected slots
-                    selectedSlots.add(slotTime);
-                    this.classList.add('slot-selected');
-
-                    // Update icon
-                    const iconElement = this.querySelector('.slot-time i');
-                    iconElement.className = 'fas fa-check';
-
-                    // Update selectedSlotsData
-                    selectedSlotsData.push({
-                        slot: slotTime,
-                        price: slotPrice
-                    });
-
-                    // Update total price
-                    totalPrice += slotPrice;
+                    panel.classList.remove('active');
                 }
-
-                // Enable/disable next button based on selection
-                nextBtn.disabled = selectedSlots.size === 0;
             });
-        });
-    }
-
-    // Function to render selected slots in confirmation step
-    function renderSelectedSlots() {
-        const selectedSlotsList = document.getElementById('selected-slots-list');
-        const totalPriceElement = document.getElementById('total-price');
-
-        // Clear previous content
-        selectedSlotsList.innerHTML = '';
-
-        // Add selected slots to list
-        selectedSlotsData.forEach(slotData => {
-            const listItem = document.createElement('li');
-            listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-
-            listItem.innerHTML = `
-                <div>
-                    <i class="far fa-clock text-danger me-2"></i>
-                    <span>${slotData.slot}</span>
-                </div>
-                <span class="text-secondary">Rp ${slotData.price.toLocaleString('id')}</span>
-            `;
-
-            selectedSlotsList.appendChild(listItem);
-        });
-
-        // Update total price
-        totalPriceElement.textContent = `Rp ${totalPrice.toLocaleString('id')}`;
-    }
-
-    // Helper function to show toast notifications
-    function showToast(title, message, type) {
-        // Check if toastr is available
-        if (typeof toastr !== 'undefined') {
-            toastr[type](message, title);
-        } else {
-            // Fallback to alert
-            alert(`${title}: ${message}`);
         }
-    }
 
-    // Initialize the wizard
-    goToStep(1);
+        // Update buttons
+        function updateButtons() {
+            prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
+            nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
+            submitBtn.style.display = currentStep === totalSteps ? 'flex' : 'none';
+
+            // Disable next button on date selection step if no date is selected
+            if (currentStep === 1) {
+                nextBtn.disabled = !selectedDate;
+            }
+
+            // Disable next button on time selection step if no slots are selected
+            if (currentStep === 2) {
+                nextBtn.disabled = selectedSlots.size === 0;
+            }
+        }
+
+        // Navigate to step
+        function goToStep(step) {
+            currentStep = step;
+            updateProgressBar();
+            updateSteps();
+            showPanel();
+            updateButtons();
+
+            // Additional actions based on step
+            if (step === 2 && selectedDate) {
+                // Format date for display
+                const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                document.getElementById('selected-date-display').textContent = formattedDate;
+
+                // Load available time slots
+                loadAvailableSlots(selectedDate);
+            }
+
+            if (step === 3) {
+                // Update confirmation details
+                const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                document.getElementById('confirm-date').textContent = formattedDate;
+
+                // Render selected slots in confirmation
+                renderSelectedSlots();
+            }
+        }
+
+// Next button click handler
+nextBtn.addEventListener('click', function() {
+   if (currentStep < totalSteps) {
+       goToStep(currentStep + 1);
+   }
+});
+
+// Previous button click handler
+prevBtn.addEventListener('click', function() {
+   if (currentStep > 1) {
+       goToStep(currentStep - 1);
+   }
+});
+
+// Submit button click handler (Add to Cart)
+submitBtn.addEventListener('click', function() {
+   // Disable button and show loading state
+   this.disabled = true;
+   const originalText = this.innerHTML;
+   this.innerHTML = `
+       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+       <span class="ms-2">Menambahkan...</span>
+   `;
+
+   // Prepare data for API request
+   const requestData = {
+       type: 'field_booking',
+       item_id: parseInt(fieldId),
+       field_id: parseInt(fieldId),
+       date: selectedDate,
+       slots: Array.from(selectedSlots)
+   };
+
+   // Log data yang akan dikirim (untuk debugging)
+   console.log('Sending data:', requestData);
+
+   // Get CSRF token
+   const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+   // Send request to add to cart
+   fetch('/cart/add', {
+       method: 'POST',
+       headers: {
+           'Content-Type': 'application/json',
+           'X-CSRF-TOKEN': csrfToken,
+           'Accept': 'application/json'
+       },
+       body: JSON.stringify(requestData)
+   })
+   .then(response => {
+       // Log response status (untuk debugging)
+       console.log('Response status:', response.status);
+
+       return response.json().then(data => {
+           if (!response.ok) {
+               throw new Error(data.message || 'Error: ' + response.statusText);
+           }
+           return data;
+       });
+   })
+   .then(data => {
+       // Log response data (untuk debugging)
+       console.log('Response data:', data);
+
+       if (data.success) {
+           // Show success message
+           showToast('Success', data.message, 'success');
+
+           // Update cart count in navbar if exists
+           const cartCountElement = document.querySelector('.cart-count');
+           if (cartCountElement) {
+               cartCountElement.textContent = data.cart_count;
+           }
+
+           // Redirect to cart page or stay on current page based on preference
+           setTimeout(() => {
+               window.location.href = '/cart';
+           }, 1500);
+       } else {
+           throw new Error(data.message || 'Failed to add to cart');
+       }
+   })
+   .catch(error => {
+       console.error('Error adding to cart:', error);
+       showToast('Error', error.message || 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+
+       // Restore button state
+       this.disabled = false;
+       this.innerHTML = originalText;
+   });
+});
+
+// Function to load available slots
+function loadAvailableSlots(date) {
+   const slotsWrapper = document.getElementById('time-slots-wrapper');
+
+   // Show loading state
+   slotsWrapper.innerHTML = `
+       <div class="text-center py-4 slot-placeholder">
+           <div class="spinner-border text-danger" role="status">
+               <span class="visually-hidden">Loading...</span>
+           </div>
+           <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
+       </div>
+   `;
+
+   // Fetch available slots from the server
+   fetch(`/fields/${fieldId}/available-slots?date=${date}`)
+       .then(response => {
+           if (!response.ok) {
+               throw new Error('Network response was not ok');
+           }
+           return response.json();
+       })
+       .then(data => {
+           renderTimeSlots(data);
+       })
+       .catch(error => {
+           console.error('Error fetching available slots:', error);
+           slotsWrapper.innerHTML = `
+               <div class="alert alert-danger" role="alert">
+                   <i class="fas fa-exclamation-circle me-2"></i>
+                   Gagal memuat slot waktu. Silakan coba lagi nanti.
+               </div>
+           `;
+       });
+}
+
+// Function to render time slots
+function renderTimeSlots(slots) {
+   const slotsWrapper = document.getElementById('time-slots-wrapper');
+   const availableSlotsCount = document.getElementById('available-slots-count');
+
+   // Clear previous content
+   slotsWrapper.innerHTML = '';
+
+   // Count available slots
+   const availableCount = slots.filter(slot => slot.is_available).length;
+   availableSlotsCount.textContent = `${availableCount} slot`;
+
+   // If no available slots
+   if (availableCount === 0) {
+       slotsWrapper.innerHTML = `
+           <div class="alert alert-warning" role="alert">
+               <i class="fas fa-exclamation-triangle me-2"></i>
+               Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
+           </div>
+       `;
+       return;
+   }
+
+   // Create grid for slots
+   const slotGrid = document.createElement('div');
+   slotGrid.classList.add('time-slots-grid');
+
+   // Add slots to grid
+   slots.forEach(slot => {
+       const slotDiv = document.createElement('div');
+
+       let statusClass = '';
+       let statusIcon = '';
+       let isDisabled = false;
+
+       switch (slot.status) {
+           case 'booked':
+               statusClass = 'slot-booked';
+               statusIcon = '<i class="fas fa-lock"></i>';
+               isDisabled = true;
+               break;
+           case 'in_cart':
+               statusClass = 'slot-in-cart';
+               statusIcon = '<i class="fas fa-shopping-cart"></i>';
+               break;
+           case 'available':
+               statusClass = 'slot-available';
+               statusIcon = '<i class="fas fa-clock"></i>';
+               break;
+       }
+
+       const isSelected = selectedSlots.has(slot.display);
+       if (isSelected) {
+           statusClass = 'slot-selected';
+           statusIcon = '<i class="fas fa-check"></i>';
+       }
+
+       slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
+       slotDiv.dataset.slot = slot.display;
+       slotDiv.dataset.price = slot.price;
+       slotDiv.dataset.status = slot.status;
+
+       slotDiv.innerHTML = `
+           <div class="slot-time">
+               ${statusIcon}
+               <span>${slot.display}</span>
+           </div>
+           <div class="slot-price">Rp ${slot.price.toLocaleString('id')}</div>
+       `;
+
+       slotGrid.appendChild(slotDiv);
+   });
+
+   slotsWrapper.appendChild(slotGrid);
+
+   // Add slot click event listeners
+   document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
+       slotElement.addEventListener('click', function() {
+           const slotTime = this.dataset.slot;
+           const slotPrice = parseFloat(this.dataset.price);
+           const slotStatus = this.dataset.status;
+
+           // If already in cart, show message and skip
+           if (slotStatus === 'in_cart') {
+               showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
+               return;
+           }
+
+           // Toggle selection
+           if (selectedSlots.has(slotTime)) {
+               // Remove from selected slots
+               selectedSlots.delete(slotTime);
+               this.classList.remove('slot-selected');
+
+               // Update icon
+               const iconElement = this.querySelector('.slot-time i');
+               if (slotStatus === 'available') {
+                   iconElement.className = 'fas fa-clock';
+               } else if (slotStatus === 'in_cart') {
+                   iconElement.className = 'fas fa-shopping-cart';
+               }
+
+               // Update selectedSlotsData
+               selectedSlotsData = selectedSlotsData.filter(s => s.slot !== slotTime);
+
+               // Update total price
+               totalPrice -= slotPrice;
+           } else {
+               // Add to selected slots
+               selectedSlots.add(slotTime);
+               this.classList.add('slot-selected');
+
+               // Update icon
+               const iconElement = this.querySelector('.slot-time i');
+               iconElement.className = 'fas fa-check';
+
+               // Update selectedSlotsData
+               selectedSlotsData.push({
+                   slot: slotTime,
+                   price: slotPrice
+               });
+
+               // Update total price
+               totalPrice += slotPrice;
+           }
+
+           // Enable/disable next button based on selection
+           nextBtn.disabled = selectedSlots.size === 0;
+       });
+   });
+}
+
+// Function to render selected slots in confirmation step
+function renderSelectedSlots() {
+   const selectedSlotsList = document.getElementById('selected-slots-list');
+   const totalPriceElement = document.getElementById('total-price');
+
+   // Clear previous content
+   selectedSlotsList.innerHTML = '';
+
+   // Add selected slots to list
+   selectedSlotsData.forEach(slotData => {
+       const listItem = document.createElement('li');
+       listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+
+       listItem.innerHTML = `
+           <div>
+               <i class="far fa-clock text-danger me-2"></i>
+               <span>${slotData.slot}</span>
+           </div>
+           <span class="text-secondary">Rp ${slotData.price.toLocaleString('id')}</span>
+       `;
+
+       selectedSlotsList.appendChild(listItem);
+   });
+
+   // Update total price
+   totalPriceElement.textContent = `Rp ${totalPrice.toLocaleString('id')}`;
+}
+
+// Helper function to show toast notifications
+function showToast(title, message, type) {
+   // Check if toastr is available
+   if (typeof toastr !== 'undefined') {
+       toastr[type](message, title);
+   } else {
+       // Use Bootstrap toast if available
+       if (typeof bootstrap !== 'undefined') {
+           // Create toast element
+           const toastEl = document.createElement('div');
+           toastEl.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
+           toastEl.setAttribute('role', 'alert');
+           toastEl.setAttribute('aria-live', 'assertive');
+           toastEl.setAttribute('aria-atomic', 'true');
+
+           toastEl.innerHTML = `
+               <div class="d-flex">
+                   <div class="toast-body">
+                       <strong>${title}:</strong> ${message}
+                   </div>
+                   <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+               </div>
+           `;
+
+           // Add to container
+           const toastContainer = document.querySelector('.toast-container');
+           if (!toastContainer) {
+               const container = document.createElement('div');
+               container.className = 'toast-container position-fixed top-0 end-0 p-3';
+               document.body.appendChild(container);
+               container.appendChild(toastEl);
+           } else {
+               toastContainer.appendChild(toastEl);
+           }
+
+           // Show toast
+           const toast = new bootstrap.Toast(toastEl);
+           toast.show();
+       } else {
+           // Fallback to alert
+           alert(`${title}: ${message}`);
+       }
+   }
+}
+
+// Initialize the wizard
+goToStep(1);
 });
 </script>
                     </div>
