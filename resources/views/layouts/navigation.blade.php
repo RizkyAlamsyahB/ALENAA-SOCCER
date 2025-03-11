@@ -37,7 +37,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('rental.index') }}">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.rental_items.index') }}">
                         <i class="fas fa-basketball-ball me-2"></i> <span>Rental</span>
                     </a>
                 </li>
@@ -48,14 +48,12 @@
                 @auth
                     <!-- Cart Button -->
                     @php
-                        $cartCount = \App\Models\CartItem::where('cart_id', function($query) {
-                            $query->select('id')
-                                ->from('carts')
-                                ->where('user_id', Auth::id())
-                                ->limit(1);
+                        $cartCount = \App\Models\CartItem::where('cart_id', function ($query) {
+                            $query->select('id')->from('carts')->where('user_id', Auth::id())->limit(1);
                         })->count();
                     @endphp
-                    <a href="{{ route('user.cart.view') }}" class="btn btn-light rounded-circle position-relative p-2" type="button" id="cartButton">
+                    <a href="{{ route('user.cart.view') }}" class="btn btn-light rounded-circle position-relative p-2"
+                        type="button" id="cartButton">
                         <i class="fas fa-shopping-cart"></i>
                         <span
                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary cart-count">
@@ -90,6 +88,9 @@
                                 </a></li>
                             <li><a class="dropdown-item px-4 py-2" href="#">
                                     <i class="fas fa-cog me-2 text-muted"></i>Settings
+                                </a></li>
+                            <li><a class="dropdown-item px-4 py-2" href="{{ route('user.payment.history') }}">
+                                    <i class="fas fa-receipt me-2 text-muted"></i>Payment History
                                 </a></li>
                             <li>
                                 <hr class="dropdown-divider">
@@ -165,5 +166,5 @@
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
 </script>

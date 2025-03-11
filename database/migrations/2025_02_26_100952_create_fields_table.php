@@ -16,8 +16,6 @@ return new class extends Migration {
             $table->string('name');
             $table->enum('type', ['Matras Standar', 'Rumput Sintetis', 'Matras Premium']);
             $table->integer('price');
-            // $table->text('facilities')->nullable();
-            // $table->boolean('is_active')->default(true);
             $table->string('image')->nullable();
             $table->timestamps();
         });

@@ -35,4 +35,28 @@ class Payment extends Model
     {
         return $this->hasMany(FieldBooking::class);
     }
+
+    /**
+     * Get the rental bookings associated with this payment.
+     */
+    public function rentalBookings()
+    {
+        return $this->hasMany(RentalBooking::class);
+    }
+
+    /**
+     * Get the membership subscriptions associated with this payment.
+    //  */
+    // public function membershipSubscriptions()
+    // {
+    //     return $this->hasMany(MembershipSubscription::class);
+    // }
+
+    /**
+     * Get the photographer bookings associated with this payment.
+     */
+    // public function photographerBookings()
+    // {
+    //     return $this->hasMany(PhotographerBooking::class);
+    // }
 }

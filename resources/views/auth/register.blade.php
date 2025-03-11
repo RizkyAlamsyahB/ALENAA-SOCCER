@@ -151,52 +151,73 @@
                         <div class="card-body p-4 p-lg-5">
                             <h1 class="h3 fw-bold mb-4 text-center">Create Your Account</h1>
 
-                            <form action="/register" method="POST">
+                            <form method="POST" action="{{ route('register') }}">
+                                @csrf
+
                                 <!-- Full Name -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-semibold">Full Name</label>
+                                    <label for="name" class="form-label fw-semibold">Full Name</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-user text-muted"></i>
                                         </span>
-                                        <input type="text" class="form-control" placeholder="Enter your full name" required>
+                                        <input id="name" type="text" class="form-control @error('name') is-invalid @enderror"
+                                            name="name" value="{{ old('name') }}" placeholder="Enter your full name" required autocomplete="name" autofocus>
                                     </div>
+                                    @error('name')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
 
                                 <!-- Email -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-semibold">Email Address</label>
+                                    <label for="email" class="form-label fw-semibold">Email Address</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-envelope text-muted"></i>
                                         </span>
-                                        <input type="email" class="form-control" placeholder="Enter your email" required>
+                                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
+                                            name="email" value="{{ old('email') }}" placeholder="Enter your email" required autocomplete="email">
                                     </div>
+                                    @error('email')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
 
                                 <!-- Password -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-semibold">Password</label>
+                                    <label for="password" class="form-label fw-semibold">Password</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
-                                        <input type="password" class="form-control" placeholder="Create a password" required>
+                                        <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
+                                            name="password" placeholder="Create a password" required autocomplete="new-password">
                                     </div>
                                     <div class="password-requirements mt-2">
                                         <div><i class="fas fa-check-circle text-success me-1"></i> Minimum 8 characters</div>
                                         <div><i class="fas fa-check-circle text-success me-1"></i> Include numbers & symbols</div>
                                     </div>
+                                    @error('password')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
 
                                 <!-- Confirm Password -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-semibold">Confirm Password</label>
+                                    <label for="password-confirm" class="form-label fw-semibold">Confirm Password</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
-                                        <input type="password" class="form-control" placeholder="Confirm your password" required>
+                                        <input id="password-confirm" type="password" class="form-control"
+                                            name="password_confirmation" placeholder="Confirm your password" required autocomplete="new-password">
                                     </div>
                                 </div>
 
@@ -209,7 +230,7 @@
                                 <!-- Login Link -->
                                 <p class="text-center mb-0">
                                     Already have an account?
-                                    <a href="/login" class="text-danger text-decoration-none fw-semibold">Sign In</a>
+                                    <a href="{{ route('login') }}" class="text-danger text-decoration-none fw-semibold">Sign In</a>
                                 </p>
                             </form>
                         </div>
@@ -260,8 +281,5 @@
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

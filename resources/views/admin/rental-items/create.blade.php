@@ -11,6 +11,14 @@
                 <div class="card-body">
                     <h4 class="mt-0 header-title">Form Tambah Item Sewa</h4>
 
+                    @if (session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    @if (session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
+
                     <form action="{{ route('admin.rental-items.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="form-group">
@@ -36,18 +44,10 @@
                             <label>Kategori Item</label>
                             <select name="category" class="form-control @error('category') is-invalid @enderror" required>
                                 <option value="">Pilih Kategori Item</option>
-                                <option value="ball" {{ old('category') == 'ball' ? 'selected' : '' }}>
-                                    Bola
-                                </option>
-                                <option value="jersey" {{ old('category') == 'jersey' ? 'selected' : '' }}>
-                                    Jersey
-                                </option>
-                                <option value="shoes" {{ old('category') == 'shoes' ? 'selected' : '' }}>
-                                    Sepatu
-                                </option>
-                                <option value="other" {{ old('category') == 'other' ? 'selected' : '' }}>
-                                    Lainnya
-                                </option>
+                                <option value="ball" {{ old('category') == 'ball' ? 'selected' : '' }}>Bola</option>
+                                <option value="jersey" {{ old('category') == 'jersey' ? 'selected' : '' }}>Jersey</option>
+                                <option value="shoes" {{ old('category') == 'shoes' ? 'selected' : '' }}>Sepatu</option>
+                                <option value="other" {{ old('category') == 'other' ? 'selected' : '' }}>Lainnya</option>
                             </select>
                             @error('category')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -80,11 +80,9 @@
                             <select name="condition" class="form-control @error('condition') is-invalid @enderror">
                                 <option value="">Pilih Kondisi Item</option>
                                 <option value="Baru" {{ old('condition') == 'Baru' ? 'selected' : '' }}>Baru</option>
-                                <option value="Sangat Baik" {{ old('condition') == 'Sangat Baik' ? 'selected' : '' }}>
-                                    Sangat Baik</option>
+                                <option value="Sangat Baik" {{ old('condition') == 'Sangat Baik' ? 'selected' : '' }}>Sangat Baik</option>
                                 <option value="Baik" {{ old('condition') == 'Baik' ? 'selected' : '' }}>Baik</option>
-                                <option value="Cukup Baik" {{ old('condition') == 'Cukup Baik' ? 'selected' : '' }}>Cukup
-                                    Baik</option>
+                                <option value="Cukup Baik" {{ old('condition') == 'Cukup Baik' ? 'selected' : '' }}>Cukup Baik</option>
                             </select>
                             @error('condition')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -98,8 +96,6 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                  
 
                         <div class="form-group">
                             <button type="submit" class="btn btn-primary">

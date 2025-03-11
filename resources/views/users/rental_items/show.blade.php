@@ -20,14 +20,14 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{{ route('user.fields.index') }}" class="breadcrumb-link">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Venues</span>
+                    <a href="{{ route('user.rental_items.index') }}" class="breadcrumb-link">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Rental Equipment</span>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">
                     <i class="fas fa-futbol"></i>
-                    <span>{{ $field->name }}</span>
+                    <span>{{ $rentalItem->name }}</span>
                 </li>
             </ol>
         </div>
@@ -42,11 +42,10 @@
             <div class="col-lg-8">
                 <div class="gallery-card main-gallery">
                     <div class="gallery-img">
-                        @if ($field->image)
-                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
+                        @if ($rentalItem->image)
+                            <img src="{{ Storage::url($rentalItem->image) }}" class="img-fluid w-100" alt="{{ $rentalItem->name }}">
                         @else
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="img-fluid w-100" alt="{{ $field->name }}">
+                            <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100" alt="{{ $rentalItem->name }}">
                         @endif
                         <div class="gallery-overlay">
                             <button class="view-btn">
@@ -57,8 +56,13 @@
                     </div>
                     <div class="status-badge">
                         <span class="badge-content">
-                            <i class="fas fa-check-circle me-1"></i>
-                            Available Now
+                            @if ($rentalItem->stock_available > 0)
+                                <i class="fas fa-check-circle me-1"></i>
+                                Available Now
+                            @else
+                                <i class="fas fa-times-circle me-1"></i>
+                                Out of Stock
+                            @endif
                         </span>
                     </div>
                 </div>
@@ -69,8 +73,7 @@
                     <div class="col-12">
                         <div class="gallery-card">
                             <div class="gallery-img">
-                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                    class="img-fluid w-100" alt="Court view 2">
+                                <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100" alt="Item view 2">
                                 <div class="gallery-overlay">
                                     <button class="view-btn">
                                         <i class="fas fa-expand-alt"></i>
@@ -83,8 +86,7 @@
                     <div class="col-12">
                         <div class="gallery-card">
                             <div class="gallery-img">
-                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                    class="img-fluid w-100" alt="Court view 3">
+                                <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100" alt="Item view 3">
                                 <div class="gallery-overlay">
                                     <button class="view-btn">
                                         <i class="fas fa-expand-alt"></i>
@@ -105,12 +107,11 @@
                 <div class="carousel-inner rounded-4 overflow-hidden">
                     <div class="carousel-item active">
                         <div class="carousel-img-wrapper">
-                            @if ($field->image)
-                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                                    alt="{{ $field->name }}">
+                            @if ($rentalItem->image)
+                                <img src="{{ Storage::url($rentalItem->image) }}" class="d-block w-100"
+                                    alt="{{ $rentalItem->name }}">
                             @else
-                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                    class="d-block w-100" alt="{{ $field->name }}">
+                                <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100" alt="{{ $rentalItem->name }}">
                             @endif
                             <div class="image-overlay"></div>
                         </div>
@@ -123,8 +124,7 @@
                     </div>
                     <div class="carousel-item">
                         <div class="carousel-img-wrapper">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="d-block w-100" alt="Court view 2">
+                            <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100" alt="Item view 2">
                             <div class="image-overlay"></div>
                         </div>
                         <div class="carousel-caption">
@@ -136,8 +136,7 @@
                     </div>
                     <div class="carousel-item">
                         <div class="carousel-img-wrapper">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="d-block w-100" alt="Court view 3">
+                            <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100" alt="Item view 3">
                             <div class="image-overlay"></div>
                         </div>
                         <div class="carousel-caption">
@@ -174,15 +173,20 @@
                 <!-- Available Badge -->
                 <div class="available-badge">
                     <span class="badge-content">
-                        <i class="fas fa-check-circle"></i>
-                        Available Now
+                        @if ($rentalItem->stock_available > 0)
+                            <i class="fas fa-check-circle"></i>
+                            Available Now
+                        @else
+                            <i class="fas fa-times-circle"></i>
+                            Out of Stock
+                        @endif
                     </span>
                 </div>
             </div>
         </div>
         <!-- Main Information -->
         <div class="row">
-            <!-- Field Details Container -->
+            <!-- Item Details Container -->
             <div class="container py-4">
                 <div class="row">
                     <div class="col">
@@ -191,117 +195,107 @@
                             <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3 flex-column flex-md-row">
                                     <div>
-                                        <h1 class="h4 mb-2 text-center text-md-start fw-bold">{{ $field->name }}</h1>
+                                        <h1 class="h4 mb-2 text-center text-md-start fw-bold">{{ $rentalItem->name }}</h1>
                                         <div
                                             class="d-flex flex-column flex-md-row align-items-center gap-3 text-center text-md-start">
-                                            <div class="d-flex align-items-center location-badge">
-                                                <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                                                <span class="text-secondary">{{ 'Sidoarjo, Indonesia' }}</span>
+                                            <div class="d-flex align-items-center category-badge">
+                                                @if ($rentalItem->category == 'ball')
+                                                    <i class="fas fa-futbol text-danger me-2"></i>
+                                                    <span class="text-secondary">Bola</span>
+                                                @elseif($rentalItem->category == 'jersey')
+                                                    <i class="fas fa-tshirt text-danger me-2"></i>
+                                                    <span class="text-secondary">Jersey</span>
+                                                @elseif($rentalItem->category == 'shoes')
+                                                    <i class="fas fa-shoe-prints text-danger me-2"></i>
+                                                    <span class="text-secondary">Sepatu</span>
+                                                @else
+                                                    <i class="fas fa-mitten text-danger me-2"></i>
+                                                    <span class="text-secondary">Aksesoris</span>
+                                                @endif
                                             </div>
-                                            <div class="d-flex align-items-center rating-badge">
-                                                <i class="fas fa-star text-warning me-2"></i>
-                                                <span class="text-secondary">{{ $field->rating ?? '4.8' }}
-                                                    ({{ $field->reviews_count ?? '128' }} reviews)</span>
+                                            <div class="d-flex align-items-center stock-badge">
+                                                @if ($rentalItem->stock_available > 0)
+                                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                                    <span class="text-secondary">Tersedia ({{ $rentalItem->stock_available }} stok)</span>
+                                                @else
+                                                    <i class="fas fa-times-circle text-danger me-2"></i>
+                                                    <span class="text-secondary">Stok Habis</span>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
                                     <div class="text-md-end text-center price-tag">
                                         <div class="h3 text-danger fw-bold mb-0">Rp
-                                            {{ number_format($field->price, 0, ',', '.') }}</div>
-                                        <small class="text-muted">/hour</small>
+                                            {{ number_format($rentalItem->rental_price, 0, ',', '.') }}</div>
+                                        <small class="text-muted">/hari</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Field Overview Card -->
+                        <!-- Item Overview Card -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
                             <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Field Overview</h5>
+                                <h5 class="mb-0 fw-bold">Item Overview</h5>
                             </div>
                             <div class="card-body p-4">
                                 <div class="row g-3">
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-ruler"></i>
-                                            </div>
-                                            <h6 class="mb-1 fw-semibold">Size</h6>
-                                            <small class="text-muted">25 x 15m</small>
+                                    <div class="col-12">
+                                        <div class="description mb-4">
+                                            <h6 class="fw-semibold mb-2">Deskripsi</h6>
+                                            <p class="text-muted">{{ $rentalItem->description ?: 'Tidak ada deskripsi tersedia.' }}</p>
                                         </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-users"></i>
-                                            </div>
-                                            <h6 class="mb-1 fw-semibold">Capacity</h6>
-                                            <small class="text-muted">5v5 Players</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-clock"></i>
-                                            </div>
-                                            <h6 class="mb-1 fw-semibold">Duration</h6>
-                                            <small class="text-muted">1 Hour/Session</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-volleyball-ball"></i>
-                                            </div>
-                                            <h6 class="mb-1 fw-semibold">Type</h6>
-                                            <small class="text-muted">{{ $field->type }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Available Facilities Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Available Facilities</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-3">
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-parking"></i>
-                                            <span>Free Parking</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-wifi"></i>
-                                            <span>Free WiFi</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-shower"></i>
-                                            <span>Shower Room</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-tshirt"></i>
-                                            <span>Changing Room</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-store"></i>
-                                            <span>Mini Store</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-first-aid"></i>
-                                            <span>First Aid</span>
+                                        <div class="specifications">
+                                            <h6 class="fw-semibold mb-3">Spesifikasi</h6>
+                                            <div class="row g-3">
+                                                <div class="col-6 col-md-3">
+                                                    <div class="overview-item text-center">
+                                                        <div class="icon-wrapper mb-2">
+                                                            <i class="fas fa-tag"></i>
+                                                        </div>
+                                                        <h6 class="mb-1 fw-semibold">Kategori</h6>
+                                                        <small class="text-muted">
+                                                            @if ($rentalItem->category == 'ball')
+                                                                Bola
+                                                            @elseif($rentalItem->category == 'jersey')
+                                                                Jersey
+                                                            @elseif($rentalItem->category == 'shoes')
+                                                                Sepatu
+                                                            @else
+                                                                Aksesoris
+                                                            @endif
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-3">
+                                                    <div class="overview-item text-center">
+                                                        <div class="icon-wrapper mb-2">
+                                                            <i class="fas fa-box"></i>
+                                                        </div>
+                                                        <h6 class="mb-1 fw-semibold">Stok Total</h6>
+                                                        <small class="text-muted">{{ $rentalItem->stock_total }} unit</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-3">
+                                                    <div class="overview-item text-center">
+                                                        <div class="icon-wrapper mb-2">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </div>
+                                                        <h6 class="mb-1 fw-semibold">Tersedia</h6>
+                                                        <small class="text-muted">{{ $rentalItem->stock_available }} unit</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-3">
+                                                    <div class="overview-item text-center">
+                                                        <div class="icon-wrapper mb-2">
+                                                            <i class="fas fa-info-circle"></i>
+                                                        </div>
+                                                        <h6 class="mb-1 fw-semibold">Kondisi</h6>
+                                                        <small class="text-muted">{{ $rentalItem->condition ?: 'Baik' }}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -312,11 +306,11 @@
                         <!-- Booking Wizard Card -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
                             <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Pilih Jadwal Booking</h5>
+                                <h5 class="mb-0 fw-bold">Pilih Jadwal Rental</h5>
                             </div>
                             <div class="card-body p-4">
-                                <!-- Hidden field ID -->
-                                <input type="hidden" id="fieldId" value="{{ $field->id }}">
+                                <!-- Hidden rental item ID -->
+                                <input type="hidden" id="rentalItemId" value="{{ $rentalItem->id }}">
 
                                 <!-- Booking Wizard Process -->
                                 <div class="booking-wizard">
@@ -332,7 +326,7 @@
                                                 <i class="fas fa-check"></i>
                                             </div>
                                             <div class="step-label">Tanggal</div>
-                                            <div class="step-desc">Pilih tanggal booking</div>
+                                            <div class="step-desc">Pilih tanggal rental</div>
                                         </div>
 
                                         <!-- Step 2: Time Selection -->
@@ -345,14 +339,14 @@
                                             <div class="step-desc">Pilih slot waktu</div>
                                         </div>
 
-                                        <!-- Step 3: Confirmation -->
+                                        <!-- Step 3: Quantity Selection -->
                                         <div class="wizard-step" id="wizard-step-3">
                                             <div class="step-circle">
                                                 <span>3</span>
                                                 <i class="fas fa-check"></i>
                                             </div>
-                                            <div class="step-label">Konfirmasi</div>
-                                            <div class="step-desc">Konfirmasi booking</div>
+                                            <div class="step-label">Jumlah</div>
+                                            <div class="step-desc">Konfirmasi jumlah</div>
                                         </div>
                                     </div>
 
@@ -360,7 +354,7 @@
                                     <div class="wizard-content">
                                         <!-- Panel 1: Date Selection -->
                                         <div class="wizard-panel" id="panel-date">
-                                            <h6 class="fw-semibold mb-3">Pilih Tanggal Booking</h6>
+                                            <h6 class="fw-semibold mb-3">Pilih Tanggal Rental</h6>
                                             <div class="date-picker-container">
                                                 <div id="inline-calendar" class="inline-calendar-container"></div>
                                                 <input type="hidden" id="selectedDate" name="selected_date">
@@ -374,8 +368,11 @@
                                                     <h6 class="fw-semibold mb-0">
                                                         Slot Waktu Tersedia (<span id="selected-date-display"></span>)
                                                     </h6>
-                                                    <span class="badge bg-secondary" id="available-slots-count">0
-                                                        slot</span>
+                                                    <span class="badge bg-secondary" id="available-slots-count">0 slot</span>
+                                                </div>
+                                                <div class="alert alert-info mb-3">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    Pilih beberapa slot waktu untuk durasi rental yang lebih panjang. Klik slot waktu untuk memilih.
                                                 </div>
                                                 <div id="time-slots-wrapper" class="time-slots-container">
                                                     <div class="text-center py-4 slot-placeholder">
@@ -388,32 +385,55 @@
                                             </div>
                                         </div>
 
-                                        <!-- Panel 3: Confirmation -->
-                                        <div class="wizard-panel" id="panel-confirm">
+                                        <!-- Panel 3: Quantity Selection -->
+                                        <div class="wizard-panel" id="panel-quantity">
                                             <div class="mb-3">
-                                                <h6 class="fw-semibold mb-3">Detail Booking</h6>
-                                                <div class="confirmation-details mb-3">
-                                                    <div class="confirmation-item">
-                                                        <span class="label">Lapangan:</span>
-                                                        <span class="value">{{ $field->name }}</span>
+                                                <h6 class="fw-semibold mb-3">Pilih Jumlah Item</h6>
+
+                                                <div class="selected-time-info mb-4 p-3 bg-light rounded">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="fw-semibold">Durasi Rental:</span>
+                                                        <span id="selected-duration-display" class="text-danger fw-bold"></span>
                                                     </div>
-                                                    <div class="confirmation-item">
-                                                        <span class="label">Tanggal:</span>
-                                                        <span class="value" id="confirm-date"></span>
+                                                    <div id="selected-slots-display" class="selected-slots-display my-2">
+                                                        <!-- Selected slots will appear here -->
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                                        <span class="fw-semibold">Stok Tersedia:</span>
+                                                        <span id="available-stock-display" class="badge bg-success"></span>
                                                     </div>
                                                 </div>
 
-                                                <h6 class="fw-semibold mb-3">Slot Waktu Terpilih</h6>
-                                                <div class="selected-slots-list mb-3">
-                                                    <ul id="selected-slots-list" class="list-group list-group-flush">
-                                                        <!-- Selected slots will be added here -->
-                                                    </ul>
-                                                    <div
-                                                        class="d-flex justify-content-between align-items-center mt-3 p-3 bg-light rounded">
-                                                        <span class="fw-bold">Total:</span>
-                                                        <span id="total-price" class="text-danger fw-bold fs-5">Rp
-                                                            0</span>
+                                                <div class="quantity-selector d-flex justify-content-center align-items-center mb-4">
+                                                    <button id="decrease-quantity" class="btn btn-outline-danger rounded-circle quantity-btn">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <input type="number" id="quantity-input" class="form-control mx-3 text-center" value="1" min="1" max="10" readonly>
+                                                    <button id="increase-quantity" class="btn btn-outline-danger rounded-circle quantity-btn">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div class="price-calculation p-3 bg-light rounded">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="fw-semibold">Harga per item:</span>
+                                                        <span class="text-secondary">Rp {{ number_format($rentalItem->rental_price, 0, ',', '.') }}</span>
                                                     </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                                        <span class="fw-semibold">Durasi:</span>
+                                                        <span id="duration-hours" class="text-secondary">0 jam</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                                        <span class="fw-semibold">Total:</span>
+                                                        <span id="subtotal-price" class="text-danger fw-bold">Rp 0</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-4 text-center">
+                                                    <button id="confirm-quantity-btn" class="btn btn-danger px-4 py-2 rounded-pill">
+                                                        <i class="fas fa-cart-plus me-2"></i>
+                                                        Tambahkan ke Keranjang
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -429,23 +449,23 @@
                                             Lanjutkan
                                             <i class="fas fa-arrow-right"></i>
                                         </button>
-                                        <button id="wizard-submit-btn" class="wizard-btn wizard-btn-submit">
-                                            <i class="fas fa-cart-plus me-2"></i>
-                                            Tambahkan ke Keranjang
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
 
+
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
                                 // Initialize variables
-                                const fieldId = document.getElementById('fieldId').value;
+                                const rentalItemId = document.getElementById('rentalItemId').value;
                                 let selectedDate = '';
-                                const selectedSlots = new Set();
-                                let selectedSlotsData = [];
+                                let selectedSlots = new Set(); // Menggunakan Set untuk menyimpan waktu yang dipilih
+                                let selectedSlotsData = []; // Untuk menyimpan data slot yang dipilih (termasuk harga)
+                                let selectedQuantity = 1;
+                                let availableStock = 0;
+                                let itemPrice = {{ $rentalItem->rental_price }};
                                 let totalPrice = 0;
                                 let currentStep = 1;
                                 const totalSteps = 3;
@@ -457,7 +477,12 @@
 
                                 const prevBtn = document.getElementById('wizard-prev-btn');
                                 const nextBtn = document.getElementById('wizard-next-btn');
-                                const submitBtn = document.getElementById('wizard-submit-btn');
+                                const confirmQuantityBtn = document.getElementById('confirm-quantity-btn');
+
+                                // Quantity selector elements
+                                const decreaseBtn = document.getElementById('decrease-quantity');
+                                const increaseBtn = document.getElementById('increase-quantity');
+                                const quantityInput = document.getElementById('quantity-input');
 
                                 // Initialize Flatpickr inline calendar
                                 const calendar = flatpickr("#inline-calendar", {
@@ -469,6 +494,11 @@
                                     onChange: function(selectedDates, dateStr) {
                                         selectedDate = dateStr;
                                         document.getElementById('selectedDate').value = dateStr;
+
+                                        // Reset selections when date changes
+                                        selectedSlots.clear();
+                                        selectedSlotsData = [];
+                                        totalPrice = 0;
 
                                         // Enable next button
                                         nextBtn.disabled = false;
@@ -515,7 +545,6 @@
                                 function updateButtons() {
                                     prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
                                     nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
-                                    submitBtn.style.display = currentStep === totalSteps ? 'flex' : 'none';
 
                                     // Disable next button on date selection step if no date is selected
                                     if (currentStep === 1) {
@@ -551,18 +580,49 @@
                                         loadAvailableSlots(selectedDate);
                                     }
 
-                                    if (step === 3) {
-                                        // Update confirmation details
-                                        const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                                            weekday: 'long',
-                                            day: 'numeric',
-                                            month: 'long',
-                                            year: 'numeric'
-                                        });
-                                        document.getElementById('confirm-date').textContent = formattedDate;
+                                    if (step === 3 && selectedSlots.size > 0) {
+                                        // Calculate minimum available stock across all selected slots
+                                        availableStock = Math.min(...selectedSlotsData.map(slot => slot.availableQuantity));
 
-                                        // Render selected slots in confirmation
-                                        renderSelectedSlots();
+                                        // Display duration
+                                        const hoursCount = selectedSlots.size;
+                                        document.getElementById('selected-duration-display').textContent = `${hoursCount} jam`;
+                                        document.getElementById('duration-hours').textContent = `${hoursCount} jam`;
+
+                                        // Display selected slots
+                                        const slotsDisplayElement = document.getElementById('selected-slots-display');
+                                        slotsDisplayElement.innerHTML = '';
+
+                                        // Sort slots by time before displaying
+                                        const sortedSlots = [...selectedSlotsData].sort((a, b) => {
+                                            const timeA = a.slot.split(' - ')[0];
+                                            const timeB = b.slot.split(' - ')[0];
+                                            return timeA.localeCompare(timeB);
+                                        });
+
+                                        sortedSlots.forEach(slotData => {
+                                            const slotDiv = document.createElement('div');
+                                            slotDiv.className = 'selected-slot-item';
+                                            slotDiv.innerHTML = `
+                                                <i class="far fa-clock text-danger me-2"></i>
+                                                <span>${slotData.slot}</span>
+                                            `;
+                                            slotsDisplayElement.appendChild(slotDiv);
+                                        });
+
+                                        // Update available stock display
+                                        document.getElementById('available-stock-display').textContent = availableStock + ' unit';
+
+                                        // Reset quantity to 1
+                                        selectedQuantity = 1;
+                                        document.getElementById('quantity-input').value = selectedQuantity;
+
+                                        // Update price calculation
+                                        updatePriceCalculation();
+
+                                        // Enable/disable buttons based on quantity and availability
+                                        decreaseBtn.disabled = selectedQuantity <= 1;
+                                        increaseBtn.disabled = selectedQuantity >= availableStock;
                                     }
                                 }
 
@@ -580,23 +640,34 @@
                                     }
                                 });
 
-                                // Submit button click handler (Add to Cart)
-                                submitBtn.addEventListener('click', function() {
+                                // Confirmation button click handler
+                                confirmQuantityBtn.addEventListener('click', function() {
                                     // Disable button and show loading state
                                     this.disabled = true;
                                     const originalText = this.innerHTML;
                                     this.innerHTML = `
-       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-       <span class="ms-2">Menambahkan...</span>
-   `;
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        <span class="ms-2">Menambahkan...</span>
+                                    `;
+
+                                    // Sort slots by time
+                                    const sortedSlots = [...selectedSlots].sort();
+
+                                    // Get the start time from first slot and end time from last slot
+                                    const firstSlotTime = sortedSlots[0];
+                                    const lastSlotTime = sortedSlots[sortedSlots.length - 1];
+
+                                    const startTime = firstSlotTime.split(' - ')[0];
+                                    const endTime = lastSlotTime.split(' - ')[1];
 
                                     // Prepare data for API request
                                     const requestData = {
-                                        type: 'field_booking',
-                                        item_id: parseInt(fieldId),
-                                        field_id: parseInt(fieldId),
+                                        type: 'rental_item',
+                                        rental_item_id: parseInt(rentalItemId),
                                         date: selectedDate,
-                                        slots: Array.from(selectedSlots)
+                                        start_time: startTime,
+                                        end_time: endTime,
+                                        quantity: selectedQuantity
                                     };
 
                                     // Log data yang akan dikirim (untuk debugging)
@@ -607,57 +678,55 @@
 
                                     // Send request to add to cart
                                     fetch('/cart/add', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': csrfToken,
-                                                'Accept': 'application/json'
-                                            },
-                                            body: JSON.stringify(requestData)
-                                        })
-                                        .then(response => {
-                                            // Log response status (untuk debugging)
-                                            console.log('Response status:', response.status);
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': csrfToken,
+                                            'Accept': 'application/json'
+                                        },
+                                        body: JSON.stringify(requestData)
+                                    })
+                                    .then(response => {
+                                        // Log response status (untuk debugging)
+                                        console.log('Response status:', response.status);
 
-                                            return response.json().then(data => {
-                                                if (!response.ok) {
-                                                    throw new Error(data.message || 'Error: ' + response
-                                                    .statusText);
-                                                }
-                                                return data;
-                                            });
-                                        })
-                                        .then(data => {
-                                            // Log response data (untuk debugging)
-                                            console.log('Response data:', data);
-
-                                            if (data.success) {
-                                                // Show success message
-                                                showToast('Success', data.message, 'success');
-
-                                                // Update cart count in navbar if exists
-                                                const cartCountElement = document.querySelector('.cart-count');
-                                                if (cartCountElement) {
-                                                    cartCountElement.textContent = data.cart_count;
-                                                }
-
-                                                // Redirect to cart page or stay on current page based on preference
-                                                setTimeout(() => {
-                                                    window.location.href = '/cart';
-                                                }, 1500);
-                                            } else {
-                                                throw new Error(data.message || 'Failed to add to cart');
+                                        return response.json().then(data => {
+                                            if (!response.ok) {
+                                                throw new Error(data.message || 'Error: ' + response.statusText);
                                             }
-                                        })
-                                        .catch(error => {
-                                            console.error('Error adding to cart:', error);
-                                            showToast('Error', error.message ||
-                                                'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
-
-                                            // Restore button state
-                                            this.disabled = false;
-                                            this.innerHTML = originalText;
+                                            return data;
                                         });
+                                    })
+                                    .then(data => {
+                                        // Log response data (untuk debugging)
+                                        console.log('Response data:', data);
+
+                                        if (data.success) {
+                                            // Show success message
+                                            showToast('Success', data.message, 'success');
+
+                                            // Update cart count in navbar if exists
+                                            const cartCountElement = document.querySelector('.cart-count');
+                                            if (cartCountElement) {
+                                                cartCountElement.textContent = data.cart_count;
+                                            }
+
+                                            // Redirect to cart page or stay on current page based on preference
+                                            setTimeout(() => {
+                                                window.location.href = '/cart';
+                                            }, 1500);
+                                        } else {
+                                            throw new Error(data.message || 'Failed to add to cart');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error adding to cart:', error);
+                                        showToast('Error', error.message || 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+
+                                        // Restore button state
+                                        this.disabled = false;
+                                        this.innerHTML = originalText;
+                                    });
                                 });
 
                                 // Function to load available slots
@@ -666,16 +735,16 @@
 
                                     // Show loading state
                                     slotsWrapper.innerHTML = `
-       <div class="text-center py-4 slot-placeholder">
-           <div class="spinner-border text-danger" role="status">
-               <span class="visually-hidden">Loading...</span>
-           </div>
-           <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
-       </div>
-   `;
+                                        <div class="text-center py-4 slot-placeholder">
+                                            <div class="spinner-border text-danger" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
+                                        </div>
+                                    `;
 
                                     // Fetch available slots from the server
-                                    fetch(`/fields/${fieldId}/available-slots?date=${date}`)
+                                    fetch(`/rental/items/${rentalItemId}/available-slots?date=${date}`)
                                         .then(response => {
                                             if (!response.ok) {
                                                 throw new Error('Network response was not ok');
@@ -688,11 +757,11 @@
                                         .catch(error => {
                                             console.error('Error fetching available slots:', error);
                                             slotsWrapper.innerHTML = `
-               <div class="alert alert-danger" role="alert">
-                   <i class="fas fa-exclamation-circle me-2"></i>
-                   Gagal memuat slot waktu. Silakan coba lagi nanti.
-               </div>
-           `;
+                                                <div class="alert alert-danger" role="alert">
+                                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                                    Gagal memuat slot waktu. Silakan coba lagi nanti.
+                                                </div>
+                                            `;
                                         });
                                 }
 
@@ -711,11 +780,11 @@
                                     // If no available slots
                                     if (availableCount === 0) {
                                         slotsWrapper.innerHTML = `
-           <div class="alert alert-warning" role="alert">
-               <i class="fas fa-exclamation-triangle me-2"></i>
-               Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
-           </div>
-       `;
+                                            <div class="alert alert-warning" role="alert">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
+                                            </div>
+                                        `;
                                         return;
                                     }
 
@@ -732,7 +801,7 @@
                                         let isDisabled = false;
 
                                         switch (slot.status) {
-                                            case 'booked':
+                                            case 'fully_booked':
                                                 statusClass = 'slot-booked';
                                                 statusIcon = '<i class="fas fa-lock"></i>';
                                                 isDisabled = true;
@@ -757,26 +826,33 @@
                                         slotDiv.dataset.slot = slot.display;
                                         slotDiv.dataset.price = slot.price;
                                         slotDiv.dataset.status = slot.status;
+                                        slotDiv.dataset.availableQuantity = slot.available_quantity;
 
                                         slotDiv.innerHTML = `
-           <div class="slot-time">
-               ${statusIcon}
-               <span>${slot.display}</span>
-           </div>
-           <div class="slot-price">Rp ${slot.price.toLocaleString('id')}</div>
-       `;
+                                            <div class="slot-time">
+                                                ${statusIcon}
+                                                <span>${slot.display}</span>
+                                            </div>
+                                            <div class="slot-price">
+                                                <div>Rp ${slot.price.toLocaleString('id')}</div>
+                                                <small class="text-${slot.available_quantity > 0 ? 'success' : 'danger'}">
+                                                    ${slot.available_quantity} tersedia
+                                                </small>
+                                            </div>
+                                        `;
 
                                         slotGrid.appendChild(slotDiv);
                                     });
 
                                     slotsWrapper.appendChild(slotGrid);
 
-                                    // Add slot click event listeners
+                                    // Add slot click event listeners - Modifikasi untuk multi-select
                                     document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
                                         slotElement.addEventListener('click', function() {
                                             const slotTime = this.dataset.slot;
                                             const slotPrice = parseFloat(this.dataset.price);
                                             const slotStatus = this.dataset.status;
+                                            const availableQty = parseInt(this.dataset.availableQuantity);
 
                                             // If already in cart, show message and skip
                                             if (slotStatus === 'in_cart') {
@@ -815,7 +891,8 @@
                                                 // Update selectedSlotsData
                                                 selectedSlotsData.push({
                                                     slot: slotTime,
-                                                    price: slotPrice
+                                                    price: slotPrice,
+                                                    availableQuantity: availableQty
                                                 });
 
                                                 // Update total price
@@ -828,34 +905,37 @@
                                     });
                                 }
 
-                                // Function to render selected slots in confirmation step
-                                function renderSelectedSlots() {
-                                    const selectedSlotsList = document.getElementById('selected-slots-list');
-                                    const totalPriceElement = document.getElementById('total-price');
-
-                                    // Clear previous content
-                                    selectedSlotsList.innerHTML = '';
-
-                                    // Add selected slots to list
-                                    selectedSlotsData.forEach(slotData => {
-                                        const listItem = document.createElement('li');
-                                        listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between',
-                                            'align-items-center');
-
-                                        listItem.innerHTML = `
-           <div>
-               <i class="far fa-clock text-danger me-2"></i>
-               <span>${slotData.slot}</span>
-           </div>
-           <span class="text-secondary">Rp ${slotData.price.toLocaleString('id')}</span>
-       `;
-
-                                        selectedSlotsList.appendChild(listItem);
-                                    });
-
-                                    // Update total price
-                                    totalPriceElement.textContent = `Rp ${totalPrice.toLocaleString('id')}`;
+                                // Handle quantity change
+                                function updatePriceCalculation() {
+                                    const subtotal = itemPrice * selectedQuantity * selectedSlots.size;
+                                    document.getElementById('subtotal-price').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
                                 }
+
+                                // Quantity decrease button
+                                decreaseBtn.addEventListener('click', function() {
+                                    if (selectedQuantity > 1) {
+                                        selectedQuantity--;
+                                        quantityInput.value = selectedQuantity;
+
+                                        // Update price and button states
+                                        updatePriceCalculation();
+                                        decreaseBtn.disabled = selectedQuantity <= 1;
+                                        increaseBtn.disabled = false;
+                                    }
+                                });
+
+                                // Quantity increase button
+                                increaseBtn.addEventListener('click', function() {
+                                    if (selectedQuantity < availableStock) {
+                                        selectedQuantity++;
+                                        quantityInput.value = selectedQuantity;
+
+                                        // Update price and button states
+                                        updatePriceCalculation();
+                                        decreaseBtn.disabled = false;
+                                        increaseBtn.disabled = selectedQuantity >= availableStock;
+                                    }
+                                });
 
                                 // Helper function to show toast notifications
                                 function showToast(title, message, type) {
@@ -867,20 +947,19 @@
                                         if (typeof bootstrap !== 'undefined') {
                                             // Create toast element
                                             const toastEl = document.createElement('div');
-                                            toastEl.className =
-                                                `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
+                                            toastEl.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
                                             toastEl.setAttribute('role', 'alert');
                                             toastEl.setAttribute('aria-live', 'assertive');
                                             toastEl.setAttribute('aria-atomic', 'true');
 
                                             toastEl.innerHTML = `
-               <div class="d-flex">
-                   <div class="toast-body">
-                       <strong>${title}:</strong> ${message}
-                   </div>
-                   <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-               </div>
-           `;
+                                                <div class="d-flex">
+                                                    <div class="toast-body">
+                                                        <strong>${title}:</strong> ${message}
+                                                    </div>
+                                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                </div>
+                                            `;
 
                                             // Add to container
                                             const toastContainer = document.querySelector('.toast-container');
@@ -913,410 +992,385 @@
         </div>
     </div>
 
-    <!-- Include Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
-
-    <!-- Include custom field booking JS -->
-
 
     <style>
         /* Wizard Booking Process Styling */
         .booking-wizard {
-            position: relative;
-            margin-bottom: 2.5rem;
+          position: relative;
+          margin-bottom: 2.5rem;
         }
 
         /* Progress Bar Container */
         .wizard-progress {
-            display: flex;
-            position: relative;
-            margin-bottom: 2rem;
-            padding: 0 10px;
+          display: flex;
+          position: relative;
+          margin-bottom: 2rem;
+          padding: 0 10px;
         }
 
         .wizard-progress::before {
-            content: "";
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background-color: #e9ecef;
-            z-index: 1;
+          content: "";
+          position: absolute;
+          top: 20px;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background-color: #e9ecef;
+          z-index: 1;
         }
 
         /* Progress Bar Active Line */
         .wizard-progress-bar {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            height: 4px;
-            background-color: #9e0620;
-            transition: width 0.5s ease;
-            z-index: 2;
+          position: absolute;
+          top: 20px;
+          left: 0;
+          height: 4px;
+          background-color: #9e0620;
+          transition: width 0.5s ease;
+          z-index: 2;
         }
 
         /* Step Item Styling */
         .wizard-step {
-            flex: 1;
-            position: relative;
-            z-index: 3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+          flex: 1;
+          position: relative;
+          z-index: 3;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
         }
 
         /* Step Circle */
         .step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #fff;
-            border: 2px solid #e9ecef;
-            color: #6c757d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 0.75rem;
-            position: relative;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background-color: #fff;
+          border: 2px solid #e9ecef;
+          color: #6c757d;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 1.1rem;
+          margin-bottom: 0.75rem;
+          position: relative;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         /* Circle Icon */
         .step-circle i {
-            font-size: 1rem;
-            display: none;
+          font-size: 1rem;
+          display: none;
         }
 
         /* Step Status Classes */
         .wizard-step.active .step-circle {
-            border-color: #9e0620;
-            background-color: #9e0620;
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+          border-color: #9e0620;
+          background-color: #9e0620;
+          color: white;
+          transform: scale(1.1);
+          box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
         }
 
         .wizard-step.completed .step-circle {
-            border-color: #9e0620;
-            background-color: #9e0620;
-            color: white;
+          border-color: #9e0620;
+          background-color: #9e0620;
+          color: white;
         }
 
         .wizard-step.completed .step-circle span {
-            display: none;
+          display: none;
         }
 
         .wizard-step.completed .step-circle i {
-            display: inline;
+          display: inline;
         }
 
         /* Step Label Text */
         .step-label {
-            color: #6c757d;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            transition: color 0.3s ease;
+          color: #6c757d;
+          font-weight: 600;
+          font-size: 0.9rem;
+          margin-bottom: 0.25rem;
+          transition: color 0.3s ease;
         }
 
         .wizard-step.active .step-label,
         .wizard-step.completed .step-label {
-            color: #212529;
+          color: #212529;
         }
 
         /* Step Description */
         .step-desc {
-            color: #adb5bd;
-            font-size: 0.8rem;
-            display: none;
+          color: #adb5bd;
+          font-size: 0.8rem;
+          display: none;
         }
 
         .wizard-step.active .step-desc {
-            color: #9e0620;
-            display: block;
+          color: #9e0620;
+          display: block;
         }
 
         /* Wizard Content Container */
         .wizard-content {
-            position: relative;
-            overflow: hidden;
-            min-height: 300px;
+          position: relative;
+          overflow: hidden;
+          min-height: 300px;
         }
 
         /* Step Panels */
         .wizard-panel {
-            display: none;
-            animation: fadeIn 0.5s ease;
+          display: none;
+          animation: fadeIn 0.5s ease;
         }
 
         .wizard-panel.active {
-            display: block;
+          display: block;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         /* Navigation Buttons */
         .wizard-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e9ecef;
+          display: flex;
+          justify-content: space-between;
+          margin-top: 2rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid #e9ecef;
         }
 
         .wizard-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.625rem 1.25rem;
+          border-radius: 50px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          border: none;
+          cursor: pointer;
         }
 
         .wizard-btn-prev {
-            background-color: #f8f9fa;
-            color: #495057;
+          background-color: #f8f9fa;
+          color: #495057;
         }
 
         .wizard-btn-prev:hover {
-            background-color: #e9ecef;
-            transform: translateX(-5px);
+          background-color: #e9ecef;
+          transform: translateX(-5px);
         }
 
         .wizard-btn-next {
-            background-color: #9e0620;
-            color: white;
+          background-color: #9e0620;
+          color: white;
         }
 
         .wizard-btn-next:hover {
-            background-color: #bb2d3b;
-            transform: translateX(5px);
-        }
-
-        .wizard-btn-submit {
-            background-color: #9e0620;
-            color: white;
-        }
-
-        .wizard-btn-submit:hover {
-            background-color: #bb2d3b;
-            transform: scale(1.05);
+          background-color: #bb2d3b;
+          transform: translateX(5px);
         }
 
         .wizard-btn i {
-            transition: transform 0.3s ease;
+          transition: transform 0.3s ease;
         }
 
         .wizard-btn-prev:hover i {
-            transform: translateX(-3px);
+          transform: translateX(-3px);
         }
 
         .wizard-btn-next:hover i {
-            transform: translateX(3px);
+          transform: translateX(3px);
         }
 
         .wizard-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none !important;
         }
 
         /* Calendar and Time Slot Specific Styling */
 
         /* Time Slots */
         .time-slots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+          gap: 10px;
         }
 
         .time-slot {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid #e9ecef;
+          position: relative;
+          border-radius: 10px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          cursor: pointer;
+          border: 2px solid #e9ecef;
         }
 
         .time-slot:not(.disabled):hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-color: #9e0620;
+          transform: translateY(-3px);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          border-color: #9e0620;
         }
 
         .slot-time {
-            padding: 0.75rem;
-            text-align: center;
-            font-weight: 600;
-            color: #495057;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+          padding: 0.75rem;
+          text-align: center;
+          font-weight: 600;
+          color: #495057;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
         }
 
         .slot-time i {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
+font-size: 0.9rem;
+color: #6c757d;
+}
 
-        .slot-price {
-            background-color: #f8f9fa;
-            padding: 0.5rem;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
-        }
+.slot-price {
+background-color: #f8f9fa;
+padding: 0.5rem;
+text-align: center;
+font-size: 0.85rem;
+color: #6c757d;
+border-top: 1px solid #e9ecef;
+}
 
-        /* Time Slot States */
-        .time-slot.slot-available:hover {
-            border-color: #28a745;
-        }
+/* Time Slot States */
+.time-slot.slot-available:hover {
+border-color: #28a745;
+}
 
-        .time-slot.slot-selected {
-            border-color: #9e0620;
-            background-color: #fff8f8;
-        }
+.time-slot.slot-selected {
+border-color: #9e0620;
+background-color: #fff8f8;
+}
 
-        .time-slot.slot-selected .slot-time {
-            color: #9e0620;
-        }
+.time-slot.slot-selected .slot-time {
+color: #9e0620;
+}
 
-        .time-slot.slot-selected .slot-time i {
-            color: #9e0620;
-        }
+.time-slot.slot-selected .slot-time i {
+color: #9e0620;
+}
 
-        .time-slot.slot-booked {
-            border-color: #6c757d;
-            background-color: #f8f9fa;
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
+.time-slot.slot-booked {
+border-color: #6c757d;
+background-color: #f8f9fa;
+opacity: 0.7;
+cursor: not-allowed;
+}
 
-        .time-slot.slot-in-cart {
-            border-color: #fd7e14;
-            background-color: #fff8f1;
-        }
+.time-slot.slot-in-cart {
+border-color: #fd7e14;
+background-color: #fff8f1;
+}
 
-        .time-slot.slot-in-cart .slot-time i {
-            color: #fd7e14;
-        }
+.time-slot.slot-in-cart .slot-time i {
+color: #fd7e14;
+}
 
-        /* Selected Slots List */
-        .selected-slots-list {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-        }
+/* Selected Slots Display */
+.selected-slots-display {
+display: flex;
+flex-direction: column;
+gap: 5px;
+}
 
-        .selected-slots-list .list-group-item {
-            background-color: transparent;
-            border-color: #e9ecef;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
+.selected-slot-item {
+background-color: #fff;
+padding: 8px 12px;
+border-radius: 6px;
+display: flex;
+align-items: center;
+font-size: 14px;
+}
 
-        .selected-slots-list .list-group-item:hover {
-            background-color: #fff;
-            transform: translateX(5px);
-        }
+/* Quantity Selector */
+.quantity-selector {
+width: 200px;
+margin: 0 auto;
+}
 
-        /* Confirmation Details */
-        .confirmation-details {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-        }
+.quantity-btn {
+width: 40px;
+height: 40px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-color: #dee2e6;
+}
 
-        .confirmation-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e9ecef;
-        }
+.quantity-btn:hover {
+background-color: #9e0620;
+border-color: #9e0620;
+color: white;
+}
 
-        .confirmation-item:last-child {
-            border-bottom: none;
-        }
+#quantity-input {
+width: 80px;
+text-align: center;
+font-weight: 600;
+border-color: #dee2e6;
+}
 
-        .confirmation-item .label {
-            font-weight: 600;
-            color: #495057;
-        }
+/* Responsive adjustments */
+@media (max-width: 768px) {
+.step-desc {
+display: none !important;
+}
 
-        .confirmation-item .value {
-            color: #212529;
-        }
+.wizard-progress::before {
+top: 15px;
+}
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .step-desc {
-                display: none !important;
-            }
+.wizard-progress-bar {
+top: 15px;
+}
 
-            .wizard-progress::before {
-                top: 15px;
-            }
+.step-circle {
+width: 30px;
+height: 30px;
+font-size: 0.9rem;
+}
 
-            .wizard-progress-bar {
-                top: 15px;
-            }
+.step-label {
+font-size: 0.8rem;
+}
 
-            .step-circle {
-                width: 30px;
-                height: 30px;
-                font-size: 0.9rem;
-            }
+.time-slots-grid {
+grid-template-columns: repeat(2, 1fr);
+}
 
-            .step-label {
-                font-size: 0.8rem;
-            }
+.wizard-buttons {
+flex-direction: column;
+gap: 1rem;
+}
 
-            .time-slots-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+.wizard-btn {
+width: 100%;
+justify-content: center;
+}
 
-            .wizard-buttons {
-                flex-direction: column;
-                gap: 1rem;
-            }
+.wizard-btn-prev {
+order: 2;
+}
 
-            .wizard-btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .wizard-btn-prev {
-                order: 2;
-            }
-
-            .wizard-btn-next,
-            .wizard-btn-submit {
-                order: 1;
-            }
-        }
-    </style>
+.wizard-btn-next {
+order: 1;
+}
+}
+        </style>
+    <!-- Include Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 @endsection

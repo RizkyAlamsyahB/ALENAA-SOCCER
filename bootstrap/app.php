@@ -2,17 +2,18 @@
 
 use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
+        channels: __DIR__.'/../routes/channels.php', // Pastikan file ini ada
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Tambahkan definisi middleware role
+        // Alias Middleware
         $middleware->alias([
             'checkRole' => CheckRole::class,
         ]);
@@ -23,4 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'payment/recurring-notification',
             'payment/pay-account-notification'
         ]);
-    })->create();
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        // Menangani error secara custom jika diperlukan
+    })
+    ->create();

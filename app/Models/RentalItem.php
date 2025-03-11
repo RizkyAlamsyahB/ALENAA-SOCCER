@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\CartItem;
+use App\Models\RentalBooking;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RentalItem extends Model
 {
@@ -38,15 +40,22 @@ class RentalItem extends Model
         'updated_at' => 'datetime',
     ];
 
-
+    /**
+     * Relasi ke model RentalBooking
+     */
+    public function rentalBookings()
+    {
+        return $this->hasMany(RentalBooking::class);
+    }
 
     /**
-     * Relasi ke model ItemRental (rental records)
+     * Relasi ke model CartItem
      */
-    // public function itemRentals()
-    // {
-    //     return $this->hasMany(ItemRental::class);
-    // }
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class, 'item_id')
+            ->where('type', 'rental_item');
+    }
 
     /**
      * Relasi ke model Review
@@ -68,21 +77,24 @@ class RentalItem extends Model
         return ($this->stock_available / $this->stock_total) * 100;
     }
 
-    /**
-     * Mendapatkan status ketersediaan item
-     */
-    public function getAvailabilityStatusAttribute()
-    {
-        $percentage = $this->availability_percentage;
 
-        if ($percentage <= 0) {
-            return 'Habis';
-        } elseif ($percentage <= 20) {
-            return 'Hampir Habis';
-        } elseif ($percentage <= 50) {
-            return 'Terbatas';
-        } else {
-            return 'Tersedia';
+
+    /**
+     * Mendapatkan kategori dalam bahasa Indonesia
+     */
+    public function getCategoryNameAttribute()
+    {
+        switch ($this->category) {
+            case 'ball':
+                return 'Bola';
+            case 'jersey':
+                return 'Jersey';
+            case 'shoes':
+                return 'Sepatu';
+            case 'other':
+                return 'Lainnya';
+            default:
+                return ucfirst($this->category);
         }
     }
 }

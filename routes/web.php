@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\Admin\MembershipController;
 use App\Http\Controllers\Admin\RentalItemController;
+use App\Http\Controllers\User\RentalItemsController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\PhotoPackageController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -58,13 +59,29 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
         Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
     });
 
-    // Payment Pages (Protected routes - require authentication)
+    // Rental Management
+    Route::prefix('rental')->name('user.rental_items.')->group(function () {
+        Route::get('/', [RentalItemsController::class, 'index'])->name('index');
+        Route::get('/items/{id}', [RentalItemsController::class, 'show'])->name('show');
+        Route::post('/cart/add', [RentalItemsController::class, 'addToCart'])->name('cart.add');
+        Route::get('/cart', [RentalItemsController::class, 'viewCart'])->name('cart');
+        Route::delete('/cart/{itemId}', [RentalItemsController::class, 'removeFromCart'])->name('cart.remove');
+        Route::post('/checkout', [RentalItemsController::class, 'checkout'])->name('checkout');
+        Route::get('/history', [RentalItemsController::class, 'history'])->name('history');
+        Route::get('/orders/{id}', [RentalItemsController::class, 'orderDetail'])->name('order.detail');
+        Route::get('/items/{rentalItemId}/available-slots', [RentalItemsController::class, 'getAvailableSlots'])->name('availableSlots');
+
+    });
+
+    // Payment Management
     Route::prefix('payment')->name('user.payment.')->group(function () {
         Route::get('/success', [PaymentController::class, 'finish'])->name('success');
         Route::get('/unfinish', [PaymentController::class, 'unfinish'])->name('unfinish');
         Route::get('/history', [PaymentController::class, 'history'])->name('history');
         Route::get('/detail/{id}', [PaymentController::class, 'detail'])->name('detail');
         Route::get('/error', [PaymentController::class, 'error'])->name('error');
+        Route::get('/{id}/continue', [PaymentController::class, 'continuePayment'])->name('continue');
+        Route::get('/{id}/invoice', [PaymentController::class, 'downloadInvoice'])->name('invoice');
     });
 
     // Other Features
@@ -75,10 +92,6 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
     Route::get('/membership', function () {
         return view('users.membership');
     })->name('membership');
-
-    Route::get('/rental', function () {
-        return view('users.rental');
-    })->name('rental.index');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

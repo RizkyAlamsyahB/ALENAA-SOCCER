@@ -106,10 +106,22 @@ public function getAvailableSlots(Request $request, $fieldId)
 
             // Check against booked slots
             foreach ($bookedSlots as $bookedBooking) {
+                // Perbaikan logika untuk menghindari false positive pada slot yang berdekatan
+                // Slot dianggap tidak tersedia jika:
+                // 1. Waktu mulai slot berada di dalam range booking yang ada (tapi tidak tepat di akhir booking)
+                // 2. Waktu selesai slot berada di dalam range booking yang ada (tapi tidak tepat di awal booking)
+                // 3. Booking yang ada berada dalam range waktu slot
+
+                $bookedStart = $bookedBooking->start_time;
+                $bookedEnd = $bookedBooking->end_time;
+
                 if (
-                    ($startTime->between($bookedBooking->start_time, $bookedBooking->end_time)) ||
-                    ($endTime->between($bookedBooking->start_time, $bookedBooking->end_time)) ||
-                    ($bookedBooking->start_time->between($startTime, $endTime))
+                    // Kasus 1: Waktu mulai slot berada di dalam range booking
+                    ($startTime >= $bookedStart && $startTime < $bookedEnd) ||
+                    // Kasus 2: Waktu selesai slot berada di dalam range booking
+                    ($endTime > $bookedStart && $endTime <= $bookedEnd) ||
+                    // Kasus 3: Booking berada di dalam range slot waktu
+                    ($startTime <= $bookedStart && $endTime >= $bookedEnd)
                 ) {
                     $isAvailable = false;
                     break;
