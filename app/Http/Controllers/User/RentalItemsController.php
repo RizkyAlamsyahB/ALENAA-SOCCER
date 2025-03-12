@@ -78,159 +78,185 @@ class RentalItemsController extends Controller
         return view('users.rental_items.show', compact('rentalItem'));
     }
 
-    /**
-     * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu
-     */
-    public function getAvailableSlots(Request $request, $rentalItemId)
-    {
-        try {
-            // Validasi input
-            $request->validate([
-                'date' => 'required|date'
-            ]);
+/**
+ * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu
+ */
+public function getAvailableSlots(Request $request, $rentalItemId)
+{
+    try {
+        // Validasi input
+        $request->validate([
+            'date' => 'required|date'
+        ]);
 
-            // Cari item rental
-            $rentalItem = RentalItem::findOrFail($rentalItemId);
+        // Cari item rental
+        $rentalItem = RentalItem::findOrFail($rentalItemId);
 
-            $date = $request->date;
-            $carbonDate = Carbon::parse($date);
+        $date = $request->date;
+        $carbonDate = Carbon::parse($date);
 
-            // Definisikan semua slot waktu (1 jam per slot)
-            $allSlots = [
-                ['start' => '08:00', 'end' => '09:00'],
-                ['start' => '09:00', 'end' => '10:00'],
-                ['start' => '10:00', 'end' => '11:00'],
-                ['start' => '11:00', 'end' => '12:00'],
-                ['start' => '12:00', 'end' => '13:00'],
-                ['start' => '13:00', 'end' => '14:00'],
-                ['start' => '14:00', 'end' => '15:00'],
-                ['start' => '15:00', 'end' => '16:00'],
-                ['start' => '16:00', 'end' => '17:00'],
-                ['start' => '17:00', 'end' => '18:00'],
-                ['start' => '18:00', 'end' => '19:00'],
-                ['start' => '19:00', 'end' => '20:00'],
-                ['start' => '20:00', 'end' => '21:00'],
-                ['start' => '21:00', 'end' => '22:00'],
-                ['start' => '22:00', 'end' => '23:00'],
-            ];
+        // Definisikan semua slot waktu (1 jam per slot)
+        $allSlots = [
+            ['start' => '08:00', 'end' => '09:00'],
+            ['start' => '09:00', 'end' => '10:00'],
+            ['start' => '10:00', 'end' => '11:00'],
+            ['start' => '11:00', 'end' => '12:00'],
+            ['start' => '12:00', 'end' => '13:00'],
+            ['start' => '13:00', 'end' => '14:00'],
+            ['start' => '14:00', 'end' => '15:00'],
+            ['start' => '15:00', 'end' => '16:00'],
+            ['start' => '16:00', 'end' => '17:00'],
+            ['start' => '17:00', 'end' => '18:00'],
+            ['start' => '18:00', 'end' => '19:00'],
+            ['start' => '19:00', 'end' => '20:00'],
+            ['start' => '20:00', 'end' => '21:00'],
+            ['start' => '21:00', 'end' => '22:00'],
+            ['start' => '22:00', 'end' => '23:00'],
+        ];
 
-            // Get cart items for current user, rental item, and date
-            $cartSlots = [];
-            $cartQuantities = []; // Track quantities in cart per slot
-            if (Auth::check()) {
-                $userCart = Cart::where('user_id', Auth::id())->first();
+        // Get cart items for current user, rental item, and date
+        $cartSlots = [];
+        $cartQuantities = []; // Track quantities in cart per slot
+        if (Auth::check()) {
+            $userCart = Cart::where('user_id', Auth::id())->first();
 
-                if ($userCart) {
-                    $cartItems = CartItem::where('cart_id', $userCart->id)
-                        ->where('type', 'rental_item')
-                        ->where('item_id', $rentalItemId)
-                        ->whereDate('start_time', $date)
-                        ->get();
+            if ($userCart) {
+                $cartItems = CartItem::where('cart_id', $userCart->id)
+                    ->where('type', 'rental_item')
+                    ->where('item_id', $rentalItemId)
+                    ->whereDate('start_time', $date)
+                    ->get();
 
-                    foreach ($cartItems as $item) {
-                        $startFormatted = Carbon::parse($item->start_time)->format('H:i');
-                        $endFormatted = Carbon::parse($item->end_time)->format('H:i');
-                        $slotKey = $startFormatted . ' - ' . $endFormatted;
+                foreach ($cartItems as $item) {
+                    $startFormatted = Carbon::parse($item->start_time)->format('H:i');
+                    $endFormatted = Carbon::parse($item->end_time)->format('H:i');
+                    $slotKey = $startFormatted . ' - ' . $endFormatted;
 
-                        if (!isset($cartQuantities[$slotKey])) {
-                            $cartQuantities[$slotKey] = 0;
-                            $cartSlots[] = $slotKey;
-                        }
-
-                        $cartQuantities[$slotKey] += $item->quantity;
+                    if (!isset($cartQuantities[$slotKey])) {
+                        $cartQuantities[$slotKey] = 0;
+                        $cartSlots[] = $slotKey;
                     }
+
+                    $cartQuantities[$slotKey] += $item->quantity;
                 }
             }
-
-            // Dapatkan peminjaman yang sudah ada pada tanggal tersebut
-            // Asumsi ada tabel rental_bookings untuk menyimpan peminjaman yang sudah terjadi
-// Dapatkan peminjaman yang sudah ada pada tanggal tersebut dari CART_ITEMS
-$rentedItemsFromCart = DB::table('cart_items')
-    ->where('type', 'rental_item')
-    ->where('item_id', $rentalItemId)
-    ->whereDate('start_time', $date)
-    ->whereNotNull('start_time')
-    ->whereNotNull('end_time')
-    ->get();
-
-// Dapatkan peminjaman yang sudah ada pada tanggal tersebut dari RENTAL_BOOKINGS
-$rentedItemsFromBookings = RentalBooking::where('rental_item_id', $rentalItemId)
-    ->whereDate('start_time', $date)
-    ->whereNotIn('status', ['cancelled'])
-    ->get();
-
-// Gabungkan kedua hasil
-$rentedItems = $rentedItemsFromCart->merge($rentedItemsFromBookings);
-
-            // Hitung jumlah item yang disewa per slot waktu
-            $rentedQuantities = [];
-            foreach ($rentedItems as $item) {
-                $startTime = Carbon::parse($item->start_time);
-                $endTime = Carbon::parse($item->end_time);
-
-                foreach ($allSlots as $slot) {
-                    $slotStart = Carbon::parse("{$date} {$slot['start']}");
-                    $slotEnd = Carbon::parse("{$date} {$slot['end']}");
-
-                    // Jika slot waktu bertabrakan dengan waktu rental
-                    if (
-                        ($slotStart >= $startTime && $slotStart < $endTime) ||
-                        ($slotEnd > $startTime && $slotEnd <= $endTime) ||
-                        ($slotStart <= $startTime && $slotEnd >= $endTime)
-                    ) {
-                        $slotKey = $slot['start'] . ' - ' . $slot['end'];
-                        if (!isset($rentedQuantities[$slotKey])) {
-                            $rentedQuantities[$slotKey] = 0;
-                        }
-                        $rentedQuantities[$slotKey] += $item->quantity;
-                    }
-                }
-            }
-
-            // Filter slot yang tersedia
-            $availableSlots = [];
-            foreach ($allSlots as $slot) {
-                $displaySlot = $slot['start'] . ' - ' . $slot['end'];
-
-                // Hitung jumlah item yang tersedia pada slot ini
-                $rentedCount = isset($rentedQuantities[$displaySlot]) ? $rentedQuantities[$displaySlot] : 0;
-                $cartCount = isset($cartQuantities[$displaySlot]) ? $cartQuantities[$displaySlot] : 0;
-                $availableCount = $rentalItem->stock_total - $rentedCount;
-
-                $isInCart = in_array($displaySlot, $cartSlots);
-                $isAvailable = $availableCount > 0;
-
-                // Calculate price (1 hour per slot)
-                $slotPrice = $rentalItem->rental_price;
-
-                $availableSlots[] = [
-                    'start' => $slot['start'],
-                    'end' => $slot['end'],
-                    'display' => $displaySlot,
-                    'is_available' => $isAvailable,
-                    'in_cart' => $isInCart,
-                    'price' => $slotPrice,
-                    'available_quantity' => max(0, $availableCount),
-                    'cart_quantity' => $cartCount,
-                    'status' => $isInCart ? 'in_cart' : ($isAvailable ? 'available' : 'fully_booked')
-                ];
-            }
-
-            return response()->json($availableSlots);
-        } catch (\Exception $e) {
-            // Log full error
-            Log::error('Error in getAvailableSlots for rental items', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            // Return error response
-            return response()->json([
-                'error' => 'Failed to retrieve available slots',
-                'message' => $e->getMessage()
-            ], 500);
         }
+
+        // Dapatkan peminjaman yang sudah dikonfirmasi (sudah melalui checkout/pembayaran)
+        // Hanya memeriksa booking yang statusnya tidak dibatalkan
+        $confirmedBookings = RentalBooking::where('rental_item_id', $rentalItemId)
+            ->whereDate('start_time', $date)
+            ->whereNotIn('status', ['cancelled'])
+            ->get();
+
+        // Hitung jumlah item yang disewa per slot waktu (hanya dari booking yang dikonfirmasi)
+        $bookedQuantities = [];
+        foreach ($confirmedBookings as $booking) {
+            $startTime = Carbon::parse($booking->start_time);
+            $endTime = Carbon::parse($booking->end_time);
+
+            foreach ($allSlots as $slot) {
+                $slotStart = Carbon::parse("{$date} {$slot['start']}");
+                $slotEnd = Carbon::parse("{$date} {$slot['end']}");
+
+                // Jika slot waktu bertabrakan dengan waktu booking
+                if (
+                    ($slotStart >= $startTime && $slotStart < $endTime) ||
+                    ($slotEnd > $startTime && $slotEnd <= $endTime) ||
+                    ($slotStart <= $startTime && $slotEnd >= $endTime)
+                ) {
+                    $slotKey = $slot['start'] . ' - ' . $slot['end'];
+                    if (!isset($bookedQuantities[$slotKey])) {
+                        $bookedQuantities[$slotKey] = 0;
+                    }
+                    $bookedQuantities[$slotKey] += $booking->quantity;
+                }
+            }
+        }
+
+        // Dapatkan informasi item di keranjang pengguna lain (untuk informasi saja)
+        $otherCartQuantities = [];
+        if (Auth::check()) {
+            $userCart = Cart::where('user_id', Auth::id())->first();
+            $userCartId = $userCart ? $userCart->id : 0;
+
+            $otherCartItems = CartItem::where('type', 'rental_item')
+                ->where('item_id', $rentalItemId)
+                ->whereDate('start_time', $date);
+
+            // Exclude current user's cart
+            if ($userCart) {
+                $otherCartItems = $otherCartItems->where('cart_id', '!=', $userCartId);
+            }
+
+            $otherCartItems = $otherCartItems->get();
+
+            foreach ($otherCartItems as $item) {
+                $startFormatted = Carbon::parse($item->start_time)->format('H:i');
+                $endFormatted = Carbon::parse($item->end_time)->format('H:i');
+                $slotKey = $startFormatted . ' - ' . $endFormatted;
+
+                if (!isset($otherCartQuantities[$slotKey])) {
+                    $otherCartQuantities[$slotKey] = 0;
+                }
+
+                $otherCartQuantities[$slotKey] += $item->quantity;
+            }
+        }
+
+        // Filter slot yang tersedia
+        $availableSlots = [];
+        foreach ($allSlots as $slot) {
+            $displaySlot = $slot['start'] . ' - ' . $slot['end'];
+
+            // Hitung jumlah item yang sudah di-booking (bukan di cart)
+            $bookedCount = isset($bookedQuantities[$displaySlot]) ? $bookedQuantities[$displaySlot] : 0;
+
+            // Hitung jumlah tersedia berdasarkan booking yang sudah dikonfirmasi
+            $availableCount = $rentalItem->stock_total - $bookedCount;
+
+            // Info tambahan: jumlah di cart pengguna lain
+            $otherCartCount = isset($otherCartQuantities[$displaySlot]) ? $otherCartQuantities[$displaySlot] : 0;
+
+            // Cek apakah slot ada di cart pengguna saat ini
+            $isInCart = in_array($displaySlot, $cartSlots);
+            $cartCount = isset($cartQuantities[$displaySlot]) ? $cartQuantities[$displaySlot] : 0;
+
+            // Slot dianggap tersedia jika masih ada stok (terlepas dari item di cart)
+            $isAvailable = $availableCount > 0;
+
+            // Calculate price (1 hour per slot)
+            $slotPrice = $rentalItem->rental_price;
+
+            $availableSlots[] = [
+                'start' => $slot['start'],
+                'end' => $slot['end'],
+                'display' => $displaySlot,
+                'is_available' => $isAvailable,
+                'in_cart' => $isInCart,
+                'price' => $slotPrice,
+                'available_quantity' => max(0, $availableCount),
+                'cart_quantity' => $cartCount,
+                'other_cart_quantity' => $otherCartCount,
+                'status' => $isInCart ? 'in_cart' : ($isAvailable ? 'available' : 'fully_booked')
+            ];
+        }
+
+        return response()->json($availableSlots);
+    } catch (\Exception $e) {
+        // Log full error
+        Log::error('Error in getAvailableSlots for rental items', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        // Return error response
+        return response()->json([
+            'error' => 'Failed to retrieve available slots',
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Mendapatkan slot yang ada di keranjang user

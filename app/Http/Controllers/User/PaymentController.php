@@ -131,37 +131,36 @@ class PaymentController extends Controller
                 }
             }
 
-            // Periksa ketersediaan rental bookings
-            foreach ($rentalBookings as $booking) {
-                // Hitung jumlah yang sudah dipesan dalam rentang waktu yang sama
-                $bookedQuantity = RentalBooking::where('rental_item_id', $booking->rental_item_id)
-                    ->where('id', '!=', $booking->id)
-                    ->whereNotIn('status', ['cancelled', 'pending'])
-                    ->where(function ($query) use ($booking) {
-                        // Logika yang sama seperti di CartController
-                        $query->where(function ($q) use ($booking) {
-                            $q->where('start_time', '>=', $booking->start_time)
-                                ->where('start_time', '<', $booking->end_time);
-                        })->orWhere(function ($q) use ($booking) {
-                            $q->where('end_time', '>', $booking->start_time)
-                                ->where('end_time', '<=', $booking->end_time);
-                        })->orWhere(function ($q) use ($booking) {
-                            $q->where('start_time', '<=', $booking->start_time)
-                                ->where('end_time', '>=', $booking->end_time);
-                        });
-                    })
-                    ->sum('quantity');
+// Periksa ketersediaan rental bookings
+foreach ($rentalBookings as $booking) {
+    // Hitung jumlah yang sudah dipesan dalam rentang waktu yang sama
+    $bookedQuantity = RentalBooking::where('rental_item_id', $booking->rental_item_id)
+        ->where('id', '!=', $booking->id)
+        ->whereNotIn('status', ['cancelled', 'pending'])
+        ->where(function ($query) use ($booking) {
+            // Logika yang sama seperti di CartController
+            $query->where(function ($q) use ($booking) {
+                $q->where('start_time', '>=', $booking->start_time)
+                    ->where('start_time', '<', $booking->end_time);
+            })->orWhere(function ($q) use ($booking) {
+                $q->where('end_time', '>', $booking->start_time)
+                    ->where('end_time', '<=', $booking->end_time);
+            })->orWhere(function ($q) use ($booking) {
+                $q->where('start_time', '<=', $booking->start_time)
+                    ->where('end_time', '>=', $booking->end_time);
+            });
+        })
+        ->sum('quantity');
 
-                $rentalItem = $booking->rentalItem;
-                $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+    $rentalItem = $booking->rentalItem;
+    $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
 
-                if ($booking->quantity > $availableQuantity) {
-                    DB::rollBack();
-                    return redirect()->route('user.cart.view')
-                        ->with('error', 'Maaf, stok untuk ' . $rentalItem->name . ' tidak mencukupi. Tersedia: ' . $availableQuantity);
-                }
-            }
-
+    if ($booking->quantity > $availableQuantity) {
+        DB::rollBack();
+        return redirect()->route('user.cart.view')
+            ->with('error', 'Maaf, stok untuk ' . $rentalItem->name . ' tidak mencukupi. Tersedia: ' . $availableQuantity);
+    }
+}
             // Periksa ketersediaan photographer bookings
             foreach ($photographerBookings as $booking) {
                 $conflictingBooking = PhotographerBooking::where('photographer_id', $booking->photographer_id)

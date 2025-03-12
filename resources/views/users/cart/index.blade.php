@@ -22,6 +22,21 @@
 
     <!-- Main Content -->
     <div class="container mt-4 mb-5">
+        <!-- Bootstrap Alert for Session Messages -->
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="row">
             <div class="col-12">
                 <h1 class="h3 mb-4 fw-bold">Keranjang Booking</h1>
@@ -189,39 +204,10 @@
             </div>
         @endif
     </div>
-    <script>
-        $(document).ready(function() {
-            // Configure toastr options if needed
-            toastr.options = {
-                "closeButton": true,
-                "positionClass": "toast-top-right",
-                "opacity": 1
-            };
 
-            @if (session('error'))
-                toastr.error("{{ session('error') }}");
-            @endif
-
-            @if (session('success'))
-                toastr.success("{{ session('success') }}");
-            @endif
-
-            @if (session('info'))
-                toastr.info("{{ session('info') }}");
-            @endif
-
-            @if (session('warning'))
-                toastr.warning("{{ session('warning') }}");
-            @endif
-        });
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-
-
-
-<!-- Add these in the head section of your layout -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <style>
         /* Modern Cart Styling */
 
@@ -543,6 +529,28 @@
             color: white;
         }
 
+        /* Bootstrap Alert Styling */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-close {
+            font-size: 0.8rem;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
 
@@ -579,20 +587,4 @@
             }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
-    <!-- Add this near the end of your content section, before closing body tag -->
-    <style>
-        /* Make toastr notifications fully opaque by default */
-        #toast-container>div {
-            opacity: 1 !important;
-        }
-
-        /* Remove any hover-specific opacity changes */
-        #toast-container>div:hover {
-            opacity: 1 !important;
-        }
-    </style>
-
 @endsection

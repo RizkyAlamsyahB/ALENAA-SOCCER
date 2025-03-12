@@ -69,8 +69,13 @@
                     <div class="col-12">
                         <div class="gallery-card">
                             <div class="gallery-img">
-                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                    class="img-fluid w-100" alt="Court view 2">
+                                @if ($field->image)
+                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
+                                @else
+                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                        class="img-fluid w-100" alt="{{ $field->name }}">
+                                @endif
                                 <div class="gallery-overlay">
                                     <button class="view-btn">
                                         <i class="fas fa-expand-alt"></i>
@@ -83,8 +88,13 @@
                     <div class="col-12">
                         <div class="gallery-card">
                             <div class="gallery-img">
-                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                    class="img-fluid w-100" alt="Court view 3">
+                                @if ($field->image)
+                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
+                                @else
+                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                        class="img-fluid w-100" alt="{{ $field->name }}">
+                                @endif
                                 <div class="gallery-overlay">
                                     <button class="view-btn">
                                         <i class="fas fa-expand-alt"></i>
@@ -465,7 +475,7 @@
                                     locale: 'id',
                                     dateFormat: 'Y-m-d',
                                     minDate: 'today',
-                                    disableMobile: true,
+                                    responsive: true, // Enable responsive mode
                                     onChange: function(selectedDates, dateStr) {
                                         selectedDate = dateStr;
                                         document.getElementById('selectedDate').value = dateStr;
@@ -622,7 +632,7 @@
                                             return response.json().then(data => {
                                                 if (!response.ok) {
                                                     throw new Error(data.message || 'Error: ' + response
-                                                    .statusText);
+                                                        .statusText);
                                                 }
                                                 return data;
                                             });
@@ -1318,5 +1328,51 @@
                 order: 1;
             }
         }
+
+        /* Responsive Flatpickr Styles */
+.flatpickr-responsive {
+    width: 100% !important;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.flatpickr-responsive .flatpickr-months {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flatpickr-responsive .flatpickr-month {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.flatpickr-responsive .flatpickr-weekdays {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flatpickr-responsive .flatpickr-weekday {
+    flex: 1;
+    text-align: center;
+}
+
+.flatpickr-responsive .flatpickr-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+@media (max-width: 576px) {
+    .flatpickr-responsive {
+        font-size: 0.9rem;
+    }
+
+    .flatpickr-responsive .flatpickr-day {
+        max-width: 30px;
+        max-height: 30px;
+        line-height: 30px;
+    }
+}
     </style>
 @endsection

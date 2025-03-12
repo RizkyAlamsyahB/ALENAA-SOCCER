@@ -14,7 +14,7 @@ class CancelExpiredBookings extends Command
 
     public function handle()
     {
-        $timeoutMinutes = 15; // Batas waktu 30 menit
+        $timeoutMinutes = 1; // Batas waktu 30 menit
         $timeoutTime = now()->subMinutes($timeoutMinutes);
 
         // Cari booking yang masih pending dan sudah melewati batas waktu

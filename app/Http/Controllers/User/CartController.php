@@ -431,7 +431,7 @@ private function addRentalItemToCart(Request $request, Cart $cart)
             CartItem::where('cart_id', $cart->id)->delete();
         }
 
-        return redirect()->route('user.fields.cart')->with('success', 'Keranjang berhasil dikosongkan');
+        return redirect()->route('user.cart.view')->with('success', 'Keranjang berhasil dikosongkan');
     }
 
     /**
@@ -486,50 +486,32 @@ private function addRentalItemToCart(Request $request, Cart $cart)
                     }
                 }
             } elseif ($item->type == 'rental_item') {
-                // Cek ketersediaan rental item
-                $rentalItem = RentalItem::find($item->item_id);
-                if ($rentalItem) {
-                    // Logika pengecekan ketersediaan rental item
-                    $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
-                        ->whereNotIn('status', ['cancelled'])
-                        ->where(function ($query) use ($item) {
-                            $query
-                                ->where(function ($q) use ($item) {
-                                    $q->where('start_time', '>=', $item->start_time)->where('start_time', '<', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('end_time', '>', $item->start_time)->where('end_time', '<=', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>=', $item->end_time);
-                                });
-                        })
-                        ->sum('quantity');
+// Cek ketersediaan rental item
+$rentalItem = RentalItem::find($item->item_id);
+if ($rentalItem) {
+    // Hanya memeriksa booking yang sudah dikonfirmasi, abaikan item di keranjang
+    $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+        ->whereNotIn('status', ['cancelled'])
+        ->where(function ($query) use ($item) {
+            $query
+                ->where(function ($q) use ($item) {
+                    $q->where('start_time', '>=', $item->start_time)->where('start_time', '<', $item->end_time);
+                })
+                ->orWhere(function ($q) use ($item) {
+                    $q->where('end_time', '>', $item->start_time)->where('end_time', '<=', $item->end_time);
+                })
+                ->orWhere(function ($q) use ($item) {
+                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>=', $item->end_time);
+                });
+        })
+        ->sum('quantity');
 
-                    $cartQuantity = CartItem::where('type', 'rental_item')
-                        ->where('item_id', $rentalItem->id)
-                        ->where('cart_id', '!=', $cart->id)
-                        ->where(function ($query) use ($item) {
-                            $query
-                                ->where(function ($q) use ($item) {
-                                    $q->where('start_time', '>=', $item->start_time)->where('start_time', '<', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('end_time', '>', $item->start_time)->where('end_time', '<=', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>=', $item->end_time);
-                                });
-                        })
-                        ->sum('quantity');
+    $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
 
-                    $totalBookedQuantity = $bookedQuantity + $cartQuantity;
-                    $availableQuantity = $rentalItem->stock_total - $totalBookedQuantity;
-
-                    if ($item->quantity > $availableQuantity) {
-                        $unavailableItems[] = $rentalItem->name . ' (Tersedia: ' . $availableQuantity . ', Diminta: ' . $item->quantity . ')';
-                    }
-                }
+    if ($item->quantity > $availableQuantity) {
+        $unavailableItems[] = $rentalItem->name . ' (Tersedia: ' . $availableQuantity . ', Diminta: ' . $item->quantity . ')';
+    }
+}
             }
             // Tambahkan pengecekan untuk jenis item lainnya jika diperlukan
         }

@@ -765,146 +765,154 @@
                                         });
                                 }
 
-                                // Function to render time slots
-                                function renderTimeSlots(slots) {
-                                    const slotsWrapper = document.getElementById('time-slots-wrapper');
-                                    const availableSlotsCount = document.getElementById('available-slots-count');
+// Function to render time slots
+function renderTimeSlots(slots) {
+    const slotsWrapper = document.getElementById('time-slots-wrapper');
+    const availableSlotsCount = document.getElementById('available-slots-count');
 
-                                    // Clear previous content
-                                    slotsWrapper.innerHTML = '';
+    // Clear previous content
+    slotsWrapper.innerHTML = '';
 
-                                    // Count available slots
-                                    const availableCount = slots.filter(slot => slot.is_available).length;
-                                    availableSlotsCount.textContent = `${availableCount} slot`;
+    // Count available slots
+    const availableCount = slots.filter(slot => slot.is_available).length;
+    availableSlotsCount.textContent = `${availableCount} slot`;
 
-                                    // If no available slots
-                                    if (availableCount === 0) {
-                                        slotsWrapper.innerHTML = `
-                                            <div class="alert alert-warning" role="alert">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
-                                            </div>
-                                        `;
-                                        return;
-                                    }
+    // If no available slots
+    if (availableCount === 0) {
+        slotsWrapper.innerHTML = `
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
+            </div>
+        `;
+        return;
+    }
 
-                                    // Create grid for slots
-                                    const slotGrid = document.createElement('div');
-                                    slotGrid.classList.add('time-slots-grid');
+    // Create grid for slots
+    const slotGrid = document.createElement('div');
+    slotGrid.classList.add('time-slots-grid');
 
-                                    // Add slots to grid
-                                    slots.forEach(slot => {
-                                        const slotDiv = document.createElement('div');
+    // Add slots to grid
+    slots.forEach(slot => {
+        const slotDiv = document.createElement('div');
 
-                                        let statusClass = '';
-                                        let statusIcon = '';
-                                        let isDisabled = false;
+        let statusClass = '';
+        let statusIcon = '';
+        let isDisabled = false;
 
-                                        switch (slot.status) {
-                                            case 'fully_booked':
-                                                statusClass = 'slot-booked';
-                                                statusIcon = '<i class="fas fa-lock"></i>';
-                                                isDisabled = true;
-                                                break;
-                                            case 'in_cart':
-                                                statusClass = 'slot-in-cart';
-                                                statusIcon = '<i class="fas fa-shopping-cart"></i>';
-                                                break;
-                                            case 'available':
-                                                statusClass = 'slot-available';
-                                                statusIcon = '<i class="fas fa-clock"></i>';
-                                                break;
-                                        }
+        switch (slot.status) {
+            case 'fully_booked':
+                statusClass = 'slot-booked';
+                statusIcon = '<i class="fas fa-lock"></i>';
+                isDisabled = true;
+                break;
+            case 'in_cart':
+                statusClass = 'slot-in-cart';
+                statusIcon = '<i class="fas fa-shopping-cart"></i>';
+                break;
+            case 'available':
+                statusClass = 'slot-available';
+                statusIcon = '<i class="fas fa-clock"></i>';
+                break;
+        }
 
-                                        const isSelected = selectedSlots.has(slot.display);
-                                        if (isSelected) {
-                                            statusClass = 'slot-selected';
-                                            statusIcon = '<i class="fas fa-check"></i>';
-                                        }
+        const isSelected = selectedSlots.has(slot.display);
+        if (isSelected) {
+            statusClass = 'slot-selected';
+            statusIcon = '<i class="fas fa-check"></i>';
+        }
 
-                                        slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
-                                        slotDiv.dataset.slot = slot.display;
-                                        slotDiv.dataset.price = slot.price;
-                                        slotDiv.dataset.status = slot.status;
-                                        slotDiv.dataset.availableQuantity = slot.available_quantity;
+        slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
+        slotDiv.dataset.slot = slot.display;
+        slotDiv.dataset.price = slot.price;
+        slotDiv.dataset.status = slot.status;
+        slotDiv.dataset.availableQuantity = slot.available_quantity;
 
-                                        slotDiv.innerHTML = `
-                                            <div class="slot-time">
-                                                ${statusIcon}
-                                                <span>${slot.display}</span>
-                                            </div>
-                                            <div class="slot-price">
-                                                <div>Rp ${slot.price.toLocaleString('id')}</div>
-                                                <small class="text-${slot.available_quantity > 0 ? 'success' : 'danger'}">
-                                                    ${slot.available_quantity} tersedia
-                                                </small>
-                                            </div>
-                                        `;
+        // Persiapkan tampilan stok
+        let availabilityText = `${slot.available_quantity} tersedia`;
+        let availabilityClass = slot.available_quantity > 0 ? 'success' : 'danger';
 
-                                        slotGrid.appendChild(slotDiv);
-                                    });
+        // Jika ada item di keranjang pengguna lain, tambahkan informasi (opsional)
+        if (slot.other_cart_quantity && slot.other_cart_quantity > 0) {
+            availabilityText += ` (${slot.other_cart_quantity} di keranjang lain)`;
+        }
 
-                                    slotsWrapper.appendChild(slotGrid);
+        slotDiv.innerHTML = `
+            <div class="slot-time">
+                ${statusIcon}
+                <span>${slot.display}</span>
+            </div>
+            <div class="slot-price">
+                <div>Rp ${slot.price.toLocaleString('id')}</div>
+                <small class="text-${availabilityClass}">
+                    ${availabilityText}
+                </small>
+            </div>
+        `;
 
-                                    // Add slot click event listeners - Modifikasi untuk multi-select
-                                    document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
-                                        slotElement.addEventListener('click', function() {
-                                            const slotTime = this.dataset.slot;
-                                            const slotPrice = parseFloat(this.dataset.price);
-                                            const slotStatus = this.dataset.status;
-                                            const availableQty = parseInt(this.dataset.availableQuantity);
+        slotGrid.appendChild(slotDiv);
+    });
 
-                                            // If already in cart, show message and skip
-                                            if (slotStatus === 'in_cart') {
-                                                showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
-                                                return;
-                                            }
+    slotsWrapper.appendChild(slotGrid);
 
-                                            // Toggle selection
-                                            if (selectedSlots.has(slotTime)) {
-                                                // Remove from selected slots
-                                                selectedSlots.delete(slotTime);
-                                                this.classList.remove('slot-selected');
+    // Tambahkan event listener ke slot
+    document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
+        slotElement.addEventListener('click', function() {
+            const slotTime = this.dataset.slot;
+            const slotPrice = parseFloat(this.dataset.price);
+            const slotStatus = this.dataset.status;
+            const availableQty = parseInt(this.dataset.availableQuantity);
 
-                                                // Update icon
-                                                const iconElement = this.querySelector('.slot-time i');
-                                                if (slotStatus === 'available') {
-                                                    iconElement.className = 'fas fa-clock';
-                                                } else if (slotStatus === 'in_cart') {
-                                                    iconElement.className = 'fas fa-shopping-cart';
-                                                }
+            // If already in cart, show message and skip
+            if (slotStatus === 'in_cart') {
+                showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
+                return;
+            }
 
-                                                // Update selectedSlotsData
-                                                selectedSlotsData = selectedSlotsData.filter(s => s.slot !== slotTime);
+            // Toggle selection
+            if (selectedSlots.has(slotTime)) {
+                // Remove from selected slots
+                selectedSlots.delete(slotTime);
+                this.classList.remove('slot-selected');
 
-                                                // Update total price
-                                                totalPrice -= slotPrice;
-                                            } else {
-                                                // Add to selected slots
-                                                selectedSlots.add(slotTime);
-                                                this.classList.add('slot-selected');
+                // Update icon
+                const iconElement = this.querySelector('.slot-time i');
+                if (slotStatus === 'available') {
+                    iconElement.className = 'fas fa-clock';
+                } else if (slotStatus === 'in_cart') {
+                    iconElement.className = 'fas fa-shopping-cart';
+                }
 
-                                                // Update icon
-                                                const iconElement = this.querySelector('.slot-time i');
-                                                iconElement.className = 'fas fa-check';
+                // Update selectedSlotsData
+                selectedSlotsData = selectedSlotsData.filter(s => s.slot !== slotTime);
 
-                                                // Update selectedSlotsData
-                                                selectedSlotsData.push({
-                                                    slot: slotTime,
-                                                    price: slotPrice,
-                                                    availableQuantity: availableQty
-                                                });
+                // Update total price
+                totalPrice -= slotPrice;
+            } else {
+                // Add to selected slots
+                selectedSlots.add(slotTime);
+                this.classList.add('slot-selected');
 
-                                                // Update total price
-                                                totalPrice += slotPrice;
-                                            }
+                // Update icon
+                const iconElement = this.querySelector('.slot-time i');
+                iconElement.className = 'fas fa-check';
 
-                                            // Enable/disable next button based on selection
-                                            nextBtn.disabled = selectedSlots.size === 0;
-                                        });
-                                    });
-                                }
+                // Update selectedSlotsData
+                selectedSlotsData.push({
+                    slot: slotTime,
+                    price: slotPrice,
+                    availableQuantity: availableQty
+                });
 
+                // Update total price
+                totalPrice += slotPrice;
+            }
+
+            // Enable/disable next button based on selection
+            nextBtn.disabled = selectedSlots.size === 0;
+        });
+    });
+}
                                 // Handle quantity change
                                 function updatePriceCalculation() {
                                     const subtotal = itemPrice * selectedQuantity * selectedSlots.size;

@@ -371,7 +371,36 @@
     </div>
 </div>
 
+<script>
+    $(document).ready(function() {
+        // Configure toastr options
+        toastr.options = {
+            "closeButton": true,
+            "positionClass": "toast-top-right",
+            "opacity": 1
+        };
 
+        // Show success message after redirect from successful payment
+        @if (session('success'))
+            toastr.success("{{ session('success') }}");
+        @endif
+
+        // Show error message if payment fails
+        @if (session('error'))
+            toastr.error("{{ session('error') }}");
+        @endif
+
+        // Show info messages
+        @if (session('info'))
+            toastr.info("{{ session('info') }}");
+        @endif
+
+        // Show pending payment notification
+        @if (session('warning'))
+            toastr.warning("{{ session('warning') }}");
+        @endif
+    });
+</script>
     <!-- Midtrans JS -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
     <script>
@@ -413,7 +442,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-
+<!-- Add these if not already included in your layout -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <style>
     /* Modern Payment Styling */
 
