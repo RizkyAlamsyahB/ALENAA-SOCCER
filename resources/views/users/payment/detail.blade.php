@@ -25,7 +25,6 @@
     </nav>
 
     <!-- Main Content -->
-    <!-- Main Content -->
     <div class="container mt-4 mb-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
@@ -44,10 +43,10 @@
                             <div class="card-body p-0">
                                 <div
                                     class="payment-status-header
-                                @if ($payment->transaction_status == 'success') bg-success-gradient
-                                @elseif($payment->transaction_status == 'pending') bg-warning-gradient
-                                @elseif($payment->transaction_status == 'failed') bg-danger-gradient
-                                @else bg-secondary-gradient @endif">
+@if ($payment->transaction_status == 'success') bg-success-gradient
+@elseif($payment->transaction_status == 'pending') bg-warning-gradient
+@elseif($payment->transaction_status == 'failed') bg-danger-gradient
+@else bg-secondary-gradient @endif">
                                     <div class="status-icon">
                                         @if ($payment->transaction_status == 'success')
                                             <i class="fas fa-check-circle"></i>
@@ -78,6 +77,26 @@
                                         @endif
                                     </div>
                                 </div>
+
+                                @if ($payment->transaction_status == 'pending' && isset($payment->expires_at))
+                                    <div class="expiration-warning px-4 pt-3">
+                                        <div class="alert alert-warning p-3 rounded-3 mb-0">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                                <div>
+                                                    <strong>Perhatian:</strong> Pembayaran ini akan kedaluwarsa pada
+                                                    {{ \Carbon\Carbon::parse($payment->expires_at)->format('d M Y H:i:s') }}
+
+                                                    <div id="countdown"
+                                                        data-expires="{{ \Carbon\Carbon::parse($payment->expires_at)->timestamp }}"
+                                                        data-now="{{ now()->timestamp }}"
+                                                        class="countdown-timer mt-1 fw-bold">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <div class="payment-summary p-4">
                                     <h5 class="section-title mb-3">Informasi Pembayaran</h5>
@@ -175,6 +194,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Booking Items Card -->
                     <div class="col-lg-8 order-lg-1">
@@ -392,206 +412,62 @@
                             </div>
                         @endif
 
-                        <!-- Membership Subscriptions -->
-                        {{-- @if (count($payment->membershipSubscriptions) > 0)
-                    <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                        <div class="card-header bg-white d-flex align-items-center justify-content-between py-3 px-4 border-0">
-                            <h5 class="m-0 fw-bold">Keanggotaan</h5>
-                            <span class="booking-count">{{ count($payment->membershipSubscriptions) }} Item</span>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="booking-list">
-                                @foreach ($payment->membershipSubscriptions as $subscription)
-                                    <div class="booking-item">
-                                        <div class="booking-item-header">
-                                            <div class="booking-status">
-                                                @if ($subscription->status == 'active')
-                                                    <span class="status-pill confirmed">
-                                                        <i class="fas fa-check-circle me-1"></i> Aktif
-                                                    </span>
-                                                @elseif($subscription->status == 'pending')
-                                                    <span class="status-pill pending">
-                                                        <i class="fas fa-clock me-1"></i> Menunggu
-                                                    </span>
-                                                @elseif($subscription->status == 'cancelled')
-                                                    <span class="status-pill cancelled">
-                                                        <i class="fas fa-times-circle me-1"></i> Dibatalkan
-                                                    </span>
-                                                @elseif($subscription->status == 'expired')
-                                                    <span class="status-pill expired">
-                                                        <i class="fas fa-calendar-times me-1"></i> Kadaluarsa
-                                                    </span>
-                                                @else
-                                                    <span class="status-pill other">
-                                                        <i class="fas fa-info-circle me-1"></i>
-                                                        {{ ucfirst($subscription->status) }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <div class="booking-id">
-                                                #{{ $subscription->id }}
-                                            </div>
-                                        </div>
-
-                                        <div class="booking-item-content">
-                                            <div class="booking-image">
-                                                @if (isset($subscription->membership->image))
-                                                    <img src="{{ Storage::url($subscription->membership->image) }}"
-                                                        alt="{{ $subscription->membership->name ?? 'Keanggotaan' }}"
-                                                        class="field-image">
-                                                @else
-                                                    <div class="field-image-placeholder">
-                                                        <i class="fas fa-id-card"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="field-type">
-                                                    Membership
-                                                </div>
-                                            </div>
-
-                                            <div class="booking-details">
-                                                <h5 class="field-name">{{ $subscription->membership->name ?? 'Keanggotaan' }}</h5>
-                                                <div class="booking-info">
-                                                    <div class="info-item">
-                                                        <i class="fas fa-calendar-day"></i>
-                                                        <span>Mulai: {{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }}</span>
-                                                    </div>
-                                                    <div class="info-item">
-                                                        <i class="fas fa-calendar-check"></i>
-                                                        <span>Berakhir: {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }}</span>
-                                                    </div>
-                                                    <div class="info-item">
-                                                        <i class="fas fa-hourglass-half"></i>
-                                                        <span>Durasi: {{ $subscription->membership->duration ?? '1' }} bulan</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="booking-price">
-                                                <div class="price-value">Rp
-                                                    {{ number_format($subscription->price, 0, ',', '.') }}</div>
-                                            </div>
-                                        </div>
-
-                                        @if ($subscription->status == 'active')
-                                            <div class="booking-item-actions">
-                                                <a href="#" class="btn-outline-action">
-                                                    <i class="fas fa-id-card me-2"></i>
-                                                    <span>Lihat Detail</span>
-                                                </a>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    @endif --}}
-
-                        <!-- Photographer Bookings -->
-                        {{-- @if (count($payment->photographerBookings) > 0)
-                    <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                        <div class="card-header bg-white d-flex align-items-center justify-content-between py-3 px-4 border-0">
-                            <h5 class="m-0 fw-bold">Jasa Fotografer</h5>
-                            <span class="booking-count">{{ count($payment->photographerBookings) }} Item</span>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="booking-list">
-                                @foreach ($payment->photographerBookings as $booking)
-                                    <div class="booking-item">
-                                        <div class="booking-item-header">
-                                            <div class="booking-status">
-                                                @if ($booking->status == 'confirmed')
-                                                    <span class="status-pill confirmed">
-                                                        <i class="fas fa-check-circle me-1"></i> Terkonfirmasi
-                                                    </span>
-                                                @elseif($booking->status == 'pending')
-                                                    <span class="status-pill pending">
-                                                        <i class="fas fa-clock me-1"></i> Menunggu
-                                                    </span>
-                                                @elseif($booking->status == 'cancelled')
-                                                    <span class="status-pill cancelled">
-                                                        <i class="fas fa-times-circle me-1"></i> Dibatalkan
-                                                    </span>
-                                                @else
-                                                    <span class="status-pill other">
-                                                        <i class="fas fa-info-circle me-1"></i>
-                                                        {{ ucfirst($booking->status) }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <div class="booking-id">
-                                                #{{ $booking->id }}
-                                            </div>
-                                        </div>
-
-                                        <div class="booking-item-content">
-                                            <div class="booking-image">
-                                                @if (isset($booking->photographer->image))
-                                                    <img src="{{ Storage::url($booking->photographer->image) }}"
-                                                        alt="{{ $booking->photographer->name ?? 'Fotografer' }}"
-                                                        class="field-image">
-                                                @else
-                                                    <div class="field-image-placeholder">
-                                                        <i class="fas fa-camera"></i>
-                                                    </div>
-                                                @endif
-                                                <div class="field-type">
-                                                    Fotografer
-                                                </div>
-                                            </div>
-
-                                            <div class="booking-details">
-                                                <h5 class="field-name">{{ $booking->photographer->name ?? 'Fotografer' }}</h5>
-                                                <div class="booking-info">
-                                                    <div class="info-item">
-                                                        <i class="far fa-calendar-alt"></i>
-                                                        <span>{{ \Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</span>
-                                                    </div>
-                                                    <div class="info-item">
-                                                        <i class="far fa-clock"></i>
-                                                        <span>
-                                                            {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
-                                                            -
-                                                            {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="booking-price">
-                                                <div class="price-value">Rp
-                                                    {{ number_format($booking->price, 0, ',', '.') }}</div>
-                                                <div class="price-duration">
-                                                    @php
-                                                        $startTime = \Carbon\Carbon::parse($booking->start_time);
-                                                        $endTime = \Carbon\Carbon::parse($booking->end_time);
-                                                        $durationInHours = $startTime->diffInHours($endTime);
-                                                    @endphp
-                                                    {{ $durationInHours }} jam
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        @if ($booking->status == 'confirmed')
-                                            <div class="booking-item-actions">
-                                                <a href="#" class="btn-outline-action">
-                                                    <i class="fas fa-camera me-2"></i>
-                                                    <span>Lihat Detail</span>
-                                                </a>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    @endif --}}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cari element countdown
+            const countdownEl = document.getElementById('countdown');
+
+            // Jika elemen countdown ada
+            if (countdownEl) {
+                // Ambil timestamp kedaluwarsa dan waktu sekarang
+                const expiresTimestamp = parseInt(countdownEl.dataset.expires);
+                let serverNowTimestamp = parseInt(countdownEl.dataset.now);
+
+                // Ambil waktu client sekarang untuk menghitung offset
+                const clientNowTimestamp = Math.floor(Date.now() / 1000);
+                const timeOffset = clientNowTimestamp - serverNowTimestamp;
+
+                // Update countdown setiap detik
+                const countdownInterval = setInterval(function() {
+                    // Update server time berdasarkan waktu client dengan offset
+                    serverNowTimestamp = Math.floor(Date.now() / 1000) - timeOffset;
+
+                    // Hitung sisa waktu
+                    const remainingTime = expiresTimestamp - serverNowTimestamp;
+
+                    // Jika waktu sudah habis
+                    if (remainingTime <= 0) {
+                        clearInterval(countdownInterval);
+                        countdownEl.innerHTML =
+                            '<span class="text-danger">Waktu pembayaran telah habis</span>';
+
+                        // Opsional: reload halaman setelah 3 detik untuk menampilkan status terbaru
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 3000);
+                        return;
+                    }
+
+                    // Hitung menit dan detik
+                    const minutes = Math.floor(remainingTime / 60);
+                    const seconds = remainingTime % 60;
+
+                    // Tampilkan dalam format MM:SS
+                    countdownEl.innerHTML =
+                        `Sisa waktu: <span class="text-danger">${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</span>`;
+                }, 1000);
+            }
+        });
+    </script>
+
+
+
     <style>
         /* Modern Payment Detail Styling */
 
@@ -1140,7 +1016,6 @@
             }
         }
     </style>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>

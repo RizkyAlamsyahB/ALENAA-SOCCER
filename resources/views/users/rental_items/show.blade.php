@@ -43,9 +43,11 @@
                 <div class="gallery-card main-gallery">
                     <div class="gallery-img">
                         @if ($rentalItem->image)
-                            <img src="{{ Storage::url($rentalItem->image) }}" class="img-fluid w-100" alt="{{ $rentalItem->name }}">
+                            <img src="{{ Storage::url($rentalItem->image) }}" class="img-fluid w-100"
+                                alt="{{ $rentalItem->name }}">
                         @else
-                            <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100" alt="{{ $rentalItem->name }}">
+                            <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100"
+                                alt="{{ $rentalItem->name }}">
                         @endif
                         <div class="gallery-overlay">
                             <button class="view-btn">
@@ -111,7 +113,8 @@
                                 <img src="{{ Storage::url($rentalItem->image) }}" class="d-block w-100"
                                     alt="{{ $rentalItem->name }}">
                             @else
-                                <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100" alt="{{ $rentalItem->name }}">
+                                <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100"
+                                    alt="{{ $rentalItem->name }}">
                             @endif
                             <div class="image-overlay"></div>
                         </div>
@@ -216,7 +219,8 @@
                                             <div class="d-flex align-items-center stock-badge">
                                                 @if ($rentalItem->stock_available > 0)
                                                     <i class="fas fa-check-circle text-success me-2"></i>
-                                                    <span class="text-secondary">Tersedia ({{ $rentalItem->stock_available }} stok)</span>
+                                                    <span class="text-secondary">Tersedia
+                                                        ({{ $rentalItem->stock_available }} stok)</span>
                                                 @else
                                                     <i class="fas fa-times-circle text-danger me-2"></i>
                                                     <span class="text-secondary">Stok Habis</span>
@@ -243,7 +247,8 @@
                                     <div class="col-12">
                                         <div class="description mb-4">
                                             <h6 class="fw-semibold mb-2">Deskripsi</h6>
-                                            <p class="text-muted">{{ $rentalItem->description ?: 'Tidak ada deskripsi tersedia.' }}</p>
+                                            <p class="text-muted">
+                                                {{ $rentalItem->description ?: 'Tidak ada deskripsi tersedia.' }}</p>
                                         </div>
 
                                         <div class="specifications">
@@ -274,7 +279,8 @@
                                                             <i class="fas fa-box"></i>
                                                         </div>
                                                         <h6 class="mb-1 fw-semibold">Stok Total</h6>
-                                                        <small class="text-muted">{{ $rentalItem->stock_total }} unit</small>
+                                                        <small class="text-muted">{{ $rentalItem->stock_total }}
+                                                            unit</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-6 col-md-3">
@@ -283,7 +289,8 @@
                                                             <i class="fas fa-check-circle"></i>
                                                         </div>
                                                         <h6 class="mb-1 fw-semibold">Tersedia</h6>
-                                                        <small class="text-muted">{{ $rentalItem->stock_available }} unit</small>
+                                                        <small class="text-muted">{{ $rentalItem->stock_available }}
+                                                            unit</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-6 col-md-3">
@@ -292,7 +299,8 @@
                                                             <i class="fas fa-info-circle"></i>
                                                         </div>
                                                         <h6 class="mb-1 fw-semibold">Kondisi</h6>
-                                                        <small class="text-muted">{{ $rentalItem->condition ?: 'Baik' }}</small>
+                                                        <small
+                                                            class="text-muted">{{ $rentalItem->condition ?: 'Baik' }}</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -361,82 +369,65 @@
                                             </div>
                                         </div>
 
-                                        <!-- Panel 2: Time Slot Selection -->
-                                        <div class="wizard-panel" id="panel-time">
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                                    <h6 class="fw-semibold mb-0">
-                                                        Slot Waktu Tersedia (<span id="selected-date-display"></span>)
-                                                    </h6>
-                                                    <span class="badge bg-secondary" id="available-slots-count">0 slot</span>
-                                                </div>
-                                                <div class="alert alert-info mb-3">
-                                                    <i class="fas fa-info-circle me-2"></i>
-                                                    Pilih beberapa slot waktu untuk durasi rental yang lebih panjang. Klik slot waktu untuk memilih.
-                                                </div>
-                                                <div id="time-slots-wrapper" class="time-slots-container">
-                                                    <div class="text-center py-4 slot-placeholder">
-                                                        <div class="spinner-border text-danger" role="status">
-                                                            <span class="visually-hidden">Loading...</span>
-                                                        </div>
-                                                        <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+<!-- Panel 2: Time Slot Selection -->
+<div class="wizard-panel" id="panel-time">
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-semibold mb-0">
+                Slot Waktu Tersedia (<span id="selected-date-display"></span>)
+            </h6>
+            <span class="badge bg-secondary" id="available-slots-count">0 slot</span>
+        </div>
+        <div class="alert alert-info mb-3">
+            <i class="fas fa-info-circle me-2"></i>
+            Pilih slot waktu dan tentukan jumlah item untuk setiap slot. Klik slot untuk memilih.
+        </div>
+        <div id="time-slots-wrapper" class="time-slots-container">
+            <!-- Konten slot waktu akan ditambahkan melalui JavaScript -->
+        </div>
 
-                                        <!-- Panel 3: Quantity Selection -->
-                                        <div class="wizard-panel" id="panel-quantity">
-                                            <div class="mb-3">
-                                                <h6 class="fw-semibold mb-3">Pilih Jumlah Item</h6>
+        <!-- Tambahkan bagian untuk slot yang dipilih -->
+        <div id="selected-slots-section" class="selected-slots-section mt-4" style="display: none;">
+            <h6 class="fw-semibold mb-3">Slot Waktu yang Dipilih</h6>
+            <div id="selected-slots-container" class="selected-slots-container">
+                <!-- Slot terpilih dengan kontrol kuantitas akan ditampilkan di sini -->
+            </div>
+        </div>
+    </div>
+</div>
 
-                                                <div class="selected-time-info mb-4 p-3 bg-light rounded">
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <span class="fw-semibold">Durasi Rental:</span>
-                                                        <span id="selected-duration-display" class="text-danger fw-bold"></span>
-                                                    </div>
-                                                    <div id="selected-slots-display" class="selected-slots-display my-2">
-                                                        <!-- Selected slots will appear here -->
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                                        <span class="fw-semibold">Stok Tersedia:</span>
-                                                        <span id="available-stock-display" class="badge bg-success"></span>
-                                                    </div>
-                                                </div>
+<!-- Panel 3: Quantity Selection -->
+<div class="wizard-panel" id="panel-quantity">
+    <div class="mb-3">
+        <h6 class="fw-semibold mb-3">Konfirmasi Pemesanan</h6>
 
-                                                <div class="quantity-selector d-flex justify-content-center align-items-center mb-4">
-                                                    <button id="decrease-quantity" class="btn btn-outline-danger rounded-circle quantity-btn">
-                                                        <i class="fas fa-minus"></i>
-                                                    </button>
-                                                    <input type="number" id="quantity-input" class="form-control mx-3 text-center" value="1" min="1" max="10" readonly>
-                                                    <button id="increase-quantity" class="btn btn-outline-danger rounded-circle quantity-btn">
-                                                        <i class="fas fa-plus"></i>
-                                                    </button>
-                                                </div>
+        <div class="selected-time-info mb-4 p-3 bg-light rounded">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold">Durasi Rental:</span>
+                <span id="selected-duration-display" class="text-danger fw-bold"></span>
+            </div>
 
-                                                <div class="price-calculation p-3 bg-light rounded">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <span class="fw-semibold">Harga per item:</span>
-                                                        <span class="text-secondary">Rp {{ number_format($rentalItem->rental_price, 0, ',', '.') }}</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                                        <span class="fw-semibold">Durasi:</span>
-                                                        <span id="duration-hours" class="text-secondary">0 jam</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                                        <span class="fw-semibold">Total:</span>
-                                                        <span id="subtotal-price" class="text-danger fw-bold">Rp 0</span>
-                                                    </div>
-                                                </div>
+            <div class="selected-slots-summary my-3">
+                <h6 class="fw-semibold mb-2">Rincian Slot Waktu:</h6>
+                <div id="selected-slots-detail" class="selected-slots-detail">
+                    <!-- Slot details with quantities will be added here -->
+                </div>
+            </div>
 
-                                                <div class="mt-4 text-center">
-                                                    <button id="confirm-quantity-btn" class="btn btn-danger px-4 py-2 rounded-pill">
-                                                        <i class="fas fa-cart-plus me-2"></i>
-                                                        Tambahkan ke Keranjang
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                <span class="fw-bold">Total:</span>
+                <span id="subtotal-price" class="text-danger fw-bold">Rp 0</span>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button id="confirm-quantity-btn" class="btn btn-danger px-4 py-2 rounded-pill">
+                <i class="fas fa-cart-plus me-2"></i>
+                Tambahkan ke Keranjang
+            </button>
+        </div>
+    </div>
+</div>
                                     </div>
 
                                     <!-- Wizard Navigation Buttons -->
@@ -454,546 +445,687 @@
                             </div>
                         </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize variables
+    const rentalItemId = document.getElementById('rentalItemId').value;
+    let selectedDate = '';
+    let selectedSlots = new Set(); // Menggunakan Set untuk menyimpan waktu yang dipilih
+    let selectedSlotsData = []; // Untuk menyimpan data slot yang dipilih (termasuk harga)
+    let selectedQuantity = 1;
+    let availableStock = 0;
+    let itemPrice = {{ $rentalItem->rental_price }};
+    let totalPrice = 0;
+    let currentStep = 1;
+    const totalSteps = 3;
 
+    // DOM Elements
+    const progressBar = document.getElementById('wizard-progress-bar');
+    const wizardSteps = document.querySelectorAll('.wizard-step');
+    const wizardPanels = document.querySelectorAll('.wizard-panel');
 
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                // Initialize variables
-                                const rentalItemId = document.getElementById('rentalItemId').value;
-                                let selectedDate = '';
-                                let selectedSlots = new Set(); // Menggunakan Set untuk menyimpan waktu yang dipilih
-                                let selectedSlotsData = []; // Untuk menyimpan data slot yang dipilih (termasuk harga)
-                                let selectedQuantity = 1;
-                                let availableStock = 0;
-                                let itemPrice = {{ $rentalItem->rental_price }};
-                                let totalPrice = 0;
-                                let currentStep = 1;
-                                const totalSteps = 3;
+    const prevBtn = document.getElementById('wizard-prev-btn');
+    const nextBtn = document.getElementById('wizard-next-btn');
+    const confirmQuantityBtn = document.getElementById('confirm-quantity-btn');
 
-                                // DOM Elements
-                                const progressBar = document.getElementById('wizard-progress-bar');
-                                const wizardSteps = document.querySelectorAll('.wizard-step');
-                                const wizardPanels = document.querySelectorAll('.wizard-panel');
+    // Quantity selector elements
+    const decreaseBtn = document.getElementById('decrease-quantity');
+    const increaseBtn = document.getElementById('increase-quantity');
+    const quantityInput = document.getElementById('quantity-input');
 
-                                const prevBtn = document.getElementById('wizard-prev-btn');
-                                const nextBtn = document.getElementById('wizard-next-btn');
-                                const confirmQuantityBtn = document.getElementById('confirm-quantity-btn');
+    // Initialize Flatpickr inline calendar
+    const calendar = flatpickr("#inline-calendar", {
+        inline: true,
+        locale: 'id',
+        dateFormat: 'Y-m-d',
+        minDate: 'today',
+        disableMobile: true,
+        onChange: function(selectedDates, dateStr) {
+            selectedDate = dateStr;
+            document.getElementById('selectedDate').value = dateStr;
 
-                                // Quantity selector elements
-                                const decreaseBtn = document.getElementById('decrease-quantity');
-                                const increaseBtn = document.getElementById('increase-quantity');
-                                const quantityInput = document.getElementById('quantity-input');
+            // Reset selections when date changes
+            selectedSlots.clear();
+            selectedSlotsData = [];
+            totalPrice = 0;
 
-                                // Initialize Flatpickr inline calendar
-                                const calendar = flatpickr("#inline-calendar", {
-                                    inline: true,
-                                    locale: 'id',
-                                    dateFormat: 'Y-m-d',
-                                    minDate: 'today',
-                                    disableMobile: true,
-                                    onChange: function(selectedDates, dateStr) {
-                                        selectedDate = dateStr;
-                                        document.getElementById('selectedDate').value = dateStr;
+            // Enable next button
+            nextBtn.disabled = false;
+        }
+    });
 
-                                        // Reset selections when date changes
-                                        selectedSlots.clear();
-                                        selectedSlotsData = [];
-                                        totalPrice = 0;
-
-                                        // Enable next button
-                                        nextBtn.disabled = false;
-                                    }
-                                });
-
-                                // Update progress bar
-                                function updateProgressBar() {
-                                    const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-                                    progressBar.style.width = `${progressPercentage}%`;
-                                }
-
-                                // Update step states
-                                function updateSteps() {
-                                    wizardSteps.forEach((step, index) => {
-                                        const stepNumber = index + 1;
-
-                                        // Remove all states
-                                        step.classList.remove('active', 'completed');
-
-                                        // Set appropriate state
-                                        if (stepNumber === currentStep) {
-                                            step.classList.add('active');
-                                        } else if (stepNumber < currentStep) {
-                                            step.classList.add('completed');
-                                        }
-                                    });
-                                }
-
-                                // Show/hide panels
-                                function showPanel() {
-                                    wizardPanels.forEach((panel, index) => {
-                                        const panelNumber = index + 1;
-
-                                        if (panelNumber === currentStep) {
-                                            panel.classList.add('active');
-                                        } else {
-                                            panel.classList.remove('active');
-                                        }
-                                    });
-                                }
-
-                                // Update buttons
-                                function updateButtons() {
-                                    prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
-                                    nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
-
-                                    // Disable next button on date selection step if no date is selected
-                                    if (currentStep === 1) {
-                                        nextBtn.disabled = !selectedDate;
-                                    }
-
-                                    // Disable next button on time selection step if no slots are selected
-                                    if (currentStep === 2) {
-                                        nextBtn.disabled = selectedSlots.size === 0;
-                                    }
-                                }
-
-                                // Navigate to step
-                                function goToStep(step) {
-                                    currentStep = step;
-                                    updateProgressBar();
-                                    updateSteps();
-                                    showPanel();
-                                    updateButtons();
-
-                                    // Additional actions based on step
-                                    if (step === 2 && selectedDate) {
-                                        // Format date for display
-                                        const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                                            weekday: 'long',
-                                            day: 'numeric',
-                                            month: 'long',
-                                            year: 'numeric'
-                                        });
-                                        document.getElementById('selected-date-display').textContent = formattedDate;
-
-                                        // Load available time slots
-                                        loadAvailableSlots(selectedDate);
-                                    }
-
-                                    if (step === 3 && selectedSlots.size > 0) {
-                                        // Calculate minimum available stock across all selected slots
-                                        availableStock = Math.min(...selectedSlotsData.map(slot => slot.availableQuantity));
-
-                                        // Display duration
-                                        const hoursCount = selectedSlots.size;
-                                        document.getElementById('selected-duration-display').textContent = `${hoursCount} jam`;
-                                        document.getElementById('duration-hours').textContent = `${hoursCount} jam`;
-
-                                        // Display selected slots
-                                        const slotsDisplayElement = document.getElementById('selected-slots-display');
-                                        slotsDisplayElement.innerHTML = '';
-
-                                        // Sort slots by time before displaying
-                                        const sortedSlots = [...selectedSlotsData].sort((a, b) => {
-                                            const timeA = a.slot.split(' - ')[0];
-                                            const timeB = b.slot.split(' - ')[0];
-                                            return timeA.localeCompare(timeB);
-                                        });
-
-                                        sortedSlots.forEach(slotData => {
-                                            const slotDiv = document.createElement('div');
-                                            slotDiv.className = 'selected-slot-item';
-                                            slotDiv.innerHTML = `
-                                                <i class="far fa-clock text-danger me-2"></i>
-                                                <span>${slotData.slot}</span>
-                                            `;
-                                            slotsDisplayElement.appendChild(slotDiv);
-                                        });
-
-                                        // Update available stock display
-                                        document.getElementById('available-stock-display').textContent = availableStock + ' unit';
-
-                                        // Reset quantity to 1
-                                        selectedQuantity = 1;
-                                        document.getElementById('quantity-input').value = selectedQuantity;
-
-                                        // Update price calculation
-                                        updatePriceCalculation();
-
-                                        // Enable/disable buttons based on quantity and availability
-                                        decreaseBtn.disabled = selectedQuantity <= 1;
-                                        increaseBtn.disabled = selectedQuantity >= availableStock;
-                                    }
-                                }
-
-                                // Next button click handler
-                                nextBtn.addEventListener('click', function() {
-                                    if (currentStep < totalSteps) {
-                                        goToStep(currentStep + 1);
-                                    }
-                                });
-
-                                // Previous button click handler
-                                prevBtn.addEventListener('click', function() {
-                                    if (currentStep > 1) {
-                                        goToStep(currentStep - 1);
-                                    }
-                                });
-
-                                // Confirmation button click handler
-                                confirmQuantityBtn.addEventListener('click', function() {
-                                    // Disable button and show loading state
-                                    this.disabled = true;
-                                    const originalText = this.innerHTML;
-                                    this.innerHTML = `
-                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                        <span class="ms-2">Menambahkan...</span>
-                                    `;
-
-                                    // Sort slots by time
-                                    const sortedSlots = [...selectedSlots].sort();
-
-                                    // Get the start time from first slot and end time from last slot
-                                    const firstSlotTime = sortedSlots[0];
-                                    const lastSlotTime = sortedSlots[sortedSlots.length - 1];
-
-                                    const startTime = firstSlotTime.split(' - ')[0];
-                                    const endTime = lastSlotTime.split(' - ')[1];
-
-                                    // Prepare data for API request
-                                    const requestData = {
-                                        type: 'rental_item',
-                                        rental_item_id: parseInt(rentalItemId),
-                                        date: selectedDate,
-                                        start_time: startTime,
-                                        end_time: endTime,
-                                        quantity: selectedQuantity
-                                    };
-
-                                    // Log data yang akan dikirim (untuk debugging)
-                                    console.log('Sending data:', requestData);
-
-                                    // Get CSRF token
-                                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-                                    // Send request to add to cart
-                                    fetch('/cart/add', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': csrfToken,
-                                            'Accept': 'application/json'
-                                        },
-                                        body: JSON.stringify(requestData)
-                                    })
-                                    .then(response => {
-                                        // Log response status (untuk debugging)
-                                        console.log('Response status:', response.status);
-
-                                        return response.json().then(data => {
-                                            if (!response.ok) {
-                                                throw new Error(data.message || 'Error: ' + response.statusText);
-                                            }
-                                            return data;
-                                        });
-                                    })
-                                    .then(data => {
-                                        // Log response data (untuk debugging)
-                                        console.log('Response data:', data);
-
-                                        if (data.success) {
-                                            // Show success message
-                                            showToast('Success', data.message, 'success');
-
-                                            // Update cart count in navbar if exists
-                                            const cartCountElement = document.querySelector('.cart-count');
-                                            if (cartCountElement) {
-                                                cartCountElement.textContent = data.cart_count;
-                                            }
-
-                                            // Redirect to cart page or stay on current page based on preference
-                                            setTimeout(() => {
-                                                window.location.href = '/cart';
-                                            }, 1500);
-                                        } else {
-                                            throw new Error(data.message || 'Failed to add to cart');
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Error adding to cart:', error);
-                                        showToast('Error', error.message || 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
-
-                                        // Restore button state
-                                        this.disabled = false;
-                                        this.innerHTML = originalText;
-                                    });
-                                });
-
-                                // Function to load available slots
-                                function loadAvailableSlots(date) {
-                                    const slotsWrapper = document.getElementById('time-slots-wrapper');
-
-                                    // Show loading state
-                                    slotsWrapper.innerHTML = `
-                                        <div class="text-center py-4 slot-placeholder">
-                                            <div class="spinner-border text-danger" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
-                                        </div>
-                                    `;
-
-                                    // Fetch available slots from the server
-                                    fetch(`/rental/items/${rentalItemId}/available-slots?date=${date}`)
-                                        .then(response => {
-                                            if (!response.ok) {
-                                                throw new Error('Network response was not ok');
-                                            }
-                                            return response.json();
-                                        })
-                                        .then(data => {
-                                            renderTimeSlots(data);
-                                        })
-                                        .catch(error => {
-                                            console.error('Error fetching available slots:', error);
-                                            slotsWrapper.innerHTML = `
-                                                <div class="alert alert-danger" role="alert">
-                                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                                    Gagal memuat slot waktu. Silakan coba lagi nanti.
-                                                </div>
-                                            `;
-                                        });
-                                }
-
-// Function to render time slots
-function renderTimeSlots(slots) {
-    const slotsWrapper = document.getElementById('time-slots-wrapper');
-    const availableSlotsCount = document.getElementById('available-slots-count');
-
-    // Clear previous content
-    slotsWrapper.innerHTML = '';
-
-    // Count available slots
-    const availableCount = slots.filter(slot => slot.is_available).length;
-    availableSlotsCount.textContent = `${availableCount} slot`;
-
-    // If no available slots
-    if (availableCount === 0) {
-        slotsWrapper.innerHTML = `
-            <div class="alert alert-warning" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
-            </div>
-        `;
-        return;
+    // Update progress bar
+    function updateProgressBar() {
+        const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
     }
 
-    // Create grid for slots
-    const slotGrid = document.createElement('div');
-    slotGrid.classList.add('time-slots-grid');
+    // Update step states
+    function updateSteps() {
+        wizardSteps.forEach((step, index) => {
+            const stepNumber = index + 1;
 
-    // Add slots to grid
-    slots.forEach(slot => {
-        const slotDiv = document.createElement('div');
+            // Remove all states
+            step.classList.remove('active', 'completed');
 
-        let statusClass = '';
-        let statusIcon = '';
-        let isDisabled = false;
+            // Set appropriate state
+            if (stepNumber === currentStep) {
+                step.classList.add('active');
+            } else if (stepNumber < currentStep) {
+                step.classList.add('completed');
+            }
+        });
+    }
 
-        switch (slot.status) {
-            case 'fully_booked':
-                statusClass = 'slot-booked';
-                statusIcon = '<i class="fas fa-lock"></i>';
-                isDisabled = true;
-                break;
-            case 'in_cart':
-                statusClass = 'slot-in-cart';
-                statusIcon = '<i class="fas fa-shopping-cart"></i>';
-                break;
-            case 'available':
-                statusClass = 'slot-available';
-                statusIcon = '<i class="fas fa-clock"></i>';
-                break;
+    // Show/hide panels
+    function showPanel() {
+        wizardPanels.forEach((panel, index) => {
+            const panelNumber = index + 1;
+
+            if (panelNumber === currentStep) {
+                panel.classList.add('active');
+            } else {
+                panel.classList.remove('active');
+            }
+        });
+    }
+
+    // Update buttons
+    function updateButtons() {
+        prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
+        nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
+
+        // Disable next button on date selection step if no date is selected
+        if (currentStep === 1) {
+            nextBtn.disabled = !selectedDate;
         }
 
-        const isSelected = selectedSlots.has(slot.display);
-        if (isSelected) {
-            statusClass = 'slot-selected';
-            statusIcon = '<i class="fas fa-check"></i>';
+        // Disable next button on time selection step if no slots are selected
+        if (currentStep === 2) {
+            nextBtn.disabled = selectedSlots.size === 0;
+        }
+    }
+
+    // Navigate to step
+    function goToStep(step) {
+        currentStep = step;
+        updateProgressBar();
+        updateSteps();
+        showPanel();
+        updateButtons();
+
+        // Additional actions based on step
+        if (step === 2 && selectedDate) {
+            // Format date for display
+            const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            document.getElementById('selected-date-display').textContent = formattedDate;
+
+            // Load available time slots
+            loadAvailableSlots(selectedDate);
         }
 
-        slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
-        slotDiv.dataset.slot = slot.display;
-        slotDiv.dataset.price = slot.price;
-        slotDiv.dataset.status = slot.status;
-        slotDiv.dataset.availableQuantity = slot.available_quantity;
+        if (step === 3 && selectedSlots.size > 0) {
+            // Display duration
+            const hoursCount = selectedSlots.size;
+            document.getElementById('selected-duration-display').textContent = `${hoursCount} jam`;
 
-        // Persiapkan tampilan stok
-        let availabilityText = `${slot.available_quantity} tersedia`;
-        let availabilityClass = slot.available_quantity > 0 ? 'success' : 'danger';
+            // Pastikan elemen 'duration-hours' ada sebelum mencoba memperbarui
+            const durationHours = document.getElementById('duration-hours');
+            if (durationHours) {
+                durationHours.textContent = `${hoursCount} jam`;
+            }
 
-        // Jika ada item di keranjang pengguna lain, tambahkan informasi (opsional)
-        if (slot.other_cart_quantity && slot.other_cart_quantity > 0) {
-            availabilityText += ` (${slot.other_cart_quantity} di keranjang lain)`;
+            // Perbarui tampilan slot yang dipilih
+            updateSelectedSlotsDetail();
+
+            // Update price calculation
+            updateTotalPrice();
         }
+    }
 
-        slotDiv.innerHTML = `
-            <div class="slot-time">
-                ${statusIcon}
-                <span>${slot.display}</span>
-            </div>
-            <div class="slot-price">
-                <div>Rp ${slot.price.toLocaleString('id')}</div>
-                <small class="text-${availabilityClass}">
-                    ${availabilityText}
-                </small>
+    // Function untuk memperbarui detail slot yang dipilih di panel 3
+    function updateSelectedSlotsDetail() {
+        const slotsDetailElement = document.getElementById('selected-slots-detail');
+        if (!slotsDetailElement) return;
+
+        // Clear previous content
+        slotsDetailElement.innerHTML = '';
+
+        // Sort slots by time before displaying
+        const sortedSlots = [...selectedSlotsData].sort((a, b) => {
+            const timeA = a.slot.split(' - ')[0];
+            const timeB = b.slot.split(' - ')[0];
+            return timeA.localeCompare(timeB);
+        });
+
+        // Display each slot with quantity
+        sortedSlots.forEach(slotData => {
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'selected-slot-item d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom';
+            slotDiv.innerHTML = `
+                <div>
+                    <i class="far fa-clock text-danger me-2"></i>
+                    <span>${slotData.slot}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary me-2">${slotData.quantity} unit</span>
+                    <span class="text-danger">Rp ${(slotData.price * slotData.quantity).toLocaleString('id')}</span>
+                </div>
+            `;
+            slotsDetailElement.appendChild(slotDiv);
+        });
+    }
+
+    // Next button click handler
+    nextBtn.addEventListener('click', function() {
+        if (currentStep < totalSteps) {
+            goToStep(currentStep + 1);
+        }
+    });
+
+    // Previous button click handler
+    prevBtn.addEventListener('click', function() {
+        if (currentStep > 1) {
+            goToStep(currentStep - 1);
+        }
+    });
+
+    // Confirmation button click handler
+    confirmQuantityBtn.addEventListener('click', function() {
+        // Disable button dan tampilkan loading state
+        this.disabled = true;
+        const originalText = this.innerHTML;
+        this.innerHTML = `
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span class="ms-2">Menambahkan...</span>
+        `;
+
+        // Persiapkan array slot waktu
+        const slots = [];
+
+        // Untuk setiap slot yang dipilih, tambahkan ke array
+        selectedSlotsData.forEach(slotData => {
+            slots.push({
+                start_time: slotData.slot.split(' - ')[0],
+                end_time: slotData.slot.split(' - ')[1],
+                quantity: slotData.quantity || 1 // Gunakan quantity per slot jika ada, atau default 1
+            });
+        });
+
+        // Persiapkan data untuk API request
+        const requestData = {
+            type: 'rental_item',
+            rental_item_id: parseInt(rentalItemId),
+            date: selectedDate,
+            slots: slots
+        };
+
+        // Log data yang akan dikirim (untuk debugging)
+        console.log('Sending data:', requestData);
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Send request to add to cart
+        fetch('/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                // Log response status (untuk debugging)
+                console.log('Response status:', response.status);
+
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Error: ' + response.statusText);
+                    }
+                    return data;
+                });
+            })
+            .then(data => {
+                // Log response data (untuk debugging)
+                console.log('Response data:', data);
+
+                if (data.success) {
+                    // Show success message
+                    showToast('Success', data.message, 'success');
+
+                    // Update cart count in navbar if exists
+                    const cartCountElement = document.querySelector('.cart-count');
+                    if (cartCountElement) {
+                        cartCountElement.textContent = data.cart_count;
+                    }
+
+                    // Redirect to cart page or stay on current page based on preference
+                    setTimeout(() => {
+                        window.location.href = '/cart';
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || 'Failed to add to cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                showToast('Error', error.message || 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+
+                // Restore button state
+                this.disabled = false;
+                this.innerHTML = originalText;
+            });
+    });
+
+    // Function to load available slots
+    function loadAvailableSlots(date) {
+        const slotsWrapper = document.getElementById('time-slots-wrapper');
+
+        // Show loading state
+        slotsWrapper.innerHTML = `
+            <div class="text-center py-4 slot-placeholder">
+                <div class="spinner-border text-danger" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
             </div>
         `;
 
-        slotGrid.appendChild(slotDiv);
-    });
+        // Fetch available slots from the server
+        fetch(`/rental/items/${rentalItemId}/available-slots?date=${date}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderTimeSlots(data);
+            })
+            .catch(error => {
+                console.error('Error fetching available slots:', error);
+                slotsWrapper.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Gagal memuat slot waktu. Silakan coba lagi nanti.
+                    </div>
+                `;
+            });
+    }
 
-    slotsWrapper.appendChild(slotGrid);
+    // Function to render time slots
+    function renderTimeSlots(slots) {
+        const slotsWrapper = document.getElementById('time-slots-wrapper');
+        const availableSlotsCount = document.getElementById('available-slots-count');
 
-    // Tambahkan event listener ke slot
-    document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
-        slotElement.addEventListener('click', function() {
-            const slotTime = this.dataset.slot;
-            const slotPrice = parseFloat(this.dataset.price);
-            const slotStatus = this.dataset.status;
-            const availableQty = parseInt(this.dataset.availableQuantity);
+        // Clear previous content
+        slotsWrapper.innerHTML = '';
 
-            // If already in cart, show message and skip
-            if (slotStatus === 'in_cart') {
-                showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
-                return;
+        // Count available slots
+        const availableCount = slots.filter(slot => slot.is_available).length;
+        availableSlotsCount.textContent = `${availableCount} slot`;
+
+        // If no available slots
+        if (availableCount === 0) {
+            slotsWrapper.innerHTML = `
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
+                </div>
+            `;
+            return;
+        }
+
+        // Create grid for slots
+        const slotGrid = document.createElement('div');
+        slotGrid.classList.add('time-slots-grid');
+
+        // Add slots to grid
+        slots.forEach(slot => {
+            const slotDiv = document.createElement('div');
+
+            let statusClass = '';
+            let statusIcon = '';
+            let isDisabled = false;
+
+            switch (slot.status) {
+                case 'fully_booked':
+                    statusClass = 'slot-booked';
+                    statusIcon = '<i class="fas fa-lock"></i>';
+                    isDisabled = true;
+                    break;
+                case 'in_cart':
+                    statusClass = 'slot-in-cart';
+                    statusIcon = '<i class="fas fa-shopping-cart"></i>';
+                    break;
+                case 'available':
+                    statusClass = 'slot-available';
+                    statusIcon = '<i class="fas fa-clock"></i>';
+                    break;
             }
 
-            // Toggle selection
-            if (selectedSlots.has(slotTime)) {
-                // Remove from selected slots
-                selectedSlots.delete(slotTime);
-                this.classList.remove('slot-selected');
+            const isSelected = selectedSlots.has(slot.display);
+            if (isSelected) {
+                statusClass = 'slot-selected';
+                statusIcon = '<i class="fas fa-check"></i>';
+            }
 
-                // Update icon
-                const iconElement = this.querySelector('.slot-time i');
-                if (slotStatus === 'available') {
-                    iconElement.className = 'fas fa-clock';
-                } else if (slotStatus === 'in_cart') {
-                    iconElement.className = 'fas fa-shopping-cart';
+            slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
+            slotDiv.dataset.slot = slot.display;
+            slotDiv.dataset.price = slot.price;
+            slotDiv.dataset.status = slot.status;
+            slotDiv.dataset.availableQuantity = slot.available_quantity;
+
+            // Persiapkan tampilan stok
+            let availabilityText = `${slot.available_quantity} tersedia`;
+            let availabilityClass = slot.available_quantity > 0 ? 'success' : 'danger';
+
+            // Jika ada item di keranjang pengguna lain, tambahkan informasi (opsional)
+            if (slot.other_cart_quantity && slot.other_cart_quantity > 0) {
+                availabilityText += ` (${slot.other_cart_quantity} di keranjang lain)`;
+            }
+
+            slotDiv.innerHTML = `
+                <div class="slot-time">
+                    ${statusIcon}
+                    <span>${slot.display}</span>
+                </div>
+                <div class="slot-price">
+                    <div>Rp ${slot.price.toLocaleString('id')}</div>
+                    <small class="text-${availabilityClass}">
+                        ${availabilityText}
+                    </small>
+                </div>
+            `;
+
+            slotGrid.appendChild(slotDiv);
+        });
+
+        slotsWrapper.appendChild(slotGrid);
+
+        // Pastikan bagian untuk slot yang dipilih ada di posisi yang benar
+        let selectedSlotsSection = document.getElementById('selected-slots-section');
+        if (!selectedSlotsSection) {
+            selectedSlotsSection = document.createElement('div');
+            selectedSlotsSection.id = 'selected-slots-section';
+            selectedSlotsSection.className = 'selected-slots-section mt-4';
+            selectedSlotsSection.style.display = 'none';
+
+            selectedSlotsSection.innerHTML = `
+                <h6 class="fw-semibold mb-3">Slot Waktu yang Dipilih</h6>
+                <div id="selected-slots-container" class="selected-slots-container">
+                    <!-- Slot terpilih dengan kontrol kuantitas akan ditampilkan di sini -->
+                </div>
+            `;
+
+            // Pastikan ditempatkan di posisi yang benar (setelah time-slots-wrapper)
+            slotsWrapper.parentNode.insertBefore(selectedSlotsSection, slotsWrapper.nextSibling);
+        }
+
+        // Tampilkan bagian slot terpilih jika ada slot yang sudah dipilih
+        if (selectedSlots.size > 0) {
+            selectedSlotsSection.style.display = 'block';
+            const selectedSlotsContainer = document.getElementById('selected-slots-container');
+            selectedSlotsContainer.innerHTML = '';
+
+            // Tambahkan kembali slot yang sudah dipilih sebelumnya
+            selectedSlotsData.forEach(slotData => {
+                addSlotToSelectedView(slotData.slot, slotData.price, slotData.availableQuantity, slotData.quantity || 1);
+            });
+
+            // Tambahkan total di bagian bawah
+            updateTotalPrice();
+        }
+
+        // Tambahkan event listener ke slot
+        document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
+            slotElement.addEventListener('click', function() {
+                const slotTime = this.dataset.slot;
+                const slotPrice = parseFloat(this.dataset.price);
+                const slotStatus = this.dataset.status;
+                const availableQty = parseInt(this.dataset.availableQuantity);
+
+                // If already in cart, show message and skip
+                if (slotStatus === 'in_cart') {
+                    showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
+                    return;
                 }
 
-                // Update selectedSlotsData
-                selectedSlotsData = selectedSlotsData.filter(s => s.slot !== slotTime);
+                // Toggle selection
+                if (selectedSlots.has(slotTime)) {
+                    // Remove from selected slots
+                    selectedSlots.delete(slotTime);
+                    this.classList.remove('slot-selected');
 
-                // Update total price
-                totalPrice -= slotPrice;
-            } else {
-                // Add to selected slots
-                selectedSlots.add(slotTime);
-                this.classList.add('slot-selected');
+                    // Update icon
+                    const iconElement = this.querySelector('.slot-time i');
+                    if (slotStatus === 'available') {
+                        iconElement.className = 'fas fa-clock';
+                    } else if (slotStatus === 'in_cart') {
+                        iconElement.className = 'fas fa-shopping-cart';
+                    }
 
-                // Update icon
-                const iconElement = this.querySelector('.slot-time i');
-                iconElement.className = 'fas fa-check';
+                    // Update selectedSlotsData
+                    selectedSlotsData = selectedSlotsData.filter(s => s.slot !== slotTime);
 
-                // Update selectedSlotsData
-                selectedSlotsData.push({
-                    slot: slotTime,
-                    price: slotPrice,
-                    availableQuantity: availableQty
-                });
+                    // Hapus slot dari tampilan slot terpilih
+                    const selectedSlotElement = document.getElementById(`selected-slot-${slotTime.replace(/\s+/g, '-').replace(/:/g, '')}`);
+                    if (selectedSlotElement) {
+                        selectedSlotElement.remove();
+                    }
+                } else {
+                    // Add to selected slots
+                    selectedSlots.add(slotTime);
+                    this.classList.add('slot-selected');
 
-                // Update total price
-                totalPrice += slotPrice;
-            }
+                    // Update icon
+                    const iconElement = this.querySelector('.slot-time i');
+                    iconElement.className = 'fas fa-check';
 
-            // Enable/disable next button based on selection
-            nextBtn.disabled = selectedSlots.size === 0;
+                    // Update selectedSlotsData dengan quantity default = 1
+                    selectedSlotsData.push({
+                        slot: slotTime,
+                        price: slotPrice,
+                        availableQuantity: availableQty,
+                        quantity: 1 // Set default quantity
+                    });
+
+                    // Tambahkan slot ke tampilan slot terpilih dengan kontrol kuantitas
+                    addSlotToSelectedView(slotTime, slotPrice, availableQty, 1);
+                }
+
+                // Tampilkan atau sembunyikan bagian slot terpilih
+                const selectedSlotsSection = document.getElementById('selected-slots-section');
+                selectedSlotsSection.style.display = selectedSlots.size > 0 ? 'block' : 'none';
+
+                // Enable/disable next button based on selection
+                nextBtn.disabled = selectedSlots.size === 0;
+
+                // Perbarui total harga
+                updateTotalPrice();
+            });
         });
-    });
-}
-                                // Handle quantity change
-                                function updatePriceCalculation() {
-                                    const subtotal = itemPrice * selectedQuantity * selectedSlots.size;
-                                    document.getElementById('subtotal-price').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-                                }
+    }
 
-                                // Quantity decrease button
-                                decreaseBtn.addEventListener('click', function() {
-                                    if (selectedQuantity > 1) {
-                                        selectedQuantity--;
-                                        quantityInput.value = selectedQuantity;
+    // Function untuk menambahkan slot ke tampilan slot terpilih
+    function addSlotToSelectedView(slotTime, slotPrice, availableQty, quantity) {
+        const slotId = `selected-slot-${slotTime.replace(/\s+/g, '-').replace(/:/g, '')}`;
+        const selectedSlotsContainer = document.getElementById('selected-slots-container');
 
-                                        // Update price and button states
-                                        updatePriceCalculation();
-                                        decreaseBtn.disabled = selectedQuantity <= 1;
-                                        increaseBtn.disabled = false;
-                                    }
-                                });
+        // Pastikan container ada
+        if (!selectedSlotsContainer) return;
 
-                                // Quantity increase button
-                                increaseBtn.addEventListener('click', function() {
-                                    if (selectedQuantity < availableStock) {
-                                        selectedQuantity++;
-                                        quantityInput.value = selectedQuantity;
+        const slotDiv = document.createElement('div');
+        slotDiv.id = slotId;
+        slotDiv.className = 'selected-slot-item p-3 bg-light rounded mb-2';
+        slotDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="far fa-clock text-danger me-2"></i>
+                    <span class="fw-semibold">${slotTime}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm btn-outline-secondary decrease-slot-qty" data-slot="${slotTime}" ${quantity <= 1 ? 'disabled' : ''}>
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" class="form-control form-control-sm mx-2 slot-qty-input"
+                           style="width: 60px; text-align: center;" value="${quantity}" min="1" max="${availableQty}"
+                           data-slot="${slotTime}" readonly>
+                    <button class="btn btn-sm btn-outline-secondary increase-slot-qty" data-slot="${slotTime}"
+                           ${quantity >= availableQty ? 'disabled' : ''}>
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <small class="text-muted">Tersedia: ${availableQty} unit</small>
+                <div class="slot-subtotal text-danger">Rp ${(slotPrice * quantity).toLocaleString('id')}</div>
+            </div>
+        `;
 
-                                        // Update price and button states
-                                        updatePriceCalculation();
-                                        decreaseBtn.disabled = false;
-                                        increaseBtn.disabled = selectedQuantity >= availableStock;
-                                    }
-                                });
+        selectedSlotsContainer.appendChild(slotDiv);
 
-                                // Helper function to show toast notifications
-                                function showToast(title, message, type) {
-                                    // Check if toastr is available
-                                    if (typeof toastr !== 'undefined') {
-                                        toastr[type](message, title);
-                                    } else {
-                                        // Use Bootstrap toast if available
-                                        if (typeof bootstrap !== 'undefined') {
-                                            // Create toast element
-                                            const toastEl = document.createElement('div');
-                                            toastEl.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
-                                            toastEl.setAttribute('role', 'alert');
-                                            toastEl.setAttribute('aria-live', 'assertive');
-                                            toastEl.setAttribute('aria-atomic', 'true');
+        // Tambahkan event listener untuk tombol kuantitas
+        const decreaseBtn = slotDiv.querySelector('.decrease-slot-qty');
+        const increaseBtn = slotDiv.querySelector('.increase-slot-qty');
+        const qtyInput = slotDiv.querySelector('.slot-qty-input');
+        const subtotalElement = slotDiv.querySelector('.slot-subtotal');
 
-                                            toastEl.innerHTML = `
-                                                <div class="d-flex">
-                                                    <div class="toast-body">
-                                                        <strong>${title}:</strong> ${message}
-                                                    </div>
-                                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                                </div>
-                                            `;
+        decreaseBtn.addEventListener('click', function() {
+            const slotTime = this.dataset.slot;
+            const slotData = selectedSlotsData.find(s => s.slot === slotTime);
 
-                                            // Add to container
-                                            const toastContainer = document.querySelector('.toast-container');
-                                            if (!toastContainer) {
-                                                const container = document.createElement('div');
-                                                container.className = 'toast-container position-fixed top-0 end-0 p-3';
-                                                document.body.appendChild(container);
-                                                container.appendChild(toastEl);
-                                            } else {
-                                                toastContainer.appendChild(toastEl);
-                                            }
+            if (slotData && slotData.quantity > 1) {
+                slotData.quantity--;
+                qtyInput.value = slotData.quantity;
 
-                                            // Show toast
-                                            const toast = new bootstrap.Toast(toastEl);
-                                            toast.show();
-                                        } else {
-                                            // Fallback to alert
-                                            alert(`${title}: ${message}`);
-                                        }
-                                    }
-                                }
+                // Update subtotal untuk slot ini
+                subtotalElement.textContent = `Rp ${(slotData.price * slotData.quantity).toLocaleString('id')}`;
 
-                                // Initialize the wizard
-                                goToStep(1);
-                            });
-                        </script>
+                // Update tombol
+                decreaseBtn.disabled = slotData.quantity <= 1;
+                increaseBtn.disabled = false;
+
+                // Update total harga
+                updateTotalPrice();
+            }
+        });
+
+        increaseBtn.addEventListener('click', function() {
+            const slotTime = this.dataset.slot;
+            const slotData = selectedSlotsData.find(s => s.slot === slotTime);
+
+            if (slotData && slotData.quantity < slotData.availableQuantity) {
+                slotData.quantity++;
+                qtyInput.value = slotData.quantity;
+
+                // Update subtotal untuk slot ini
+                subtotalElement.textContent = `Rp ${(slotData.price * slotData.quantity).toLocaleString('id')}`;
+
+                // Update tombol
+                decreaseBtn.disabled = false;
+                increaseBtn.disabled = slotData.quantity >= slotData.availableQuantity;
+
+                // Update total harga
+                updateTotalPrice();
+            }
+        });
+    }
+
+    // Update total price
+    function updateTotalPrice() {
+        const subtotal = selectedSlotsData.reduce((total, slot) => {
+            return total + (slot.price * (slot.quantity || 1));
+        }, 0);
+
+        // Jika berada di step 2, perbarui total yang ditampilkan di section slot terpilih
+        if (currentStep === 2) {
+            const selectedSlotsContainer = document.getElementById('selected-slots-container');
+            if (selectedSlotsContainer && selectedSlots.size > 0) {
+                // Cari atau buat elemen total
+                let totalElement = document.getElementById('selected-slots-total');
+                let totalContainer = document.getElementById('selected-slots-total-container');
+
+                if (!totalContainer) {
+                    totalContainer = document.createElement('div');
+                    totalContainer.id = 'selected-slots-total-container';
+                    totalContainer.className = 'mt-3 pt-2 border-top d-flex justify-content-between align-items-center';
+                    totalContainer.innerHTML = `
+                        <span class="fw-bold">Total:</span>
+                        <span id="selected-slots-total" class="fw-bold text-danger">Rp ${subtotal.toLocaleString('id')}</span>
+                    `;
+                    selectedSlotsContainer.appendChild(totalContainer);
+                } else if (totalElement) {
+                    totalElement.textContent = `Rp ${subtotal.toLocaleString('id')}`;
+                }
+            }
+        }
+
+        // Perbarui juga tampilan di step 3 jika sedang di step tersebut
+        if (currentStep === 3) {
+            const subtotalPriceElement = document.getElementById('subtotal-price');
+            if (subtotalPriceElement) {
+                subtotalPriceElement.textContent = `Rp ${subtotal.toLocaleString('id')}`;
+            }
+        }
+    }
+
+    // Helper function to show toast notifications
+    function showToast(title, message, type) {
+        // Check if toastr is available
+        if (typeof toastr !== 'undefined') {
+            toastr[type](message, title);
+        } else {
+            // Use Bootstrap toast if available
+            if (typeof bootstrap !== 'undefined') {
+                // Create toast element
+                const toastEl = document.createElement('div');
+                toastEl.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+
+                toastEl.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}:</strong> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
+
+                // Add to container
+                const toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) {
+                    const container = document.createElement('div');
+                    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(container);
+                    container.appendChild(toastEl);
+                } else {
+                    toastContainer.appendChild(toastEl);
+                }
+
+                // Show toast
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            } else {
+                // Fallback to alert
+                alert(`${title}: ${message}`);
+            }
+        }
+    }
+
+    // Initialize the wizard
+    goToStep(1);
+});
+</script>
                     </div>
                 </div>
             </div>
@@ -1004,380 +1136,409 @@ function renderTimeSlots(slots) {
     <style>
         /* Wizard Booking Process Styling */
         .booking-wizard {
-          position: relative;
-          margin-bottom: 2.5rem;
+            position: relative;
+            margin-bottom: 2.5rem;
         }
 
         /* Progress Bar Container */
         .wizard-progress {
-          display: flex;
-          position: relative;
-          margin-bottom: 2rem;
-          padding: 0 10px;
+            display: flex;
+            position: relative;
+            margin-bottom: 2rem;
+            padding: 0 10px;
         }
 
         .wizard-progress::before {
-          content: "";
-          position: absolute;
-          top: 20px;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background-color: #e9ecef;
-          z-index: 1;
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 1;
         }
 
         /* Progress Bar Active Line */
         .wizard-progress-bar {
-          position: absolute;
-          top: 20px;
-          left: 0;
-          height: 4px;
-          background-color: #9e0620;
-          transition: width 0.5s ease;
-          z-index: 2;
+            position: absolute;
+            top: 20px;
+            left: 0;
+            height: 4px;
+            background-color: #9e0620;
+            transition: width 0.5s ease;
+            z-index: 2;
         }
 
         /* Step Item Styling */
         .wizard-step {
-          flex: 1;
-          position: relative;
-          z-index: 3;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
+            flex: 1;
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
         /* Step Circle */
         .step-circle {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background-color: #fff;
-          border: 2px solid #e9ecef;
-          color: #6c757d;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 1.1rem;
-          margin-bottom: 0.75rem;
-          position: relative;
-          transition: all 0.3s ease;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
+            border: 2px solid #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         /* Circle Icon */
         .step-circle i {
-          font-size: 1rem;
-          display: none;
+            font-size: 1rem;
+            display: none;
         }
 
         /* Step Status Classes */
         .wizard-step.active .step-circle {
-          border-color: #9e0620;
-          background-color: #9e0620;
-          color: white;
-          transform: scale(1.1);
-          box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            border-color: #9e0620;
+            background-color: #9e0620;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
         }
 
         .wizard-step.completed .step-circle {
-          border-color: #9e0620;
-          background-color: #9e0620;
-          color: white;
+            border-color: #9e0620;
+            background-color: #9e0620;
+            color: white;
         }
 
         .wizard-step.completed .step-circle span {
-          display: none;
+            display: none;
         }
 
         .wizard-step.completed .step-circle i {
-          display: inline;
+            display: inline;
         }
 
         /* Step Label Text */
         .step-label {
-          color: #6c757d;
-          font-weight: 600;
-          font-size: 0.9rem;
-          margin-bottom: 0.25rem;
-          transition: color 0.3s ease;
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            transition: color 0.3s ease;
         }
 
         .wizard-step.active .step-label,
         .wizard-step.completed .step-label {
-          color: #212529;
+            color: #212529;
         }
 
         /* Step Description */
         .step-desc {
-          color: #adb5bd;
-          font-size: 0.8rem;
-          display: none;
+            color: #adb5bd;
+            font-size: 0.8rem;
+            display: none;
         }
 
         .wizard-step.active .step-desc {
-          color: #9e0620;
-          display: block;
+            color: #9e0620;
+            display: block;
         }
 
         /* Wizard Content Container */
         .wizard-content {
-          position: relative;
-          overflow: hidden;
-          min-height: 300px;
+            position: relative;
+            overflow: hidden;
+            min-height: 300px;
         }
 
         /* Step Panels */
         .wizard-panel {
-          display: none;
-          animation: fadeIn 0.5s ease;
+            display: none;
+            animation: fadeIn 0.5s ease;
         }
 
         .wizard-panel.active {
-          display: block;
+            display: block;
         }
 
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Navigation Buttons */
         .wizard-buttons {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 2rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
         }
 
         .wizard-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.625rem 1.25rem;
-          border-radius: 50px;
-          font-weight: 600;
-          transition: all 0.3s ease;
-          border: none;
-          cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .wizard-btn-prev {
-          background-color: #f8f9fa;
-          color: #495057;
+            background-color: #f8f9fa;
+            color: #495057;
         }
 
         .wizard-btn-prev:hover {
-          background-color: #e9ecef;
-          transform: translateX(-5px);
+            background-color: #e9ecef;
+            transform: translateX(-5px);
         }
 
         .wizard-btn-next {
-          background-color: #9e0620;
-          color: white;
+            background-color: #9e0620;
+            color: white;
         }
 
         .wizard-btn-next:hover {
-          background-color: #bb2d3b;
-          transform: translateX(5px);
+            background-color: #bb2d3b;
+            transform: translateX(5px);
         }
 
         .wizard-btn i {
-          transition: transform 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .wizard-btn-prev:hover i {
-          transform: translateX(-3px);
+            transform: translateX(-3px);
         }
 
         .wizard-btn-next:hover i {
-          transform: translateX(3px);
+            transform: translateX(3px);
         }
 
         .wizard-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         /* Calendar and Time Slot Specific Styling */
 
         /* Time Slots */
         .time-slots-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
         }
 
         .time-slot {
-          position: relative;
-          border-radius: 10px;
-          overflow: hidden;
-          transition: all 0.3s ease;
-          cursor: pointer;
-          border: 2px solid #e9ecef;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #e9ecef;
         }
 
         .time-slot:not(.disabled):hover {
-          transform: translateY(-3px);
-          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-          border-color: #9e0620;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-color: #9e0620;
         }
 
         .slot-time {
-          padding: 0.75rem;
-          text-align: center;
-          font-weight: 600;
-          color: #495057;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .slot-time i {
-font-size: 0.9rem;
-color: #6c757d;
-}
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
 
-.slot-price {
-background-color: #f8f9fa;
-padding: 0.5rem;
-text-align: center;
-font-size: 0.85rem;
-color: #6c757d;
-border-top: 1px solid #e9ecef;
-}
+        .slot-price {
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
 
-/* Time Slot States */
-.time-slot.slot-available:hover {
-border-color: #28a745;
-}
+        /* Time Slot States */
+        .time-slot.slot-available:hover {
+            border-color: #28a745;
+        }
 
-.time-slot.slot-selected {
-border-color: #9e0620;
-background-color: #fff8f8;
-}
+        .time-slot.slot-selected {
+            border-color: #9e0620;
+            background-color: #fff8f8;
+        }
 
-.time-slot.slot-selected .slot-time {
-color: #9e0620;
-}
+        .time-slot.slot-selected .slot-time {
+            color: #9e0620;
+        }
 
-.time-slot.slot-selected .slot-time i {
-color: #9e0620;
-}
+        .time-slot.slot-selected .slot-time i {
+            color: #9e0620;
+        }
 
-.time-slot.slot-booked {
-border-color: #6c757d;
-background-color: #f8f9fa;
-opacity: 0.7;
-cursor: not-allowed;
-}
+        .time-slot.slot-booked {
+            border-color: #6c757d;
+            background-color: #f8f9fa;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
 
-.time-slot.slot-in-cart {
-border-color: #fd7e14;
-background-color: #fff8f1;
-}
+        .time-slot.slot-in-cart {
+            border-color: #fd7e14;
+            background-color: #fff8f1;
+        }
 
-.time-slot.slot-in-cart .slot-time i {
-color: #fd7e14;
-}
+        .time-slot.slot-in-cart .slot-time i {
+            color: #fd7e14;
+        }
 
-/* Selected Slots Display */
-.selected-slots-display {
-display: flex;
-flex-direction: column;
-gap: 5px;
+        /* Selected Slots Display */
+        .selected-slots-display {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .selected-slot-item {
+            background-color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        /* Quantity Selector */
+        .quantity-selector {
+            width: 200px;
+            margin: 0 auto;
+        }
+
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-color: #dee2e6;
+        }
+
+        .quantity-btn:hover {
+            background-color: #9e0620;
+            border-color: #9e0620;
+            color: white;
+        }
+
+        #quantity-input {
+            width: 80px;
+            text-align: center;
+            font-weight: 600;
+            border-color: #dee2e6;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .step-desc {
+                display: none !important;
+            }
+
+            .wizard-progress::before {
+                top: 15px;
+            }
+
+            .wizard-progress-bar {
+                top: 15px;
+            }
+
+            .step-circle {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+            }
+
+            .step-label {
+                font-size: 0.8rem;
+            }
+
+            .time-slots-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .wizard-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .wizard-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .wizard-btn-prev {
+                order: 2;
+            }
+
+            .wizard-btn-next {
+                order: 1;
+            }
+        }
+        .selected-slots-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
 }
 
 .selected-slot-item {
-background-color: #fff;
-padding: 8px 12px;
-border-radius: 6px;
-display: flex;
-align-items: center;
-font-size: 14px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
 }
 
-/* Quantity Selector */
-.quantity-selector {
-width: 200px;
-margin: 0 auto;
+.slot-qty-input {
+    width: 60px;
+    text-align: center;
 }
 
-.quantity-btn {
-width: 40px;
-height: 40px;
-display: flex;
-align-items: center;
-justify-content: center;
-border-color: #dee2e6;
+.selected-slots-detail {
+    max-height: 200px;
+    overflow-y: auto;
 }
-
-.quantity-btn:hover {
-background-color: #9e0620;
-border-color: #9e0620;
-color: white;
-}
-
-#quantity-input {
-width: 80px;
-text-align: center;
-font-weight: 600;
-border-color: #dee2e6;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-.step-desc {
-display: none !important;
-}
-
-.wizard-progress::before {
-top: 15px;
-}
-
-.wizard-progress-bar {
-top: 15px;
-}
-
-.step-circle {
-width: 30px;
-height: 30px;
-font-size: 0.9rem;
-}
-
-.step-label {
-font-size: 0.8rem;
-}
-
-.time-slots-grid {
-grid-template-columns: repeat(2, 1fr);
-}
-
-.wizard-buttons {
-flex-direction: column;
-gap: 1rem;
-}
-
-.wizard-btn {
-width: 100%;
-justify-content: center;
-}
-
-.wizard-btn-prev {
-order: 2;
-}
-
-.wizard-btn-next {
-order: 1;
-}
-}
-        </style>
+    </style>
     <!-- Include Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>

@@ -159,66 +159,79 @@ class CartController extends Controller
     }
 
 /**
- * Menambahkan item rental ke keranjang
+ * Menambahkan item rental ke keranjang dengan dukungan untuk jumlah berbeda per slot waktu
  */
 private function addRentalItemToCart(Request $request, Cart $cart)
 {
-    // Validasi input spesifik untuk rental item
+    // Validasi input dasar
     $request->validate([
         'rental_item_id' => 'required|exists:rental_items,id',
         'date' => 'required|date|after_or_equal:today',
-        'start_time' => 'required',
-        'end_time' => 'required|after:start_time',
-        'quantity' => 'required|integer|min:1',
+        'slots' => 'required|array', // Mengubah validasi untuk menerima array slot waktu
     ]);
 
     $rentalItem = RentalItem::findOrFail($request->rental_item_id);
     $date = $request->date;
-    $quantity = $request->quantity;
 
-    // Buat full datetime untuk start dan end time
-    $startDateTime = Carbon::parse("{$date} {$request->start_time}");
-    $endDateTime = Carbon::parse("{$date} {$request->end_time}");
+    // Pastikan slots memiliki format yang benar
+    foreach ($request->slots as $slotData) {
+        if (!isset($slotData['start_time']) || !isset($slotData['end_time']) || !isset($slotData['quantity'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Format data slot tidak valid',
+            ], 422);
+        }
+    }
 
-    // Log untuk debugging
-    Log::info('Rental item details', [
-        'rental_item_id' => $rentalItem->id,
-        'rental_item_name' => $rentalItem->name,
-        'date' => $date,
-        'start_time' => $startDateTime->format('Y-m-d H:i:s'),
-        'end_time' => $endDateTime->format('Y-m-d H:i:s'),
-        'quantity' => $quantity,
-    ]);
+    // Tambahkan setiap slot ke keranjang secara terpisah
+    foreach ($request->slots as $slotData) {
+        $startTime = $slotData['start_time'];
+        $endTime = $slotData['end_time'];
+        $quantity = intval($slotData['quantity']);
 
-    // Periksa apakah item dengan waktu yang sama sudah ada di cart
-    $existingItem = CartItem::where('cart_id', $cart->id)
-        ->where('type', 'rental_item')
-        ->where('item_id', $rentalItem->id)
-        ->where('start_time', $startDateTime)
-        ->where('end_time', $endDateTime)
-        ->first();
+        // Lewati slot dengan quantity 0
+        if ($quantity <= 0) continue;
 
-    if ($existingItem) {
-        // Jika sudah ada, update quantity (tambahkan)
-        $newQuantity = $existingItem->quantity + $quantity;
-        $existingItem->quantity = $newQuantity;
-        $existingItem->price = $rentalItem->rental_price * $newQuantity;
-        $existingItem->save();
+        // Buat full datetime untuk start dan end time
+        $startDateTime = Carbon::parse("{$date} {$startTime}");
+        $endDateTime = Carbon::parse("{$date} {$endTime}");
 
-        $message = 'Jumlah item berhasil diperbarui di keranjang';
-    } else {
-        // Jika belum ada, buat item baru
-        CartItem::create([
-            'cart_id' => $cart->id,
-            'type' => 'rental_item',
-            'item_id' => $rentalItem->id,
-            'start_time' => $startDateTime,
-            'end_time' => $endDateTime,
+        // Log untuk debugging
+        Log::info('Rental item slot details', [
+            'rental_item_id' => $rentalItem->id,
+            'rental_item_name' => $rentalItem->name,
+            'date' => $date,
+            'start_time' => $startDateTime->format('Y-m-d H:i:s'),
+            'end_time' => $endDateTime->format('Y-m-d H:i:s'),
             'quantity' => $quantity,
-            'price' => $rentalItem->rental_price * $quantity,
         ]);
 
-        $message = 'Item berhasil ditambahkan ke keranjang';
+        // Periksa apakah item dengan waktu yang sama sudah ada di cart
+        $existingItem = CartItem::where('cart_id', $cart->id)
+            ->where('type', 'rental_item')
+            ->where('item_id', $rentalItem->id)
+            ->where('start_time', $startDateTime)
+            ->where('end_time', $endDateTime)
+            ->first();
+
+        if ($existingItem) {
+            // Jika sudah ada, update quantity (tambahkan)
+            $newQuantity = $existingItem->quantity + $quantity;
+            $existingItem->quantity = $newQuantity;
+            $existingItem->price = $rentalItem->rental_price * $newQuantity;
+            $existingItem->save();
+        } else {
+            // Jika belum ada, buat item baru
+            CartItem::create([
+                'cart_id' => $cart->id,
+                'type' => 'rental_item',
+                'item_id' => $rentalItem->id,
+                'start_time' => $startDateTime,
+                'end_time' => $endDateTime,
+                'quantity' => $quantity,
+                'price' => $rentalItem->rental_price * $quantity,
+            ]);
+        }
     }
 
     // Hitung jumlah item di cart
@@ -226,7 +239,7 @@ private function addRentalItemToCart(Request $request, Cart $cart)
 
     return response()->json([
         'success' => true,
-        'message' => $message,
+        'message' => 'Item berhasil ditambahkan ke keranjang',
         'cart_count' => $cartCount,
     ]);
 }
@@ -601,6 +614,7 @@ if ($rentalItem) {
                 'user_id' => Auth::id(),
                 'amount' => $totalPrice,
                 'transaction_status' => 'pending',
+                'expires_at' => now()->addMinutes(2), // 5 minutes expiration
             ]);
 
             // Buat booking records dalam transaction
@@ -685,6 +699,7 @@ if ($rentalItem) {
                 'order_id' => $orderId,
                 'total_price' => $totalPrice,
                 'cart_items' => $cartItems,
+                'expires_at' => $payment->expires_at, // Kirim hanya expires_at saja
             ]);
         } catch (\Exception $e) {
             // Log error untuk debugging

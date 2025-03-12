@@ -18,8 +18,12 @@ class Payment extends Model
         'transaction_status',
         'transaction_time',
         'payment_details',
+        'expires_at'
     ];
 
+    protected $casts = [
+        'expires_at' => 'datetime',
+    ];
     /**
      * Get the user that owns the payment.
      */

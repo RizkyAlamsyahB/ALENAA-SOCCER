@@ -304,7 +304,7 @@ foreach ($rentalBookings as $booking) {
 
             DB::commit();
             return view('users.payment.checkout', compact('snapToken', 'payment', 'allBookings'));
-        } catch (\PDOException $e) {
+                } catch (\PDOException $e) {
             DB::rollBack();
             Log::error('Checkout PDO Error: ' . $e->getMessage());
 
@@ -526,6 +526,53 @@ foreach ($rentalBookings as $booking) {
             ->where('user_id', Auth::id())
             ->findOrFail($id);
 
+        // Cek jika pembayaran sudah kedaluwarsa
+        if ($payment->expires_at && Carbon::parse($payment->expires_at)->isPast()) {            // Update status pembayaran menjadi failed jika masih pending
+            if ($payment->transaction_status === 'pending') {
+                DB::beginTransaction();
+                try {
+                    $payment->transaction_status = 'failed';
+                    $payment->save();
+
+                    // Update field bookings
+                    foreach ($payment->fieldBookings as $booking) {
+                        $booking->status = 'cancelled';
+                        $booking->save();
+                    }
+
+                    // Update rental bookings
+                    foreach ($payment->rentalBookings as $booking) {
+                        $booking->status = 'cancelled';
+                        $booking->save();
+                    }
+
+                    // Jika ada relasi lain yang perlu diupdate
+                    if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
+                        foreach ($payment->membershipSubscriptions as $subscription) {
+                            $subscription->status = 'cancelled';
+                            $subscription->save();
+                        }
+                    }
+
+                    if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
+                        foreach ($payment->photographerBookings as $booking) {
+                            $booking->status = 'cancelled';
+                            $booking->save();
+                        }
+                    }
+
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('Error updating expired payment: ' . $e->getMessage());
+                }
+            }
+
+            return redirect()
+                ->route('user.payment.detail', ['id' => $payment->id])
+                ->with('error', 'Pembayaran ini telah kedaluwarsa. Silakan membuat pesanan baru.');
+        }
+
         // Hanya bisa melanjutkan pembayaran dengan status pending
         if ($payment->transaction_status !== 'pending') {
             return redirect()
@@ -631,7 +678,9 @@ foreach ($rentalBookings as $booking) {
             // Dapatkan Snap Token baru
             $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-            // Kirim ke view dengan format data yang sesuai
+
+
+            // Kirim ke view dengan format data yang sesuai, termasuk expires_at
             return view('users.payment.checkout', [
                 'snap_token' => $snapToken,
                 'order_id' => $newOrderId,  // Gunakan order_id baru di view
@@ -639,7 +688,8 @@ foreach ($rentalBookings as $booking) {
                 'total_price' => $payment->amount,
                 'allBookings' => $allBookings,
                 'is_continue_payment' => true,
-                'payment_id' => $payment->id  // Sertakan payment_id untuk callback
+                'payment_id' => $payment->id,  // Sertakan payment_id untuk callback
+               'expires_at' => $payment->expires_at  // Kirimkan expires_at yang ada tanpa diubah
             ]);
         } catch (\Exception $e) {
             Log::error('Continue Payment Error: ' . $e->getMessage());
@@ -648,6 +698,81 @@ foreach ($rentalBookings as $booking) {
                 ->with('error', 'Gagal melanjutkan pembayaran: ' . $e->getMessage());
         }
     }
+/**
+     * Cek dan update pembayaran yang sudah kedaluwarsa
+     */
+    private function checkExpiredPayment($payment)
+    {
+        // Jika pembayaran masih pending dan sudah kedaluwarsa, update statusnya
+        if ($payment->transaction_status === 'pending' &&
+            $payment->expires_at &&
+            Carbon::parse($payment->expires_at)->isPast()) {
+
+            DB::beginTransaction();
+            try {
+                // Update status pembayaran
+                $payment->transaction_status = 'failed';
+                $payment->save();
+
+                // Update status field bookings
+                if (method_exists($payment, 'fieldBookings') && $payment->fieldBookings) {
+                    foreach ($payment->fieldBookings as $booking) {
+                        $booking->status = 'cancelled';
+                        $booking->save();
+                    }
+                }
+
+                // Update status rental bookings
+                if (method_exists($payment, 'rentalBookings') && $payment->rentalBookings) {
+                    foreach ($payment->rentalBookings as $booking) {
+                        $booking->status = 'cancelled';
+                        $booking->save();
+                    }
+                }
+
+                // Update status membership subscriptions (jika ada)
+                if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions) {
+                    foreach ($payment->membershipSubscriptions as $subscription) {
+                        $subscription->status = 'cancelled';
+                        $subscription->save();
+                    }
+                }
+
+                // Update status photographer bookings (jika ada)
+                if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings) {
+                    foreach ($payment->photographerBookings as $booking) {
+                        $booking->status = 'cancelled';
+                        $booking->save();
+                    }
+                }
+
+                DB::commit();
+                Log::info('Payment #' . $payment->id . ' (Order: ' . $payment->order_id . ') status updated to failed due to expiration on page access');
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error updating expired payment #' . $payment->id . ' on page access: ' . $e->getMessage());
+            }
+
+            // Reload payment dengan data terbaru
+            $payment = $payment->fresh();
+        }
+
+        return $payment;
+    }
+
+    /**
+     * Check multiple payments for expiration
+     */
+    private function checkExpiredPayments($payments)
+    {
+        foreach ($payments as $payment) {
+            $this->checkExpiredPayment($payment);
+        }
+
+        return $payments->fresh();
+    }
+
     /**
      * Show payment history
      */
@@ -656,6 +781,11 @@ foreach ($rentalBookings as $booking) {
         $payments = Payment::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(3);
+
+        // Cek pembayaran yang kedaluwarsa secara real-time
+        foreach ($payments as $key => $payment) {
+            $payments[$key] = $this->checkExpiredPayment($payment);
+        }
 
         return view('users.payment.history', compact('payments'));
     }
@@ -671,6 +801,9 @@ foreach ($rentalBookings as $booking) {
         ])
             ->where('user_id', Auth::id())
             ->findOrFail($id);
+
+        // Cek apakah pembayaran sudah kedaluwarsa tapi belum diupdate statusnya
+        $payment = $this->checkExpiredPayment($payment);
 
         return view('users.payment.detail', compact('payment'));
     }

@@ -4,6 +4,7 @@ use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -28,4 +29,18 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         // Menangani error secara custom jika diperlukan
     })
+    ->withSchedule(function (Schedule $schedule) {
+        // Jalankan command setiap menit untuk memeriksa pembayaran yang kedaluwarsa
+        $schedule->command('payments:update-expired')
+                 ->everyMinute()
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/payments-expired.log'));
+
+        // Alternatif: Jalankan setiap 5 menit jika setiap menit terlalu sering
+        // $schedule->command('payments:update-expired')
+        //          ->everyFiveMinutes()
+        //          ->withoutOverlapping()
+        //          ->appendOutputTo(storage_path('logs/payments-expired.log'));
+    })
+
     ->create();
