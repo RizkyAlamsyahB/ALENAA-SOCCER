@@ -70,9 +70,10 @@
                                 style="width: 40px; height: 40px; font-size: 18px;">
                                 {{ substr(Auth::user()->name, 0, 1) }}
                             </div>
-                            <span class="d-none d-md-inline text-truncate" style="max-width: 120px;">
+                            <span class="d-none d-md-inline" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 {{ Auth::user()->name }}
                             </span>
+
                             <i class="fas fa-chevron-down ms-1"></i>
                         </button>
 

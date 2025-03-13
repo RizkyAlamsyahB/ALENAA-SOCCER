@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use Carbon\Carbon;
 use App\Models\Cart;
+use App\Models\Review;
 use App\Models\Payment;
 use App\Models\CartItem;
 use Barryvdh\DomPDF\PDF;
@@ -745,21 +746,59 @@ class PaymentController extends Controller
         return view('users.payment.history', compact('payments'));
     }
 
-    /**
-     * Show payment detail
-     */
-    public function detail($id)
-    {
-        $payment = Payment::with(['fieldBookings.field', 'rentalBookings.rentalItem'])
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
+/**
+ * Show payment detail
+ */
+public function detail($id)
+{
+    $payment = Payment::with(['fieldBookings.field', 'rentalBookings.rentalItem'])
+        ->where('user_id', Auth::id())
+        ->findOrFail($id);
 
-        // Cek apakah pembayaran sudah kedaluwarsa tapi belum diupdate statusnya
-        $payment = $this->checkExpiredPayment($payment);
+    // Cek apakah pembayaran sudah kedaluwarsa tapi belum diupdate statusnya
+    $payment = $this->checkExpiredPayment($payment);
 
-        return view('users.payment.detail', compact('payment'));
+    // Cek apakah user sudah memberikan review untuk item di payment ini
+    $reviewedItems = [];
+    if ($payment->transaction_status === 'success') {
+        // Cek review untuk field bookings
+        foreach ($payment->fieldBookings as $booking) {
+            $review = Review::where('user_id', Auth::id())
+                          ->where('item_id', $booking->field_id)
+                          ->where('item_type', 'App\\Models\\Field')
+                          ->where('payment_id', $payment->id)
+                          ->first();
+
+            $reviewedItems['field_' . $booking->field_id] = $review ? true : false;
+        }
+
+        // Cek review untuk rental bookings
+        foreach ($payment->rentalBookings as $booking) {
+            $review = Review::where('user_id', Auth::id())
+                          ->where('item_id', $booking->rental_item_id)
+                          ->where('item_type', 'App\\Models\\RentalItem')
+                          ->where('payment_id', $payment->id)
+                          ->first();
+
+            $reviewedItems['rental_' . $booking->rental_item_id] = $review ? true : false;
+        }
+
+        // Jika ada booking fotografer, tambahkan cek review untuk itu juga
+        if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings) {
+            foreach ($payment->photographerBookings as $booking) {
+                $review = Review::where('user_id', Auth::id())
+                              ->where('item_id', $booking->photographer_id)
+                              ->where('item_type', 'App\\Models\\Photographer')
+                              ->where('payment_id', $payment->id)
+                              ->first();
+
+                $reviewedItems['photographer_' . $booking->photographer_id] = $review ? true : false;
+            }
+        }
     }
 
+    return view('users.payment.detail', compact('payment', 'reviewedItems'));
+}
     /**
      * Handle recurring payment notification from Midtrans
      */

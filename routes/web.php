@@ -6,9 +6,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\Admin\FieldController;
 use App\Http\Controllers\User\FieldsController;
+use App\Http\Controllers\User\ReviewController;
 use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\DiscountController;
+use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\Admin\MembershipController;
 use App\Http\Controllers\Admin\RentalItemController;
 use App\Http\Controllers\User\RentalItemsController;
@@ -29,14 +31,23 @@ Route::get('/', function () {
             return redirect()->route('users.dashboard');
         }
     }
-    return view('welcome');
+
+    // Jika tidak login, tampilkan landing page dengan testimonial
+    $testimonials = \App\Models\Review::with(['user', 'reviewable'])
+        ->where('rating', 5)
+        ->whereNotNull('comment')
+        ->where('status', 'active')
+        ->orderByRaw('LENGTH(comment) DESC')
+        ->limit(3)
+        ->get();
+
+    return view('welcome', compact('testimonials'));
 })->name('welcome');
 // User Routes
 Route::middleware(['auth', 'checkRole:user'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('users.dashboard');
-    })->name('users.dashboard');
+// Dashboard
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('users.dashboard');
 
     // Fields (Lapangan) Management
     Route::prefix('fields')->name('user.fields.')->group(function () {
@@ -70,7 +81,6 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
         Route::get('/history', [RentalItemsController::class, 'history'])->name('history');
         Route::get('/orders/{id}', [RentalItemsController::class, 'orderDetail'])->name('order.detail');
         Route::get('/items/{rentalItemId}/available-slots', [RentalItemsController::class, 'getAvailableSlots'])->name('availableSlots');
-
     });
 
     // Payment Management
@@ -82,6 +92,12 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
         Route::get('/error', [PaymentController::class, 'error'])->name('error');
         Route::get('/{id}/continue', [PaymentController::class, 'continuePayment'])->name('continue');
         Route::get('/{id}/invoice', [PaymentController::class, 'downloadInvoice'])->name('invoice');
+    });
+
+    // Review Management
+    Route::prefix('review')->name('user.review.')->group(function () {
+        Route::post('/store', [ReviewController::class, 'store'])->name('store');
+        Route::get('/item', [ReviewController::class, 'getItemReviews'])->name('item');
     });
 
     // Other Features

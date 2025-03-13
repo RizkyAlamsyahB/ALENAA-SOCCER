@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Review;
 use App\Models\FieldBooking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,4 +30,10 @@ class Field extends Model
     {
         return $this->hasMany(FieldBooking::class);
     }
+
+    // Di model Field.php
+public function reviews()
+{
+    return $this->morphMany(Review::class, 'reviewable', 'item_type', 'item_id');
+}
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Review;
 use App\Models\CartItem;
 use App\Models\RentalBooking;
 use Illuminate\Database\Eloquent\Model;
@@ -97,4 +98,10 @@ class RentalItem extends Model
                 return ucfirst($this->category);
         }
     }
+
+    // Di model Field.php
+public function reviews()
+{
+    return $this->morphMany(Review::class, 'reviewable', 'item_type', 'item_id');
+}
 }

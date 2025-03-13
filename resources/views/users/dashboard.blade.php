@@ -248,14 +248,63 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section class="testimonials-section py-5 bg-light">
-        <div class="container">
-            <div class="text-center mb-5">
-                <span class="badge bg-danger mb-3">Testimonial</span>
-                <h2 class="section-title">Apa Kata Member Alena Soccer?</h2>
-            </div>
-            <div class="row g-4">
+<!-- Testimonials Section -->
+<section class="testimonials-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-danger mb-3">Ulasan Member</span>
+            <h2 class="section-title">Apa Kata Mereka?</h2>
+        </div>
+        <div class="row g-4">
+            @forelse($testimonials as $testimonial)
+                <div class="col-md-4">
+                    <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
+                        <div class="testimonial-header d-flex justify-content-between align-items-center mb-3">
+                            <div class="rating">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <i class="fas fa-star {{ $i <= $testimonial->rating ? 'text-warning' : 'text-muted' }}"></i>
+                                @endfor
+                            </div>
+                            <span class="text-muted small">
+                                {{ $testimonial->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                        <div class="testimonial-content mb-3">
+                            <i class="fas fa-quote-left text-danger mb-3"></i>
+                            <p class="mb-0">
+                                "{{ $testimonial->comment }}"
+                            </p>
+                        </div>
+                        <div class="testimonial-author d-flex align-items-center">
+                            <div class="author-avatar me-3">
+                                @if($testimonial->user->profile_photo_path)
+                                    <img src="{{ Storage::url($testimonial->user->profile_photo_path) }}"
+                                        alt="{{ $testimonial->user->name }}" class="rounded-circle" width="50" height="50">
+                                @else
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                        style="width: 50px; height: 50px;">
+                                        {{ strtoupper(substr($testimonial->user->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ $testimonial->user->name }}</h6>
+                                <small class="text-muted">
+                                    Tentang :
+                                    @if($testimonial->item_type == 'App\\Models\\Field')
+                                         {{ $testimonial->reviewable->name ?? '' }}
+                                    @elseif($testimonial->item_type == 'App\\Models\\RentalItem')
+                                        {{ $testimonial->reviewable->name ?? 'Penyewaan Peralatan' }}
+                                    @elseif($testimonial->item_type == 'App\\Models\\Photographer')
+                                         {{ $testimonial->reviewable->name ?? '' }}
+                                    @endif
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <!-- Tampilkan testimonial default jika belum ada ulasan -->
                 <div class="col-md-4">
                     <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
                         <div class="testimonial-content mb-3">
@@ -266,8 +315,8 @@
                             </p>
                         </div>
                         <div class="testimonial-author d-flex align-items-center">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2290ec8fa1d076a31ffece3da471c470b91bfd20a12a271551ae12f28bf93760"alt="Member"
-                                class="rounded-circle me-3">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                                style="width: 50px; height: 50px;">A</div>
                             <div>
                                 <h6 class="mb-0">Ahmad Fadillah</h6>
                                 <small class="text-muted">Member Aktif</small>
@@ -275,47 +324,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
-                        <div class="testimonial-content mb-3">
-                            <i class="fas fa-quote-left text-danger mb-3"></i>
-                            <p class="mb-0">
-                                "Komunitas yang seru dan aktif. Banyak event dan turnamen yang bisa diikuti. Recommended
-                                banget!"
-                            </p>
-                        </div>
-                        <div class="testimonial-author d-flex align-items-center">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2290ec8fa1d076a31ffece3da471c470b91bfd20a12a271551ae12f28bf93760"
-                                alt="Member" class="rounded-circle me-3">
-                            <div>
-                                <h6 class="mb-0">Reza Pratama</h6>
-                                <small class="text-muted">Tim Captain</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
-                        <div class="testimonial-content mb-3">
-                            <i class="fas fa-quote-left text-danger mb-3"></i>
-                            <p class="mb-0">
-                                "Fasilitas lengkap, pelayanan ramah, dan banyak promo menarik. Paling suka sama sistem
-                                booking onlinenya!"
-                            </p>
-                        </div>
-                        <div class="testimonial-author d-flex align-items-center">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2290ec8fa1d076a31ffece3da471c470b91bfd20a12a271551ae12f28bf93760"
-                                alt="Member" class="rounded-circle me-3">
-                            <div>
-                                <h6 class="mb-0">Deni Kusuma</h6>
-                                <small class="text-muted">Regular Member</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <!-- Tambahkan testimonial default lain seperti sebelumnya -->
+            @endforelse
         </div>
-    </section>
+    </div>
+</section>
 
     <style>
         /* New Sections Styling */

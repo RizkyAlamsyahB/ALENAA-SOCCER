@@ -179,6 +179,8 @@
                                     @endif
                                 </div>
                             </div>
+
+
                         </div>
 
                         <!-- Customer Support Card -->
@@ -413,19 +415,347 @@
                         @endif
 
                     </div>
+
                 </div>
+                @if ($payment->transaction_status === 'success')
+                    <div class="col-lg-8 mt-4">
+                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                            <div
+                                class="card-header bg-white d-flex align-items-center justify-content-between py-3 px-4 border-0">
+                                <h5 class="m-0 fw-bold">Ulasan Pesanan</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="review-list">
+                                    <!-- Field Bookings Reviews -->
+                                    @foreach ($payment->fieldBookings as $booking)
+                                        <div class="review-item">
+                                            <div class="review-item-content">
+                                                <div class="review-image">
+                                                    @if (isset($booking->field->image))
+                                                        <img src="{{ Storage::url($booking->field->image) }}"
+                                                            alt="{{ $booking->field->name ?? 'Lapangan' }}"
+                                                            class="field-image">
+                                                    @else
+                                                        <div class="field-image-placeholder">
+                                                            <i class="fas fa-futbol"></i>
+                                                        </div>
+                                                    @endif
+                                                    <div class="field-type">
+                                                        {{ $booking->field->type ?? 'Lapangan' }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="review-details">
+                                                    <h5 class="field-name">{{ $booking->field->name ?? 'Lapangan' }}</h5>
+                                                    <div class="booking-info">
+                                                        <div class="info-item">
+                                                            <i class="far fa-calendar-alt"></i>
+                                                            <span>{{ \Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</span>
+                                                        </div>
+                                                        <div class="info-item">
+                                                            <i class="far fa-clock"></i>
+                                                            <span>
+                                                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                                                                -
+                                                                {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="review-action">
+                                                    @if (isset($reviewedItems['field_' . $booking->field_id]) && $reviewedItems['field_' . $booking->field_id])
+                                                        <span class="review-status-pill">
+                                                            <i class="fas fa-check-circle me-1"></i> Sudah Direview
+                                                        </span>
+                                                    @else
+                                                        <button class="btn-review"
+                                                            onclick="showReviewForm('field', {{ $booking->field_id }}, '{{ $booking->field->name }}')">
+                                                            <i class="fas fa-star me-2"></i>
+                                                            <span>Beri Ulasan</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    <!-- Rental Bookings Reviews -->
+                                    @foreach ($payment->rentalBookings as $booking)
+                                        <div class="review-item">
+                                            <div class="review-item-content">
+                                                <div class="review-image">
+                                                    @if (isset($booking->rentalItem->image))
+                                                        <img src="{{ Storage::url($booking->rentalItem->image) }}"
+                                                            alt="{{ $booking->rentalItem->name ?? 'Penyewaan' }}"
+                                                            class="field-image">
+                                                    @else
+                                                        <div class="field-image-placeholder">
+                                                            <i class="fas fa-box"></i>
+                                                        </div>
+                                                    @endif
+                                                    <div class="field-type">
+                                                        Peralatan
+                                                    </div>
+                                                </div>
+
+                                                <div class="review-details">
+                                                    <h5 class="field-name">{{ $booking->rentalItem->name ?? 'Penyewaan' }}
+                                                    </h5>
+                                                    <div class="booking-info">
+                                                        <div class="info-item">
+                                                            <i class="fas fa-box"></i>
+                                                            <span>Jumlah: {{ $booking->quantity }}</span>
+                                                        </div>
+                                                        <div class="info-item">
+                                                            <i class="far fa-calendar-alt"></i>
+                                                            <span>{{ \Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="review-action">
+                                                    @if (isset($reviewedItems['rental_' . $booking->rental_item_id]) && $reviewedItems['rental_' . $booking->rental_item_id])
+                                                        <span class="review-status-pill">
+                                                            <i class="fas fa-check-circle me-1"></i> Sudah Direview
+                                                        </span>
+                                                    @else
+                                                        <button class="btn-review"
+                                                            onclick="showReviewForm('rental_item', {{ $booking->rental_item_id }}, '{{ $booking->rentalItem->name }}')">
+                                                            <i class="fas fa-star me-2"></i>
+                                                            <span>Beri Ulasan</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Review Modal -->
+                    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 rounded-4 shadow">
+                                <div class="modal-header border-0">
+                                    <h5 class="modal-title fw-bold" id="reviewModalTitle">Beri Ulasan</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body px-4 py-4">
+                                    <form id="reviewForm" class="review-form">
+                                        <input type="hidden" id="reviewItemType" name="item_type">
+                                        <input type="hidden" id="reviewItemId" name="item_id">
+                                        <input type="hidden" id="reviewPaymentId" name="payment_id"
+                                            value="{{ $payment->id }}">
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-semibold mb-3">Rating</label>
+                                            <div class="star-rating">
+                                                <input type="radio" id="star5" name="rating" value="5" />
+                                                <label for="star5" title="5 bintang"><i
+                                                        class="fas fa-star"></i></label>
+
+                                                <input type="radio" id="star4" name="rating" value="4" />
+                                                <label for="star4" title="4 bintang"><i
+                                                        class="fas fa-star"></i></label>
+
+                                                <input type="radio" id="star3" name="rating" value="3" />
+                                                <label for="star3" title="3 bintang"><i
+                                                        class="fas fa-star"></i></label>
+
+                                                <input type="radio" id="star2" name="rating" value="2" />
+                                                <label for="star2" title="2 bintang"><i
+                                                        class="fas fa-star"></i></label>
+
+                                                <input type="radio" id="star1" name="rating" value="1" />
+                                                <label for="star1" title="1 bintang"><i
+                                                        class="fas fa-star"></i></label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="reviewComment" class="form-label fw-semibold">Komentar</label>
+                                            <textarea id="reviewComment" name="comment" rows="4" class="form-control"
+                                                placeholder="Bagikan pengalaman Anda..."></textarea>
+                                        </div>
+
+                                        <div class="text-end">
+                                            <button type="button" class="btn btn-secondary me-2"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <button type="button" id="submitReviewBtn" class="btn btn-danger">
+                                                Kirim Ulasan
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
 
     <script>
+        // Review functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Cari element countdown
+            // Countdown timer functionality
+            initCountdownTimer();
+
+            // Review functionality
+            initReviewSystem();
+        });
+
+        // Fungsi untuk menginisialisasi sistem review
+        function initReviewSystem() {
+            // Inisialisasi interaksi bintang rating
+            const stars = document.querySelectorAll('.star-rating label');
+            stars.forEach((star, index) => {
+                star.addEventListener('click', () => {
+                    // Reset semua bintang
+                    stars.forEach(s => s.classList.remove('text-warning'));
+
+                    // Highlight bintang yang diklik dan semua bintang sebelumnya
+                    for (let i = 0; i <= index; i++) {
+                        stars[stars.length - 1 - i].classList.add('text-warning');
+                    }
+                });
+            });
+
+            // Inisialisasi tombol submit review
+            const submitButton = document.getElementById('submitReviewBtn');
+            if (submitButton) {
+                submitButton.addEventListener('click', submitReview);
+            }
+        }
+
+        // Fungsi untuk menampilkan modal review
+        function showReviewForm(itemType, itemId, itemName) {
+            // Reset form sebelum menampilkan
+            document.getElementById('reviewForm').reset();
+
+            // Reset tampilan bintang
+            document.querySelectorAll('.star-rating label').forEach(star => {
+                star.classList.remove('text-warning');
+            });
+
+            // Set judul modal dengan nama item
+            document.getElementById('reviewModalTitle').textContent = 'Beri Ulasan: ' + itemName;
+
+            // Set nilai pada input hidden
+            document.getElementById('reviewItemType').value = itemType;
+            document.getElementById('reviewItemId').value = itemId;
+
+            // Tampilkan modal menggunakan Bootstrap API
+            const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            reviewModal.show();
+        }
+
+        // Fungsi untuk mengirim review
+        function submitReview() {
+            const form = document.getElementById('reviewForm');
+            const formData = new FormData(form);
+
+            // Validasi: pastikan rating dipilih
+            const rating = document.querySelector('input[name="rating"]:checked');
+            if (!rating) {
+                // Ganti alert dengan SweetAlert
+                Swal.fire({
+                    title: 'Perhatian!',
+                    text: 'Silakan berikan rating dengan memilih jumlah bintang',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Persiapkan data untuk dikirim
+            const data = {
+                payment_id: formData.get('payment_id'),
+                item_id: formData.get('item_id'),
+                item_type: formData.get('item_type'),
+                rating: formData.get('rating'),
+                comment: formData.get('comment')
+            };
+
+            // Ambil CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            // Tampilkan loading state pada tombol
+            const submitBtn = document.getElementById('submitReviewBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            submitBtn.disabled = true;
+
+            // Kirim request AJAX
+            fetch('/review/store', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        // Tutup modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
+                        modal.hide();
+
+                        // Tampilkan pesan sukses dengan SweetAlert
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Terima kasih! Ulasan Anda berhasil dikirim.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            // Reload halaman untuk menampilkan status ulasan terbaru
+                            if (result.isConfirmed) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        // Tampilkan pesan error dengan SweetAlert
+                        Swal.fire({
+                            title: 'Error!',
+                            text: result.message || 'Terjadi kesalahan saat mengirim ulasan',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Tampilkan pesan error dengan SweetAlert
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat mengirim ulasan. Silakan coba lagi.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+        }
+
+        // Fungsi untuk inisialisasi countdown timer
+        function initCountdownTimer() {
             const countdownEl = document.getElementById('countdown');
 
-            // Jika elemen countdown ada
             if (countdownEl) {
-                // Ambil timestamp kedaluwarsa dan waktu sekarang
                 const expiresTimestamp = parseInt(countdownEl.dataset.expires);
                 let serverNowTimestamp = parseInt(countdownEl.dataset.now);
 
@@ -444,13 +774,20 @@
                     // Jika waktu sudah habis
                     if (remainingTime <= 0) {
                         clearInterval(countdownInterval);
-                        countdownEl.innerHTML =
-                            '<span class="text-danger">Waktu pembayaran telah habis</span>';
+                        countdownEl.innerHTML = '<span class="text-danger">Waktu pembayaran telah habis</span>';
 
-                        // Opsional: reload halaman setelah 3 detik untuk menampilkan status terbaru
-                        setTimeout(function() {
+                        // Gunakan SweetAlert untuk notifikasi waktu habis
+                        Swal.fire({
+                            title: 'Waktu Habis!',
+                            text: 'Waktu pembayaran telah habis. Halaman akan dimuat ulang.',
+                            icon: 'info',
+                            confirmButtonText: 'OK',
+                            
+                            timer: 3000,
+                            timerProgressBar: true
+                        }).then(() => {
                             window.location.reload();
-                        }, 3000);
+                        });
                         return;
                     }
 
@@ -463,11 +800,145 @@
                         `Sisa waktu: <span class="text-danger">${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</span>`;
                 }, 1000);
             }
-        });
+        }
     </script>
+    <style>
+        /* Review Styling */
+        .review-list {
+            padding: 16px;
+        }
 
+        .review-item {
+            background-color: white;
+            border-radius: 16px;
+            border: 1px solid #f1f3f5;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
 
+        .review-item:last-child {
+            margin-bottom: 0;
+        }
 
+        .review-item:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .review-item-content {
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .review-image {
+            position: relative;
+            width: 80px;
+            min-width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .review-details {
+            flex: 1;
+        }
+
+        .review-action {
+            min-width: 140px;
+            text-align: right;
+        }
+
+        .btn-review {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #9e0620;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-review:hover {
+            background-color: #bb2d3b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(158, 6, 32, 0.2);
+        }
+
+        .review-status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover~label,
+        .star-rating input[type="radio"]:checked~label {
+            color: #FFD700;
+        }
+
+        @media (max-width: 767.98px) {
+            .review-item-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .review-image {
+                width: 100%;
+                height: 140px;
+            }
+
+            .review-action {
+                width: 100%;
+                text-align: center;
+                margin-top: 1rem;
+            }
+
+            .btn-review {
+                width: 100%;
+            }
+        }
+    </style>
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Modern Payment Detail Styling */
 
@@ -1016,8 +1487,10 @@
             }
         }
     </style>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endsection
