@@ -20,9 +20,179 @@ use Midtrans\Exceptions\MidtransApiException;
 class PaymentController extends Controller
 {
     /**
+     * Set konfigurasi Midtrans
+     *
+     * @param bool $isFull Jika true, akan mengatur semua konfigurasi
+     * @return void
+     */
+    private function setupMidtransConfig($isFull = true)
+    {
+        \Midtrans\Config::$serverKey = config('midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('midtrans.is_production', false);
+
+        if ($isFull) {
+            \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized', true);
+            \Midtrans\Config::$is3ds = config('midtrans.is_3ds', true);
+        }
+    }
+
+    /**
+     * Siapkan detail item untuk Midtrans dari berbagai jenis booking
+     *
+     * @param array $fieldBookings Array FieldBooking
+     * @param array $rentalBookings Array RentalBooking
+     * @param array $membershipSubscriptions Array MembershipSubscription (opsional)
+     * @param array $photographerBookings Array PhotographerBooking (opsional)
+     * @return array Item details untuk Midtrans
+     */
+    private function prepareItemDetails($fieldBookings = [], $rentalBookings = [], $membershipSubscriptions = [], $photographerBookings = [])
+    {
+        $itemDetails = [];
+
+        // Add field bookings to item details
+        foreach ($fieldBookings as $booking) {
+            $field = $booking->field;
+            $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
+            $endTime = Carbon::parse($booking->end_time)->format('H:i');
+
+            $itemDetails[] = [
+                'id' => 'FIELD-' . $booking->id,
+                'price' => $booking->total_price,
+                'quantity' => 1,
+                'name' => $field->name . ' (' . $startTime . ' - ' . $endTime . ')',
+            ];
+        }
+
+        // Add rental bookings to item details
+        foreach ($rentalBookings as $booking) {
+            $rentalItem = $booking->rentalItem;
+            $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
+            $endTime = Carbon::parse($booking->end_time)->format('H:i');
+
+            $itemDetails[] = [
+                'id' => 'RENTAL-' . $booking->id,
+                'price' => $booking->total_price,
+                'quantity' => 1,
+                'name' => $rentalItem->name . ' (Jumlah: ' . $booking->quantity . ', ' . $startTime . ' - ' . $endTime . ')',
+            ];
+        }
+
+        // Add membership subscriptions to item details
+        foreach ($membershipSubscriptions as $subscription) {
+            if (!isset($subscription->membership)) {
+                continue;
+            }
+
+            $membership = $subscription->membership;
+
+            $itemDetails[] = [
+                'id' => 'MEMBER-' . $subscription->id,
+                'price' => $subscription->price,
+                'quantity' => 1,
+                'name' => $membership->name . ' (Durasi: ' . $membership->duration . ' bulan)',
+            ];
+        }
+
+        // Add photographer bookings to item details
+        foreach ($photographerBookings as $booking) {
+            if (!isset($booking->photographer)) {
+                continue;
+            }
+
+            $photographer = $booking->photographer;
+            $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
+            $endTime = Carbon::parse($booking->end_time)->format('H:i');
+
+            $itemDetails[] = [
+                'id' => 'PHOTO-' . $booking->id,
+                'price' => $booking->price,
+                'quantity' => 1,
+                'name' => $photographer->name . ' (' . $startTime . ' - ' . $endTime . ')',
+            ];
+        }
+
+        return $itemDetails;
+    }
+
+    /**
+     * Batalkan semua booking terkait dengan pembayaran
+     *
+     * @param Payment $payment
+     * @return void
+     */
+    private function cancelAllBookings(Payment $payment)
+    {
+        // Update field bookings
+        if (method_exists($payment, 'fieldBookings') && $payment->fieldBookings) {
+            foreach ($payment->fieldBookings as $booking) {
+                $booking->status = 'cancelled';
+                $booking->save();
+            }
+        }
+
+        // Update rental bookings
+        if (method_exists($payment, 'rentalBookings') && $payment->rentalBookings) {
+            foreach ($payment->rentalBookings as $booking) {
+                $booking->status = 'cancelled';
+                $booking->save();
+            }
+        }
+
+        // Update membership subscriptions
+        if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions) {
+            foreach ($payment->membershipSubscriptions as $subscription) {
+                $subscription->status = 'cancelled';
+                $subscription->save();
+            }
+        }
+
+        // Update photographer bookings
+        if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings) {
+            foreach ($payment->photographerBookings as $booking) {
+                $booking->status = 'cancelled';
+                $booking->save();
+            }
+        }
+
+        Log::info('All bookings for Payment #' . $payment->id . ' (Order: ' . $payment->order_id . ') cancelled due to payment expiration');
+    }
+
+    /**
+     * Cek dan update pembayaran yang sudah kedaluwarsa
+     *
+     * @param Payment $payment
+     * @return Payment
+     */
+    private function checkExpiredPayment($payment)
+    {
+        // Jika pembayaran masih pending dan sudah kedaluwarsa, update statusnya
+        if ($payment->transaction_status === 'pending' && $payment->expires_at && Carbon::parse($payment->expires_at)->isPast()) {
+            DB::beginTransaction();
+            try {
+                // Update status pembayaran
+                $payment->transaction_status = 'failed';
+                $payment->save();
+
+                // Gunakan fungsi helper untuk membatalkan semua booking
+                $this->cancelAllBookings($payment);
+
+                DB::commit();
+                Log::info('Payment #' . $payment->id . ' (Order: ' . $payment->order_id . ') status updated to failed due to expiration on page access');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error updating expired payment #' . $payment->id . ' on page access: ' . $e->getMessage());
+            }
+
+            // Reload payment dengan data terbaru
+            $payment = $payment->fresh();
+        }
+
+        return $payment;
+    }
+
+    /**
      * Checkout page after booking from cart
      */
-
     public function checkout(Request $request)
     {
         // Menerima berbagai jenis item IDs
@@ -31,12 +201,8 @@ class PaymentController extends Controller
         $membershipIds = $request->memberships ?? [];
         $photographerBookingIds = $request->photographer_bookings ?? [];
 
-        if (
-            empty($fieldBookingIds) && empty($rentalBookingIds) &&
-            empty($membershipIds) && empty($photographerBookingIds)
-        ) {
-            return redirect()->route('user.cart.view')
-                ->with('error', 'Tidak ada item yang dipilih untuk checkout');
+        if (empty($fieldBookingIds) && empty($rentalBookingIds) && empty($membershipIds) && empty($photographerBookingIds)) {
+            return redirect()->route('user.cart.view')->with('error', 'Tidak ada item yang dipilih untuk checkout');
         }
 
         $totalPrice = 0;
@@ -46,62 +212,39 @@ class PaymentController extends Controller
         DB::beginTransaction();
         try {
             // Proses field bookings
-            $fieldBookings = FieldBooking::whereIn('id', $fieldBookingIds)
-                ->where('user_id', Auth::id())
-                ->where('status', 'pending')
-                ->lockForUpdate()
-                ->get();
+            $fieldBookings = FieldBooking::whereIn('id', $fieldBookingIds)->where('user_id', Auth::id())->where('status', 'pending')->lockForUpdate()->get();
 
             if (count($fieldBookingIds) > 0 && $fieldBookings->isEmpty()) {
                 DB::rollBack();
-                return redirect()->route('user.cart.view')
-                    ->with('error', 'Booking lapangan tidak ditemukan atau status telah berubah');
+                return redirect()->route('user.cart.view')->with('error', 'Booking lapangan tidak ditemukan atau status telah berubah');
             }
 
             // Proses rental bookings
-            $rentalBookings = RentalBooking::whereIn('id', $rentalBookingIds)
-                ->where('user_id', Auth::id())
-                ->where('status', 'pending')
-                ->lockForUpdate()
-                ->get();
+            $rentalBookings = RentalBooking::whereIn('id', $rentalBookingIds)->where('user_id', Auth::id())->where('status', 'pending')->lockForUpdate()->get();
 
             if (count($rentalBookingIds) > 0 && $rentalBookings->isEmpty()) {
                 DB::rollBack();
-                return redirect()->route('user.cart.view')
-                    ->with('error', 'Booking penyewaan tidak ditemukan atau status telah berubah');
+                return redirect()->route('user.cart.view')->with('error', 'Booking penyewaan tidak ditemukan atau status telah berubah');
             }
 
             // Proses membership subscriptions
-            $membershipSubscriptions = MembershipSubscription::whereIn('id', $membershipIds)
-                ->where('user_id', Auth::id())
-                ->where('status', 'pending')
-                ->lockForUpdate()
-                ->get();
+            $membershipSubscriptions = MembershipSubscription::whereIn('id', $membershipIds)->where('user_id', Auth::id())->where('status', 'pending')->lockForUpdate()->get();
 
             if (count($membershipIds) > 0 && $membershipSubscriptions->isEmpty()) {
                 DB::rollBack();
-                return redirect()->route('user.cart.view')
-                    ->with('error', 'Membership tidak ditemukan atau status telah berubah');
+                return redirect()->route('user.cart.view')->with('error', 'Membership tidak ditemukan atau status telah berubah');
             }
 
             // Proses photographer bookings
-            $photographerBookings = PhotographerBooking::whereIn('id', $photographerBookingIds)
-                ->where('user_id', Auth::id())
-                ->where('status', 'pending')
-                ->lockForUpdate()
-                ->get();
+            $photographerBookings = PhotographerBooking::whereIn('id', $photographerBookingIds)->where('user_id', Auth::id())->where('status', 'pending')->lockForUpdate()->get();
 
             if (count($photographerBookingIds) > 0 && $photographerBookings->isEmpty()) {
                 DB::rollBack();
-                return redirect()->route('user.cart.view')
-                    ->with('error', 'Booking fotografer tidak ditemukan atau status telah berubah');
+                return redirect()->route('user.cart.view')->with('error', 'Booking fotografer tidak ditemukan atau status telah berubah');
             }
 
             // Kalkulasi total harga dari semua jenis item
-            $totalPrice = $fieldBookings->sum('total_price') +
-                $rentalBookings->sum('total_price') +
-                $membershipSubscriptions->sum('price') +
-                $photographerBookings->sum('price');
+            $totalPrice = $fieldBookings->sum('total_price') + $rentalBookings->sum('total_price') + $membershipSubscriptions->sum('price') + $photographerBookings->sum('price');
 
             // Periksa ketersediaan field bookings
             foreach ($fieldBookings as $booking) {
@@ -110,57 +253,60 @@ class PaymentController extends Controller
                     ->where('status', 'confirmed')
                     ->where(function ($query) use ($booking) {
                         // Cek overlap waktu
-                        $query->where(function ($q) use ($booking) {
-                            $q->where('start_time', '<=', $booking->start_time)
-                                ->where('end_time', '>', $booking->start_time);
-                        })->orWhere(function ($q) use ($booking) {
-                            $q->where('start_time', '<', $booking->end_time)
-                                ->where('end_time', '>=', $booking->end_time);
-                        })->orWhere(function ($q) use ($booking) {
-                            $q->where('start_time', '>=', $booking->start_time)
-                                ->where('end_time', '<=', $booking->end_time);
-                        });
+                        $query
+                            ->where(function ($q) use ($booking) {
+                                $q->where('start_time', '<=', $booking->start_time)->where('end_time', '>', $booking->start_time);
+                            })
+                            ->orWhere(function ($q) use ($booking) {
+                                $q->where('start_time', '<', $booking->end_time)->where('end_time', '>=', $booking->end_time);
+                            })
+                            ->orWhere(function ($q) use ($booking) {
+                                $q->where('start_time', '>=', $booking->start_time)->where('end_time', '<=', $booking->end_time);
+                            });
                     })
                     ->lockForUpdate()
                     ->first();
 
                 if ($conflictingBooking) {
                     DB::rollBack();
-                    return redirect()->route('user.cart.view')
+                    return redirect()
+                        ->route('user.cart.view')
                         ->with('error', 'Maaf, slot untuk ' . $booking->field->name . ' sudah dibooking oleh pengguna lain');
                 }
             }
 
-// Periksa ketersediaan rental bookings
-foreach ($rentalBookings as $booking) {
-    // Hitung jumlah yang sudah dipesan dalam rentang waktu yang sama
-    $bookedQuantity = RentalBooking::where('rental_item_id', $booking->rental_item_id)
-        ->where('id', '!=', $booking->id)
-        ->whereNotIn('status', ['cancelled', 'pending'])
-        ->where(function ($query) use ($booking) {
-            // Logika yang sama seperti di CartController
-            $query->where(function ($q) use ($booking) {
-                $q->where('start_time', '>=', $booking->start_time)
-                    ->where('start_time', '<', $booking->end_time);
-            })->orWhere(function ($q) use ($booking) {
-                $q->where('end_time', '>', $booking->start_time)
-                    ->where('end_time', '<=', $booking->end_time);
-            })->orWhere(function ($q) use ($booking) {
-                $q->where('start_time', '<=', $booking->start_time)
-                    ->where('end_time', '>=', $booking->end_time);
-            });
-        })
-        ->sum('quantity');
+            // Periksa ketersediaan rental bookings
+            foreach ($rentalBookings as $booking) {
+                // Hitung jumlah yang sudah dipesan dalam rentang waktu yang sama
+                $bookedQuantity = RentalBooking::where('rental_item_id', $booking->rental_item_id)
+                    ->where('id', '!=', $booking->id)
+                    ->whereNotIn('status', ['cancelled', 'pending'])
+                    ->where(function ($query) use ($booking) {
+                        // Logika yang sama seperti di CartController
+                        $query
+                            ->where(function ($q) use ($booking) {
+                                $q->where('start_time', '>=', $booking->start_time)->where('start_time', '<', $booking->end_time);
+                            })
+                            ->orWhere(function ($q) use ($booking) {
+                                $q->where('end_time', '>', $booking->start_time)->where('end_time', '<=', $booking->end_time);
+                            })
+                            ->orWhere(function ($q) use ($booking) {
+                                $q->where('start_time', '<=', $booking->start_time)->where('end_time', '>=', $booking->end_time);
+                            });
+                    })
+                    ->sum('quantity');
 
-    $rentalItem = $booking->rentalItem;
-    $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+                $rentalItem = $booking->rentalItem;
+                $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
 
-    if ($booking->quantity > $availableQuantity) {
-        DB::rollBack();
-        return redirect()->route('user.cart.view')
-            ->with('error', 'Maaf, stok untuk ' . $rentalItem->name . ' tidak mencukupi. Tersedia: ' . $availableQuantity);
-    }
-}
+                if ($booking->quantity > $availableQuantity) {
+                    DB::rollBack();
+                    return redirect()
+                        ->route('user.cart.view')
+                        ->with('error', 'Maaf, stok untuk ' . $rentalItem->name . ' tidak mencukupi. Tersedia: ' . $availableQuantity);
+                }
+            }
+
             // Periksa ketersediaan photographer bookings
             foreach ($photographerBookings as $booking) {
                 $conflictingBooking = PhotographerBooking::where('photographer_id', $booking->photographer_id)
@@ -168,32 +314,33 @@ foreach ($rentalBookings as $booking) {
                     ->where('status', 'confirmed')
                     ->where(function ($query) use ($booking) {
                         // Cek overlap waktu
-                        $query->where(function ($q) use ($booking) {
-                            $q->where('start_time', '<=', $booking->start_time)
-                                ->where('end_time', '>', $booking->start_time);
-                        })->orWhere(function ($q) use ($booking) {
-                            $q->where('start_time', '<', $booking->end_time)
-                                ->where('end_time', '>=', $booking->end_time);
-                        })->orWhere(function ($q) use ($booking) {
-                            $q->where('start_time', '>=', $booking->start_time)
-                                ->where('end_time', '<=', $booking->end_time);
-                        });
+                        $query
+                            ->where(function ($q) use ($booking) {
+                                $q->where('start_time', '<=', $booking->start_time)->where('end_time', '>', $booking->start_time);
+                            })
+                            ->orWhere(function ($q) use ($booking) {
+                                $q->where('start_time', '<', $booking->end_time)->where('end_time', '>=', $booking->end_time);
+                            })
+                            ->orWhere(function ($q) use ($booking) {
+                                $q->where('start_time', '>=', $booking->start_time)->where('end_time', '<=', $booking->end_time);
+                            });
                     })
                     ->lockForUpdate()
                     ->first();
 
                 if ($conflictingBooking) {
                     DB::rollBack();
-                    return redirect()->route('user.cart.view')
+                    return redirect()
+                        ->route('user.cart.view')
                         ->with('error', 'Maaf, slot untuk fotografer ' . $booking->photographer->name . ' sudah dibooking oleh pengguna lain');
                 }
             }
 
             // Set Midtrans configuration
-            \Midtrans\Config::$serverKey = config('midtrans.server_key');
-            \Midtrans\Config::$isProduction = config('midtrans.is_production');
-            \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
-            \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+            $this->setupMidtransConfig();
+
+            // Siapkan item details untuk Midtrans
+            $itemDetails = $this->prepareItemDetails($fieldBookings, $rentalBookings, $membershipSubscriptions, $photographerBookings);
 
             $params = [
                 'transaction_details' => [
@@ -205,67 +352,13 @@ foreach ($rentalBookings as $booking) {
                     'email' => $customer->email,
                     'phone' => $customer->phone ?? '',
                 ],
-                'item_details' => []
+                'item_details' => $itemDetails,
             ];
-
-            // Add field bookings to item details
-            foreach ($fieldBookings as $booking) {
-                $field = $booking->field;
-                $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
-                $endTime = Carbon::parse($booking->end_time)->format('H:i');
-
-                $params['item_details'][] = [
-                    'id' => 'FIELD-' . $booking->id,
-                    'price' => $booking->total_price,
-                    'quantity' => 1,
-                    'name' => $field->name . ' (' . $startTime . ' - ' . $endTime . ')',
-                ];
-            }
-
-            // Add rental bookings to item details
-            foreach ($rentalBookings as $booking) {
-                $rentalItem = $booking->rentalItem;
-                $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
-                $endTime = Carbon::parse($booking->end_time)->format('H:i');
-
-                $params['item_details'][] = [
-                    'id' => 'RENTAL-' . $booking->id,
-                    'price' => $booking->total_price,
-                    'quantity' => 1,
-                    'name' => $rentalItem->name . ' (Jumlah: ' . $booking->quantity . ', ' . $startTime . ' - ' . $endTime . ')',
-                ];
-            }
-
-            // Add membership subscriptions to item details
-            foreach ($membershipSubscriptions as $subscription) {
-                $membership = $subscription->membership;
-
-                $params['item_details'][] = [
-                    'id' => 'MEMBER-' . $subscription->id,
-                    'price' => $subscription->price,
-                    'quantity' => 1,
-                    'name' => $membership->name . ' (Durasi: ' . $membership->duration . ' bulan)',
-                ];
-            }
-
-            // Add photographer bookings to item details
-            foreach ($photographerBookings as $booking) {
-                $photographer = $booking->photographer;
-                $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
-                $endTime = Carbon::parse($booking->end_time)->format('H:i');
-
-                $params['item_details'][] = [
-                    'id' => 'PHOTO-' . $booking->id,
-                    'price' => $booking->price,
-                    'quantity' => 1,
-                    'name' => $photographer->name . ' (' . $startTime . ' - ' . $endTime . ')',
-                ];
-            }
 
             // Get Snap token
             $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-            // Create payment record
+            // Create payment record (tanpa menambahkan expires_at)
             $payment = Payment::create([
                 'order_id' => $orderId,
                 'user_id' => Auth::id(),
@@ -299,35 +392,48 @@ foreach ($rentalBookings as $booking) {
                 'field_bookings' => $fieldBookings,
                 'rental_bookings' => $rentalBookings,
                 'membership_subscriptions' => $membershipSubscriptions,
-                'photographer_bookings' => $photographerBookings
+                'photographer_bookings' => $photographerBookings,
             ];
 
             DB::commit();
+
+            // Cek apakah pembayaran sudah kadaluwarsa
+            $payment = $this->checkExpiredPayment($payment);
+
+            // Jika statusnya telah berubah menjadi failed akibat kadaluwarsa
+            if ($payment->transaction_status === 'failed') {
+                return redirect()
+                    ->route('user.payment.detail', ['id' => $payment->id])
+                    ->with('error', 'Pembayaran telah kadaluwarsa. Silakan membuat pesanan baru.');
+            }
+
             return view('users.payment.checkout', compact('snapToken', 'payment', 'allBookings'));
-                } catch (\PDOException $e) {
+        } catch (\PDOException $e) {
             DB::rollBack();
             Log::error('Checkout PDO Error: ' . $e->getMessage());
 
             // Tangani kesalahan database spesifik
             if (strpos($e->getMessage(), 'deadlock') !== false || strpos($e->getMessage(), 'lock') !== false) {
-                return redirect()->route('user.cart.view')
-                    ->with('error', 'Sistem sedang sibuk. Silakan coba lagi dalam beberapa saat');
+                return redirect()->route('user.cart.view')->with('error', 'Sistem sedang sibuk. Silakan coba lagi dalam beberapa saat');
             }
 
-            return redirect()->route('user.cart.view')
+            return redirect()
+                ->route('user.cart.view')
                 ->with('error', 'Terjadi kesalahan database: ' . $e->getMessage());
         } catch (MidtransApiException $e) {
             DB::rollBack();
             Log::error('Midtrans API Error: ' . $e->getMessage());
 
-            return redirect()->route('user.cart.view')
+            return redirect()
+                ->route('user.cart.view')
                 ->with('error', 'Terjadi kesalahan pada payment gateway: ' . $e->getMessage());
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Checkout Error: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
 
-            return redirect()->route('user.cart.view')
+            return redirect()
+                ->route('user.cart.view')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -338,8 +444,7 @@ foreach ($rentalBookings as $booking) {
     public function notification(Request $request)
     {
         // Set Midtrans configuration
-        \Midtrans\Config::$serverKey = config('midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
+        $this->setupMidtransConfig(false);
 
         try {
             // Simpan data mentah dulu
@@ -451,6 +556,7 @@ foreach ($rentalBookings as $booking) {
             return response($e->getMessage(), 500);
         }
     }
+
     /**
      * Handle payment finish redirect from Midtrans
      */
@@ -469,6 +575,9 @@ foreach ($rentalBookings as $booking) {
         if (!$payment) {
             return redirect()->route('user.fields.index')->with('error', 'Pembayaran tidak ditemukan');
         }
+
+        // Periksa jika pembayaran sudah kadaluarsa
+        $payment = $this->checkExpiredPayment($payment);
 
         if ($payment->transaction_status == 'success') {
             return view('users.payment.success', compact('payment'));
@@ -491,6 +600,16 @@ foreach ($rentalBookings as $booking) {
             return redirect()->route('users.dashboard')->with('warning', 'Pembayaran belum selesai');
         }
 
+        // Periksa jika pembayaran sudah kadaluarsa
+        $payment = $this->checkExpiredPayment($payment);
+
+        // Jika statusnya berubah menjadi failed, tampilkan pesan kadaluarsa
+        if ($payment->transaction_status === 'failed') {
+            return redirect()
+                ->route('user.payment.detail', ['id' => $payment->id])
+                ->with('error', 'Pembayaran telah kadaluwarsa. Silakan membuat pesanan baru.');
+        }
+
         // Redirect ke detail pembayaran dengan pesan untuk melanjutkan pembayaran
         return redirect()
             ->route('user.payment.detail', ['id' => $payment->id])
@@ -509,12 +628,25 @@ foreach ($rentalBookings as $booking) {
             return redirect()->route('users.dashboard')->with('error', 'Terjadi kesalahan pada pembayaran');
         }
 
+        // Periksa jika pembayaran sudah kadaluarsa
+        $payment = $this->checkExpiredPayment($payment);
+
+        // Jika statusnya berubah menjadi failed karena kadaluarsa, tampilkan pesan kadaluarsa
+        if ($payment->transaction_status === 'failed') {
+            return redirect()
+                ->route('user.payment.detail', ['id' => $payment->id])
+                ->with('error', 'Pembayaran telah kadaluwarsa. Silakan membuat pesanan baru.');
+        }
+
         // Redirect ke detail pembayaran
         return redirect()
             ->route('user.payment.detail', ['id' => $payment->id])
             ->with('error', 'Terjadi kesalahan pada pembayaran. Silakan coba lagi.');
     }
 
+    /**
+     * Melanjutkan pembayaran yang belum selesai
+     */
     public function continuePayment($id)
     {
         $payment = Payment::with([
@@ -527,47 +659,10 @@ foreach ($rentalBookings as $booking) {
             ->findOrFail($id);
 
         // Cek jika pembayaran sudah kedaluwarsa
-        if ($payment->expires_at && Carbon::parse($payment->expires_at)->isPast()) {            // Update status pembayaran menjadi failed jika masih pending
-            if ($payment->transaction_status === 'pending') {
-                DB::beginTransaction();
-                try {
-                    $payment->transaction_status = 'failed';
-                    $payment->save();
+        $payment = $this->checkExpiredPayment($payment);
 
-                    // Update field bookings
-                    foreach ($payment->fieldBookings as $booking) {
-                        $booking->status = 'cancelled';
-                        $booking->save();
-                    }
-
-                    // Update rental bookings
-                    foreach ($payment->rentalBookings as $booking) {
-                        $booking->status = 'cancelled';
-                        $booking->save();
-                    }
-
-                    // Jika ada relasi lain yang perlu diupdate
-                    if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
-                        foreach ($payment->membershipSubscriptions as $subscription) {
-                            $subscription->status = 'cancelled';
-                            $subscription->save();
-                        }
-                    }
-
-                    if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
-                        foreach ($payment->photographerBookings as $booking) {
-                            $booking->status = 'cancelled';
-                            $booking->save();
-                        }
-                    }
-
-                    DB::commit();
-                } catch (\Exception $e) {
-                    DB::rollBack();
-                    Log::error('Error updating expired payment: ' . $e->getMessage());
-                }
-            }
-
+        // Jika statusnya berubah menjadi failed karena kadaluarsa
+        if ($payment->transaction_status === 'failed') {
             return redirect()
                 ->route('user.payment.detail', ['id' => $payment->id])
                 ->with('error', 'Pembayaran ini telah kedaluwarsa. Silakan membuat pesanan baru.');
@@ -582,79 +677,17 @@ foreach ($rentalBookings as $booking) {
 
         try {
             // Rekonfigurasi Midtrans
-            \Midtrans\Config::$serverKey = config('midtrans.server_key');
-            \Midtrans\Config::$isProduction = config('midtrans.is_production', false);
-            \Midtrans\Config::$isSanitized = true;
-            \Midtrans\Config::$is3ds = true;
+            $this->setupMidtransConfig();
 
-            // Siapkan data item untuk Midtrans
-            $itemDetails = [];
-
-            // Perlu memproses semua jenis booking
-            // Field bookings
-            foreach ($payment->fieldBookings as $booking) {
-                $field = $booking->field;
-                $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
-                $endTime = Carbon::parse($booking->end_time)->format('H:i');
-
-                $itemDetails[] = [
-                    'id' => 'FIELD-' . $booking->id,
-                    'price' => $booking->total_price,
-                    'quantity' => 1,
-                    'name' => $field->name . ' (' . $startTime . ' - ' . $endTime . ')',
-                ];
-            }
-
-            // Rental bookings
-            foreach ($payment->rentalBookings as $booking) {
-                $rentalItem = $booking->rentalItem;
-                $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
-                $endTime = Carbon::parse($booking->end_time)->format('H:i');
-
-                $itemDetails[] = [
-                    'id' => 'RENTAL-' . $booking->id,
-                    'price' => $booking->total_price,
-                    'quantity' => 1, // Set to 1 so the price doesn't get multiplied again
-                    'name' => $rentalItem->name . ' (Jumlah: ' . $booking->quantity . ', ' . $startTime . ' - ' . $endTime . ')',
-                ];
-            }
-
-            // Membership subscriptions (dikomentari)
-            /*
-            foreach ($payment->membershipSubscriptions as $subscription) {
-                $membership = $subscription->membership;
-
-                $itemDetails[] = [
-                    'id' => 'MEMBER-' . $subscription->id,
-                    'price' => $subscription->price,
-                    'quantity' => 1,
-                    'name' => $membership->name . ' (Durasi: ' . $membership->duration . ' bulan)',
-                ];
-            }
-            */
-
-            // Photographer bookings (dikomentari)
-            /*
-            foreach ($payment->photographerBookings as $booking) {
-                $photographer = $booking->photographer;
-                $startTime = Carbon::parse($booking->start_time)->format('d M Y H:i');
-                $endTime = Carbon::parse($booking->end_time)->format('H:i');
-
-                $itemDetails[] = [
-                    'id' => 'PHOTO-' . $booking->id,
-                    'price' => $booking->price,
-                    'quantity' => 1,
-                    'name' => $photographer->name . ' (' . $startTime . ' - ' . $endTime . ')',
-                ];
-            }
-            */
+            // Siapkan item details untuk Midtrans
+            $itemDetails = $this->prepareItemDetails($payment->fieldBookings, $payment->rentalBookings, method_exists($payment, 'membershipSubscriptions') ? $payment->membershipSubscriptions : [], method_exists($payment, 'photographerBookings') ? $payment->photographerBookings : []);
 
             // Buat koleksi cart_items yang sesuai format yang diharapkan view
             $allBookings = [
                 'field_bookings' => $payment->fieldBookings,
                 'rental_bookings' => $payment->rentalBookings,
-                // 'membership_subscriptions' => $payment->membershipSubscriptions ?? [],  // dikomentari
-                // 'photographer_bookings' => $payment->photographerBookings ?? []       // dikomentari
+                'membership_subscriptions' => method_exists($payment, 'membershipSubscriptions') ? $payment->membershipSubscriptions : [],
+                'photographer_bookings' => method_exists($payment, 'photographerBookings') ? $payment->photographerBookings : [],
             ];
 
             // Buat order_id baru dengan menambahkan suffix untuk menghindari duplicate
@@ -664,7 +697,7 @@ foreach ($rentalBookings as $booking) {
             // Buat parameter transaksi dengan order_id baru
             $params = [
                 'transaction_details' => [
-                    'order_id' => $newOrderId,  // Gunakan order_id baru!
+                    'order_id' => $newOrderId, // Gunakan order_id baru!
                     'gross_amount' => $payment->amount,
                 ],
                 'customer_details' => [
@@ -678,18 +711,16 @@ foreach ($rentalBookings as $booking) {
             // Dapatkan Snap Token baru
             $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-
-
             // Kirim ke view dengan format data yang sesuai, termasuk expires_at
             return view('users.payment.checkout', [
                 'snap_token' => $snapToken,
-                'order_id' => $newOrderId,  // Gunakan order_id baru di view
-                'original_order_id' => $originalOrderId,  // Simpan original order_id
+                'order_id' => $newOrderId, // Gunakan order_id baru di view
+                'original_order_id' => $originalOrderId, // Simpan original order_id
                 'total_price' => $payment->amount,
                 'allBookings' => $allBookings,
                 'is_continue_payment' => true,
-                'payment_id' => $payment->id,  // Sertakan payment_id untuk callback
-               'expires_at' => $payment->expires_at  // Kirimkan expires_at yang ada tanpa diubah
+                'payment_id' => $payment->id, // Sertakan payment_id untuk callback
+                'expires_at' => $payment->expires_at, // Kirimkan expires_at yang ada tanpa diubah
             ]);
         } catch (\Exception $e) {
             Log::error('Continue Payment Error: ' . $e->getMessage());
@@ -698,89 +729,13 @@ foreach ($rentalBookings as $booking) {
                 ->with('error', 'Gagal melanjutkan pembayaran: ' . $e->getMessage());
         }
     }
-/**
-     * Cek dan update pembayaran yang sudah kedaluwarsa
-     */
-    private function checkExpiredPayment($payment)
-    {
-        // Jika pembayaran masih pending dan sudah kedaluwarsa, update statusnya
-        if ($payment->transaction_status === 'pending' &&
-            $payment->expires_at &&
-            Carbon::parse($payment->expires_at)->isPast()) {
-
-            DB::beginTransaction();
-            try {
-                // Update status pembayaran
-                $payment->transaction_status = 'failed';
-                $payment->save();
-
-                // Update status field bookings
-                if (method_exists($payment, 'fieldBookings') && $payment->fieldBookings) {
-                    foreach ($payment->fieldBookings as $booking) {
-                        $booking->status = 'cancelled';
-                        $booking->save();
-                    }
-                }
-
-                // Update status rental bookings
-                if (method_exists($payment, 'rentalBookings') && $payment->rentalBookings) {
-                    foreach ($payment->rentalBookings as $booking) {
-                        $booking->status = 'cancelled';
-                        $booking->save();
-                    }
-                }
-
-                // Update status membership subscriptions (jika ada)
-                if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions) {
-                    foreach ($payment->membershipSubscriptions as $subscription) {
-                        $subscription->status = 'cancelled';
-                        $subscription->save();
-                    }
-                }
-
-                // Update status photographer bookings (jika ada)
-                if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings) {
-                    foreach ($payment->photographerBookings as $booking) {
-                        $booking->status = 'cancelled';
-                        $booking->save();
-                    }
-                }
-
-                DB::commit();
-                Log::info('Payment #' . $payment->id . ' (Order: ' . $payment->order_id . ') status updated to failed due to expiration on page access');
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error('Error updating expired payment #' . $payment->id . ' on page access: ' . $e->getMessage());
-            }
-
-            // Reload payment dengan data terbaru
-            $payment = $payment->fresh();
-        }
-
-        return $payment;
-    }
-
-    /**
-     * Check multiple payments for expiration
-     */
-    private function checkExpiredPayments($payments)
-    {
-        foreach ($payments as $payment) {
-            $this->checkExpiredPayment($payment);
-        }
-
-        return $payments->fresh();
-    }
 
     /**
      * Show payment history
      */
     public function history()
     {
-        $payments = Payment::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(3);
+        $payments = Payment::where('user_id', Auth::id())->orderBy('created_at', 'desc')->paginate(3);
 
         // Cek pembayaran yang kedaluwarsa secara real-time
         foreach ($payments as $key => $payment) {
@@ -795,10 +750,7 @@ foreach ($rentalBookings as $booking) {
      */
     public function detail($id)
     {
-        $payment = Payment::with([
-            'fieldBookings.field',
-            'rentalBookings.rentalItem',
-        ])
+        $payment = Payment::with(['fieldBookings.field', 'rentalBookings.rentalItem'])
             ->where('user_id', Auth::id())
             ->findOrFail($id);
 
@@ -814,8 +766,7 @@ foreach ($rentalBookings as $booking) {
     public function recurringNotification(Request $request)
     {
         // Set Midtrans configuration
-        \Midtrans\Config::$serverKey = config('midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
+        $this->setupMidtransConfig(false);
 
         try {
             $notification = new \Midtrans\Notification();
@@ -828,14 +779,14 @@ foreach ($rentalBookings as $booking) {
             return response($e->getMessage(), 500);
         }
     }
+
     /**
      * Handle pay account notification from Midtrans
      */
     public function payAccountNotification(Request $request)
     {
         // Set Midtrans configuration
-        \Midtrans\Config::$serverKey = config('midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
+        $this->setupMidtransConfig(false);
 
         try {
             $notification = new \Midtrans\Notification();
@@ -849,43 +800,55 @@ foreach ($rentalBookings as $booking) {
         }
     }
 
-    /**
-     * Download invoice as PDF
-     *
-     * @param int $id Payment ID
-     * @return \Illuminate\Http\Response
-     */
-    /**
-     * Download invoice as PDF
-     *
-     * @param int $id Payment ID
-     * @return \Illuminate\Http\Response
-     */
-    public function downloadInvoice($id)
-    {
-        // Ambil data payment dengan eager loading untuk semua jenis booking dan user
-        $payment = Payment::with([
-            'fieldBookings.field',
-            'rentalBookings.rentalItem',
-            'user'
-        ])
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
+/**
+ * Download invoice as PDF
+ *
+ * @param int $id Payment ID
+ * @return \Illuminate\Http\Response
+ */
+public function downloadInvoice($id)
+{
+    // Ambil data payment dengan eager loading untuk semua jenis booking dan user
+    $payment = Payment::with(['fieldBookings.field', 'rentalBookings.rentalItem', 'user'])
+        ->where('user_id', Auth::id())
+        ->findOrFail($id);
 
-        // Only allow downloading invoices for successful payments
-        if ($payment->transaction_status !== 'success') {
-            return redirect()
-                ->route('user.payment.detail', ['id' => $payment->id])
-                ->with('error', 'Invoice hanya tersedia untuk pembayaran yang berhasil.');
-        }
-
-        // Load view dan teruskan objek payment langsung
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('users.payment.invoice', compact('payment'));
-
-        // Set PDF options
-        $pdf->setPaper('a4', 'portrait');
-
-        // Return the PDF for download
-        return $pdf->download('Invoice-' . $payment->order_id . '.pdf');
+    // Only allow downloading invoices for successful payments
+    if ($payment->transaction_status !== 'success') {
+        return redirect()
+            ->route('user.payment.detail', ['id' => $payment->id])
+            ->with('error', 'Invoice hanya tersedia untuk pembayaran yang berhasil.');
     }
+
+    // Konfigurasi DomPDF
+    $config = [
+        'fontDir' => public_path('fonts'),
+        'fontCache' => storage_path('fonts'),
+        'defaultFont' => 'sans-serif',
+        'isRemoteEnabled' => true
+    ];
+
+    // Load view dengan konfigurasi PDF
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('users.payment.invoice', compact('payment'));
+
+    // Atur options
+    $dompdf = $pdf->getDomPDF();
+    $options = $dompdf->getOptions();
+    $options->setIsRemoteEnabled(true);
+    $options->set('defaultFont', 'sans-serif');
+
+    // Tentukan lokasi font
+    $options->set('fontDir', [
+        public_path('fonts/poppins')
+    ]);
+
+    // Atur kembali options
+    $dompdf->setOptions($options);
+
+    // Set PDF options
+    $pdf->setPaper('a4', 'portrait');
+
+    // Return the PDF for download
+    return $pdf->download('Invoice-' . $payment->order_id . '.pdf');
+}
 }

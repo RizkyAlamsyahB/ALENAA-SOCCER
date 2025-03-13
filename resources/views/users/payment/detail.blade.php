@@ -103,7 +103,7 @@
 
                                     <div class="summary-item">
                                         <div class="item-label">
-                                            <i class="fas fa-receipt text-primary"></i>
+                                            <i class="fas fa-receipt"></i>
                                             <span>Order ID</span>
                                         </div>
                                         <div class="item-value">
@@ -113,7 +113,7 @@
 
                                     <div class="summary-item">
                                         <div class="item-label">
-                                            <i class="fas fa-calendar-alt text-info"></i>
+                                            <i class="fas fa-calendar-alt "></i>
                                             <span>Tanggal Order</span>
                                         </div>
                                         <div class="item-value">
@@ -124,7 +124,7 @@
                                     @if ($payment->payment_type)
                                         <div class="summary-item">
                                             <div class="item-label">
-                                                <i class="fas fa-credit-card text-secondary"></i>
+                                                <i class="fas fa-credit-card "></i>
                                                 <span>Metode Pembayaran</span>
                                             </div>
                                             <div class="item-value payment-method">
@@ -145,7 +145,7 @@
                                     @if ($payment->transaction_id)
                                         <div class="summary-item">
                                             <div class="item-label">
-                                                <i class="fas fa-hashtag text-warning"></i>
+                                                <i class="fas fa-hashtag "></i>
                                                 <span>Transaction ID</span>
                                             </div>
                                             <div class="item-value">

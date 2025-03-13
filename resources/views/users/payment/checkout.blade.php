@@ -59,13 +59,14 @@
                                 <div class="d-flex justify-content-center align-items-center">
                                     <div class="payment-expire-notice">
                                         <i class="fas fa-clock text-warning me-2"></i>
-                                        <span>Bayar sebelum:</span>
+                                        <span>Mohon selesaikan pembayaran sebelum:</span>
                                     </div>
                                     <div id="payment-countdown" class="payment-countdown ms-2">
                                         <span id="countdown-minutes">00</span>:<span id="countdown-seconds">00</span>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
 
                         <div class="detail-items mb-4">
@@ -396,37 +397,46 @@
             </div>
         </div>
     </div>
+    <!-- Add this right after the <div class="container mt-4 mb-5"> -->
+    <div class="container mt-4 mb-5">
+        <div class="row">
+            <div class="col-12">
+                <!-- Bootstrap Alerts -->
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-    <script>
-        $(document).ready(function() {
-            // Configure toastr options
-            toastr.options = {
-                "closeButton": true,
-                "positionClass": "toast-top-right",
-                "opacity": 1
-            };
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-            // Show success message after redirect from successful payment
-            @if (session('success'))
-                toastr.success("{{ session('success') }}");
-            @endif
+                @if (session('info'))
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ session('info') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-            // Show error message if payment fails
-            @if (session('error'))
-                toastr.error("{{ session('error') }}");
-            @endif
+                @if (session('warning'))
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ session('warning') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
 
-            // Show info messages
-            @if (session('info'))
-                toastr.info("{{ session('info') }}");
-            @endif
-
-            // Show pending payment notification
-            @if (session('warning'))
-                toastr.warning("{{ session('warning') }}");
-            @endif
-        });
-    </script>
     <!-- Midtrans JS -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
     </script>
@@ -472,57 +482,69 @@
             });
         });
     </script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Ambil waktu kedaluwarsa dari server
-    const expiresAt = new Date("{{ $expires_at }}").getTime();
 
-    // Update countdown setiap detik
-    const countdownTimer = setInterval(function() {
-        // Waktu sekarang
-        const now = new Date().getTime();
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get expiration time from server
+            const expiresAt = new Date("{{ $expires_at }}").getTime();
 
-        // Selisih waktu
-        const distance = expiresAt - now;
+            // Update countdown every second
+            const countdownTimer = setInterval(function() {
+                // Current time
+                const now = new Date().getTime();
 
-        // Hitung menit dan detik
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                // Time difference
+                const distance = expiresAt - now;
 
-        // Tampilkan countdown
-        document.getElementById("countdown-minutes").innerHTML = minutes.toString().padStart(2, '0');
-        document.getElementById("countdown-seconds").innerHTML = seconds.toString().padStart(2, '0');
+                // Calculate minutes and seconds
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        // Jika waktu habis
-        if (distance < 0) {
-            clearInterval(countdownTimer);
-            document.getElementById("countdown-minutes").innerHTML = "00";
-            document.getElementById("countdown-seconds").innerHTML = "00";
+                // Display countdown
+                document.getElementById("countdown-minutes").innerHTML = minutes.toString().padStart(2,
+                    '0');
+                document.getElementById("countdown-seconds").innerHTML = seconds.toString().padStart(2,
+                    '0');
 
-            // Tampilkan pesan kedaluwarsa
-            document.getElementById("pay-button").disabled = true;
-            document.getElementById("pay-button").innerHTML =
-                "<i class='fas fa-times-circle me-2'></i><span>Waktu Pembayaran Habis</span>";
+                // If time has expired
+                if (distance < 0) {
+                    clearInterval(countdownTimer);
+                    document.getElementById("countdown-minutes").innerHTML = "00";
+                    document.getElementById("countdown-seconds").innerHTML = "00";
 
-            // Tampilkan pesan dengan toastr
-            toastr.error(
-                "Waktu pembayaran telah habis. Silakan kembali ke keranjang dan checkout ulang."
-            );
+                    // Disable payment button
+                    document.getElementById("pay-button").disabled = true;
+                    document.getElementById("pay-button").innerHTML =
+                        "<i class='fas fa-times-circle me-2'></i><span>Waktu Pembayaran Habis</span>";
 
-            // Langsung redirect ke halaman keranjang tanpa delay
-            window.location.href = "{{ route('user.cart.view') }}";
-        }
-    }, 1000);
-});
-</script>
+                    // Show expiration message with Bootstrap alert
+                    const alertContainer = document.createElement('div');
+                    alertContainer.className = 'alert alert-danger alert-dismissible fade show';
+                    alertContainer.setAttribute('role', 'alert');
+                    alertContainer.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Waktu pembayaran telah habis. Silakan kembali ke keranjang dan checkout ulang.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+
+                    // Insert alert at the top of the card
+                    const cardBody = document.querySelector('.card-body');
+                    cardBody.insertBefore(alertContainer, cardBody.firstChild);
+
+                    // Redirect to cart page after 3 seconds
+                    setTimeout(function() {
+                        window.location.href =
+                            "{{ route('user.payment.error') }}?order_id={{ $order_id ?? $payment->order_id }}";
+                    }, 3000);
+                }
+            }, 1000);
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-    <!-- Add these if not already included in your layout -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
     <style>
         /* Modern Payment Styling */
 

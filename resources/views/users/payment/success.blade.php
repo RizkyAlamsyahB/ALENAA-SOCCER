@@ -46,7 +46,7 @@
                                 <div class="row align-items-center mb-3">
                                     <div class="col-sm-6">
                                         <div class="detail-label">
-                                            <i class="fas fa-receipt text-primary me-2"></i>
+                                            <i class="fas fa-receipt  me-2"></i>
                                             <span>Order ID</span>
                                         </div>
                                     </div>
@@ -59,7 +59,7 @@
                                 <div class="row align-items-center mb-3">
                                     <div class="col-sm-6">
                                         <div class="detail-label">
-                                            <i class="fas fa-money-bill-wave text-success me-2"></i>
+                                            <i class="fas fa-money-bill-wave  me-2"></i>
                                             <span>Total Pembayaran</span>
                                         </div>
                                     </div>
@@ -72,7 +72,7 @@
                                 <div class="row align-items-center mb-3">
                                     <div class="col-sm-6">
                                         <div class="detail-label">
-                                            <i class="fas fa-credit-card text-info me-2"></i>
+                                            <i class="fas fa-credit-card  me-2"></i>
                                             <span>Metode Pembayaran</span>
                                         </div>
                                     </div>
@@ -85,7 +85,7 @@
                                 <div class="row align-items-center">
                                     <div class="col-sm-6">
                                         <div class="detail-label">
-                                            <i class="fas fa-calendar-check text-warning me-2"></i>
+                                            <i class="fas fa-calendar-check  me-2"></i>
                                             <span>Tanggal Pembayaran</span>
                                         </div>
                                     </div>
