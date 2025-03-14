@@ -46,63 +46,72 @@ Route::get('/', function () {
 // User Routes
 Route::middleware(['auth', 'checkRole:user'])->group(function () {
     // Dashboard
-// Dashboard
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('users.dashboard');
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('users.dashboard');
 
     // Fields (Lapangan) Management
-    Route::prefix('fields')->name('user.fields.')->group(function () {
-        Route::get('/', [FieldsController::class, 'index'])->name('index');
-        Route::get('/{id}', [FieldsController::class, 'show'])->name('show');
-        Route::get('/{fieldId}/available-slots', [FieldsController::class, 'getAvailableSlots'])->name('availableSlots');
-        Route::get('/cart-slots', [FieldsController::class, 'getCartSlots'])->name('cartSlots');
-        Route::post('/bookings/{bookingId}/cancel', [FieldsController::class, 'cancelBooking'])->name('bookings.cancel');
-    });
+    Route::prefix('fields')
+        ->name('user.fields.')
+        ->group(function () {
+            Route::get('/', [FieldsController::class, 'index'])->name('index');
+            Route::get('/{id}', [FieldsController::class, 'show'])->name('show');
+            Route::get('/{fieldId}/available-slots', [FieldsController::class, 'getAvailableSlots'])->name('availableSlots');
+            Route::get('/cart-slots', [FieldsController::class, 'getCartSlots'])->name('cartSlots');
+            Route::post('/bookings/{bookingId}/cancel', [FieldsController::class, 'cancelBooking'])->name('bookings.cancel');
+        });
 
     // Cart Management
-    Route::prefix('cart')->name('user.cart.')->group(function () {
-        Route::post('/add', [CartController::class, 'addToCart'])->name('add');
-        Route::get('/', [CartController::class, 'viewCart'])->name('view');
-        Route::delete('/{itemId}', [CartController::class, 'removeFromCart'])->name('remove');
-        Route::delete('/api/{itemId}', [CartController::class, 'apiRemoveFromCart'])->name('api.remove');
-        Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
-        Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
-        Route::get('/clear', [CartController::class, 'clearCart'])->name('clear');
-        Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
-   // Dalam grup cart management, tambahkan ini:
-Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
-Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name('remove.discount');
-
-    });
+    Route::prefix('cart')
+        ->name('user.cart.')
+        ->group(function () {
+            Route::post('/add', [CartController::class, 'addToCart'])->name('add');
+            Route::get('/', [CartController::class, 'viewCart'])->name('view');
+            Route::delete('/{itemId}', [CartController::class, 'removeFromCart'])->name('remove');
+            Route::delete('/api/{itemId}', [CartController::class, 'apiRemoveFromCart'])->name('api.remove');
+            Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
+            Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
+            Route::get('/clear', [CartController::class, 'clearCart'])->name('clear');
+            Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
+            // Dalam grup cart management, tambahkan ini:
+            Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
+            Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name('remove.discount');
+        });
 
     // Rental Management
-    Route::prefix('rental')->name('user.rental_items.')->group(function () {
-        Route::get('/', [RentalItemsController::class, 'index'])->name('index');
-        Route::get('/items/{id}', [RentalItemsController::class, 'show'])->name('show');
-        Route::post('/cart/add', [RentalItemsController::class, 'addToCart'])->name('cart.add');
-        Route::get('/cart', [RentalItemsController::class, 'viewCart'])->name('cart');
-        Route::delete('/cart/{itemId}', [RentalItemsController::class, 'removeFromCart'])->name('cart.remove');
-        Route::post('/checkout', [RentalItemsController::class, 'checkout'])->name('checkout');
-        Route::get('/history', [RentalItemsController::class, 'history'])->name('history');
-        Route::get('/orders/{id}', [RentalItemsController::class, 'orderDetail'])->name('order.detail');
-        Route::get('/items/{rentalItemId}/available-slots', [RentalItemsController::class, 'getAvailableSlots'])->name('availableSlots');
-    });
+    Route::prefix('rental')
+        ->name('user.rental_items.')
+        ->group(function () {
+            Route::get('/', [RentalItemsController::class, 'index'])->name('index');
+            Route::get('/items/{id}', [RentalItemsController::class, 'show'])->name('show');
+            Route::post('/cart/add', [RentalItemsController::class, 'addToCart'])->name('cart.add');
+            Route::get('/cart', [RentalItemsController::class, 'viewCart'])->name('cart');
+            Route::delete('/cart/{itemId}', [RentalItemsController::class, 'removeFromCart'])->name('cart.remove');
+            Route::post('/checkout', [RentalItemsController::class, 'checkout'])->name('checkout');
+            Route::get('/history', [RentalItemsController::class, 'history'])->name('history');
+            Route::get('/orders/{id}', [RentalItemsController::class, 'orderDetail'])->name('order.detail');
+            Route::get('/items/{rentalItemId}/available-slots', [RentalItemsController::class, 'getAvailableSlots'])->name('availableSlots');
+        });
 
     // Payment Management
-    Route::prefix('payment')->name('user.payment.')->group(function () {
-        Route::get('/success', [PaymentController::class, 'finish'])->name('success');
-        Route::get('/unfinish', [PaymentController::class, 'unfinish'])->name('unfinish');
-        Route::get('/history', [PaymentController::class, 'history'])->name('history');
-        Route::get('/detail/{id}', [PaymentController::class, 'detail'])->name('detail');
-        Route::get('/error', [PaymentController::class, 'error'])->name('error');
-        Route::get('/{id}/continue', [PaymentController::class, 'continuePayment'])->name('continue');
-        Route::get('/{id}/invoice', [PaymentController::class, 'downloadInvoice'])->name('invoice');
-    });
+    Route::prefix('payment')
+        ->name('user.payment.')
+        ->group(function () {
+            Route::get('/success', [PaymentController::class, 'finish'])->name('success');
+            Route::get('/unfinish', [PaymentController::class, 'unfinish'])->name('unfinish');
+            Route::get('/history', [PaymentController::class, 'history'])->name('history');
+            Route::get('/detail/{id}', [PaymentController::class, 'detail'])->name('detail');
+            Route::get('/error', [PaymentController::class, 'error'])->name('error');
+            Route::get('/{id}/continue', [PaymentController::class, 'continuePayment'])->name('continue');
+            Route::get('/{id}/invoice', [PaymentController::class, 'downloadInvoice'])->name('invoice');
+        });
 
     // Review Management
-    Route::prefix('review')->name('user.review.')->group(function () {
-        Route::post('/store', [ReviewController::class, 'store'])->name('store');
-        Route::get('/item', [ReviewController::class, 'getItemReviews'])->name('item');
-    });
+    Route::prefix('review')
+        ->name('user.review.')
+        ->group(function () {
+            Route::post('/store', [ReviewController::class, 'store'])->name('store');
+            Route::get('/item', [ReviewController::class, 'getItemReviews'])->name('item');
+        });
 
     // Other Features
     Route::get('/mabar', function () {
@@ -120,53 +129,57 @@ Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name(
 });
 
 // Payment Notification Endpoints (Diakses oleh Midtrans, tidak memerlukan auth)
-Route::prefix('payment')->name('payment.')->group(function () {
-    // Midtrans notification handler
-    Route::post('/notification', [PaymentController::class, 'notification'])->name('notification');
+Route::prefix('payment')
+    ->name('payment.')
+    ->group(function () {
+        // Midtrans notification handler
+        Route::post('/notification', [PaymentController::class, 'notification'])->name('notification');
 
-    // Recurring payment notification
-    Route::post('/recurring-notification', [PaymentController::class, 'recurringNotification'])
-        ->name('recurring.notification');
+        // Recurring payment notification
+        Route::post('/recurring-notification', [PaymentController::class, 'recurringNotification'])->name('recurring.notification');
 
-    // Pay account notification
-    Route::post('/pay-account-notification', [PaymentController::class, 'payAccountNotification'])
-        ->name('pay-account.notification');
-});
+        // Pay account notification
+        Route::post('/pay-account-notification', [PaymentController::class, 'payAccountNotification'])->name('pay-account.notification');
+    });
 
 // Admin Routes
-Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard Admin
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
-    Route::get('/admin/fields', [FieldController::class, 'index'])->name('admin.fields.index');
-    // Manajemen Lapangan
-    Route::resource('fields', FieldController::class);
-    // Rute admin lainnya untuk CRUD
-    Route::resources([
-        'products' => ProductController::class,
-        'rental-items' => RentalItemController::class,
-        'memberships' => MembershipController::class,
-        'transactions' => TransactionController::class,
-        'users' => UserManagementController::class,
-        'discounts' => DiscountController::class,
-        'photo-packages' => PhotoPackageController::class,
-    ]);
-});
+Route::middleware(['auth', 'checkRole:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        // Dashboard Admin
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
+        Route::get('/admin/fields', [FieldController::class, 'index'])->name('admin.fields.index');
+        // Manajemen Lapangan
+        Route::resource('fields', FieldController::class);
+        // Rute admin lainnya untuk CRUD
+        Route::resources([
+            'products' => ProductController::class,
+            'rental-items' => RentalItemController::class,
+            'memberships' => MembershipController::class,
+            'transactions' => TransactionController::class,
+            'users' => UserManagementController::class,
+            'discounts' => DiscountController::class,
+            'photo-packages' => PhotoPackageController::class,
+        ]);
+    });
 
 // Owner Routes
-Route::middleware(['auth', 'checkRole:owner'])->prefix('owner')->name('owner.')->group(function () {
-    // Dashboard Owner
-    Route::get('/dashboard', function () {
-        return view('owner.dashboard');
-    })->name('dashboard');
+Route::middleware(['auth', 'checkRole:owner'])
+    ->prefix('owner')
+    ->name('owner.')
+    ->group(function () {
+        // Dashboard Owner
+        Route::get('/dashboard', function () {
+            return view('owner.dashboard');
+        })->name('dashboard');
 
-    // Rute khusus owner
-    Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])
-        ->name('financial-report');
-    Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])
-        ->name('analytics');
-});
+        // Rute khusus owner
+        Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])->name('financial-report');
+        Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
+    });
 
 // Auth Routes
 require __DIR__ . '/auth.php';

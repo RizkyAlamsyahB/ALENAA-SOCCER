@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\PDF;
 use Illuminate\Support\Str;
 use App\Models\FieldBooking;
 use Illuminate\Http\Request;
+use App\Models\DiscountUsage;
 use App\Models\RentalBooking;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

@@ -104,38 +104,7 @@
                     </div>
                 </div>
 
-                <!-- Recent Activity -->
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title h5 mb-4">Recent Activity</h3>
-                        <div class="d-flex mb-3">
-                            <div class="flex-shrink-0">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 32px; height: 32px; background-color: rgba(158, 6, 32, 0.1);">
-                                    <i class="fas fa-calendar-check" style="color: #9E0620;"></i>
-                                </div>
-                            </div>
-                            <div class="ms-3">
-                                <p class="mb-1">Booking Completed</p>
-                                <p class="text-secondary mb-1">Field A - 2 hours</p>
-                                <small class="text-muted">2 hours ago</small>
-                            </div>
-                        </div>
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 32px; height: 32px; background-color: rgba(158, 6, 32, 0.1);">
-                                    <i class="fas fa-star" style="color: #9E0620;"></i>
-                                </div>
-                            </div>
-                            <div class="ms-3">
-                                <p class="mb-1">Points Earned</p>
-                                <p class="text-secondary mb-1">+50 points</p>
-                                <small class="text-muted">2 hours ago</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Tab Content -->
