@@ -207,7 +207,28 @@
 
 
                         </div>
-
+                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="points-icon me-3">
+                                        <i class="fas fa-coins fa-2x text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Points Diperoleh</h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="fs-5 fw-bold text-success">{{ $pointsEarned }}</span>
+                                            <span class="badge bg-success ms-2 rounded-pill">
+                                                <i class="fas fa-plus me-1"></i>Points
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto text-end">
+                                        <p class="mb-0 text-muted small">Total Points</p>
+                                        <p class="mb-0 fw-bold">{{ Auth::user()->points }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Customer Support Card -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow support-card">
                             <div class="card-body p-4">

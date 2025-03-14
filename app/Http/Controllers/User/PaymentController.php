@@ -589,179 +589,197 @@ public function continuePayment($id)
             ->with('error', 'Gagal melanjutkan pembayaran: ' . $e->getMessage());
     }
 }
-    /**
-     * Handle payment notification from Midtrans
-     */
-    public function notification(Request $request)
-    {
-        // Set Midtrans configuration
-        $this->setupMidtransConfig(false);
+/**
+ * Handle payment notification from Midtrans
+ */
+public function notification(Request $request)
+{
+    // Set Midtrans configuration
+    $this->setupMidtransConfig(false);
 
-        try {
-            // Simpan data mentah dulu
-            $rawData = $request->all();
-            Log::info('Notification raw data:', $rawData);
+    try {
+        // Simpan data mentah dulu
+        $rawData = $request->all();
+        Log::info('Notification raw data:', $rawData);
 
-            // Ambil order_id dari data mentah
-            $orderId = $rawData['order_id'] ?? null;
-            if (!$orderId) {
-                Log::warning('No order_id found in notification data');
-                return response('No order_id found', 400);
-            }
+        // Ambil order_id dari data mentah
+        $orderId = $rawData['order_id'] ?? null;
+        if (!$orderId) {
+            Log::warning('No order_id found in notification data');
+            return response('No order_id found', 400);
+        }
 
-            // Cek apakah ini order_id retry (memiliki format originalId-RETRY-timestamp)
-            $isRetry = strpos($orderId, '-RETRY-') !== false;
-            $payment = null;
+        // Cek apakah ini order_id retry (memiliki format originalId-RETRY-timestamp)
+        $isRetry = strpos($orderId, '-RETRY-') !== false;
+        $payment = null;
 
-            if ($isRetry) {
-                // Ambil original order_id jika ini adalah retry payment
-                $originalOrderId = explode('-RETRY-', $orderId)[0];
-                $payment = Payment::where('order_id', $originalOrderId)->first();
+        if ($isRetry) {
+            // Ambil original order_id jika ini adalah retry payment
+            $originalOrderId = explode('-RETRY-', $orderId)[0];
+            $payment = Payment::where('order_id', $originalOrderId)->first();
 
-                if ($payment) {
-                    Log::info('Retry payment notification for original order_id: ' . $originalOrderId);
-                } else {
-                    Log::error('Payment not found for retry order_id: ' . $orderId);
-                    return response('Payment not found', 404);
-                }
+            if ($payment) {
+                Log::info('Retry payment notification for original order_id: ' . $originalOrderId);
             } else {
-                // Jika bukan retry, ambil payment berdasarkan order_id asli
-                $payment = Payment::where('order_id', $orderId)->first();
-
-                if (!$payment) {
-                    Log::error('Payment not found for order_id: ' . $orderId);
-                    return response('Payment not found', 404);
-                }
+                Log::error('Payment not found for retry order_id: ' . $orderId);
+                return response('Payment not found', 404);
             }
-
-            // Simpan data notifikasi mentah di payment_details
-            $payment->payment_details = json_encode($rawData);
-
-            // Update payment dengan data dari notifikasi
-            $status = $rawData['transaction_status'] ?? '';
-            $type = $rawData['payment_type'] ?? '';
-            $fraudStatus = $rawData['fraud_status'] ?? '';
-            $transactionId = $rawData['transaction_id'] ?? '';
-
-            $payment->payment_type = $type;
-            $payment->transaction_id = $transactionId;
-
-            // Simpan status transaksi sebelumnya
-            $previousStatus = $payment->transaction_status;
-
-            // Update payment status based on notification
-            if ($status == 'capture') {
-                if ($fraudStatus == 'challenge') {
-                    $payment->transaction_status = 'challenge';
-                } elseif ($fraudStatus == 'accept') {
-                    $payment->transaction_status = 'success';
-                }
-            } elseif ($status == 'settlement') {
-                $payment->transaction_status = 'success';
-                $payment->transaction_time = $rawData['settlement_time'] ?? now();
-            } elseif ($status == 'cancel' || $status == 'deny' || $status == 'expire') {
-                $payment->transaction_status = 'failed';
-            } elseif ($status == 'pending') {
-                $payment->transaction_status = 'pending';
-            }
-
-            $payment->save();
-            Log::info('Payment status updated to: ' . $payment->transaction_status);
-
-            // Catat penggunaan diskon hanya jika pembayaran berhasil dan status berubah dari pending ke success
-            if ($payment->transaction_status === 'success' && $previousStatus !== 'success' && $payment->discount_id) {
-                // Cek apakah sudah ada catatan penggunaan
-                $existingUsage = DiscountUsage::where('payment_id', $payment->id)
-                    ->where('discount_id', $payment->discount_id)
-                    ->first();
-
-                // Jika belum ada, buat catatan baru
-                if (!$existingUsage) {
-                    DiscountUsage::create([
-                        'discount_id' => $payment->discount_id,
-                        'user_id' => $payment->user_id,
-                        'payment_id' => $payment->id,
-                        'discount_amount' => $payment->discount_amount,
-                    ]);
-
-                    Log::info('Discount usage recorded for payment #' . $payment->id . ' with discount #' . $payment->discount_id);
-                }
-            }
-
-            // Update field bookings
-            if ($payment->fieldBookings && $payment->fieldBookings->count() > 0) {
-                foreach ($payment->fieldBookings as $booking) {
-                    $booking->status = 'confirmed';
-                    $booking->save();
-                    Log::info('Field Booking #' . $booking->id . ' status updated to: confirmed');
-                }
-            }
-
-            // Update rental bookings
-            if ($payment->rentalBookings && $payment->rentalBookings->count() > 0) {
-                foreach ($payment->rentalBookings as $booking) {
-                    $booking->status = 'confirmed';
-                    $booking->save();
-                    Log::info('Rental Booking #' . $booking->id . ' status updated to: confirmed');
-                }
-            }
-
-            // Update membership subscriptions - only if the relationship exists
-            if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
-                foreach ($payment->membershipSubscriptions as $subscription) {
-                    $subscription->status = 'active';
-                    $subscription->save();
-                    Log::info('Membership #' . $subscription->id . ' status updated to: active');
-                }
-            }
-
-            // Update photographer bookings - only if the relationship exists
-            if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
-                foreach ($payment->photographerBookings as $booking) {
-                    $booking->status = 'confirmed';
-                    $booking->save();
-                    Log::info('Photographer Booking #' . $booking->id . ' status updated to: confirmed');
-                }
-            }
-
-            return response('OK', 200);
-        } catch (\Exception $e) {
-            Log::error('Notification error: ' . $e->getMessage());
-            Log::error('Notification error stack trace: ' . $e->getTraceAsString());
-            return response($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Handle payment finish redirect from Midtrans
-     */
-    public function finish(Request $request)
-    {
-        $orderId = $request->order_id;
-        $paymentId = $request->payment_id;
-
-        // Jika ada payment_id, maka ini adalah lanjutan pembayaran
-        if ($paymentId) {
-            $payment = Payment::findOrFail($paymentId);
         } else {
+            // Jika bukan retry, ambil payment berdasarkan order_id asli
             $payment = Payment::where('order_id', $orderId)->first();
+
+            if (!$payment) {
+                Log::error('Payment not found for order_id: ' . $orderId);
+                return response('Payment not found', 404);
+            }
         }
 
-        if (!$payment) {
-            return redirect()->route('user.fields.index')->with('error', 'Pembayaran tidak ditemukan');
+        // Simpan data notifikasi mentah di payment_details
+        $payment->payment_details = json_encode($rawData);
+
+        // Update payment dengan data dari notifikasi
+        $status = $rawData['transaction_status'] ?? '';
+        $type = $rawData['payment_type'] ?? '';
+        $fraudStatus = $rawData['fraud_status'] ?? '';
+        $transactionId = $rawData['transaction_id'] ?? '';
+
+        $payment->payment_type = $type;
+        $payment->transaction_id = $transactionId;
+
+        // Simpan status transaksi sebelumnya
+        $previousStatus = $payment->transaction_status;
+
+        // Update payment status based on notification
+        if ($status == 'capture') {
+            if ($fraudStatus == 'challenge') {
+                $payment->transaction_status = 'challenge';
+            } elseif ($fraudStatus == 'accept') {
+                $payment->transaction_status = 'success';
+            }
+        } elseif ($status == 'settlement') {
+            $payment->transaction_status = 'success';
+            $payment->transaction_time = $rawData['settlement_time'] ?? now();
+        } elseif ($status == 'cancel' || $status == 'deny' || $status == 'expire') {
+            $payment->transaction_status = 'failed';
+        } elseif ($status == 'pending') {
+            $payment->transaction_status = 'pending';
         }
 
-        // Periksa jika pembayaran sudah kadaluarsa
-        $payment = $this->checkExpiredPayment($payment);
+        $payment->save();
+        Log::info('Payment status updated to: ' . $payment->transaction_status);
 
-        if ($payment->transaction_status == 'success') {
-            return view('users.payment.success', compact('payment'));
-        } elseif ($payment->transaction_status == 'pending') {
-            return view('users.payment.unfinish', ['orderId' => $orderId]);
-        } else {
-            return view('users.payment.error', ['errorMessage' => 'Pembayaran gagal atau dibatalkan']);
+        // Tambahkan points jika payment statusnya berubah menjadi success dan sebelumnya bukan success
+        if ($payment->transaction_status === 'success' && $previousStatus !== 'success') {
+            // Berikan points kepada user (1 point untuk setiap 10000 rupiah)
+            $user = \App\Models\User::find($payment->user_id);
+            if ($user) {
+                // Kalkulasi points berdasarkan amount pembayaran (1 point untuk setiap 10000 rupiah)
+                $points = floor($payment->amount / 10000);
+                $user->points += $points;
+                $user->save();
+
+                Log::info('Added ' . $points . ' points to user #' . $user->id . ' for payment #' . $payment->id);
+            }
         }
+
+        // Catat penggunaan diskon hanya jika pembayaran berhasil dan status berubah dari pending ke success
+        if ($payment->transaction_status === 'success' && $previousStatus !== 'success' && $payment->discount_id) {
+            // Cek apakah sudah ada catatan penggunaan
+            $existingUsage = DiscountUsage::where('payment_id', $payment->id)
+                ->where('discount_id', $payment->discount_id)
+                ->first();
+
+            // Jika belum ada, buat catatan baru
+            if (!$existingUsage) {
+                DiscountUsage::create([
+                    'discount_id' => $payment->discount_id,
+                    'user_id' => $payment->user_id,
+                    'payment_id' => $payment->id,
+                    'discount_amount' => $payment->discount_amount,
+                ]);
+
+                Log::info('Discount usage recorded for payment #' . $payment->id . ' with discount #' . $payment->discount_id);
+            }
+        }
+
+        // Update field bookings
+        if ($payment->fieldBookings && $payment->fieldBookings->count() > 0) {
+            foreach ($payment->fieldBookings as $booking) {
+                $booking->status = 'confirmed';
+                $booking->save();
+                Log::info('Field Booking #' . $booking->id . ' status updated to: confirmed');
+            }
+        }
+
+        // Update rental bookings
+        if ($payment->rentalBookings && $payment->rentalBookings->count() > 0) {
+            foreach ($payment->rentalBookings as $booking) {
+                $booking->status = 'confirmed';
+                $booking->save();
+                Log::info('Rental Booking #' . $booking->id . ' status updated to: confirmed');
+            }
+        }
+
+        // Update membership subscriptions - only if the relationship exists
+        if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
+            foreach ($payment->membershipSubscriptions as $subscription) {
+                $subscription->status = 'active';
+                $subscription->save();
+                Log::info('Membership #' . $subscription->id . ' status updated to: active');
+            }
+        }
+
+        // Update photographer bookings - only if the relationship exists
+        if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
+            foreach ($payment->photographerBookings as $booking) {
+                $booking->status = 'confirmed';
+                $booking->save();
+                Log::info('Photographer Booking #' . $booking->id . ' status updated to: confirmed');
+            }
+        }
+
+        return response('OK', 200);
+    } catch (\Exception $e) {
+        Log::error('Notification error: ' . $e->getMessage());
+        Log::error('Notification error stack trace: ' . $e->getTraceAsString());
+        return response($e->getMessage(), 500);
     }
+}
+
+/**
+ * Handle payment finish redirect from Midtrans
+ */
+public function finish(Request $request)
+{
+    $orderId = $request->order_id;
+    $paymentId = $request->payment_id;
+
+    // Jika ada payment_id, maka ini adalah lanjutan pembayaran
+    if ($paymentId) {
+        $payment = Payment::findOrFail($paymentId);
+    } else {
+        $payment = Payment::where('order_id', $orderId)->first();
+    }
+
+    if (!$payment) {
+        return redirect()->route('user.fields.index')->with('error', 'Pembayaran tidak ditemukan');
+    }
+
+    // Periksa jika pembayaran sudah kadaluarsa
+    $payment = $this->checkExpiredPayment($payment);
+
+    // Tidak perlu menambahkan points lagi karena sudah ditambahkan di notification()
+    if ($payment->transaction_status == 'success') {
+        // Hanya menghitung points untuk ditampilkan di view, tanpa menyimpannya ke database
+        $pointsEarned = floor($payment->amount / 10000);
+
+        return view('users.payment.success', compact('payment', 'pointsEarned'));
+    } elseif ($payment->transaction_status == 'pending') {
+        return view('users.payment.unfinish', ['orderId' => $orderId]);
+    } else {
+        return view('users.payment.error', ['errorMessage' => 'Pembayaran gagal atau dibatalkan']);
+    }
+}
 
     /**
      * Handle payment unfinish redirect from Midtrans
@@ -848,6 +866,12 @@ public function detail($id)
     // Cek apakah pembayaran sudah kedaluwarsa tapi belum diupdate statusnya
     $payment = $this->checkExpiredPayment($payment);
 
+    // Hitung points yang didapat dari transaksi ini
+    $pointsEarned = 0;
+    if ($payment->transaction_status === 'success') {
+        $pointsEarned = floor($payment->amount / 10000);
+    }
+
     // Cek apakah user sudah memberikan review untuk item di payment ini
     $reviewedItems = [];
     if ($payment->transaction_status === 'success') {
@@ -887,7 +911,7 @@ public function detail($id)
         }
     }
 
-    return view('users.payment.detail', compact('payment', 'reviewedItems'));
+    return view('users.payment.detail', compact('payment', 'reviewedItems', 'pointsEarned'));
 }
     /**
      * Handle recurring payment notification from Midtrans

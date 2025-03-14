@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\PointsTransaction;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -68,5 +69,9 @@ class User extends Authenticatable
     public function reviews()
 {
     return $this->hasMany(Review::class);
+}
+public function pointsTransactions()
+{
+    return $this->hasMany(PointsTransaction::class);
 }
 }

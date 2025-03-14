@@ -61,51 +61,63 @@
                         </span>
                     </a>
 
-                    <!-- User Dropdown -->
-                    <div class="dropdown">
-                        <button class="btn btn-light rounded-pill px-4 py-2 d-flex align-items-center gap-2" type="button"
-                            id="userMenu" data-bs-toggle="dropdown" aria-expanded="false"
-                            style="min-width: 150px; max-width: 220px;">
-                            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px; font-size: 18px;">
-                                {{ substr(Auth::user()->name, 0, 1) }}
-                            </div>
-                            <span class="d-none d-md-inline" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                {{ Auth::user()->name }}
-                            </span>
+<!-- User Dropdown -->
+<div class="dropdown">
+    <button class="btn btn-light rounded-pill px-4 py-2 d-flex align-items-center gap-2" type="button"
+        id="userMenu" data-bs-toggle="dropdown" aria-expanded="false"
+        style="min-width: 150px; max-width: 220px;">
 
-                            <i class="fas fa-chevron-down ms-1"></i>
-                        </button>
+        @if(Auth::user()->profile_picture)
+            <!-- Display profile picture if available -->
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                style="width: 40px; height: 40px; overflow: hidden;">
+                <img src="{{ Storage::url(Auth::user()->profile_picture) }}" alt="{{ Auth::user()->name }}"
+                    class="w-100 h-100" style="object-fit: cover;">
+            </div>
+        @else
+            <!-- Fallback to initial if no profile picture -->
+            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center"
+                style="width: 40px; height: 40px; font-size: 18px;">
+                {{ substr(Auth::user()->name, 0, 1) }}
+            </div>
+        @endif
 
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-                            <li>
-                                <div class="dropdown-header px-4 py-3 border-bottom">
-                                    <div class="fw-bold">{{ Auth::user()->name }}</div>
-                                    <div class="text-muted small">{{ Auth::user()->email }}</div>
-                                </div>
-                            </li>
-                            <li><a class="dropdown-item px-4 py-2" href="{{ route('profile.edit') }}">
-                                    <i class="fas fa-user me-2 text-muted"></i>My Profile
-                                </a></li>
-                            <li><a class="dropdown-item px-4 py-2" href="#">
-                                    <i class="fas fa-cog me-2 text-muted"></i>Settings
-                                </a></li>
-                            <li><a class="dropdown-item px-4 py-2" href="{{ route('user.payment.history') }}">
-                                    <i class="fas fa-receipt me-2 text-muted"></i>Payment History
-                                </a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item px-4 py-2 text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+        <span class="d-none d-md-inline" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {{ Auth::user()->name }}
+        </span>
+
+        <i class="fas fa-chevron-down ms-1"></i>
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+        <li>
+            <div class="dropdown-header px-4 py-3 border-bottom">
+                <div class="fw-bold">{{ Auth::user()->name }}</div>
+                <div class="text-muted small">{{ Auth::user()->email }}</div>
+            </div>
+        </li>
+        <li><a class="dropdown-item px-4 py-2" href="{{ route('profile.edit') }}">
+                <i class="fas fa-user me-2 text-muted"></i>My Profile
+            </a></li>
+        <li><a class="dropdown-item px-4 py-2" href="#">
+                <i class="fas fa-cog me-2 text-muted"></i>Settings
+            </a></li>
+        <li><a class="dropdown-item px-4 py-2" href="{{ route('user.payment.history') }}">
+                <i class="fas fa-receipt me-2 text-muted"></i>Payment History
+            </a></li>
+        <li>
+            <hr class="dropdown-divider">
+        </li>
+        <li>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="dropdown-item px-4 py-2 text-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </form>
+        </li>
+    </ul>
+</div>
                 @else
                     <a href="/login" class="btn btn-outline-danger rounded-pill px-4 py-2 hover-scale">
                         <i class="fas fa-sign-in-alt me-2"></i>Masuk

@@ -3,62 +3,93 @@
 @section('content')
     <div class="py-5">
         <div class="container">
-          <!-- Profile Header with Points -->
-<div class="card mb-4">
-    <div style="height: 128px; background-color: #9E0620;"></div>
-    <div class="px-4 px-sm-5 pb-4">
-        <div class="d-flex flex-column flex-sm-row align-items-center" style="margin-top: -64px;">
-            <!-- User Avatar Section -->
-            <div class="position-relative">
-                <div class="rounded-circle border-4 bg-light d-flex align-items-center justify-content-center"
-                    style="width: 128px; height: 128px; border: 4px solid #9E0620; border-radius: 50%; overflow: hidden;">
-                    <i class="fas fa-user text-secondary fs-1"></i>
-                </div>
-                <button class="position-absolute bottom-0 end-0 btn rounded-circle p-2 shadow"
-                    style="background-color: #9E0620; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-camera"></i>
-                </button>
-            </div>
+            <!-- Profile Header with Points -->
+            <div class="card mb-4">
+                <div style="height: 128px; background-color: #9E0620;"></div>
+                <div class="px-4 px-sm-5 pb-4">
+                    <div class="d-flex flex-column flex-sm-row align-items-center" style="margin-top: -64px;">
+                        <!-- User Avatar Section with Profile Picture Upload Form -->
+                        <div class="position-relative">
+                            <form id="profilePictureForm" method="POST" action="{{ route('profile.picture.update') }}"
+                                enctype="multipart/form-data">
+                                @csrf
+                                @method('POST')
 
-            <!-- User Info Section -->
-            <div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
-                style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
-                <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
-                <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
-                <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
-                    <span class="badge text-white" style="background-color: #9E0620;">
-                        <i class="fas fa-crown me-1"></i> Premium Member
-                    </span>
-                    <span class="badge bg-success">
-                        <i class="fas fa-check-circle me-1"></i> Verified
-                    </span>
-                </div>
-            </div>
+                                <div class="rounded-circle border-4 bg-light d-flex align-items-center justify-content-center"
+                                    style="width: 128px; height: 128px; border: 4px solid #9E0620; border-radius: 50%; overflow: hidden;">
+                                    @if (Auth::user()->profile_picture)
+                                        <img src="{{ Storage::url(Auth::user()->profile_picture) }}"
+                                            alt="{{ Auth::user()->name }}" class="w-100 h-100" style="object-fit: cover;">
+                                    @else
+                                        <i class="fas fa-user text-secondary fs-1"></i>
+                                    @endif
+                                </div>
 
-            <!-- Points Card (Positioned to the right) -->
-            <div class="mt-4 mt-sm-0 ms-sm-auto text-center text-sm-start"
-                style="z-index: 1; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); min-width: 220px;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="badge p-2" style="background-color: #FFD700; color: #000;">
-                        <i class="fas fa-coins me-1"></i> Points
-                    </span>
-                    <span class="fw-bold text-dark">{{ Auth::user()->points ?? 0 }}</span>
-                </div>
-                <div class="progress mb-2" style="height: 10px; background-color: #f0f0f0;">
-                    <div class="progress-bar" role="progressbar" style="width: 65%; background-color: #9E0620;"
-                        aria-valuenow="{{ Auth::user()->points ?? 0 }}" aria-valuemin="0" aria-valuemax="1000">
+                                <input type="file" name="profile_picture" id="profile_picture" class="d-none"
+                                    accept="image/*" onchange="document.getElementById('profilePictureForm').submit()">
+
+                                <label for="profile_picture"
+                                    class="position-absolute bottom-0 end-0 btn rounded-circle p-2 shadow"
+                                    style="background-color: #9E0620; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                            </form>
+
+                            <!-- Profile picture upload error message -->
+                            @error('profile_picture')
+                                <div class="alert alert-danger mt-2"
+                                    style="position: absolute; width: 200px; font-size: 0.8rem;">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+
+                            <!-- Profile picture upload success message -->
+                            @if (session('status') === 'profile-picture-updated')
+                                <div class="alert alert-success mt-2"
+                                    style="position: absolute; width: 200px; font-size: 0.8rem;">
+                                    Profile picture updated successfully!
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- User Info Section -->
+                        <div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
+                            style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
+                            <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
+                            <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
+                                <span class="badge text-white" style="background-color: #9E0620;">
+                                    <i class="fas fa-crown me-1"></i> Premium Member
+                                </span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Points Card (Positioned to the right) -->
+                        <div class="mt-4 mt-sm-0 ms-sm-auto text-center text-sm-start"
+                            style="z-index: 1; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); min-width: 220px;">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge p-2" style="background-color: #FFD700; color: #000;">
+                                    <i class="fas fa-coins me-1"></i> Points
+                                </span>
+                                <span class="fw-bold text-dark">{{ $user->points ?? 0 }}</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 10px; background-color: #f0f0f0;">
+                                <div class="progress-bar" role="progressbar"
+                                    style="width: {{ min(100, ($user->points ?? 0) / 10) }}%; background-color: #9E0620;"
+                                    aria-valuenow="{{ $user->points ?? 0 }}" aria-valuemin="0" aria-valuemax="1000">
+                                </div>
+                            </div>
+
+                            <button class="btn btn-sm w-100 mt-2 text-white" style="background-color: #9E0620;">
+                                <i class="fas fa-gift me-1"></i> Redeem Rewards
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <small class="text-muted d-block">
-                    <i class="fas fa-info-circle me-1"></i> Next reward: 100 points
-                </small>
-                <button class="btn btn-sm w-100 mt-2 text-white" style="background-color: #9E0620;">
-                    <i class="fas fa-gift me-1"></i> Redeem Rewards
-                </button>
             </div>
-        </div>
-    </div>
-</div>
 
             <!-- Settings Navigation -->
             <div class="card mb-4">
@@ -104,7 +135,60 @@
                     </div>
                 </div>
 
-
+                <!-- Riwayat Transaksi Terakhir -->
+                @if (isset($recentPayments) && $recentPayments->count() > 0)
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-history me-2"></i> Riwayat Transaksi Terakhir
+                                </h5>
+                                <span class="badge text-white" style="background-color: #9E0620;">
+                                    {{ $recentPayments->count() }} Transaksi
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead style="background-color: #f8f9fa;">
+                                        <tr>
+                                            <th class="ps-3">Order ID</th>
+                                            <th class="text-center">Points</th>
+                                            <th class="text-end pe-3">Tanggal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($recentPayments as $payment)
+                                            <tr>
+                                                <td class="ps-3">
+                                                    <span class="d-flex align-items-center">
+                                                        <i class="fas fa-receipt text-secondary me-2"></i>
+                                                        {{ $payment->order_id }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-coins me-1"></i>
+                                                        {{ floor($payment->amount / 10000) }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-end pe-3 text-muted small">
+                                                    {{ $payment->created_at->format('d M Y H:i') }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white text-center">
+                            <a href="#" class="btn btn-sm text-white" style="background-color: #9E0620;">
+                                <i class="fas fa-eye me-1"></i> Lihat Semua Transaksi
+                            </a>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Tab Content -->
@@ -125,7 +209,8 @@
                                     <div class="mb-3">
                                         <label class="form-label">Name</label>
                                         <input type="text" name="name" class="form-control"
-                                            value="{{ old('name', $user->name) }}" required autofocus autocomplete="name">
+                                            value="{{ old('name', $user->name) }}" required autofocus
+                                            autocomplete="name">
                                         <x-input-error class="mt-2" :messages="$errors->get('name')" />
                                     </div>
 
