@@ -2,28 +2,74 @@
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/users/welcome.css') }}">
     <!-- Promo Banner -->
-    <div class="promo-banner text-white" style="background-color: #9E0620; margin-top:60px;">
+    <div class="promo-banner text-white" style="background-color: #9E0620; margin-top:70px;">
         <div class="promo-slider">
             <div class="d-flex promo-slide-container mt-3">
-                <div class="promo-slide">
-                    <i class="fas fa-gift me-2"></i>
-                    Member Baru Diskon 20%! Gunakan kode: ALENAFIRST
-                </div>
-                <div class="promo-slide">
-                    <i class="fas fa-trophy me-2"></i>
-                    Special Weekend! Booking Sekarang Hemat 15%
-                </div>
-                <div class="promo-slide">
-                    <i class="fas fa-bolt me-2"></i>
-                    Flash Deal: Booking 3 Jam Gratis 1 Jam Extra!
-                </div>
-                <div class="promo-slide">
-                    <i class="fas fa-gift me-2"></i>
-                    Member Baru Diskon 20%! Gunakan kode: ALENAFIRST
-                </div>
+                @if (count($activeDiscounts) > 0)
+                    @foreach ($activeDiscounts as $discount)
+                        <div class="promo-slide d-flex align-items-center">
+                            @if ($discount->type == 'percentage')
+                                <i class="fas fa-gift me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $discount->name }}</span>
+                                    <span class="mx-1">{{ number_format($discount->value, 0) }}% off</span>
+                                    <span>Kode: <strong>{{ $discount->code }}</strong></span>
+                                    @if ($discount->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($discount->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @else
+                                <i class="fas fa-tag me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $discount->name }}</span>
+                                    <span class="mx-1">Hemat Rp {{ number_format($discount->value / 1000, 0) }}K</span>
+                                    <span>Kode: <strong>{{ $discount->code }}</strong></span>
+                                    @if ($discount->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($discount->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+
+                    <!-- Duplicate pertama untuk efek slider yang mulus -->
+                    @if (count($activeDiscounts) > 0)
+                        <div class="promo-slide d-flex align-items-center">
+                            @if ($activeDiscounts[0]->type == 'percentage')
+                                <i class="fas fa-gift me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $activeDiscounts[0]->name }}</span>
+                                    <span class="mx-1">{{ number_format($activeDiscounts[0]->value, 0) }}% off</span>
+                                    <span>Kode: <strong>{{ $activeDiscounts[0]->code }}</strong></span>
+                                    @if ($activeDiscounts[0]->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($activeDiscounts[0]->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @else
+                                <i class="fas fa-tag me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $activeDiscounts[0]->name }}</span>
+                                    <span class="mx-1">Hemat Rp
+                                        {{ number_format($activeDiscounts[0]->value / 1000, 0) }}K</span>
+                                    <span>Kode: <strong>{{ $activeDiscounts[0]->code }}</strong></span>
+                                    @if ($activeDiscounts[0]->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($activeDiscounts[0]->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                @else
+                   
+                @endif
             </div>
         </div>
     </div>
+
 
     <!-- Hero Section -->
     <section class="hero position-relative vh-100 d-flex align-items-center">
@@ -248,87 +294,89 @@
         </div>
     </section>
 
-<!-- Testimonials Section -->
-<section class="testimonials-section py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <span class="badge bg-danger mb-3">Ulasan Member</span>
-            <h2 class="section-title">Apa Kata Mereka?</h2>
-        </div>
-        <div class="row g-4">
-            @forelse($testimonials as $testimonial)
-                <div class="col-md-4">
-                    <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
-                        <div class="testimonial-header d-flex justify-content-between align-items-center mb-3">
-                            <div class="rating">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star {{ $i <= $testimonial->rating ? 'text-warning' : 'text-muted' }}"></i>
-                                @endfor
+    <!-- Testimonials Section -->
+    <section class="testimonials-section py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="badge bg-danger mb-3">Ulasan Member</span>
+                <h2 class="section-title">Apa Kata Mereka?</h2>
+            </div>
+            <div class="row g-4">
+                @forelse($testimonials as $testimonial)
+                    <div class="col-md-4">
+                        <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
+                            <div class="testimonial-header d-flex justify-content-between align-items-center mb-3">
+                                <div class="rating">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <i
+                                            class="fas fa-star {{ $i <= $testimonial->rating ? 'text-warning' : 'text-muted' }}"></i>
+                                    @endfor
+                                </div>
+                                <span class="text-muted small">
+                                    {{ $testimonial->created_at->diffForHumans() }}
+                                </span>
                             </div>
-                            <span class="text-muted small">
-                                {{ $testimonial->created_at->diffForHumans() }}
-                            </span>
-                        </div>
-                        <div class="testimonial-content mb-3">
-                            <i class="fas fa-quote-left text-danger mb-3"></i>
-                            <p class="mb-0">
-                                "{{ $testimonial->comment }}"
-                            </p>
-                        </div>
-                        <div class="testimonial-author d-flex align-items-center">
-                            <div class="author-avatar me-3">
-                                @if($testimonial->user->profile_photo_path)
-                                    <img src="{{ Storage::url($testimonial->user->profile_photo_path) }}"
-                                        alt="{{ $testimonial->user->name }}" class="rounded-circle" width="50" height="50">
-                                @else
-                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                        style="width: 50px; height: 50px;">
-                                        {{ strtoupper(substr($testimonial->user->name, 0, 1)) }}
-                                    </div>
-                                @endif
+                            <div class="testimonial-content mb-3">
+                                <i class="fas fa-quote-left text-danger mb-3"></i>
+                                <p class="mb-0">
+                                    "{{ $testimonial->comment }}"
+                                </p>
                             </div>
-                            <div>
-                                <h6 class="mb-0">{{ $testimonial->user->name }}</h6>
-                                <small class="text-muted">
-                                    Tentang :
-                                    @if($testimonial->item_type == 'App\\Models\\Field')
-                                         {{ $testimonial->reviewable->name ?? '' }}
-                                    @elseif($testimonial->item_type == 'App\\Models\\RentalItem')
-                                        {{ $testimonial->reviewable->name ?? 'Penyewaan Peralatan' }}
-                                    @elseif($testimonial->item_type == 'App\\Models\\Photographer')
-                                         {{ $testimonial->reviewable->name ?? '' }}
+                            <div class="testimonial-author d-flex align-items-center">
+                                <div class="author-avatar me-3">
+                                    @if ($testimonial->user->profile_photo_path)
+                                        <img src="{{ Storage::url($testimonial->user->profile_photo_path) }}"
+                                            alt="{{ $testimonial->user->name }}" class="rounded-circle" width="50"
+                                            height="50">
+                                    @else
+                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 50px;">
+                                            {{ strtoupper(substr($testimonial->user->name, 0, 1)) }}
+                                        </div>
                                     @endif
-                                </small>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ strtoupper(substr($testimonial->user->name, 0, 1)) }}***</h6>
+                                    <small class="text-muted">
+                                        Tentang :
+                                        @if ($testimonial->item_type == 'App\\Models\\Field')
+                                            {{ $testimonial->reviewable->name ?? '' }}
+                                        @elseif($testimonial->item_type == 'App\\Models\\RentalItem')
+                                            {{ $testimonial->reviewable->name ?? 'Penyewaan Peralatan' }}
+                                        @elseif($testimonial->item_type == 'App\\Models\\Photographer')
+                                            {{ $testimonial->reviewable->name ?? '' }}
+                                        @endif
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @empty
-                <!-- Tampilkan testimonial default jika belum ada ulasan -->
-                <div class="col-md-4">
-                    <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
-                        <div class="testimonial-content mb-3">
-                            <i class="fas fa-quote-left text-danger mb-3"></i>
-                            <p class="mb-0">
-                                "Booking lapangan jadi super gampang, gak perlu ribet telepon atau datang langsung.
-                                Lapangannya juga berkualitas!"
-                            </p>
-                        </div>
-                        <div class="testimonial-author d-flex align-items-center">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
-                                style="width: 50px; height: 50px;">A</div>
-                            <div>
-                                <h6 class="mb-0">Ahmad Fadillah</h6>
-                                <small class="text-muted">Member Aktif</small>
+                @empty
+                    <!-- Tampilkan testimonial default jika belum ada ulasan -->
+                    <div class="col-md-4">
+                        <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
+                            <div class="testimonial-content mb-3">
+                                <i class="fas fa-quote-left text-danger mb-3"></i>
+                                <p class="mb-0">
+                                    "Booking lapangan jadi super gampang, gak perlu ribet telepon atau datang langsung.
+                                    Lapangannya juga berkualitas!"
+                                </p>
+                            </div>
+                            <div class="testimonial-author d-flex align-items-center">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                                    style="width: 50px; height: 50px;">A</div>
+                                <div>
+                                    <h6 class="mb-0">Ahmad Fadillah</h6>
+                                    <small class="text-muted">Member Aktif</small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- Tambahkan testimonial default lain seperti sebelumnya -->
-            @endforelse
+                    <!-- Tambahkan testimonial default lain seperti sebelumnya -->
+                @endforelse
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <style>
         /* New Sections Styling */

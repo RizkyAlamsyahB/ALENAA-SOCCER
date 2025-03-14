@@ -7,6 +7,7 @@ use App\Models\FieldBooking;
 use App\Models\RentalBooking;
 use App\Models\Payment;
 use App\Models\Review;
+use App\Models\Discount; // Tambahkan model Discount
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -56,12 +57,23 @@ class DashboardController extends Controller
             ->limit(3)
             ->get();
 
+// Diskon aktif untuk promo banner - disesuaikan dengan skema database
+$activeDiscounts = Discount::where('is_active', true)
+    ->where(function($query) {
+        $query->whereNull('end_date')
+              ->orWhere('end_date', '>', now());
+    })
+    ->orderBy('value', 'desc') // Menggunakan value, bukan discount_percent
+    ->limit(4)
+    ->get();
+
         return view('users.dashboard', compact(
             'recentFieldBookings',
             'recentRentalBookings',
             'recentPayments',
             'userReviews',
-            'testimonials'
+            'testimonials',
+            'activeDiscounts'
         ));
     }
 }

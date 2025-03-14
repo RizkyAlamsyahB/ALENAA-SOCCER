@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\Discount;
+use App\Models\FieldBooking;
+use App\Models\RentalBooking;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Payment extends Model
 {
@@ -18,7 +22,10 @@ class Payment extends Model
         'transaction_status',
         'transaction_time',
         'payment_details',
-        'expires_at'
+        'expires_at',
+        'discount_id',       // Tambahkan ini
+        'discount_amount',   // Tambahkan ini
+        'original_amount' 
     ];
 
     protected $casts = [
@@ -47,6 +54,13 @@ class Payment extends Model
     {
         return $this->hasMany(RentalBooking::class);
     }
+    /**
+ * Relasi ke diskon
+ */
+public function discount()
+{
+    return $this->belongsTo(Discount::class);
+}
 
     /**
      * Get the membership subscriptions associated with this payment.

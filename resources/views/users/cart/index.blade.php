@@ -23,14 +23,14 @@
     <!-- Main Content -->
     <div class="container mt-4 mb-5">
         <!-- Bootstrap Alert for Session Messages -->
-        @if(session('success'))
+        @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
-        @if(session('error'))
+        @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 {{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -60,86 +60,90 @@
                         <div class="card-body p-0">
                             <div class="cart-items-list">
                                 @foreach ($cartItems as $item)
-                                <div class="cart-item p-4 border-bottom">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-2 col-sm-3 mb-3 mb-md-0">
-                                            <div class="cart-item-image">
-                                                @if (isset($item->image))
-                                                    <img src="{{ Storage::url($item->image) }}"
-                                                        alt="{{ $item->name ?? 'Item' }}"
-                                                        class="img-fluid rounded-3">
-                                                @else
-                                                    <div class="placeholder-image bg-light rounded-3 d-flex align-items-center justify-content-center">
-                                                        <i class="fas fa-futbol text-muted"></i>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="col-md-7 col-sm-6 mb-3 mb-md-0">
-                                            <div class="cart-item-details">
-                                                <h5 class="cart-item-title fw-bold mb-1">
-                                                    {{ $item->name ?? 'Item' }}
-                                                </h5>
-                                                <div class="cart-item-category mb-2">
-                                                    <span class="type-badge">{{ $item->type_name ?? $item->type }}</span>
-                                                </div>
-                                                <div class="cart-item-info">
-                                                    @if($item->type == 'field_booking' || $item->type == 'photographer')
-                                                        <div class="info-badge">
-                                                            <i class="far fa-calendar-alt"></i>
-                                                            <span>{{ $item->formatted_date ?? \Carbon\Carbon::parse($item->start_time)->format('d M Y') }}</span>
-                                                        </div>
-                                                        <div class="info-badge">
-                                                            <i class="far fa-clock"></i>
-                                                            <span>
-                                                                {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}
-                                                                -
-                                                                {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
-                                                            </span>
-                                                        </div>
-                                                    @elseif($item->type == 'rental_item')
-                                                        <div class="info-badge">
-                                                            <i class="fas fa-box"></i>
-                                                            <span>Jumlah: {{ $item->quantity }}</span>
-                                                        </div>
-                                                        <div class="info-badge">
-                                                            <i class="far fa-calendar-alt"></i>
-                                                            <span>{{ \Carbon\Carbon::parse($item->start_time)->format('d M Y') }}</span>
-                                                        </div>
-                                                        <div class="info-badge">
-                                                            <i class="far fa-clock"></i>
-                                                            <span>
-                                                                {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}
-                                                                -
-                                                                {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
-                                                            </span>
-                                                        </div>
-                                                    @elseif($item->type == 'membership')
-                                                        <div class="info-badge">
-                                                            <i class="fas fa-id-card"></i>
-                                                            <span>{{ $item->details }}</span>
+                                    <div class="cart-item p-4 border-bottom">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-2 col-sm-3 mb-3 mb-md-0">
+                                                <div class="cart-item-image">
+                                                    @if (isset($item->image))
+                                                        <img src="{{ Storage::url($item->image) }}"
+                                                            alt="{{ $item->name ?? 'Item' }}" class="img-fluid rounded-3">
+                                                    @else
+                                                        <div
+                                                            class="placeholder-image bg-light rounded-3 d-flex align-items-center justify-content-center">
+                                                            <i class="fas fa-futbol text-muted"></i>
                                                         </div>
                                                     @endif
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-3 col-sm-3 d-flex justify-content-between align-items-center">
-                                            <div class="cart-item-price text-end">
-                                                <div class="price">Rp {{ number_format($item->price, 0, ',', '.') }}</div>
+                                            <div class="col-md-7 col-sm-6 mb-3 mb-md-0">
+                                                <div class="cart-item-details">
+                                                    <h5 class="cart-item-title fw-bold mb-1">
+                                                        {{ $item->name ?? 'Item' }}
+                                                    </h5>
+                                                    <div class="cart-item-category mb-2">
+                                                        <span
+                                                            class="type-badge">{{ $item->type_name ?? $item->type }}</span>
+                                                    </div>
+                                                    <div class="cart-item-info">
+                                                        @if ($item->type == 'field_booking' || $item->type == 'photographer')
+                                                            <div class="info-badge">
+                                                                <i class="far fa-calendar-alt"></i>
+                                                                <span>{{ $item->formatted_date ?? \Carbon\Carbon::parse($item->start_time)->format('d M Y') }}</span>
+                                                            </div>
+                                                            <div class="info-badge">
+                                                                <i class="far fa-clock"></i>
+                                                                <span>
+                                                                    {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}
+                                                                    -
+                                                                    {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
+                                                                </span>
+                                                            </div>
+                                                        @elseif($item->type == 'rental_item')
+                                                            <div class="info-badge">
+                                                                <i class="fas fa-box"></i>
+                                                                <span>Jumlah: {{ $item->quantity }}</span>
+                                                            </div>
+                                                            <div class="info-badge">
+                                                                <i class="far fa-calendar-alt"></i>
+                                                                <span>{{ \Carbon\Carbon::parse($item->start_time)->format('d M Y') }}</span>
+                                                            </div>
+                                                            <div class="info-badge">
+                                                                <i class="far fa-clock"></i>
+                                                                <span>
+                                                                    {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}
+                                                                    -
+                                                                    {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
+                                                                </span>
+                                                            </div>
+                                                        @elseif($item->type == 'membership')
+                                                            <div class="info-badge">
+                                                                <i class="fas fa-id-card"></i>
+                                                                <span>{{ $item->details }}</span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="cart-item-actions">
-                                                <form action="{{ route('user.cart.remove', $item->id) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn-remove" title="Hapus">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
+                                            <div
+                                                class="col-md-3 col-sm-3 d-flex justify-content-between align-items-center">
+                                                <div class="cart-item-price text-end">
+                                                    <div class="price">Rp {{ number_format($item->price, 0, ',', '.') }}
+                                                    </div>
+                                                </div>
+                                                <div class="cart-item-actions">
+                                                    <form action="{{ route('user.cart.remove', $item->id) }}"
+                                                        method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn-remove" title="Hapus">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            @endforeach
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -150,11 +154,61 @@
                             <h5 class="mb-0 fw-bold">Ringkasan Booking</h5>
                         </div>
                         <div class="card-body p-4">
+                            <!-- Form Kupon Diskon -->
+                            @if (session()->has('cart_discount'))
+                                <div class="discount-applied mb-4">
+                                    <div class="discount-info p-3 bg-success-subtle rounded-3 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="fw-bold mb-1">{{ session('cart_discount')['name'] }}</h6>
+                                                <span
+                                                    class="badge bg-success">{{ session('cart_discount')['code'] }}</span>
+                                                <div class="text-success mt-1 fw-bold">
+                                                    - Rp
+                                                    {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}
+                                                </div>
+                                            </div>
+                                            <a href="{{ route('user.cart.remove.discount') }}" class="btn-remove-discount"
+                                                title="Hapus kupon">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="discount-form mb-4">
+                                    <form action="{{ route('user.cart.apply.discount') }}" method="POST">
+                                        @csrf
+                                        <div class="input-group">
+                                            <input type="text" name="discount_code" class="form-control"
+                                                placeholder="Kode kupon" required>
+                                            <button type="submit" class="btn-apply-discount">Terapkan</button>
+                                        </div>
+                                        @error('discount_code')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </form>
+                                    <button type="button" class="btn-view-promos mt-2" data-bs-toggle="modal"
+                                        data-bs-target="#promosModal">
+                                        <i class="fas fa-tags me-2"></i>Lihat Promo
+                                    </button>
+                                </div>
+                            @endif
+
                             <div class="summary-items mb-4">
                                 <div class="summary-item d-flex justify-content-between mb-3">
                                     <span class="label">Subtotal</span>
-                                    <span class="value">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
+                                    <span class="value">Rp
+                                        {{ number_format(isset($subtotal) ? $subtotal : $totalPrice, 0, ',', '.') }}</span>
                                 </div>
+
+                                @if (session()->has('cart_discount') && isset($discountAmount) && $discountAmount > 0)
+                                    <div class="summary-item d-flex justify-content-between mb-3 text-success">
+                                        <span class="label">Diskon</span>
+                                        <span class="value">- Rp {{ number_format($discountAmount, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+
                                 <div class="summary-item d-flex justify-content-between mb-3">
                                     <span class="label">Jumlah Item</span>
                                     <span class="value">{{ count($cartItems) }} item</span>
@@ -205,8 +259,140 @@
         @endif
     </div>
 
+    <!-- Modal Daftar Promo -->
+    <div class="modal fade" id="promosModal" tabindex="-1" aria-labelledby="promosModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="promosModalLabel">Promo Tersedia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (isset($activeDiscounts) && count($activeDiscounts) > 0)
+                        <div class="row">
+                            @foreach ($activeDiscounts as $discount)
+                                <div class="col-md-6 mb-3">
+                                    <div class="promo-card">
+                                        <div class="promo-card-header">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h5 class="promo-title">{{ $discount->name }}</h5>
+                                                <span class="promo-badge">
+                                                    @if ($discount->type == 'percentage')
+                                                        {{ number_format($discount->value, 0) }}%
+                                                    @else
+                                                        Rp {{ number_format($discount->value, 0, ',', '.') }}
+                                                    @endif
+                                                </span>
+                                            </div>
+                                            <div class="promo-code">
+                                                <span class="code-label">Kode:</span>
+                                                <span class="code-value">{{ $discount->code }}</span>
+                                                <button class="btn-copy-code" data-code="{{ $discount->code }}"
+                                                    title="Salin kode">
+                                                    <i class="far fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="promo-card-body">
+                                            <p class="promo-description">{{ $discount->description }}</p>
+
+                                            <div class="promo-details">
+                                                <div class="promo-detail-item">
+                                                    <i class="fas fa-tag text-danger"></i>
+                                                    <span>
+                                                        @if ($discount->applicable_to == 'all')
+                                                            Berlaku untuk semua item
+                                                        @elseif($discount->applicable_to == 'field_booking')
+                                                            Hanya untuk booking lapangan
+                                                        @elseif($discount->applicable_to == 'rental_item')
+                                                            Hanya untuk penyewaan peralatan
+                                                        @elseif($discount->applicable_to == 'membership')
+                                                            Hanya untuk membership
+                                                        @elseif($discount->applicable_to == 'photographer')
+                                                            Hanya untuk jasa fotografer
+                                                        @endif
+                                                    </span>
+                                                </div>
+
+                                                @if ($discount->min_order > 0)
+                                                    <div class="promo-detail-item">
+                                                        <i class="fas fa-money-bill-wave text-danger"></i>
+                                                        <span>Min. pembelian Rp
+                                                            {{ number_format($discount->min_order, 0, ',', '.') }}</span>
+                                                    </div>
+                                                @endif
+
+                                                @if ($discount->end_date)
+                                                    <div class="promo-detail-item">
+                                                        <i class="far fa-calendar-alt text-danger"></i>
+                                                        <span>Berlaku sampai
+                                                            {{ \Carbon\Carbon::parse($discount->end_date)->format('d M Y') }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="promo-card-footer">
+                                            <button class="btn-use-promo" data-code="{{ $discount->code }}"
+                                                data-bs-dismiss="modal">
+                                                Gunakan Promo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-ticket-alt fa-3x text-muted"></i>
+                            </div>
+                            <h5>Tidak ada promo tersedia saat ini</h5>
+                            <p class="text-muted">Silakan periksa kembali nanti untuk promo terbaru.</p>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+    <script>
+        // Menangani klik tombol "Gunakan Promo"
+        document.addEventListener('DOMContentLoaded', function() {
+            const usePromoButtons = document.querySelectorAll('.btn-use-promo');
+            const discountInput = document.querySelector('input[name="discount_code"]');
+
+            usePromoButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const promoCode = this.getAttribute('data-code');
+                    if (discountInput) {
+                        discountInput.value = promoCode;
+                    }
+                });
+            });
+
+            // Fungsi untuk menyalin kode promo
+            const copyButtons = document.querySelectorAll('.btn-copy-code');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const code = this.getAttribute('data-code');
+                    navigator.clipboard.writeText(code).then(() => {
+                        // Feedback visual bahwa kode telah disalin
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                        }, 1500);
+                    });
+                });
+            });
+        });
     </script>
     <style>
         /* Modern Cart Styling */
@@ -551,6 +737,210 @@
             font-size: 0.8rem;
         }
 
+        /* Discount Form Styling */
+        .discount-form {
+            border: 1px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 16px;
+            background-color: #f8f9fa;
+        }
+
+        .btn-apply-discount {
+            background-color: #9e0620;
+            color: white;
+            border: none;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            padding: 0 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-apply-discount:hover {
+            background-color: #7d0318;
+        }
+
+        .btn-view-promos {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            background-color: transparent;
+            color: #9e0620;
+            border: 1px dashed #9e0620;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-view-promos:hover {
+            background-color: rgba(158, 6, 32, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .discount-info {
+            border-left: 4px solid #28a745;
+        }
+
+        .btn-remove-discount {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            color: #dc3545;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-remove-discount:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        /* Promo Modal Styling */
+        .btn-secondary {
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* Promo Card Styling */
+        .promo-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .promo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .promo-card-header {
+            padding: 16px;
+            background-color: #fff8f8;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .promo-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2D3748;
+        }
+
+        .promo-badge {
+            background-color: #9e0620;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .promo-code {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .code-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-right: 5px;
+        }
+
+        .code-value {
+            font-family: monospace;
+            background-color: rgba(158, 6, 32, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #9e0620;
+            margin-right: 8px;
+        }
+
+        .btn-copy-code {
+            background: transparent;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy-code:hover {
+            color: #9e0620;
+        }
+
+        .promo-card-body {
+            padding: 16px;
+            flex-grow: 1;
+        }
+
+        .promo-description {
+            font-size: 0.9rem;
+            color: #4A5568;
+            margin-bottom: 16px;
+        }
+
+        .promo-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .promo-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #4A5568;
+        }
+
+        .promo-card-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #f1f1f1;
+            background-color: #fafafa;
+        }
+
+        .btn-use-promo {
+            width: 100%;
+            padding: 8px 0;
+            background-color: #9e0620;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-use-promo:hover {
+            background-color: #7d0318;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
 
@@ -584,6 +974,14 @@
 
             .btn-clear span {
                 display: none;
+            }
+
+            .promo-card {
+                margin-bottom: 15px;
+            }
+
+            .modal-dialog {
+                margin: 10px;
             }
         }
     </style>

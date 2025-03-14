@@ -154,10 +154,35 @@
                                         </div>
                                     @endif
 
+                                    <!-- Tambahkan informasi subtotal dan diskon jika ada -->
+                                    @if($payment->discount_id && $payment->discount_amount > 0)
+                                        <div class="summary-item">
+                                            <div class="item-label">
+                                                <i class="fas fa-receipt"></i>
+                                                <span>Subtotal</span>
+                                            </div>
+                                            <div class="item-value">
+                                                Rp {{ number_format($payment->original_amount, 0, ',', '.') }}
+                                            </div>
+                                        </div>
+
+                                        <div class="summary-item">
+                                            <div class="item-label">
+                                                <i class="fas fa-tag text-success"></i>
+                                                <span class="text-success">Diskon</span>
+                                            </div>
+                                            <div class="item-value text-success">
+                                                - Rp {{ number_format($payment->discount_amount, 0, ',', '.') }}
+                                                @if($payment->discount)
+                                                    <div class="discount-code">{{ $payment->discount->code }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     <div class="total-amount">
                                         <div class="amount-label">Total Pembayaran</div>
-                                        <div class="amount-value">Rp {{ number_format($payment->amount, 0, ',', '.') }}
-                                        </div>
+                                        <div class="amount-value">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
                                     </div>
 
                                     @if ($payment->transaction_status == 'success')
@@ -782,7 +807,7 @@
                             text: 'Waktu pembayaran telah habis. Halaman akan dimuat ulang.',
                             icon: 'info',
                             confirmButtonText: 'OK',
-                            
+
                             timer: 3000,
                             timerProgressBar: true
                         }).then(() => {
@@ -933,6 +958,19 @@
                 width: 100%;
             }
         }
+        .discount-code {
+    display: inline-block;
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-top: 4px;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
     </style>
 <!-- SweetAlert2 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">

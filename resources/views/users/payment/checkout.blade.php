@@ -369,16 +369,29 @@
                                 @endforeach
                             @endif
                         </div>
-
                         <div class="payment-summary p-4 rounded-3 mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="summary-label">Subtotal</div>
+                                <div class="summary-value">Rp {{ number_format(isset($original_amount) ? $original_amount : $total_price, 0, ',', '.') }}</div>
+                            </div>
+
+                            @if(isset($discount_amount) && $discount_amount > 0)
+                            <div class="d-flex justify-content-between align-items-center mb-2 text-success">
+                                <div class="summary-label">
+                                    <i class="fas fa-tag me-2"></i>Diskon
+                                </div>
+                                <div class="summary-value">- Rp {{ number_format($discount_amount, 0, ',', '.') }}</div>
+                            </div>
+                            @endif
+
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="fw-bold mb-0">Total Pembayaran</h5>
                                 <h5 class="fw-bold total-price mb-0">
-                                    Rp
-                                    {{ number_format(isset($total_price) ? $total_price : $payment->amount, 0, ',', '.') }}
+                                    Rp {{ number_format(isset($total_price) ? $total_price : $payment->amount, 0, ',', '.') }}
                                 </h5>
                             </div>
                         </div>
+                       
 
                         <div class="payment-action text-center">
                             <button id="pay-button" class="btn-payment">
@@ -810,6 +823,16 @@
                 font-size: 1.5rem;
             }
         }
+
+        .summary-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.summary-value {
+    font-weight: 600;
+    color: #212529;
+}
     </style>
 
     <style>

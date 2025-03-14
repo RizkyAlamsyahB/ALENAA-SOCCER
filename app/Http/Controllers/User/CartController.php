@@ -7,11 +7,13 @@ use App\Models\Cart;
 use App\Models\Field;
 use App\Models\Payment;
 use App\Models\CartItem;
+use App\Models\Discount;
 use App\Models\Membership;
 use App\Models\RentalItem;
 use App\Models\FieldBooking;
 use App\Models\Photographer;
 use Illuminate\Http\Request;
+use App\Models\DiscountUsage;
 use App\Models\RentalBooking;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -256,75 +258,97 @@ private function addRentalItemToCart(Request $request, Cart $cart)
      * Memeriksa ketersediaan fotografer pada waktu tertentu
      */
 
-    /**
-     * Menampilkan halaman keranjang booking
-     */
-    public function viewCart()
-    {
-        $cart = Cart::where('user_id', Auth::id())->first();
-        $cartItems = [];
-        $totalPrice = 0;
+/**
+ * Menampilkan halaman keranjang booking
+ */
+public function viewCart()
+{
+    $cart = Cart::where('user_id', Auth::id())->first();
+    $cartItems = [];
+    $subtotal = 0;
+    $discount = null;
+    $discountAmount = 0;
+    $totalPrice = 0;
 
-        if ($cart) {
-            $cartItems = CartItem::where('cart_id', $cart->id)->get();
+    if ($cart) {
+        $cartItems = CartItem::where('cart_id', $cart->id)->get();
 
-            // Prepare data for view and calculate total price
-            foreach ($cartItems as $item) {
-                // Enhance cart item with additional data based on type
-                switch ($item->type) {
-                    case 'field_booking':
-                        $field = Field::find($item->item_id);
-                        if ($field) {
-                            $item->name = $field->name;
-                            $item->type_name = 'Booking Lapangan';
-                            $item->image = $field->image;
-                            $item->formatted_date = Carbon::parse($item->start_time)->format('d M Y');
-                            $item->start_time_formatted = Carbon::parse($item->start_time)->format('H:i');
-                            $item->end_time_formatted = Carbon::parse($item->end_time)->format('H:i');
-                            $item->details = $field->type . ' - ' . $item->start_time_formatted . ' - ' . $item->end_time_formatted;
-                        }
-                        break;
+        // Prepare data for view and calculate total price
+        foreach ($cartItems as $item) {
+            // Enhance cart item with additional data based on type
+            switch ($item->type) {
+                case 'field_booking':
+                    $field = Field::find($item->item_id);
+                    if ($field) {
+                        $item->name = $field->name;
+                        $item->type_name = 'Booking Lapangan';
+                        $item->image = $field->image;
+                        $item->formatted_date = Carbon::parse($item->start_time)->format('d M Y');
+                        $item->start_time_formatted = Carbon::parse($item->start_time)->format('H:i');
+                        $item->end_time_formatted = Carbon::parse($item->end_time)->format('H:i');
+                        $item->details = $field->type . ' - ' . $item->start_time_formatted . ' - ' . $item->end_time_formatted;
+                    }
+                    break;
 
-                    case 'rental_item':
-                        $rentalItem = RentalItem::find($item->item_id);
-                        if ($rentalItem) {
-                            $item->name = $rentalItem->name;
-                            $item->type_name = 'Penyewaan Peralatan';
-                            $item->image = $rentalItem->image;
-                            $item->details = 'Jumlah: ' . $item->quantity;
-                        }
-                        break;
+                case 'rental_item':
+                    $rentalItem = RentalItem::find($item->item_id);
+                    if ($rentalItem) {
+                        $item->name = $rentalItem->name;
+                        $item->type_name = 'Penyewaan Peralatan';
+                        $item->image = $rentalItem->image;
+                        $item->details = 'Jumlah: ' . $item->quantity;
+                    }
+                    break;
 
-                    case 'membership':
-                        $membership = Membership::find($item->item_id);
-                        if ($membership) {
-                            $item->name = $membership->name;
-                            $item->type_name = 'Keanggotaan';
-                            $item->image = $membership->image;
-                            $item->details = 'Durasi: ' . $membership->duration . ' bulan';
-                        }
-                        break;
+                case 'membership':
+                    $membership = Membership::find($item->item_id);
+                    if ($membership) {
+                        $item->name = $membership->name;
+                        $item->type_name = 'Keanggotaan';
+                        $item->image = $membership->image;
+                        $item->details = 'Durasi: ' . $membership->duration . ' bulan';
+                    }
+                    break;
 
-                    case 'photographer':
-                        $photographer = Photographer::find($item->item_id);
-                        if ($photographer) {
-                            $item->name = $photographer->name;
-                            $item->type_name = 'Jasa Fotografer';
-                            $item->image = $photographer->image;
-                            $item->formatted_date = Carbon::parse($item->start_time)->format('d M Y');
-                            $item->start_time_formatted = Carbon::parse($item->start_time)->format('H:i');
-                            $item->end_time_formatted = Carbon::parse($item->end_time)->format('H:i');
-                            $item->details = $item->formatted_date . ' ' . $item->start_time_formatted . ' - ' . $item->end_time_formatted;
-                        }
-                        break;
-                }
-
-                $totalPrice += $item->price;
+                case 'photographer':
+                    $photographer = Photographer::find($item->item_id);
+                    if ($photographer) {
+                        $item->name = $photographer->name;
+                        $item->type_name = 'Jasa Fotografer';
+                        $item->image = $photographer->image;
+                        $item->formatted_date = Carbon::parse($item->start_time)->format('d M Y');
+                        $item->start_time_formatted = Carbon::parse($item->start_time)->format('H:i');
+                        $item->end_time_formatted = Carbon::parse($item->end_time)->format('H:i');
+                        $item->details = $item->formatted_date . ' ' . $item->start_time_formatted . ' - ' . $item->end_time_formatted;
+                    }
+                    break;
             }
+
+            $subtotal += $item->price;
         }
 
-        return view('users.cart.index', compact('cartItems', 'totalPrice'));
+        // Ambil data diskon dari session jika ada
+        if (session()->has('cart_discount')) {
+            $discount = session('cart_discount');
+            $discountAmount = $discount['amount'];
+        }
+
+        // Hitung total setelah diskon
+        $totalPrice = $subtotal - $discountAmount;
     }
+
+    // Ambil data diskon aktif untuk ditampilkan di modal "Lihat Promo"
+    $activeDiscounts = Discount::where('is_active', true)
+        ->where(function($query) {
+            $query->whereNull('end_date')
+                  ->orWhere('end_date', '>', now());
+        })
+        ->orderBy('value', 'desc')
+        ->limit(10)
+        ->get();
+
+    return view('users.cart.index', compact('cartItems', 'subtotal', 'discount', 'discountAmount', 'totalPrice', 'activeDiscounts'));
+}
 
     /**
      * API untuk menghapus item dari keranjang (untuk AJAX)
@@ -448,268 +472,425 @@ private function addRentalItemToCart(Request $request, Cart $cart)
     }
 
     /**
-     * Proses checkout dan pembayaran
-     */
-    public function checkout(Request $request)
-    {
-        // Dapatkan cart user yang sedang login
-        $cart = Cart::where('user_id', Auth::id())->first();
+ * Memproses kode kupon diskon
+ */
+public function applyDiscount(Request $request)
+{
+    $request->validate([
+        'discount_code' => 'required|string|max:50',
+    ]);
 
-        if (!$cart) {
-            return redirect()->route('user.cart.view')->with('error', 'Keranjang Anda kosong');
+    $discountCode = $request->discount_code;
+    $cart = Cart::where('user_id', Auth::id())->first();
+
+    if (!$cart) {
+        return back()->with('error', 'Keranjang tidak ditemukan');
+    }
+
+    $cartItems = CartItem::where('cart_id', $cart->id)->get();
+    if ($cartItems->isEmpty()) {
+        return back()->with('error', 'Keranjang Anda kosong');
+    }
+
+    // Hitung subtotal
+    $subtotal = $cartItems->sum('price');
+
+    // Cari diskon berdasarkan kode
+    $discount = Discount::where('code', $discountCode)
+        ->where('is_active', true)
+        ->first();
+
+    // Cek apakah diskon ditemukan
+    if (!$discount) {
+        return back()->with('error', 'Kode kupon tidak valid');
+    }
+
+    // Cek apakah diskon masih berlaku untuk user ini
+    if (!$discount->isValidForUser(Auth::id())) {
+        return back()->with('error', 'Kode kupon tidak dapat digunakan');
+    }
+
+    // Cek minimal pembelian
+    if ($subtotal < $discount->min_order) {
+        return back()->with('error', 'Minimal pembelian untuk kupon ini adalah Rp ' . number_format($discount->min_order, 0, ',', '.'));
+    }
+
+    // Cek jenis item yang applicable
+    if ($discount->applicable_to !== 'all') {
+        // Filter cart items berdasarkan jenis yang applicable
+        $applicableItems = $cartItems->filter(function ($item) use ($discount) {
+            return $item->type === $discount->applicable_to;
+        });
+
+        if ($applicableItems->isEmpty()) {
+            return back()->with('error', 'Kupon ini hanya berlaku untuk ' . $this->getItemTypeName($discount->applicable_to));
         }
 
-        // Dapatkan semua item di keranjang
-        $cartItems = CartItem::where('cart_id', $cart->id)->get();
+        // Hitung subtotal untuk item yang applicable
+        $applicableSubtotal = $applicableItems->sum('price');
+        // Hitung diskon
+        $discountAmount = $discount->calculateDiscount($applicableSubtotal);
+    } else {
+        // Hitung diskon untuk semua item
+        $discountAmount = $discount->calculateDiscount($subtotal);
+    }
 
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('user.cart.view')->with('error', 'Keranjang Anda kosong');
+    // Simpan informasi diskon di session
+    session()->put('cart_discount', [
+        'id' => $discount->id,
+        'code' => $discount->code,
+        'name' => $discount->name,
+        'amount' => $discountAmount,
+        'subtotal' => $subtotal,
+        'total' => $subtotal - $discountAmount,
+    ]);
+
+    return back()->with('success', 'Kupon berhasil diterapkan: ' . $discount->name);
+}
+
+/**
+ * Menghapus kode kupon dari keranjang
+ */
+public function removeDiscount()
+{
+    session()->forget('cart_discount');
+    return back()->with('success', 'Kupon berhasil dihapus');
+}
+
+/**
+ * Helper untuk mendapatkan nama jenis item
+ */
+private function getItemTypeName($type)
+{
+    $types = [
+        'field_booking' => 'Booking Lapangan',
+        'rental_item' => 'Penyewaan Peralatan',
+        'membership' => 'Keanggotaan',
+        'photographer' => 'Jasa Fotografer',
+    ];
+
+    return $types[$type] ?? $type;
+}
+
+/**
+ * Proses checkout dan pembayaran
+ */
+public function checkout(Request $request)
+{
+    // Dapatkan cart user yang sedang login
+    $cart = Cart::where('user_id', Auth::id())->first();
+
+    if (!$cart) {
+        return redirect()->route('user.cart.view')->with('error', 'Keranjang Anda kosong');
+    }
+
+    // Dapatkan semua item di keranjang
+    $cartItems = CartItem::where('cart_id', $cart->id)->get();
+
+    if ($cartItems->isEmpty()) {
+        return redirect()->route('user.cart.view')->with('error', 'Keranjang Anda kosong');
+    }
+
+    // Cek ketersediaan item
+    $unavailableItems = [];
+
+    foreach ($cartItems as $item) {
+        if ($item->type == 'field_booking') {
+            // Cek apakah masih tersedia
+            $field = Field::find($item->item_id);
+            if ($field) {
+                $isBooked = FieldBooking::where('field_id', $item->item_id)
+                    ->whereDate('start_time', Carbon::parse($item->start_time)->toDateString())
+                    ->where(function ($query) use ($item) {
+                        // Logika pengecekan overlap waktu
+                        $query
+                            ->where(function ($q) use ($item) {
+                                $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
+                            })
+                            ->orWhere(function ($q) use ($item) {
+                                $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
+                            })
+                            ->orWhere(function ($q) use ($item) {
+                                $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
+                            });
+                    })
+                    ->where('status', '!=', 'cancelled')
+                    ->exists();
+
+                if ($isBooked) {
+                    $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+                    $endTime = Carbon::parse($item->end_time)->format('H:i');
+                    $unavailableItems[] = $field->name . ' (' . $startTime . ' - ' . $endTime . ')';
+                }
+            }
+        } elseif ($item->type == 'rental_item') {
+            // Cek ketersediaan rental item
+            $rentalItem = RentalItem::find($item->item_id);
+            if ($rentalItem) {
+                // Hanya memeriksa booking yang sudah dikonfirmasi, abaikan item di keranjang
+                $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+                    ->whereNotIn('status', ['cancelled'])
+                    ->where(function ($query) use ($item) {
+                        $query
+                            ->where(function ($q) use ($item) {
+                                $q->where('start_time', '>=', $item->start_time)->where('start_time', '<', $item->end_time);
+                            })
+                            ->orWhere(function ($q) use ($item) {
+                                $q->where('end_time', '>', $item->start_time)->where('end_time', '<=', $item->end_time);
+                            })
+                            ->orWhere(function ($q) use ($item) {
+                                $q->where('start_time', '<=', $item->start_time)->where('end_time', '>=', $item->end_time);
+                            });
+                    })
+                    ->sum('quantity');
+
+                $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+
+                if ($item->quantity > $availableQuantity) {
+                    $unavailableItems[] = $rentalItem->name . ' (Tersedia: ' . $availableQuantity . ', Diminta: ' . $item->quantity . ')';
+                }
+            }
+        }
+        // Tambahkan pengecekan untuk jenis item lainnya jika diperlukan
+    }
+
+    if (!empty($unavailableItems)) {
+        // Ada item yang sudah tidak tersedia
+        return redirect()
+            ->route('user.cart.view')
+            ->with('error', 'Beberapa item yang Anda pilih sudah tidak tersedia: ' . implode(', ', $unavailableItems));
+    }
+
+    // Hitung subtotal
+    $subtotal = $cartItems->sum('price');
+
+    // Variabel untuk diskon
+    $discountId = null;
+    $discountAmount = 0;
+
+    // Cek apakah ada diskon yang diterapkan
+    if (session()->has('cart_discount')) {
+        $cartDiscount = session('cart_discount');
+        $discountId = $cartDiscount['id'];
+        $discountAmount = $cartDiscount['amount'];
+
+        // Verifikasi ulang diskon
+        $discount = Discount::find($discountId);
+
+        if (!$discount || !$discount->isValidForUser(Auth::id())) {
+            // Diskon tidak valid, hapus dari session
+            session()->forget('cart_discount');
+            return redirect()
+                ->route('user.cart.view')
+                ->with('error', 'Kupon diskon tidak valid atau sudah tidak dapat digunakan');
         }
 
-        // Cek ketersediaan item
-        $unavailableItems = [];
+        // Re-calculate discount (untuk keamanan)
+        $discountAmount = $discount->calculateDiscount($subtotal);
+    }
 
+    // Hitung total setelah diskon
+    $totalPrice = $subtotal - $discountAmount;
+
+    // Generate unique order ID
+    $orderId = 'ORDER-' . now()->format('Ymd-His') . '-' . mt_rand(1000, 9999);
+
+    try {
+        // Konfigurasi Midtrans
+        \Midtrans\Config::$serverKey = config('midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('midtrans.is_production', false);
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        // Siapkan data item untuk Midtrans
+        $itemDetails = [];
         foreach ($cartItems as $item) {
-            if ($item->type == 'field_booking') {
-                // Cek apakah masih tersedia
-                $field = Field::find($item->item_id);
-                if ($field) {
-                    $isBooked = FieldBooking::where('field_id', $item->item_id)
-                        ->whereDate('start_time', Carbon::parse($item->start_time)->toDateString())
-                        ->where(function ($query) use ($item) {
-                            // Logika pengecekan overlap waktu
-                            $query
-                                ->where(function ($q) use ($item) {
-                                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
-                                });
-                        })
-                        ->where('status', '!=', 'cancelled')
-                        ->exists();
+            // Isi item detail berdasarkan tipe
+            switch ($item->type) {
+                case 'field_booking':
+                    $field = Field::find($item->item_id);
+                    $itemName = $field ? $field->name : 'Booking Lapangan';
+                    $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+                    $endTime = Carbon::parse($item->end_time)->format('H:i');
+                    $detail = $itemName . ' (' . $startTime . ' - ' . $endTime . ')';
+                    break;
 
-                    if ($isBooked) {
-                        $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
-                        $endTime = Carbon::parse($item->end_time)->format('H:i');
-                        $unavailableItems[] = $field->name . ' (' . $startTime . ' - ' . $endTime . ')';
+                case 'rental_item':
+                    $rentalItem = RentalItem::find($item->item_id);
+                    $itemName = $rentalItem ? $rentalItem->name : 'Penyewaan Peralatan';
+                    $detail = $itemName . ' (Jumlah: ' . $item->quantity . ')';
+                    break;
+
+                case 'membership':
+                    $membership = Membership::find($item->item_id);
+                    $itemName = $membership ? $membership->name : 'Keanggotaan';
+                    $detail = $itemName;
+                    break;
+
+                case 'photographer':
+                    $photographer = Photographer::find($item->item_id);
+                    $itemName = $photographer ? $photographer->name : 'Jasa Fotografer';
+                    $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+                    $endTime = Carbon::parse($item->end_time)->format('H:i');
+                    $detail = $itemName . ' (' . $startTime . ' - ' . $endTime . ')';
+                    break;
+
+                default:
+                    $detail = 'Item #' . $item->id;
+            }
+
+            $itemDetails[] = [
+                'id' => $item->id,
+                'price' => ($item->type == 'rental_item') ? ($item->price / $item->quantity) : $item->price,
+                'quantity' => $item->quantity ?? 1,
+                'name' => $detail,
+            ];
+        }
+
+        // Jika ada diskon, tambahkan sebagai item negatif
+        if ($discountAmount > 0) {
+            $itemDetails[] = [
+                'id' => 'DISCOUNT',
+                'price' => -$discountAmount,
+                'quantity' => 1,
+                'name' => 'Diskon: ' . ($cartDiscount['name'] ?? 'Kupon Diskon'),
+            ];
+        }
+
+        // Siapkan parameter transaksi
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $totalPrice,
+            ],
+            'customer_details' => [
+                'first_name' => Auth::user()->name,
+                'email' => Auth::user()->email,
+                'phone' => Auth::user()->phone ?? '',
+            ],
+            'item_details' => $itemDetails,
+        ];
+
+        // Simpan informasi pembayaran SEBELUM membuat booking
+        $payment = Payment::create([
+            'order_id' => $orderId,
+            'user_id' => Auth::id(),
+            'amount' => $totalPrice,
+            'discount_id' => $discountId,
+            'discount_amount' => $discountAmount,
+            'original_amount' => $subtotal,
+            'transaction_status' => 'pending',
+            'expires_at' => now()->addMinutes(30), // 30 minutes expiration
+        ]);
+
+        // Buat booking records dalam transaction
+        DB::beginTransaction();
+        try {
+            foreach ($cartItems as $item) {
+                if ($item->type == 'field_booking') {
+                    $field = Field::find($item->item_id);
+                    if ($field) {
+                        FieldBooking::create([
+                            'user_id' => Auth::id(),
+                            'field_id' => $item->item_id,
+                            'payment_id' => $payment->id,
+                            'start_time' => $item->start_time,
+                            'end_time' => $item->end_time,
+                            'total_price' => $item->price,
+                            'status' => 'pending',
+                        ]);
+                    }
+                } elseif ($item->type == 'rental_item') {
+                    $rentalItem = RentalItem::find($item->item_id);
+                    if ($rentalItem) {
+                        RentalBooking::create([
+                            'user_id' => Auth::id(),
+                            'rental_item_id' => $item->item_id,
+                            'payment_id' => $payment->id,
+                            'start_time' => $item->start_time,
+                            'end_time' => $item->end_time,
+                            'quantity' => $item->quantity,
+                            'total_price' => $item->price,
+                            'status' => 'pending',
+                        ]);
+                    }
+                } elseif ($item->type == 'membership') {
+                    $membership = Membership::find($item->item_id);
+                    if ($membership) {
+                        MembershipSubscription::create([
+                            'user_id' => Auth::id(),
+                            'membership_id' => $item->item_id,
+                            'payment_id' => $payment->id,
+                            'price' => $item->price,
+                            'status' => 'pending',
+                            'start_date' => now(),
+                            'end_date' => now()->addMonths($membership->duration),
+                        ]);
+                    }
+                } elseif ($item->type == 'photographer') {
+                    $photographer = Photographer::find($item->item_id);
+                    if ($photographer) {
+                        PhotographerBooking::create([
+                            'user_id' => Auth::id(),
+                            'photographer_id' => $item->item_id,
+                            'payment_id' => $payment->id,
+                            'start_time' => $item->start_time,
+                            'end_time' => $item->end_time,
+                            'price' => $item->price,
+                            'status' => 'pending',
+                        ]);
                     }
                 }
-            } elseif ($item->type == 'rental_item') {
-// Cek ketersediaan rental item
-$rentalItem = RentalItem::find($item->item_id);
-if ($rentalItem) {
-    // Hanya memeriksa booking yang sudah dikonfirmasi, abaikan item di keranjang
-    $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
-        ->whereNotIn('status', ['cancelled'])
-        ->where(function ($query) use ($item) {
-            $query
-                ->where(function ($q) use ($item) {
-                    $q->where('start_time', '>=', $item->start_time)->where('start_time', '<', $item->end_time);
-                })
-                ->orWhere(function ($q) use ($item) {
-                    $q->where('end_time', '>', $item->start_time)->where('end_time', '<=', $item->end_time);
-                })
-                ->orWhere(function ($q) use ($item) {
-                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>=', $item->end_time);
-                });
-        })
-        ->sum('quantity');
+            }
 
-    $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+            // Jika ada diskon, catat penggunaan diskon
+            if ($discountId) {
+                DiscountUsage::create([
+                    'discount_id' => $discountId,
+                    'user_id' => Auth::id(),
+                    'payment_id' => $payment->id,
+                    'discount_amount' => $discountAmount,
+                ]);
 
-    if ($item->quantity > $availableQuantity) {
-        $unavailableItems[] = $rentalItem->name . ' (Tersedia: ' . $availableQuantity . ', Diminta: ' . $item->quantity . ')';
+                // Hapus diskon dari session setelah digunakan
+                session()->forget('cart_discount');
+            }
+
+            // Hapus items dari cart setelah berhasil membuat booking
+            $cartItemsToDelete = $cartItems->pluck('id')->toArray();
+            CartItem::whereIn('id', $cartItemsToDelete)->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating bookings: ' . $e->getMessage());
+            return redirect()
+                ->route('user.cart.view')
+                ->with('error', 'Gagal membuat booking: ' . $e->getMessage());
+        }
+
+        // Dapatkan Snap Token
+        $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+        // Render view payment checkout dengan data yang diperlukan
+        return view('users.payment.checkout', [
+            'snap_token' => $snapToken,
+            'order_id' => $orderId,
+            'total_price' => $totalPrice,
+            'original_amount' => $subtotal,
+            'discount_amount' => $discountAmount,
+            'cart_items' => $cartItems,
+            'expires_at' => $payment->expires_at, // Kirim hanya expires_at saja
+        ]);
+    } catch (\Exception $e) {
+        // Log error untuk debugging
+        Log::error('Checkout Error: ' . $e->getMessage());
+        Log::error($e->getTraceAsString());
+
+        // Redirect ke halaman cart dengan pesan error
+        return redirect()
+            ->route('user.cart.view')
+            ->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
     }
 }
-            }
-            // Tambahkan pengecekan untuk jenis item lainnya jika diperlukan
-        }
-
-        if (!empty($unavailableItems)) {
-            // Ada item yang sudah tidak tersedia
-            return redirect()
-                ->route('user.cart.view')
-                ->with('error', 'Beberapa item yang Anda pilih sudah tidak tersedia: ' . implode(', ', $unavailableItems));
-        }
-
-        // Hitung total harga
-        $totalPrice = $cartItems->sum('price');
-
-        // Generate unique order ID
-        $orderId = 'ORDER-' . now()->format('Ymd-His') . '-' . mt_rand(1000, 9999);
-
-        try {
-            // Konfigurasi Midtrans
-            \Midtrans\Config::$serverKey = config('midtrans.server_key');
-            \Midtrans\Config::$isProduction = config('midtrans.is_production', false);
-            \Midtrans\Config::$isSanitized = true;
-            \Midtrans\Config::$is3ds = true;
-
-            // Siapkan data item untuk Midtrans
-            $itemDetails = [];
-            foreach ($cartItems as $item) {
-                // Isi item detail berdasarkan tipe
-                switch ($item->type) {
-                    case 'field_booking':
-                        $field = Field::find($item->item_id);
-                        $itemName = $field ? $field->name : 'Booking Lapangan';
-                        $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
-                        $endTime = Carbon::parse($item->end_time)->format('H:i');
-                        $detail = $itemName . ' (' . $startTime . ' - ' . $endTime . ')';
-                        break;
-
-                    case 'rental_item':
-                        $rentalItem = RentalItem::find($item->item_id);
-                        $itemName = $rentalItem ? $rentalItem->name : 'Penyewaan Peralatan';
-                        $detail = $itemName . ' (Jumlah: ' . $item->quantity . ')';
-                        break;
-
-                    case 'membership':
-                        $membership = Membership::find($item->item_id);
-                        $itemName = $membership ? $membership->name : 'Keanggotaan';
-                        $detail = $itemName;
-                        break;
-
-                    case 'photographer':
-                        $photographer = Photographer::find($item->item_id);
-                        $itemName = $photographer ? $photographer->name : 'Jasa Fotografer';
-                        $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
-                        $endTime = Carbon::parse($item->end_time)->format('H:i');
-                        $detail = $itemName . ' (' . $startTime . ' - ' . $endTime . ')';
-                        break;
-
-                    default:
-                        $detail = 'Item #' . $item->id;
-                }
-
-                $itemDetails[] = [
-                    'id' => $item->id,
-                    'price' => ($item->type == 'rental_item') ? ($item->price / $item->quantity) : $item->price,
-                    'quantity' => $item->quantity ?? 1,
-                    'name' => $detail,
-                ];
-            }
-
-            // Siapkan parameter transaksi
-            $params = [
-                'transaction_details' => [
-                    'order_id' => $orderId,
-                    'gross_amount' => $totalPrice,
-                ],
-                'customer_details' => [
-                    'first_name' => Auth::user()->name,
-                    'email' => Auth::user()->email,
-                    'phone' => Auth::user()->phone ?? '',
-                ],
-                'item_details' => $itemDetails,
-            ];
-
-            // Simpan informasi pembayaran SEBELUM membuat booking
-            $payment = Payment::create([
-                'order_id' => $orderId,
-                'user_id' => Auth::id(),
-                'amount' => $totalPrice,
-                'transaction_status' => 'pending',
-                'expires_at' => now()->addMinutes(2), // 5 minutes expiration
-            ]);
-
-            // Buat booking records dalam transaction
-            DB::beginTransaction();
-            try {
-                foreach ($cartItems as $item) {
-                    if ($item->type == 'field_booking') {
-                        $field = Field::find($item->item_id);
-                        if ($field) {
-                            FieldBooking::create([
-                                'user_id' => Auth::id(),
-                                'field_id' => $item->item_id,
-                                'payment_id' => $payment->id,
-                                'start_time' => $item->start_time,
-                                'end_time' => $item->end_time,
-                                'total_price' => $item->price,
-                                'status' => 'pending',
-                            ]);
-                        }
-                    } elseif ($item->type == 'rental_item') {
-                        $rentalItem = RentalItem::find($item->item_id);
-                        if ($rentalItem) {
-                            RentalBooking::create([
-                                'user_id' => Auth::id(),
-                                'rental_item_id' => $item->item_id,
-                                'payment_id' => $payment->id,
-                                'start_time' => $item->start_time,
-                                'end_time' => $item->end_time,
-                                'quantity' => $item->quantity,
-                                'total_price' => $item->price,
-                                'status' => 'pending',
-                            ]);
-                        }
-                    } elseif ($item->type == 'membership') {
-                        $membership = Membership::find($item->item_id);
-                        if ($membership) {
-                            MembershipSubscription::create([
-                                'user_id' => Auth::id(),
-                                'membership_id' => $item->item_id,
-                                'payment_id' => $payment->id,
-                                'price' => $item->price,
-                                'status' => 'pending',
-                                'start_date' => now(),
-                                'end_date' => now()->addMonths($membership->duration),
-                            ]);
-                        }
-                    } elseif ($item->type == 'photographer') {
-                        $photographer = Photographer::find($item->item_id);
-                        if ($photographer) {
-                            PhotographerBooking::create([
-                                'user_id' => Auth::id(),
-                                'photographer_id' => $item->item_id,
-                                'payment_id' => $payment->id,
-                                'start_time' => $item->start_time,
-                                'end_time' => $item->end_time,
-                                'price' => $item->price,
-                                'status' => 'pending',
-                            ]);
-                        }
-                    }
-                }
-
-                // Hapus items dari cart setelah berhasil membuat booking
-                $cartItemsToDelete = $cartItems->pluck('id')->toArray();
-                CartItem::whereIn('id', $cartItemsToDelete)->delete();
-
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error('Error creating bookings: ' . $e->getMessage());
-                return redirect()
-                    ->route('user.cart.view')
-                    ->with('error', 'Gagal membuat booking: ' . $e->getMessage());
-            }
-
-            // Dapatkan Snap Token
-            $snapToken = \Midtrans\Snap::getSnapToken($params);
-
-            // Render view payment checkout dengan data yang diperlukan
-            return view('users.payment.checkout', [
-                'snap_token' => $snapToken,
-                'order_id' => $orderId,
-                'total_price' => $totalPrice,
-                'cart_items' => $cartItems,
-                'expires_at' => $payment->expires_at, // Kirim hanya expires_at saja
-            ]);
-        } catch (\Exception $e) {
-            // Log error untuk debugging
-            Log::error('Checkout Error: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
-
-            // Redirect ke halaman cart dengan pesan error
-            return redirect()
-                ->route('user.cart.view')
-                ->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
-        }
-    }
 }

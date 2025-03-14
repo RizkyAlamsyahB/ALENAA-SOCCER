@@ -68,6 +68,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('users.das
         Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
         Route::get('/clear', [CartController::class, 'clearCart'])->name('clear');
         Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
+   // Dalam grup cart management, tambahkan ini:
+Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
+Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name('remove.discount');
+
     });
 
     // Rental Management
