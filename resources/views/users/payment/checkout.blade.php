@@ -296,41 +296,47 @@
                             @endif --}}
 
                                 {{-- Photographer Bookings --}}
-                                {{-- @if (isset($allBookings['photographer_bookings']))
-                                @foreach ($allBookings['photographer_bookings'] as $booking)
-                                    <div class="detail-item">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-8 col-sm-7 mb-2 mb-md-0">
-                                                <div class="item-details">
-                                                    <h5 class="item-title fw-bold mb-1">{{ $booking->photographer->name }}</h5>
-                                                    <div class="item-category mb-2">
-                                                        <span class="type-badge">Jasa Fotografer</span>
-                                                    </div>
-                                                    <div class="item-info">
-                                                        <div class="info-badge">
-                                                            <i class="far fa-calendar-alt"></i>
-                                                            <span>{{ \Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</span>
+                                @if (isset($allBookings['photographer_bookings']))
+                                    @foreach ($allBookings['photographer_bookings'] as $booking)
+                                        <div class="detail-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-8 col-sm-7 mb-2 mb-md-0">
+                                                    <div class="item-details">
+                                                        <h5 class="item-title fw-bold mb-1">
+                                                            {{ $booking->photographer->name }}</h5>
+                                                        <div class="item-category mb-2">
+                                                            <span class="type-badge">Jasa Fotografer</span>
                                                         </div>
-                                                        <div class="info-badge">
-                                                            <i class="far fa-clock"></i>
-                                                            <span>
-                                                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
-                                                                {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
-                                                            </span>
+                                                        <div class="item-info">
+                                                            <div class="info-badge">
+                                                                <i class="fas fa-camera"></i>
+                                                                <span>{{ $booking->photographer->specialization ?? 'Umum' }}</span>
+                                                            </div>
+                                                            <div class="info-badge">
+                                                                <i class="far fa-calendar-alt"></i>
+                                                                <span>{{ \Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</span>
+                                                            </div>
+                                                            <div class="info-badge">
+                                                                <i class="far fa-clock"></i>
+                                                                <span>
+                                                                    {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                                                                    -
+                                                                    {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-4 col-sm-5 text-end">
-                                                <div class="item-price">
-                                                    <span class="price">Rp {{ number_format($booking->price, 0, ',', '.') }}</span>
+                                                <div class="col-md-4 col-sm-5 text-end">
+                                                    <div class="item-price">
+                                                        <span class="price">Rp
+                                                            {{ number_format($booking->price, 0, ',', '.') }}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @endforeach
-                            @endif --}}
-
+                                    @endforeach
+                                @endif
                                 {{-- Jika menggunakan format data lama via bookings --}}
                             @elseif(isset($bookings))
                                 @foreach ($bookings as $booking)
@@ -372,26 +378,30 @@
                         <div class="payment-summary p-4 rounded-3 mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div class="summary-label">Subtotal</div>
-                                <div class="summary-value">Rp {{ number_format(isset($original_amount) ? $original_amount : $total_price, 0, ',', '.') }}</div>
+                                <div class="summary-value">Rp
+                                    {{ number_format(isset($original_amount) ? $original_amount : $total_price, 0, ',', '.') }}
+                                </div>
                             </div>
 
-                            @if(isset($discount_amount) && $discount_amount > 0)
-                            <div class="d-flex justify-content-between align-items-center mb-2 text-success">
-                                <div class="summary-label">
-                                    <i class="fas fa-tag me-2"></i>Diskon
+                            @if (isset($discount_amount) && $discount_amount > 0)
+                                <div class="d-flex justify-content-between align-items-center mb-2 text-success">
+                                    <div class="summary-label">
+                                        <i class="fas fa-tag me-2"></i>Diskon
+                                    </div>
+                                    <div class="summary-value">- Rp {{ number_format($discount_amount, 0, ',', '.') }}
+                                    </div>
                                 </div>
-                                <div class="summary-value">- Rp {{ number_format($discount_amount, 0, ',', '.') }}</div>
-                            </div>
                             @endif
 
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="fw-bold mb-0">Total Pembayaran</h5>
                                 <h5 class="fw-bold total-price mb-0">
-                                    Rp {{ number_format(isset($total_price) ? $total_price : $payment->amount, 0, ',', '.') }}
+                                    Rp
+                                    {{ number_format(isset($total_price) ? $total_price : $payment->amount, 0, ',', '.') }}
                                 </h5>
                             </div>
                         </div>
-                       
+
 
                         <div class="payment-action text-center">
                             <button id="pay-button" class="btn-payment">
@@ -825,14 +835,14 @@
         }
 
         .summary-label {
-    color: #6c757d;
-    font-weight: 500;
-}
+            color: #6c757d;
+            font-weight: 500;
+        }
 
-.summary-value {
-    font-weight: 600;
-    color: #212529;
-}
+        .summary-value {
+            font-weight: 600;
+            color: #212529;
+        }
     </style>
 
     <style>

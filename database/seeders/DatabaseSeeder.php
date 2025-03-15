@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             FieldSeeder::class,
             RentalItemSeeder::class,
+            DiscountSeeder::class,
+            PhotographerSeeder::class
         ]);
     }
 }

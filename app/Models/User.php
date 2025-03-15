@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\PointsTransaction;
+use App\Models\PhotographerBooking;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -73,5 +74,13 @@ class User extends Authenticatable
 public function pointsTransactions()
 {
     return $this->hasMany(PointsTransaction::class);
+}
+
+/**
+ * Get the photographer bookings for the user.
+ */
+public function photographerBookings(): HasMany
+{
+    return $this->hasMany(PhotographerBooking::class);
 }
 }

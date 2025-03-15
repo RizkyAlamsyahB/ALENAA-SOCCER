@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\Review;
 use App\Models\Payment;
 use App\Models\CartItem;
+use App\Models\Discount;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Support\Str;
 use App\Models\FieldBooking;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use App\Models\DiscountUsage;
 use App\Models\RentalBooking;
 use Illuminate\Support\Facades\DB;
+use App\Models\PhotographerBooking;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -499,9 +501,9 @@ public function continuePayment($id)
     $payment = Payment::with([
         'fieldBookings.field',
         'rentalBookings.rentalItem',
-        'discount'
-        // 'membershipSubscriptions.membership',  // dikomentari
-        // 'photographerBookings.photographer'    // dikomentari
+        'discount',
+    //    'membershipSubscriptions.membership',
+    'photographerBookings.photographer'    // uncomment ini
     ])
         ->where('user_id', Auth::id())
         ->findOrFail($id);
@@ -859,7 +861,7 @@ public function finish(Request $request)
  */
 public function detail($id)
 {
-    $payment = Payment::with(['fieldBookings.field', 'rentalBookings.rentalItem'])
+    $payment = Payment::with(['fieldBookings.field', 'rentalBookings.rentalItem', 'photographerBookings.photographer'])
         ->where('user_id', Auth::id())
         ->findOrFail($id);
 
@@ -962,7 +964,12 @@ public function detail($id)
 public function downloadInvoice($id)
 {
     // Ambil data payment dengan eager loading untuk semua jenis booking dan user
-    $payment = Payment::with(['fieldBookings.field', 'rentalBookings.rentalItem', 'user'])
+    $payment = Payment::with([
+        'fieldBookings.field',
+        'rentalBookings.rentalItem',
+        'photographerBookings.photographer',
+        'user'
+    ])
         ->where('user_id', Auth::id())
         ->findOrFail($id);
 

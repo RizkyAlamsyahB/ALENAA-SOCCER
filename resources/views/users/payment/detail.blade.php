@@ -142,6 +142,7 @@
                                         </div>
                                     @endif
 
+
                                     @if ($payment->transaction_id)
                                         <div class="summary-item">
                                             <div class="item-label">
@@ -460,6 +461,110 @@
                             </div>
                         @endif
 
+                        <!-- Photographer Bookings -->
+@if (count($payment->photographerBookings) > 0)
+<div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+    <div
+        class="card-header bg-white d-flex align-items-center justify-content-between py-3 px-4 border-0">
+        <h5 class="m-0 fw-bold">Fotografer</h5>
+        <span class="booking-count">{{ count($payment->photographerBookings) }} Item</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="booking-list">
+            @foreach ($payment->photographerBookings as $booking)
+                <div class="booking-item">
+                    <div class="booking-item-header">
+                        <div class="booking-status">
+                            @if ($booking->status == 'confirmed')
+                                <span class="status-pill confirmed">
+                                    <i class="fas fa-check-circle me-1"></i> Terkonfirmasi
+                                </span>
+                            @elseif($booking->status == 'pending')
+                                <span class="status-pill pending">
+                                    <i class="fas fa-clock me-1"></i> Menunggu
+                                </span>
+                            @elseif($booking->status == 'cancelled')
+                                <span class="status-pill cancelled">
+                                    <i class="fas fa-times-circle me-1"></i> Dibatalkan
+                                </span>
+                            @else
+                                <span class="status-pill other">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {{ ucfirst($booking->status) }}
+                                </span>
+                            @endif
+                        </div>
+                        <div class="booking-id">
+                            #{{ $booking->id }}
+                        </div>
+                    </div>
+
+                    <div class="booking-item-content">
+                        <div class="booking-image">
+                            @if (isset($booking->photographer->image))
+                                <img src="{{ Storage::url($booking->photographer->image) }}"
+                                    alt="{{ $booking->photographer->name ?? 'Fotografer' }}"
+                                    class="field-image">
+                            @else
+                                <div class="field-image-placeholder">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            @endif
+                            <div class="field-type">
+                                Fotografer
+                            </div>
+                        </div>
+
+                        <div class="booking-details">
+                            <h5 class="field-name">{{ $booking->photographer->name ?? 'Fotografer' }}</h5>
+                            <div class="booking-info">
+                                <div class="info-item">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="far fa-clock"></i>
+                                    <span>
+                                        {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                                        -
+                                        {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-camera-retro"></i>
+                                    <span>{{ $booking->photographer->specialization ?? 'Umum' }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-price">
+                            <div class="price-value">Rp
+                                {{ number_format($booking->price, 0, ',', '.') }}</div>
+                            <div class="price-duration">
+                                @php
+                                    $startTime = \Carbon\Carbon::parse($booking->start_time);
+                                    $endTime = \Carbon\Carbon::parse($booking->end_time);
+                                    $durationInHours = $startTime->diffInHours($endTime);
+                                @endphp
+                                {{ $durationInHours }} jam
+                            </div>
+                        </div>
+                    </div>
+
+                    @if ($booking->status == 'confirmed')
+                        <div class="booking-item-actions">
+                            <a href="#" class="btn-outline-action">
+                                <i class="fas fa-camera me-2"></i>
+                                <span>Lihat Detail</span>
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
                     </div>
 
                 </div>
@@ -576,6 +681,60 @@
                                             </div>
                                         </div>
                                     @endforeach
+
+                                    <!-- Photographer Bookings Reviews -->
+@foreach ($payment->photographerBookings as $booking)
+<div class="review-item">
+    <div class="review-item-content">
+        <div class="review-image">
+            @if (isset($booking->photographer->image))
+                <img src="{{ Storage::url($booking->photographer->image) }}"
+                    alt="{{ $booking->photographer->name ?? 'Fotografer' }}"
+                    class="field-image">
+            @else
+                <div class="field-image-placeholder">
+                    <i class="fas fa-camera"></i>
+                </div>
+            @endif
+            <div class="field-type">
+                Fotografer
+            </div>
+        </div>
+
+        <div class="review-details">
+            <h5 class="field-name">{{ $booking->photographer->name ?? 'Fotografer' }}</h5>
+            <div class="booking-info">
+                <div class="info-item">
+                    <i class="far fa-calendar-alt"></i>
+                    <span>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="far fa-clock"></i>
+                    <span>
+                        {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                        -
+                        {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-action">
+            @if (isset($reviewedItems['photographer_' . $booking->photographer_id]) && $reviewedItems['photographer_' . $booking->photographer_id])
+                <span class="review-status-pill">
+                    <i class="fas fa-check-circle me-1"></i> Sudah Direview
+                </span>
+            @else
+                <button class="btn-review"
+                    onclick="showReviewForm('photographer', {{ $booking->photographer_id }}, '{{ $booking->photographer->name }}')">
+                    <i class="fas fa-star me-2"></i>
+                    <span>Beri Ulasan</span>
+                </button>
+            @endif
+        </div>
+    </div>
+</div>
+@endforeach
                                 </div>
                             </div>
                         </div>

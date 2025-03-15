@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\MembershipController;
 use App\Http\Controllers\Admin\RentalItemController;
 use App\Http\Controllers\User\RentalItemsController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\User\PhotographerController;
 use App\Http\Controllers\Admin\PhotoPackageController;
 use App\Http\Controllers\Admin\UserManagementController;
 
@@ -91,6 +92,16 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
             Route::get('/orders/{id}', [RentalItemsController::class, 'orderDetail'])->name('order.detail');
             Route::get('/items/{rentalItemId}/available-slots', [RentalItemsController::class, 'getAvailableSlots'])->name('availableSlots');
         });
+
+        // Photographer Management
+Route::prefix('photographer')
+->name('user.photographer.')
+->group(function () {
+    Route::get('/', [PhotographerController::class, 'index'])->name('index');
+    Route::get('/{id}', [PhotographerController::class, 'show'])->name('show');
+    Route::get('/{photographerId}/available-slots', [PhotographerController::class, 'getAvailableSlots'])->name('availableSlots');
+    Route::post('/bookings/{bookingId}/cancel', [PhotographerController::class, 'cancelBooking'])->name('bookings.cancel');
+});
 
     // Payment Management
     Route::prefix('payment')

@@ -41,6 +41,13 @@
                         <i class="fas fa-basketball-ball me-2"></i> <span>Rental</span>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.photographer.index') }}">
+                        <i class="fas fa-camera me-2"></i> <span>Fotografer</span>
+                    </a>
+                </li>
+
             </ul>
 
             <!-- Right Side -->

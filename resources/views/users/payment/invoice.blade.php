@@ -5,68 +5,63 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Invoice #{{ $payment->order_id }}</title>
     <style>
-        @page {
-            margin: 0;
-            padding: 0;
-            size: a4 portrait;
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: normal;
+            src: url({{ storage_path('fonts/poppins/Poppins-Regular.ttf') }}) format('truetype');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: bold;
+            src: url({{ storage_path('fonts/poppins/Poppins-Bold.ttf') }}) format('truetype');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 600;
+            src: url({{ storage_path('fonts/poppins/Poppins-SemiBold.ttf') }}) format('truetype');
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 8pt;
-            line-height: 1.3;
-            color: #2D3748;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #fff;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333333;
         }
 
-        /* Container */
-        .invoice-container {
-            max-width: 100%;
-            margin: 0;
-            padding: 20px;
+        .page-container {
+            width: 100%;
             position: relative;
         }
 
-        /* Top Border */
-        .top-border {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: linear-gradient(to right, #9E0620, #E53E3E);
+        /* Header Section */
+        .header {
+            background-color: #9E0620;
+            color: white;
+            padding: 30px;
+            width: 100%;
         }
 
-        /* Header */
-        .invoice-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            padding-top: 10px;
-            position: relative;
+        .header-table {
+            width: 100%;
         }
 
-        .logo-section {
-            text-align: left;
-        }
-
-        .logo-section h1 {
+        .brand h1 {
+            font-size: 24pt;
+            font-weight: bold;
             margin: 0;
-            font-size: 20pt;
-            font-weight: 700;
-            color: #9E0620;
-            letter-spacing: -0.5px;
-            line-height: 1;
+            padding: 0;
         }
 
-        .logo-section p {
-            margin: 0;
-            color: #4A5568;
-            font-size: 8pt;
-            font-weight: 400;
+        .brand p {
+            font-size: 10pt;
+            margin: 5px 0 0;
+            padding: 0;
+            opacity: 0.9;
         }
 
         .invoice-title {
@@ -74,292 +69,309 @@
         }
 
         .invoice-title h2 {
-            margin: 0 0 3px 0;
-            color: #9E0620;
-            font-size: 18pt;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+            font-size: 20pt;
+            margin: 0;
+            padding: 0;
         }
 
         .invoice-title p {
-            margin: 1px 0;
-            font-size: 8pt;
-            color: #4A5568;
-            font-weight: 400;
+            font-size: 10pt;
+            margin: 5px 0 0;
+            padding: 0;
+            opacity: 0.9;
         }
 
-        /* Info Boxes */
-        .info-grid {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            gap: 10px;
+        /* Main Content */
+        .content {
+            padding: 20px 30px;
+            background-color: white;
+        }
+
+        /* Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 60pt;
+            color: rgba(16, 185, 129, 0.07);
+            font-weight: bold;
+            transform: rotate(-45deg);
+            z-index: 0;
+        }
+
+        /* Info Sections */
+        .info-table {
+            width: 100%;
+            margin-bottom: 30px;
+            border-collapse: separate;
+            border-spacing: 10px;
         }
 
         .info-box {
-            flex: 1;
-            padding: 8px 10px;
-            border-radius: 6px;
-            border-left: 3px solid #9E0620;
-            background-color: #F7FAFC;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            background-color: #f9fafb;
+            border-radius: 5px;
+            padding: 15px;
+            vertical-align: top;
+            width: 33.33%;
         }
 
-        .info-title {
+        .info-box h3 {
             color: #9E0620;
-            font-size: 8pt;
+            font-size: 10pt;
             font-weight: 600;
-            margin: 0 0 4px 0;
+            margin: 0 0 10px 0;
+            padding: 0 0 5px 0;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        .info-box p {
-            margin: 0 0 2px 0;
+        .info-label {
+            color: #64748b;
             font-size: 8pt;
-            line-height: 1.3;
-            color: #4A5568;
+            display: block;
+            margin: 8px 0 2px;
         }
 
-        .info-box p strong {
-            color: #2D3748;
+        .info-value {
             font-weight: 600;
+            font-size: 9pt;
+            color: #334155;
+            margin: 0 0 5px 0;
         }
 
-        /* Payment Status */
-        .payment-status {
+        .status-badge {
             display: inline-block;
-            background-color: #38A169;
+            background-color: #10b981;
             color: white;
-            padding: 2px 6px;
-            border-radius: 50px;
-            font-size: 7pt;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 8pt;
             font-weight: 500;
-            letter-spacing: 0.3px;
             text-transform: uppercase;
-            margin-top: 2px;
         }
 
-        /* Order Details Table */
-        .table-wrapper {
-            margin-bottom: 15px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        .order-details {
+        /* Items Table */
+        .items-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 7.5pt;
+            margin-bottom: 25px;
         }
 
-        .order-details th {
-            background-color: #F7FAFC;
-            padding: 6px 8px;
+        .items-table th {
+            background-color: #f1f5f9;
             text-align: left;
+            padding: 10px;
+            font-size: 9pt;
             font-weight: 600;
-            color: #4A5568;
-            border-bottom: 1px solid #E2E8F0;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .order-details td {
-            padding: 5px 8px;
-            border-bottom: 1px solid #EDF2F7;
-            color: #4A5568;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 150px;
+        .items-table td {
+            padding: 10px;
+            font-size: 9pt;
+            border-bottom: 1px solid #f1f5f9;
         }
 
-        .order-details .text-right {
+        .items-table .text-center {
+            text-align: center;
+        }
+
+        .items-table .text-right {
             text-align: right;
         }
 
-        /* Item Type Header */
-        .item-type-header {
-            font-weight: 600;
-            background-color: rgba(158, 6, 32, 0.05);
+        .items-table .item-type {
+            background-color: #f8fafc;
             color: #9E0620;
-            letter-spacing: 0.3px;
+            font-weight: 600;
             text-transform: uppercase;
+            font-size: 8pt;
+            letter-spacing: 0.5px;
         }
 
-        /* Handling many items */
-        .items-container {
-            max-height: 300px; /* Adjust based on your needs */
-            overflow: hidden;
-        }
-
-        .condensed-item td {
-            padding: 4px 8px;
-            line-height: 1.2;
-        }
-
-        /* Placeholder for more items */
-        .more-items {
+        .items-table .more-items {
             text-align: center;
             font-style: italic;
-            color: #718096;
-            font-size: 7pt;
-            background-color: #F7FAFC;
-            padding: 4px;
+            color: #94a3b8;
+            font-size: 8pt;
+            padding: 8px;
+            background-color: #f8fafc;
         }
 
-        /* Totals */
-        .footer-wrapper {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .qr-section {
-            width: 70px;
-            height: 70px;
-            border: 1px dashed #CBD5E0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 6pt;
-            color: #718096;
-            text-align: center;
-            margin-top: 5px;
-        }
-
-        .totals-section {
-            flex-grow: 1;
-            display: flex;
-            justify-content: flex-end;
+        /* Totals Section */
+        .totals-container {
+            width: 100%;
         }
 
         .totals-table {
-            width: 40%;
+            width: 350px;
+            margin-left: auto;
+            background-color: #f9fafb;
             border-collapse: collapse;
         }
 
         .totals-table td {
-            padding: 4px 8px;
-            font-size: 8pt;
-            color: #4A5568;
+            padding: 8px 15px;
+            font-size: 9pt;
         }
 
         .totals-table .label {
-            text-align: right;
+            text-align: left;
+            color: #64748b;
             font-weight: 500;
         }
 
         .totals-table .value {
             text-align: right;
-            font-weight: 400;
-        }
-
-        .totals-table .discount-row td {
-            color: #38A169;
             font-weight: 500;
+            color: #334155;
         }
 
-        .totals-table .subtotal-row td {
-            border-bottom: 1px solid #E2E8F0;
-            padding-bottom: 5px;
+        .totals-table .discount-row .value {
+            color: #10b981;
+            font-weight: 600;
         }
 
-        .totals-table .additional-row td {
-            padding-top: 5px;
-            color: #718096;
-            font-size: 7pt;
+        .totals-table .divider td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 2px 0;
         }
 
-        .totals-table .total-row td {
+        .totals-table .total-row {
+            background-color: #f1f5f9;
+        }
+
+        .totals-table .total-row .label {
             font-weight: 700;
-            font-size: 10pt;
+            color: #334155;
+            font-size: 11pt;
+        }
+
+        .totals-table .total-row .value {
+            font-weight: 700;
             color: #9E0620;
-            padding-top: 5px;
+            font-size: 11pt;
         }
 
-        /* Thank You and Footer */
-        .thank-you-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            border-top: 1px solid #EDF2F7;
-            padding-top: 10px;
-        }
-
+        /* Thank You */
         .thank-you {
-            font-size: 14pt;
-            font-weight: 700;
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
             color: #9E0620;
-            letter-spacing: -0.3px;
+            margin: 40px 0 30px 0;
         }
 
+        /* Footer */
         .footer {
-            text-align: right;
-            font-size: 7pt;
-            color: #718096;
-            flex-grow: 1;
+            background-color: #f8fafc;
+            padding: 20px 30px;
+            margin-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .footer p {
-            margin: 0 0 2px 0;
-            line-height: 1.3;
+        .footer-table {
+            width: 100%;
+        }
+
+        .footer-left {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #9E0620;
+            width: 30%;
+        }
+
+        .footer-right {
+            text-align: right;
+            font-size: 8pt;
+            color: #64748b;
+            line-height: 1.5;
+            width: 70%;
         }
     </style>
 </head>
 <body>
-    <div class="top-border"></div>
-    <div class="invoice-container">
+    <div class="page-container">
         <!-- Header -->
-        <div class="invoice-header">
-            <div class="logo-section">
-                <h1>Sport<span style="color: #2D3748">Vue</span></h1>
-                <p>Booking Lapangan Online</p>
-            </div>
-            <div class="invoice-title">
-                <h2>INVOICE</h2>
-                <p>ORDER #{{ $payment->order_id }}</p>
-                <p>{{ Carbon\Carbon::parse($payment->transaction_time ?? $payment->created_at)->format('d M Y') }}</p>
-            </div>
+        <div class="header">
+            <table class="header-table">
+                <tr>
+                    <td class="brand">
+                        <h1>ALENA<span style="opacity: 0.8">SOCCER</span></h1>
+                        <p>Premium Sports Facility</p>
+                    </td>
+                    <td class="invoice-title">
+                        <h2>INVOICE</h2>
+                        <p>ORDER #{{ $payment->order_id }}</p>
+                        <p>{{ Carbon\Carbon::parse($payment->transaction_time ?? $payment->created_at)->format('d MMMM Y') }}</p>
+                    </td>
+                </tr>
+            </table>
         </div>
 
-        <!-- Info Boxes -->
-        <div class="info-grid">
-            <div class="info-box">
-                <div class="info-title">Customer</div>
-                <p><strong>{{ $payment->user->name }}</strong></p>
-                <p>{{ $payment->user->email }}</p>
-                <p>{{ $payment->user->phone ?? '-' }}</p>
-            </div>
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Watermark -->
+            <div class="watermark">PAID</div>
 
-            <div class="info-box">
-                <div class="info-title">Payment</div>
-                <p><strong>{{ ucwords(str_replace('_', ' ', $payment->payment_type ?? 'Online Payment')) }}</strong></p>
-                <p>ID: {{ substr($payment->transaction_id ?? '-', 0, 10) }}...</p>
-                <p><span class="payment-status">Paid</span></p>
-            </div>
+            <!-- Info Section -->
+            <table class="info-table">
+                <tr>
+                    <td class="info-box">
+                        <h3>Customer</h3>
+                        <span class="info-label">Name</span>
+                        <div class="info-value">{{ $payment->user->name }}</div>
 
-            <div class="info-box">
-                <div class="info-title">Address</div>
-                <p><strong>SportVue Inc.</strong></p>
-                <p>Jl. Contoh No. 123, Jakarta</p>
-                <p>info@sportvue.com</p>
-            </div>
-        </div>
+                        <span class="info-label">Email</span>
+                        <div class="info-value">{{ $payment->user->email }}</div>
 
-        <!-- Order Details -->
-        <div class="table-wrapper">
-            <table class="order-details">
+                        @if($payment->user->phone)
+                        <span class="info-label">Phone</span>
+                        <div class="info-value">{{ $payment->user->phone }}</div>
+                        @endif
+                    </td>
+
+                    <td class="info-box">
+                        <h3>Payment Details</h3>
+                        <span class="info-label">Method</span>
+                        <div class="info-value">{{ ucwords(str_replace('_', ' ', $payment->payment_type ?? 'Online Payment')) }}</div>
+
+                        <span class="info-label">Transaction ID</span>
+                        <div class="info-value">{{ $payment->transaction_id ?? '-' }}</div>
+
+                        <span class="info-label">Status</span>
+                        <div class="info-value"><span class="status-badge">Paid</span></div>
+                    </td>
+
+                    <td class="info-box">
+                        <h3>Invoice Details</h3>
+                        <span class="info-label">Invoice Date</span>
+                        <div class="info-value">{{ Carbon\Carbon::parse($payment->created_at)->format('d M Y') }}</div>
+
+                        <span class="info-label">Due Date</span>
+                        <div class="info-value">{{ Carbon\Carbon::parse($payment->created_at)->format('d M Y') }}</div>
+
+                        <span class="info-label">Payment Date</span>
+                        <div class="info-value">{{ Carbon\Carbon::parse($payment->transaction_time ?? $payment->updated_at)->format('d M Y') }}</div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Items Table -->
+            <table class="items-table">
                 <thead>
                     <tr>
-                        <th width="30%">Deskripsi</th>
-                        <th width="20%">Tanggal</th>
-                        <th width="20%">Waktu</th>
-                        <th width="15%">Durasi/Jumlah</th>
-                        <th width="15%" class="text-right">Jumlah</th>
+                        <th width="35%">Description</th>
+                        <th width="20%">Date</th>
+                        <th width="15%" class="text-center">Time</th>
+                        <th width="15%" class="text-center">Quantity/Duration</th>
+                        <th width="15%" class="text-right">Amount</th>
                     </tr>
                 </thead>
-                <tbody class="items-container">
+                <tbody>
                     @php
                         $totalItems = 0;
                         if(isset($payment->fieldBookings)) {
@@ -368,36 +380,41 @@
                         if(isset($payment->rentalBookings)) {
                             $totalItems += count($payment->rentalBookings);
                         }
+                        if(isset($payment->photographerBookings)) {
+                            $totalItems += count($payment->photographerBookings);
+                        }
 
-                        // Maximum visible items (adjust as needed)
-                        $maxItems = 10;
+                        // Maximum visible items
+                        $maxItems = 8;
                         $visibleFieldItems = isset($payment->fieldBookings) ? min(count($payment->fieldBookings), $maxItems) : 0;
                         $remainingSlots = $maxItems - $visibleFieldItems;
                         $visibleRentalItems = isset($payment->rentalBookings) ? min(count($payment->rentalBookings), $remainingSlots) : 0;
+                        $remainingSlotsAfterRental = $remainingSlots - $visibleRentalItems;
+                        $visiblePhotographerItems = isset($payment->photographerBookings) ? min(count($payment->photographerBookings), $remainingSlotsAfterRental) : 0;
 
-                        $hiddenItems = $totalItems - $visibleFieldItems - $visibleRentalItems;
+                        $hiddenItems = $totalItems - $visibleFieldItems - $visibleRentalItems - $visiblePhotographerItems;
                     @endphp
 
                     <!-- Field Bookings -->
                     @if(isset($payment->fieldBookings) && count($payment->fieldBookings) > 0)
-                        <tr class="item-type-header">
-                            <td colspan="5">Lapangan</td>
+                        <tr>
+                            <td colspan="5" class="item-type">Field Booking</td>
                         </tr>
                         @foreach($payment->fieldBookings->take($visibleFieldItems) as $booking)
-                        <tr class="condensed-item">
-                            <td>{{ $booking->field->name ?? 'Lapangan' }}</td>
+                        <tr>
+                            <td>{{ $booking->field->name ?? 'Field Booking' }}</td>
                             <td>{{ Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</td>
-                            <td>
+                            <td class="text-center">
                                 {{ Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
                                 {{ Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @php
                                     $startTime = Carbon\Carbon::parse($booking->start_time);
                                     $endTime = Carbon\Carbon::parse($booking->end_time);
                                     $durationInHours = $startTime->diffInHours($endTime);
                                 @endphp
-                                {{ $durationInHours }} jam
+                                {{ $durationInHours }} hour(s)
                             </td>
                             <td class="text-right">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
                         </tr>
@@ -406,76 +423,107 @@
 
                     <!-- Rental Bookings -->
                     @if(isset($payment->rentalBookings) && count($payment->rentalBookings) > 0 && $visibleRentalItems > 0)
-                        <tr class="item-type-header">
-                            <td colspan="5">Penyewaan Peralatan</td>
+                        <tr>
+                            <td colspan="5" class="item-type">Equipment Rental</td>
                         </tr>
                         @foreach($payment->rentalBookings->take($visibleRentalItems) as $booking)
-                        <tr class="condensed-item">
-                            <td>{{ $booking->rentalItem->name ?? 'Peralatan' }}</td>
+                        <tr>
+                            <td>{{ $booking->rentalItem->name ?? 'Equipment Rental' }}</td>
                             <td>{{ Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</td>
-                            <td>
+                            <td class="text-center">
                                 {{ Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
                                 {{ Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
                             </td>
-                            <td>{{ $booking->quantity }} unit</td>
+                            <td class="text-center">{{ $booking->quantity }} unit(s)</td>
                             <td class="text-right">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
                         </tr>
                         @endforeach
                     @endif
 
+                    <!-- Photographer Bookings -->
+                    @if(isset($payment->photographerBookings) && count($payment->photographerBookings) > 0 && $visiblePhotographerItems > 0)
+                        <tr>
+                            <td colspan="5" class="item-type">Photography Service</td>
+                        </tr>
+                        @foreach($payment->photographerBookings->take($visiblePhotographerItems) as $booking)
+                        <tr>
+                            <td>{{ $booking->photographer->name ?? 'Photography Service' }}</td>
+                            <td>{{ Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</td>
+                            <td class="text-center">
+                                {{ Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
+                                {{ Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                            </td>
+                            <td class="text-center">
+                                @php
+                                    $startTime = Carbon\Carbon::parse($booking->start_time);
+                                    $endTime = Carbon\Carbon::parse($booking->end_time);
+                                    $durationInHours = $startTime->diffInHours($endTime);
+                                @endphp
+                                {{ $durationInHours }} hour(s)
+                            </td>
+                            <td class="text-right">Rp {{ number_format($booking->price, 0, ',', '.') }}</td>
+                        </tr>
+                        @endforeach
+                    @endif
+
                     @if($hiddenItems > 0)
-                        <tr class="more-items">
-                            <td colspan="5">dan {{ $hiddenItems }} item lainnya</td>
+                        <tr>
+                            <td colspan="5" class="more-items">and {{ $hiddenItems }} more item(s)</td>
                         </tr>
                     @endif
                 </tbody>
             </table>
-        </div>
 
-        <!-- Totals and QR Code -->
-        <div class="footer-wrapper">
-            <div class="qr-section">
-                Scan untuk verifikasi
-            </div>
-
-            <div class="totals-section">
+            <!-- Totals Section -->
+            <div class="totals-container">
                 <table class="totals-table">
-                    <tr class="subtotal-row">
+                    <tr>
                         <td class="label">Subtotal</td>
                         <td class="value">Rp {{ number_format($payment->original_amount, 0, ',', '.') }}</td>
                     </tr>
 
                     @if($payment->discount_amount > 0)
                     <tr class="discount-row">
-                        <td class="label">Diskon</td>
+                        <td class="label">Discount</td>
                         <td class="value">- Rp {{ number_format($payment->discount_amount, 0, ',', '.') }}</td>
                     </tr>
                     @endif
 
-                    <tr class="additional-row">
-                        <td class="label">Biaya Admin</td>
+                    <tr>
+                        <td class="label">Admin Fee</td>
                         <td class="value">Rp 0</td>
                     </tr>
-                    <tr class="additional-row">
-                        <td class="label">PPN (0%)</td>
+
+                    <tr>
+                        <td class="label">Tax (0%)</td>
                         <td class="value">Rp 0</td>
                     </tr>
+
+                    <tr class="divider">
+                        <td colspan="2"></td>
+                    </tr>
+
                     <tr class="total-row">
                         <td class="label">Total</td>
                         <td class="value">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
                     </tr>
                 </table>
             </div>
+
         </div>
 
-        <!-- Thank You and Footer -->
-        <div class="thank-you-footer">
-            <div class="thank-you">Terima Kasih!</div>
-            <div class="footer">
-                <p>Invoice ini dibuat secara elektronik dan sah tanpa tanda tangan.</p>
-                <p>Booking Anda telah dikonfirmasi dan siap digunakan sesuai jadwal.</p>
-                <p>&copy; {{ date('Y') }} SportVue. All rights reserved.</p>
-            </div>
+        <!-- Footer -->
+        <div class="footer">
+            <table class="footer-table">
+                <tr>
+                    <td class="footer-left">Thank You!</td>
+                    <td class="footer-right">
+                        <p>This invoice was generated electronically and is valid without a signature.</p>
+                        <p>Your booking has been confirmed and is ready to use as scheduled.</p>
+                        <p>&copy; {{ date('Y') }} Alena Soccer. All rights reserved.</p>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>

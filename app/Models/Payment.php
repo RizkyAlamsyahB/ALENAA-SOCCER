@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Discount;
 use App\Models\FieldBooking;
 use App\Models\RentalBooking;
+use App\Models\PhotographerBooking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -25,7 +26,7 @@ class Payment extends Model
         'expires_at',
         'discount_id',       // Tambahkan ini
         'discount_amount',   // Tambahkan ini
-        'original_amount' 
+        'original_amount'
     ];
 
     protected $casts = [
@@ -62,19 +63,10 @@ public function discount()
     return $this->belongsTo(Discount::class);
 }
 
-    /**
-     * Get the membership subscriptions associated with this payment.
-    //  */
-    // public function membershipSubscriptions()
-    // {
-    //     return $this->hasMany(MembershipSubscription::class);
-    // }
+   // Di model Payment.php, tambahkan:
+public function photographerBookings()
+{
+    return $this->hasMany(PhotographerBooking::class);
+}
 
-    /**
-     * Get the photographer bookings associated with this payment.
-     */
-    // public function photographerBookings()
-    // {
-    //     return $this->hasMany(PhotographerBooking::class);
-    // }
 }

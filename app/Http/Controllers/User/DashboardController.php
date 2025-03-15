@@ -37,43 +37,28 @@ class DashboardController extends Controller
             ->get();
 
         // Riwayat pembayaran terbaru
-        $recentPayments = Payment::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+        $recentPayments = Payment::where('user_id', $user->id)->orderBy('created_at', 'desc')->limit(5)->get();
 
         // Review yang diberikan
-        $userReviews = Review::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->limit(3)
-            ->get();
+        $userReviews = Review::where('user_id', $user->id)->orderBy('created_at', 'desc')->limit(3)->get();
 
-        // Testimonial terbaik untuk ditampilkan di bagian "Apa Kata Mereka?"
         $testimonials = Review::with(['user', 'reviewable'])
-            ->where('rating', 5)
+            ->where('rating', '>=', 4) // <-- Ubah kriteria rating untuk mengambil rating 4 dan 5
             ->whereNotNull('comment')
             ->where('status', 'active')
             ->orderByRaw('LENGTH(comment) DESC')
             ->limit(3)
             ->get();
 
-// Diskon aktif untuk promo banner - disesuaikan dengan skema database
-$activeDiscounts = Discount::where('is_active', true)
-    ->where(function($query) {
-        $query->whereNull('end_date')
-              ->orWhere('end_date', '>', now());
-    })
-    ->orderBy('value', 'desc') // Menggunakan value, bukan discount_percent
-    ->limit(4)
-    ->get();
+        // Diskon aktif untuk promo banner - disesuaikan dengan skema database
+        $activeDiscounts = Discount::where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('end_date')->orWhere('end_date', '>', now());
+            })
+            ->orderBy('value', 'desc') // Menggunakan value, bukan discount_percent
+            ->limit(4)
+            ->get();
 
-        return view('users.dashboard', compact(
-            'recentFieldBookings',
-            'recentRentalBookings',
-            'recentPayments',
-            'userReviews',
-            'testimonials',
-            'activeDiscounts'
-        ));
+        return view('users.dashboard', compact('recentFieldBookings', 'recentRentalBookings', 'recentPayments', 'userReviews', 'testimonials', 'activeDiscounts'));
     }
 }
