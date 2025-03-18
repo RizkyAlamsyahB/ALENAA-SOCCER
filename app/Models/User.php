@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\PointsTransaction;
 use App\Models\PhotographerBooking;
+use App\Models\MembershipSubscription;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -82,5 +83,11 @@ public function pointsTransactions()
 public function photographerBookings(): HasMany
 {
     return $this->hasMany(PhotographerBooking::class);
+}
+// Di file app/Models/User.php tambahkan method berikut
+
+public function membershipSubscriptions()
+{
+    return $this->hasMany(MembershipSubscription::class);
 }
 }

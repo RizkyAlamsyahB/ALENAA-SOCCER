@@ -7,6 +7,7 @@ use App\Models\Discount;
 use App\Models\FieldBooking;
 use App\Models\RentalBooking;
 use App\Models\PhotographerBooking;
+use App\Models\MembershipSubscription;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -68,5 +69,9 @@ public function photographerBookings()
 {
     return $this->hasMany(PhotographerBooking::class);
 }
-
+// Di model Payment.php
+public function membershipSubscriptions()
+{
+    return $this->hasMany(MembershipSubscription::class);
+}
 }

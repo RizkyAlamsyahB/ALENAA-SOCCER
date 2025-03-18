@@ -1007,6 +1007,8 @@
             }
         }
     </script>
+
+    
     <style>
         /* Review Styling */
         .review-list {

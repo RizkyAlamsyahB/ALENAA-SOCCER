@@ -15,7 +15,8 @@ class CartItem extends Model
         'start_time',
         'end_time',
         'quantity',
-        'price'
+        'price',
+        'membership_sessions',
     ];
 
     protected $dates = ['start_time', 'end_time'];

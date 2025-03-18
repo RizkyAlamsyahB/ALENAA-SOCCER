@@ -118,8 +118,37 @@
                                                         @elseif($item->type == 'membership')
                                                             <div class="info-badge">
                                                                 <i class="fas fa-id-card"></i>
-                                                                <span>{{ $item->details }}</span>
+                                                                <span>{{ $item->details ?? 'Membership' }}</span>
                                                             </div>
+                                                            @if (!empty($item->membership_sessions))
+                                                                @php
+                                                                    $sessions = json_decode(
+                                                                        $item->membership_sessions,
+                                                                        true,
+                                                                    );
+                                                                @endphp
+                                                                <div class="info-badge">
+                                                                    <i class="fas fa-calendar-alt"></i>
+                                                                    <span>{{ count($sessions) }} jadwal tetap/minggu</span>
+                                                                </div>
+
+                                                                <!-- Tambahkan bagian ini untuk menampilkan detail jadwal -->
+                                                                <div class="mt-2">
+                                                                    <small class="text-muted">Jadwal:</small>
+                                                                    <ul class="list-unstyled ms-3">
+                                                                        @foreach ($sessions as $index => $session)
+                                                                            <li>
+                                                                                <small>
+                                                                                    {{ \Carbon\Carbon::parse($session['date'])->format('d M Y') }}
+                                                                                    ({{ \Carbon\Carbon::parse($session['start_time'])->format('H:i') }}
+                                                                                    -
+                                                                                    {{ \Carbon\Carbon::parse($session['end_time'])->format('H:i') }})
+                                                                                </small>
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                </div>
+                                                            @endif
                                                         @endif
                                                     </div>
                                                 </div>

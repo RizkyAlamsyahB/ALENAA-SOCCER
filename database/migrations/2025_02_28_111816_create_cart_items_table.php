@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('end_time')->nullable(); // Untuk booking lapangan & fotografer
             $table->integer('quantity')->default(1); // Untuk rental produk (jumlah barang)
             $table->decimal('price', 10, 2);
+            $table->text('membership_sessions')->nullable();
             $table->timestamps();
         });
 

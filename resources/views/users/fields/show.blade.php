@@ -1330,49 +1330,49 @@
         }
 
         /* Responsive Flatpickr Styles */
-.flatpickr-responsive {
-    width: 100% !important;
-    max-width: 400px;
-    margin: 0 auto;
-}
+        .flatpickr-responsive {
+            width: 100% !important;
+            max-width: 400px;
+            margin: 0 auto;
+        }
 
-.flatpickr-responsive .flatpickr-months {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        .flatpickr-responsive .flatpickr-months {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.flatpickr-responsive .flatpickr-month {
-    flex-grow: 1;
-    text-align: center;
-}
+        .flatpickr-responsive .flatpickr-month {
+            flex-grow: 1;
+            text-align: center;
+        }
 
-.flatpickr-responsive .flatpickr-weekdays {
-    display: flex;
-    justify-content: space-between;
-}
+        .flatpickr-responsive .flatpickr-weekdays {
+            display: flex;
+            justify-content: space-between;
+        }
 
-.flatpickr-responsive .flatpickr-weekday {
-    flex: 1;
-    text-align: center;
-}
+        .flatpickr-responsive .flatpickr-weekday {
+            flex: 1;
+            text-align: center;
+        }
 
-.flatpickr-responsive .flatpickr-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-}
+        .flatpickr-responsive .flatpickr-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
 
-@media (max-width: 576px) {
-    .flatpickr-responsive {
-        font-size: 0.9rem;
-    }
+        @media (max-width: 576px) {
+            .flatpickr-responsive {
+                font-size: 0.9rem;
+            }
 
-    .flatpickr-responsive .flatpickr-day {
-        max-width: 30px;
-        max-height: 30px;
-        line-height: 30px;
-    }
-}
+            .flatpickr-responsive .flatpickr-day {
+                max-width: 30px;
+                max-height: 30px;
+                line-height: 30px;
+            }
+        }
     </style>
 @endsection

@@ -23,31 +23,34 @@
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="/">
-                        <i class="fas fa-home me-2"></i> <span>Dashboard</span>
+                        <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.fields.index') }}">
-                        <i class="fas fa-calendar-alt me-2"></i> <span>Sewa Lapangan</span>
+                        <span>Sewa Lapangan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="{{ route('mabar.index') }}">
-                        <i class="fas fa-users me-2"></i> <span>Main Bareng</span>
+                        <span>Main Bareng</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.rental_items.index') }}">
-                        <i class="fas fa-basketball-ball me-2"></i> <span>Rental</span>
+                        <span>Rental</span>
                     </a>
                 </li>
-
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.photographer.index') }}">
-                        <i class="fas fa-camera me-2"></i> <span>Fotografer</span>
+                        <span>Fotografer</span>
                     </a>
                 </li>
-
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.membership.index') }}">
+                        <span>Membership</span>
+                    </a>
+                </li>
             </ul>
 
             <!-- Right Side -->

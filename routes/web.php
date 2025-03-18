@@ -11,7 +11,7 @@ use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\User\DashboardController;
-use App\Http\Controllers\Admin\MembershipController;
+use App\Http\Controllers\User\MembershipController;
 use App\Http\Controllers\Admin\RentalItemController;
 use App\Http\Controllers\User\RentalItemsController;
 use App\Http\Controllers\Admin\TransactionController;
@@ -76,6 +76,7 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
             // Dalam grup cart management, tambahkan ini:
             Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
             Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name('remove.discount');
+            Route::get('/add-membership/{id}', [CartController::class, 'addMembershipToCartRoute'])->name('add.membership');
         });
 
     // Rental Management
@@ -93,15 +94,31 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
             Route::get('/items/{rentalItemId}/available-slots', [RentalItemsController::class, 'getAvailableSlots'])->name('availableSlots');
         });
 
-        // Photographer Management
-Route::prefix('photographer')
-->name('user.photographer.')
-->group(function () {
-    Route::get('/', [PhotographerController::class, 'index'])->name('index');
-    Route::get('/{id}', [PhotographerController::class, 'show'])->name('show');
-    Route::get('/{photographerId}/available-slots', [PhotographerController::class, 'getAvailableSlots'])->name('availableSlots');
-    Route::post('/bookings/{bookingId}/cancel', [PhotographerController::class, 'cancelBooking'])->name('bookings.cancel');
-});
+    // Photographer Management
+    Route::prefix('photographer')
+        ->name('user.photographer.')
+        ->group(function () {
+            Route::get('/', [PhotographerController::class, 'index'])->name('index');
+            Route::get('/{id}', [PhotographerController::class, 'show'])->name('show');
+            Route::get('/{photographerId}/available-slots', [PhotographerController::class, 'getAvailableSlots'])->name('availableSlots');
+            Route::post('/bookings/{bookingId}/cancel', [PhotographerController::class, 'cancelBooking'])->name('bookings.cancel');
+        });
+        // Membership Management
+        Route::prefix('membership')
+        ->name('user.membership.') // Harus ada titik di akhir
+        ->group(function () {
+            Route::get('/', [MembershipController::class, 'index'])->name('index'); // Tambahkan ini
+            Route::get('/{id}', [MembershipController::class, 'show'])->name('show');
+            Route::get('/{id}/schedule', [MembershipController::class, 'selectSchedule'])->name('select.schedule');
+            Route::post('/{id}/schedule', [MembershipController::class, 'saveScheduleToCart'])->name('save.schedule');
+            Route::get('/my/memberships', [MembershipController::class, 'myMemberships'])->name('my');
+            Route::get('/my/subscription/{id}', [MembershipController::class, 'subscriptionDetail'])->name('subscription.detail');
+// Ubah menjadi
+Route::get('/fields/{fieldId}/available-slots-membership', [MembershipController::class, 'getAvailableTimeSlotsByDate'])
+    ->name('user.membership.availableSlots');
+        });
+
+
 
     // Payment Management
     Route::prefix('payment')
@@ -129,9 +146,6 @@ Route::prefix('photographer')
         return view('users.mabar');
     })->name('mabar.index');
 
-    Route::get('/membership', function () {
-        return view('users.membership');
-    })->name('membership');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -179,19 +193,19 @@ Route::middleware(['auth', 'checkRole:admin'])
     });
 
 // Owner Routes
-Route::middleware(['auth', 'checkRole:owner'])
-    ->prefix('owner')
-    ->name('owner.')
-    ->group(function () {
-        // Dashboard Owner
-        Route::get('/dashboard', function () {
-            return view('owner.dashboard');
-        })->name('dashboard');
+// Route::middleware(['auth', 'checkRole:owner'])
+//     ->prefix('owner')
+//     ->name('owner.')
+//     ->group(function () {
+//         // Dashboard Owner
+//         Route::get('/dashboard', function () {
+//             return view('owner.dashboard');
+//         })->name('dashboard');
 
-        // Rute khusus owner
-        Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])->name('financial-report');
-        Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
-    });
+//         // Rute khusus owner
+//         Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])->name('financial-report');
+//         Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
+//     });
 
 // Auth Routes
 require __DIR__ . '/auth.php';

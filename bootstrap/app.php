@@ -36,11 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/payments-expired.log'));
 
-        // Alternatif: Jalankan setiap 5 menit jika setiap menit terlalu sering
-        // $schedule->command('payments:update-expired')
-        //          ->everyFiveMinutes()
-        //          ->withoutOverlapping()
-        //          ->appendOutputTo(storage_path('logs/payments-expired.log'));
+        // Jalankan command untuk mengirim invoice membership setiap hari pukul 06:00
+        $schedule->command('membership:send-invoices')->dailyAt('6:00');
     })
 
     ->create();

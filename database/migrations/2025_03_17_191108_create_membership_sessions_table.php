@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Migrasi Booking Lapangan
-        Schema::create('field_bookings', function (Blueprint $table) {
+        Schema::create('membership_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('field_id')->constrained();
+            $table->foreignId('membership_subscription_id')->constrained()->onDelete('cascade');
+            $table->date('session_date');
             $table->dateTime('start_time');
             $table->dateTime('end_time');
-            $table->decimal('total_price', 10, 2);
-            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])->default('pending');
-
+            $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
             $table->timestamps();
         });
     }
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('field_bookings');
+        Schema::dropIfExists('membership_sessions');
     }
 };

@@ -19,7 +19,8 @@ class DatabaseSeeder extends Seeder
             FieldSeeder::class,
             RentalItemSeeder::class,
             DiscountSeeder::class,
-            PhotographerSeeder::class
+            PhotographerSeeder::class,
+            MembershipSeeder::class
         ]);
     }
 }

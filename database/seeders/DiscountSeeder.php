@@ -32,15 +32,15 @@ class DiscountSeeder extends Seeder
 
         // Diskon nilai tetap 50rb
         Discount::create([
-            'code' => 'FLAT50K',
-            'name' => 'Diskon Rp 50.000',
-            'description' => 'Potongan langsung Rp 50.000 untuk pembelian minimal Rp 200.000',
+            'code' => 'FLAT700K',
+            'name' => 'Diskon Rp 700.000',
+            'description' => 'Potongan langsung Rp 700000.000 untuk pembelian minimal Rp 700.000',
             'type' => 'fixed',
-            'value' => 50000,
-            'min_order' => 200000, // Minimal order 200rb
+            'value' => 700000,
+            'min_order' => 700000, // Minimal order 200rb
             'applicable_to' => 'all',
             'usage_limit' => 50,
-            'user_usage_limit' => 1,
+            'user_usage_limit' => 100000,
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addMonths(1),
             'is_active' => true,
