@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - SportVue</title>
+    <title>Lupa Kata Sandi - SportVue</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -138,127 +138,88 @@
                 <div class="card forgot-card shadow-lg">
                     <div class="row g-0">
                         <!-- Form Section -->
-                      <!-- Form Section -->
-<div class="col-md-7">
-    <div class="card-body p-4 p-lg-5">
-        <div class="text-center mb-4">
-            <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                <i class="fas fa-lock text-danger fa-2x"></i>
-            </div>
-            <h2 class="h3 fw-bold">Forgot Password?</h2>
-            <p class="text-muted">Don't worry! It happens. Please enter the email associated with your account.</p>
-        </div>
+                        <div class="col-md-7">
+                            <div class="card-body p-4 p-lg-5">
+                                <div class="text-center mb-4">
+                                    <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                                        <i class="fas fa-lock text-danger fa-2x"></i>
+                                    </div>
+                                    <h2 class="h3 fw-bold">Lupa Kata Sandi?</h2>
+                                    <p class="text-muted">Jangan khawatir! Hal ini bisa terjadi. Silakan masukkan email yang terkait dengan akun Anda.</p>
+                                </div>
 
-        <!-- Status Message -->
-        @if (session('status'))
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-check-circle me-2"></i>
-                    {{ session('status') }}
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+                                <!-- Status Message -->
+                                @if (session('status'))
+                                    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            {{ session('status') }}
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                @endif
 
-        <form action="{{ route('password.email') }}" method="POST" class="mb-4">
-            @csrf
-            <div class="mb-4">
-                <label for="email" class="form-label fw-semibold">Email Address</label>
-                <div class="input-group">
-                    <span class="input-group-text border-0 bg-light">
-                        <i class="fas fa-envelope text-muted"></i>
-                    </span>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        class="form-control @error('email') is-invalid @enderror"
-                        placeholder="Enter your email"
-                        required
-                        value="{{ old('email') }}"
-                        autocomplete="email"
-                        autofocus
-                    >
-                </div>
-                @error('email')
-                    <div class="invalid-feedback d-block mt-2">
-                        <i class="fas fa-exclamation-circle me-1"></i>
-                        {{ $message }}
-                    </div>
-                @enderror
-                <small class="text-muted mt-2 d-block">
-                    <i class="fas fa-info-circle me-1"></i>
-                    We'll send a password reset link to this email
-                </small>
-            </div>
+                                <form action="{{ route('password.email') }}" method="POST" class="mb-4">
+                                    @csrf
+                                    <div class="mb-4">
+                                        <label for="email" class="form-label fw-semibold">Alamat Email</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text border-0 bg-light">
+                                                <i class="fas fa-envelope text-muted"></i>
+                                            </span>
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                name="email"
+                                                class="form-control @error('email') is-invalid @enderror"
+                                                placeholder="Masukkan email Anda"
+                                                required
+                                                value="{{ old('email') }}"
+                                                autocomplete="email"
+                                                autofocus
+                                            >
+                                        </div>
+                                        @error('email')
+                                            <div class="invalid-feedback d-block mt-2">
+                                                <i class="fas fa-exclamation-circle me-1"></i>
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                        <small class="text-muted mt-2 d-block">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Kami akan mengirimkan tautan reset kata sandi ke email ini
+                                        </small>
+                                    </div>
 
-            <button type="submit" class="btn btn-submit text-white w-100">
-                <span class="d-flex align-items-center justify-content-center">
-                    Send Reset Link
-                    <i class="fas fa-arrow-right ms-2"></i>
-                </span>
-            </button>
-        </form>
+                                    <button type="submit" class="btn btn-submit text-white w-100">
+                                        <span class="d-flex align-items-center justify-content-center">
+                                            Kirim Tautan Reset
+                                            <i class="fas fa-arrow-right ms-2"></i>
+                                        </span>
+                                    </button>
+                                </form>
 
-        <div class="text-center">
-            <p class="mb-0">Remember your password?
-                <a href="/login" class="text-danger text-decoration-none fw-semibold">Sign In</a>
-            </p>
-        </div>
-    </div>
-</div>
-
-<style>
-.alert {
-    border: none;
-    border-radius: 12px;
-}
-
-.alert-success {
-    background-color: #d1e7dd;
-    color: #0f5132;
-}
-
-.btn-submit:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.invalid-feedback {
-    color: var(--primary-color);
-    font-size: 0.875rem;
-}
-</style>
-
-<script>
-// Disable submit button after form submission to prevent double submission
-document.querySelector('form').addEventListener('submit', function(e) {
-    const submitButton = this.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    submitButton.innerHTML = `
-        <span class="d-flex align-items-center justify-content-center">
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            Sending...
-        </span>
-    `;
-});
-</script>
+                                <div class="text-center">
+                                    <p class="mb-0">Ingat kata sandi Anda?
+                                        <a href="/login" class="text-danger text-decoration-none fw-semibold">Masuk</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Info Sidebar -->
                         <div class="col-md-5 forgot-sidebar p-4 p-lg-5 d-flex flex-column justify-content-center">
-                            <h3 class="h4 text-white mb-4">Password Recovery Steps</h3>
+                            <h3 class="h4 text-white mb-4">Langkah Pemulihan Kata Sandi</h3>
                             <ul class="steps-list mb-4">
-                                <li>Enter your email address</li>
-                                <li>Check your inbox for the reset link</li>
-                                <li>Create a new secure password</li>
+                                <li>Masukkan alamat email Anda</li>
+                                <li>Periksa kotak masuk Anda untuk tautan reset</li>
+                                <li>Buat kata sandi baru yang aman</li>
                             </ul>
 
                             <div class="mt-auto">
                                 <div class="bg-white bg-opacity-10 rounded-3 p-3">
-                                    <h4 class="h6 mb-2">Need Help?</h4>
-                                    <p class="mb-0 small">Contact our support team at
+                                    <h4 class="h6 mb-2">Butuh Bantuan?</h4>
+                                    <p class="mb-0 small">Hubungi tim dukungan kami di
                                         <a href="mailto:support@sportvue.com" class="text-white">support@sportvue.com</a>
                                     </p>
                                 </div>
@@ -269,6 +230,44 @@ document.querySelector('form').addEventListener('submit', function(e) {
             </div>
         </div>
     </div>
+
+    <style>
+    .alert {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .alert-success {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .btn-submit:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .invalid-feedback {
+        color: var(--primary-color);
+        font-size: 0.875rem;
+    }
+    </style>
+
+    <script>
+    // Disable submit button after form submission to prevent double submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = `
+            <span class="d-flex align-items-center justify-content-center">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Mengirim...
+            </span>
+        `;
+    });
+    </script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

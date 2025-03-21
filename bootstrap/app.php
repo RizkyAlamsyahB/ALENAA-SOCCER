@@ -2,9 +2,10 @@
 
 use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Application;
+use Illuminate\Console\Scheduling\Schedule;
+use App\Http\Controllers\User\PaymentController;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -36,8 +37,15 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/payments-expired.log'));
 
-        // Jalankan command untuk mengirim invoice membership setiap hari pukul 06:00
-        $schedule->command('membership:send-invoices')->dailyAt('6:00');
-    })
+      // Cek setiap jam
+$schedule->call([PaymentController::class, 'checkExpiredMembershipRenewals'])
+->hourly();
 
+// Atau setiap 30 menit
+$schedule->call([PaymentController::class, 'checkExpiredMembershipRenewals'])
+->everyThirtyMinutes();
+
+                 // Jalankan setiap jam
+    $schedule->command('sessions:update-completed')->hourly();
+    })
     ->create();

@@ -51,77 +51,134 @@ class MembershipController extends Controller
         return view('users.membership.schedule', compact('membership', 'field', 'availableSlots'));
     }
 
-/**
- * Menyimpan jadwal membership yang dipilih dan menambahkan ke keranjang
- */
-/**
- * Menyimpan jadwal membership yang dipilih dan menambahkan ke keranjang
- */
-public function saveScheduleToCart(Request $request, $id)
-{
-    $request->validate([
-        'sessions' => 'required|array|size:3',
-        'sessions.*.day' => 'required|date|after_or_equal:today',
-        'sessions.*.time' => 'required|string',
-    ]);
+    public function saveScheduleToCart(Request $request, $id)
+    {
+        Log::debug('Received request data', $request->all());
 
-    $membership = Membership::findOrFail($id);
+        try {
+            // Gunakan tanggal dari request sebagai referensi untuk validasi
+            $todayDate = $request->input('today_date', date('Y-m-d'));
 
-    // Pendekatan alternatif: izinkan maksimal rentang 7 hari antara sesi pertama dan terakhir
-    $dates = collect($request->sessions)->pluck('day')->toArray();
+            $request->validate([
+                'sessions' => 'required|array|size:3',
+                'sessions.*.day' => "required|date|date_format:Y-m-d", // Hapus after_or_equal:today
+                'sessions.*.time' => 'required|string',
+            ]);
 
-    // Urutkan tanggal
-    sort($dates);
+            $membership = Membership::findOrFail($id);
 
-    // Ambil tanggal paling awal dan paling akhir
-    $earliestDate = Carbon::parse($dates[0]);
-    $latestDate = Carbon::parse($dates[count($dates) - 1]);
+            // Periksa duplikasi jadwal
+            $sessions = collect($request->sessions);
+            $uniqueSessions = $sessions->unique(function ($session) {
+                return $session['day'] . '|' . $session['time'];
+            });
 
-    // Hitung perbedaan hari
-    $daysDifference = $earliestDate->diffInDays($latestDate);
+            if ($uniqueSessions->count() < $sessions->count()) {
+                return back()->with('error', 'Tidak boleh ada jadwal yang sama (hari dan jam yang sama)');
+            }
 
-    // Jika perbedaan lebih dari 6 hari (lebih dari 1 minggu), validasi gagal
-    if ($daysDifference > 6) {
-        Log::debug('Validasi rentang tanggal gagal', [
-            'tanggal_awal' => $earliestDate->format('Y-m-d'),
-            'tanggal_akhir' => $latestDate->format('Y-m-d'),
-            'perbedaan_hari' => $daysDifference
-        ]);
+            // Pendekatan alternatif: rentang 7 hari dari tanggal paling awal
+            $dates = $sessions->pluck('day')->toArray();
 
-        return back()->with('error', 'Semua jadwal harus berada dalam rentang maksimal 7 hari');
-    }
+            // Urutkan tanggal
+            sort($dates);
 
-    // Memeriksa konflik jadwal
-    $sessionsData = [];
-    foreach ($request->sessions as $sessionData) {
-        $date = $sessionData['day'];
-        list($startTime, $endTime) = explode(' - ', $sessionData['time']);
+            // Log tanggal untuk debugging
+            Log::debug('Sorted dates', $dates);
 
-        $startDateTime = Carbon::parse("{$date} {$startTime}");
-        $endDateTime = Carbon::parse("{$date} {$endTime}");
+            // Ambil tanggal paling awal dan paling akhir
+            $earliestDate = Carbon::parse($dates[0]);
+            $latestDate = Carbon::parse($dates[count($dates) - 1]);
 
-        // Periksa konflik dengan booking lapangan yang sudah ada
-        $isConflict = $this->checkTimeConflict($membership->field_id, $startDateTime, $endDateTime);
-        if ($isConflict) {
-            return back()->with('error', "Jadwal {$startTime} - {$endTime} pada tanggal {$date} sudah tidak tersedia");
+            // Hitung perbedaan hari
+            $daysDifference = $earliestDate->diffInDays($latestDate);
+
+            // Jika perbedaan lebih dari 6 hari (lebih dari minggu yang dipilih), validasi gagal
+            if ($daysDifference > 6) {
+                Log::debug('Validasi rentang tanggal gagal', [
+                    'tanggal_awal' => $earliestDate->format('Y-m-d'),
+                    'tanggal_akhir' => $latestDate->format('Y-m-d'),
+                    'perbedaan_hari' => $daysDifference
+                ]);
+
+                return back()->with('error', 'Semua jadwal harus berada dalam rentang maksimal 7 hari');
+            }
+
+            // Memeriksa konflik jadwal
+            $sessionsData = [];
+            $sessionNumber = 1; // Inisialisasi nomor sesi
+
+            foreach ($request->sessions as $sessionData) {
+                $date = $sessionData['day'];
+                list($startTime, $endTime) = explode(' - ', $sessionData['time']);
+
+                // Debug data yang diterima
+                Log::debug("Processing session", [
+                    'date' => $date,
+                    'time' => $sessionData['time'],
+                    'startTime' => $startTime,
+                    'endTime' => $endTime
+                ]);
+
+                try {
+                    // Set waktu lokal dengan jelas
+                    $startDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$startTime}", 'Asia/Jakarta');
+                    $endDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$endTime}", 'Asia/Jakarta');
+
+                    // Log untuk debug
+                    Log::debug("Created datetime objects", [
+                        'start' => $startDateTime->toDateTimeString(),
+                        'end' => $endDateTime->toDateTimeString(),
+                        'timezone' => $startDateTime->timezone->getName()
+                    ]);
+                } catch (\Exception $e) {
+                    // Log error parsing
+                    Log::error("Error parsing dates: " . $e->getMessage(), [
+                        'date' => $date,
+                        'startTime' => $startTime,
+                        'endTime' => $endTime
+                    ]);
+
+                    throw new \Exception("Format tanggal atau waktu tidak valid: " . $e->getMessage());
+                }
+
+                // Periksa konflik dengan booking lapangan yang sudah ada
+                $isConflict = $this->checkTimeConflict($membership->field_id, $startDateTime, $endDateTime);
+                if ($isConflict) {
+                    return back()->with('error', "Jadwal {$startTime} - {$endTime} pada tanggal {$date} sudah tidak tersedia");
+                }
+
+                $sessionsData[] = [
+                    'date' => $date,
+                    'start_time' => $startDateTime->format('Y-m-d H:i:s'),
+                    'end_time' => $endDateTime->format('Y-m-d H:i:s'),
+                    'session_number' => $sessionNumber++, // Tambahkan nomor sesi dan increment
+                ];
+            }
+
+            // Debug data sesi yang sudah diolah
+            Log::debug("Processed sessions data:", $sessionsData);
+
+            // Simpan data sesi ke session untuk digunakan saat checkout
+            session()->put('membership_sessions', [
+                'membership_id' => $membership->id,
+                'sessions' => $sessionsData
+            ]);
+
+            // Debug simpan ke session
+            Log::debug("Saved session data", [
+                'membership_id' => $membership->id,
+                'sessions' => $sessionsData
+            ]);
+
+            // Redirect ke controller cart untuk menambahkan ke keranjang
+            return redirect()->route('user.cart.add.membership', ['id' => $membership->id]);
+        } catch (\Exception $e) {
+            Log::error('Error in saveScheduleToCart: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-
-        $sessionsData[] = [
-            'date' => $date,
-            'start_time' => $startDateTime->format('Y-m-d H:i:s'),
-            'end_time' => $endDateTime->format('Y-m-d H:i:s'),
-        ];
     }
-
-    // Simpan data sesi ke session untuk digunakan saat checkout
-    session()->put('membership_sessions', [
-        'membership_id' => $membership->id,
-        'sessions' => $sessionsData
-    ]);
-
-    // Redirect ke controller cart untuk menambahkan ke keranjang
-    return redirect()->route('user.cart.add.membership', ['id' => $membership->id]);
-}
     /**
      * Memeriksa konflik waktu dengan booking yang sudah ada
      */
@@ -249,6 +306,18 @@ public function saveScheduleToCart(Request $request, $id)
             ->where('user_id', Auth::id())
             ->with(['membership', 'membership.field', 'sessions', 'payment'])
             ->firstOrFail();
+
+        // Update status sesi yang sudah lewat
+        $now = Carbon::now();
+        foreach ($subscription->sessions as $session) {
+            if ($session->status === 'scheduled' && $now > Carbon::parse($session->end_time)) {
+                $session->status = 'completed';
+                $session->save();
+            }
+        }
+
+        // Reload sessions setelah update
+        $subscription->load('sessions');
 
         return view('users.membership.subscription-detail', compact('subscription'));
     }

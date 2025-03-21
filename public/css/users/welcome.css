@@ -10,8 +10,8 @@
 
 /* Base Styles */
 body {
-    font-family: "Inter", sans-serif;
-    background: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
+        background: #f8f9fa;
 }
 .bg-primary {
     background-color: var(--primary-color) !important;
@@ -24,11 +24,7 @@ body {
     margin-top: 60px;
 }
 
-.promo-slider .d-flex {
-    display: flex !important;
-    animation: slideLeft 30s linear infinite;
-    width: max-content;
-}
+
 
 .promo-slide {
     white-space: nowrap;

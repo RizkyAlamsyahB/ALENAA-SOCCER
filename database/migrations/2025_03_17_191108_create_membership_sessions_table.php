@@ -18,6 +18,7 @@ return new class extends Migration
             $table->dateTime('start_time');
             $table->dateTime('end_time');
             $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
+            $table->integer('session_number')->default(1);
             $table->timestamps();
         });
     }

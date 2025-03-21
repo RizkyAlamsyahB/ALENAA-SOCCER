@@ -22,6 +22,9 @@ class MembershipSubscription extends Model
         'start_date',
         'end_date',
         'invoice_sent', // flag untuk menandai apakah invoice sudah dikirim
+        'renewal_status', // not_due, renewal_pending, renewed
+        'next_invoice_date', // tanggal pengiriman invoice berikutnya
+        'last_payment_date', // tanggal pembayaran terakhir
     ];
 
     protected $casts = [
@@ -29,6 +32,8 @@ class MembershipSubscription extends Model
         'end_date' => 'datetime',
         'price' => 'integer',
         'invoice_sent' => 'boolean',
+        'next_invoice_date' => 'datetime',
+        'last_payment_date' => 'datetime',
     ];
 
     public function user()

@@ -1,10 +1,9 @@
-<!-- resources/views/emails/reset-password.blade.php -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - SportVue</title>
+    <title>Reset Kata Sandi - Alena Soccer</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -41,12 +40,14 @@
             color: #2A2A2A;
         }
         .greeting {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
             margin-bottom: 20px;
+            text-align: center;
         }
         .content {
             margin-bottom: 30px;
+            text-align: center;
         }
         .reset-button {
             display: inline-block;
@@ -69,16 +70,42 @@
         .help-text {
             margin-top: 20px;
             font-size: 14px;
-            color: #666;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
+            color: #64748b;
+            text-align: center;
         }
         .expiry-notice {
             font-size: 13px;
-            color: #666;
+            color: #64748b;
             margin-top: 15px;
             font-style: italic;
+            text-align: center;
+        }
+        .stats-table {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        .stats-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stats-number {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #9E0620;
+        }
+        .stats-label {
+            display: block;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .signature {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -88,36 +115,59 @@
             <!-- Logo -->
             <div class="logo">
                 <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/3bc3f968d66dd0c368130525f00d42ec550c3ea8f6304c68cbb117fa6eb8dc08"
-                alt="SportVue Logo">
-                <div class="brand-name">Sport<span>Vue</span></div>
+                alt="Alena Soccer Logo">
+                <div class="brand-name">Alena<span>Soccer</span></div>
             </div>
 
             <!-- Content -->
-            <div class="greeting">Hello!</div>
+            <div class="greeting">Reset Kata Sandi Anda</div>
 
             <div class="content">
-                <p>You are receiving this email because we received a password reset request for your account.</p>
+                <p>Anda menerima email ini karena kami menerima permintaan reset kata sandi untuk akun Anda di Alena Soccer. Klik tombol di bawah untuk melanjutkan proses reset kata sandi.</p>
+
+                <!-- Stats -->
+                <table class="stats-table" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td width="48%" style="padding-right: 10px;">
+                            <div class="stats-item">
+                                <span class="stats-number">500+</span>
+                                <span class="stats-label">Pemain Aktif</span>
+                            </div>
+                        </td>
+                        <td width="48%" style="padding-left: 10px;">
+                            <div class="stats-item">
+                                <span class="stats-number">4.9</span>
+                                <span class="stats-label">Rating Pengguna</span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
 
                 <center>
                     <a href="{{ $resetLink }}" class="reset-button">
-                        Reset Password
+                        Reset Kata Sandi Sekarang
                     </a>
                 </center>
 
                 <div class="help-text">
-                    <p>If you didn't request a password reset, no further action is required.</p>
+                    <p>Jika Anda tidak meminta reset kata sandi, tidak perlu melakukan tindakan lebih lanjut.</p>
                 </div>
 
                 <div class="expiry-notice">
-                    This password reset link will expire in 60 minutes.
+                    Tautan reset kata sandi ini akan kedaluwarsa dalam 60 menit.
                 </div>
+            </div>
+
+            <!-- Signature -->
+            <div class="signature">
+                <p>Salam Olahraga,<br>Tim Alena Soccer</p>
             </div>
 
             <!-- Footer -->
             <div class="footer">
-                <p>If you're having trouble clicking the "Reset Password" button, copy and paste the URL below into your web browser:</p>
+                <p>Jika Anda mengalami masalah saat mengklik tombol "Reset Kata Sandi Sekarang", salin dan tempel URL di bawah ini ke browser web Anda:</p>
                 <p style="word-break: break-all; color: #9E0620;">{{ $resetLink }}</p>
-                <p>© {{ date('Y') }} SportVue. All rights reserved.</p>
+                <p>© {{ date('Y') }} Alena Soccer. Seluruh hak cipta dilindungi.</p>
             </div>
         </div>
     </div>

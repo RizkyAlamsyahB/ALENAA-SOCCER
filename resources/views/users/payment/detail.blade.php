@@ -181,6 +181,7 @@
                                         </div>
                                     @endif
 
+
                                     <div class="total-amount">
                                         <div class="amount-label">Total Pembayaran</div>
                                         <div class="amount-value">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
@@ -564,6 +565,46 @@
         </div>
     </div>
 </div>
+@endif
+@if(strpos($payment->order_id, 'RENEW-MEM-') === 0)
+    <div class="membership-renewal-info p-4 rounded-3 bg-light mt-3">
+        <h5 class="mb-3 fw-bold">
+            <i class="fas fa-user-tag me-2 text-primary"></i>
+            Perpanjangan Membership
+        </h5>
+
+        @php
+            // Cari subscription terkait
+            $subscription = \App\Models\MembershipSubscription::where('user_id', Auth::id())
+                ->where('status', 'active')
+                ->first();
+        @endphp
+
+        @if($subscription)
+            <div class="membership-item p-3 bg-white rounded shadow-sm">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0 fw-bold">{{ $subscription->membership->name }}</h6>
+                    <span class="badge bg-primary rounded-pill">{{ $subscription->membership->duration }} bulan</span>
+                </div>
+
+                <div class="membership-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Lapangan:</span>
+                        <span class="detail-value">{{ $subscription->membership->field->name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Periode Baru:</span>
+                        <span class="detail-value">
+                            {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }} -
+                            {{ \Carbon\Carbon::parse($subscription->end_date)->addMonths($subscription->membership->duration)->format('d M Y') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        @else
+            <p class="text-muted">Informasi membership tidak ditemukan.</p>
+        @endif
+    </div>
 @endif
                     </div>
 
@@ -1008,7 +1049,7 @@
         }
     </script>
 
-    
+
     <style>
         /* Review Styling */
         .review-list {
@@ -1706,6 +1747,32 @@
                 align-items: center;
             }
         }
+        .membership-renewal-info {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.membership-item {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.membership-details {
+    margin-top: 0.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.detail-label {
+    color: #6c757d;
+}
+
+.detail-value {
+    font-weight: 500;
+}
     </style>
 
 

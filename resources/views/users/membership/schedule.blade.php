@@ -72,8 +72,8 @@
                             </div>
                             <div class="info-card-content">
                                 <h5>Informasi Penting</h5>
-                                <p>Pilih 3 slot jadwal permainan dalam satu minggu yang sama (Senin-Minggu). Jadwal yang
-                                    dipilih akan menjadi jadwal tetap selama masa membership.</p>
+                                <p>Pilih 3 slot jadwal permainan dalam rentang 7 hari dari tanggal yang Anda pilih. Jadwal
+                                    yang dipilih akan menjadi jadwal tetap selama masa membership.</p>
                             </div>
                         </div>
 
@@ -273,307 +273,357 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            let selectedWeekStart = null;
-            let selectedWeekEnd = null;
-            let canSubmit = false;
-            const fieldId = {{ $field->id }}; // Ambil ID field dari Blade template
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize variables
+    let selectedWeekStart = null;
+    let selectedWeekEnd = null;
+    let canSubmit = false;
+    let selectedSchedules = []; // Untuk menyimpan jadwal yang dipilih
+    const fieldId = {{ $field->id }}; // Ambil ID field dari Blade template
 
-            // Get CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            // Initialize Flatpickr for week selection
-            const weekPicker = flatpickr("#week-picker", {
-                inline: true,
-                locale: 'id',
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                onChange: function(selectedDates, dateStr, instance) {
-                    if (selectedDates.length > 0) {
-                        // Get the start of the week (Monday)
-                        const selected = new Date(selectedDates[0]);
-                        const day = selected.getDay();
-                        const diff = selected.getDate() - day + (day === 0 ? -6 :
-                        1); // Adjust for Sunday
+    // Initialize Flatpickr for week selection
+    const weekPicker = flatpickr("#week-picker", {
+        inline: true,
+        locale: 'id',
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                // Mulai minggu dari tanggal yang dipilih
+                selectedWeekStart = new Date(selectedDates[0]);
+                selectedWeekEnd = new Date(selectedWeekStart);
+                selectedWeekEnd.setDate(selectedWeekStart.getDate() + 6);
 
-                        selectedWeekStart = new Date(selected.setDate(diff));
-                        selectedWeekEnd = new Date(selectedWeekStart);
-                        selectedWeekEnd.setDate(selectedWeekStart.getDate() + 6);
+                // Format dates for display
+                const formattedStart = formatDate(selectedWeekStart);
+                const formattedEnd = formatDate(selectedWeekEnd);
 
-                        // Format dates for display
-                        const formattedStart = formatDate(selectedWeekStart);
-                        const formattedEnd = formatDate(selectedWeekEnd);
-
-                        // Update the week display
-                        document.getElementById('selected-week-display').innerHTML = `
-                            <div class="selected-week-content">
-                                <div class="selected-week-info">
-                                    <span class="week-label">Minggu Terpilih:</span>
-                                    <span class="week-value">${formattedStart} - ${formattedEnd}</span>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" id="change-week-btn">
-                                    <i class="fas fa-exchange-alt me-1"></i> Ubah
-                                </button>
-                            </div>
-                        `;
-
-                        // Update summary
-                        document.getElementById('selected-week-summary').textContent =
-                            `${formattedStart} - ${formattedEnd}`;
-
-                        // Activate step 2
-                        document.getElementById('step-1').classList.add('completed');
-                        document.getElementById('step-2').classList.add('active');
-
-                        // Populate day selectors with days of the selected week
-                        populateDaySelectors();
-
-                        // Add event listener to change week button
-                        document.getElementById('change-week-btn').addEventListener('click',
-                    function() {
-                            resetSelection();
-                        });
-
-                        // Hide the calendar
-                        weekPicker._input.style.display = 'none';
-                    }
-                }
-            });
-
-            // Format date for display
-            function formatDate(date) {
-                return date.toLocaleDateString('id-ID', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                });
-            }
-
-            // Reset the selection
-            function resetSelection() {
-                // Reset variables
-                selectedWeekStart = null;
-                selectedWeekEnd = null;
-                canSubmit = false;
-
-                // Reset week display
+                // Update the week display
                 document.getElementById('selected-week-display').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-alt"></i>
-                        <p>Belum ada minggu yang dipilih</p>
+                    <div class="selected-week-content">
+                        <div class="selected-week-info">
+                            <span class="week-label">Minggu Terpilih:</span>
+                            <span class="week-value">${formattedStart} - ${formattedEnd}</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" id="change-week-btn">
+                            <i class="fas fa-exchange-alt me-1"></i> Ubah
+                        </button>
                     </div>
                 `;
 
-                // Reset steps
-                document.getElementById('step-1').classList.remove('completed');
-                document.getElementById('step-2').classList.remove('active');
-                document.getElementById('step-2').classList.remove('completed');
-                document.getElementById('step-3').classList.remove('active');
+                // Update summary
+                document.getElementById('selected-week-summary').textContent =
+                    `${formattedStart} - ${formattedEnd}`;
 
-                // Show calendar
-                weekPicker._input.style.display = 'block';
+                // Activate step 2
+                document.getElementById('step-1').classList.add('completed');
+                document.getElementById('step-2').classList.add('active');
 
-                // Disable day and time selectors
-                const daySelectors = document.querySelectorAll('.session-day');
-                const timeSelectors = document.querySelectorAll('.session-time');
+                // Populate day selectors with days of the selected week
+                populateDaySelectors();
 
-                daySelectors.forEach(selector => {
-                    selector.disabled = true;
-                    selector.innerHTML = '<option value="">Pilih Hari</option>';
+                // Add event listener to change week button
+                document.getElementById('change-week-btn').addEventListener('click', function() {
+                    resetSelection();
                 });
 
-                timeSelectors.forEach(selector => {
-                    selector.disabled = true;
-                    selector.innerHTML = '<option value="">Pilih Jam</option>';
+                // Hide the calendar
+                weekPicker._input.style.display = 'none';
+            }
+        }
+    });
+
+    // Format date for display
+    function formatDate(date) {
+        return date.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
+    // Reset the selection
+    function resetSelection() {
+        // Reset variables
+        selectedWeekStart = null;
+        selectedWeekEnd = null;
+        canSubmit = false;
+        selectedSchedules = []; // Reset pilihan jadwal
+
+        // Reset week display
+        document.getElementById('selected-week-display').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-calendar-alt"></i>
+                <p>Belum ada minggu yang dipilih</p>
+            </div>
+        `;
+
+        // Reset steps
+        document.getElementById('step-1').classList.remove('completed');
+        document.getElementById('step-2').classList.remove('active');
+        document.getElementById('step-2').classList.remove('completed');
+        document.getElementById('step-3').classList.remove('active');
+
+        // Show calendar
+        weekPicker._input.style.display = 'block';
+
+        // Disable day and time selectors
+        const daySelectors = document.querySelectorAll('.session-day');
+        const timeSelectors = document.querySelectorAll('.session-time');
+
+        daySelectors.forEach(selector => {
+            selector.disabled = true;
+            selector.innerHTML = '<option value="">Pilih Hari</option>';
+        });
+
+        timeSelectors.forEach(selector => {
+            selector.disabled = true;
+            selector.innerHTML = '<option value="">Pilih Jam</option>';
+        });
+
+        // Reset summary
+        document.getElementById('summary-content').style.display = 'none';
+        document.getElementById('summary-empty').style.display = 'block';
+        document.getElementById('selected-week-summary').textContent = '-';
+        document.getElementById('selected-session-1-summary').textContent = '-';
+        document.getElementById('selected-session-2-summary').textContent = '-';
+        document.getElementById('selected-session-3-summary').textContent = '-';
+
+        // Disable submit button
+        document.getElementById('submit-btn').disabled = true;
+    }
+
+    // Populate day selectors with days of the selected week
+    function populateDaySelectors() {
+        const daySelectors = document.querySelectorAll('.session-day');
+
+        daySelectors.forEach(selector => {
+            // Enable selector
+            selector.disabled = false;
+
+            // Clear options
+            selector.innerHTML = '<option value="">Pilih Hari</option>';
+
+            // Add days - mulai dari tanggal yang dipilih hingga 6 hari ke depan
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(selectedWeekStart);
+                day.setDate(selectedWeekStart.getDate() + i);
+
+                // FIX: Gunakan format yang konsisten untuk nilai tanggal
+                // Buat string dengan format YYYY-MM-DD secara manual
+                const year = day.getFullYear();
+                const month = String(day.getMonth() + 1).padStart(2, '0');
+                const date = String(day.getDate()).padStart(2, '0');
+                const isoDate = `${year}-${month}-${date}`;
+
+                const option = document.createElement('option');
+                option.value = isoDate; // Format YYYY-MM-DD yang konsisten
+                option.textContent = day.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
                 });
 
-                // Reset summary
-                document.getElementById('summary-content').style.display = 'none';
-                document.getElementById('summary-empty').style.display = 'block';
-                document.getElementById('selected-week-summary').textContent = '-';
-                document.getElementById('selected-session-1-summary').textContent = '-';
-                document.getElementById('selected-session-2-summary').textContent = '-';
-                document.getElementById('selected-session-3-summary').textContent = '-';
-
-                // Disable submit button
-                document.getElementById('submit-btn').disabled = true;
+                selector.appendChild(option);
             }
 
-            // Populate day selectors with days of the selected week
-            function populateDaySelectors() {
-                const daySelectors = document.querySelectorAll('.session-day');
+            // Add event listener for change
+            selector.addEventListener('change', handleDaySelection);
+        });
+    }
 
-                daySelectors.forEach(selector => {
-                    // Enable selector
-                    selector.disabled = false;
+    // Handle day selection
+    function handleDaySelection(event) {
+        const daySelector = event.target;
+        const sessionIndex = Array.from(document.querySelectorAll('.session-day')).indexOf(daySelector);
+        const timeSelector = document.querySelectorAll('.session-time')[sessionIndex];
 
-                    // Clear options
-                    selector.innerHTML = '<option value="">Pilih Hari</option>';
+        if (daySelector.value) {
+            // Enable time selector
+            timeSelector.disabled = false;
 
-                    // Add days
-                    for (let i = 0; i < 7; i++) {
-                        const day = new Date(selectedWeekStart);
-                        day.setDate(selectedWeekStart.getDate() + i);
+            // Clear options
+            timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
 
+            // Tambahkan loading state
+            const loadingOption = document.createElement('option');
+            loadingOption.value = "";
+            loadingOption.textContent = "Memuat slot tersedia...";
+            timeSelector.appendChild(loadingOption);
+
+            // Get available time slots based on field's available times and existing bookings
+            getAvailableSlotsForDay(daySelector.value, fieldId)
+                .then(availableSlots => {
+                    // Clear options including loading option
+                    timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
+
+                    if (availableSlots.length === 0) {
                         const option = document.createElement('option');
-                        option.value = day.toISOString().split('T')[0]; // YYYY-MM-DD
-                        option.textContent = day.toLocaleDateString('id-ID', {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long'
+                        option.value = "";
+                        option.textContent = "Tidak ada slot tersedia";
+                        option.disabled = true;
+                        timeSelector.appendChild(option);
+                    } else {
+                        availableSlots.forEach(slot => {
+                            const option = document.createElement('option');
+                            option.value = `${slot.start} - ${slot.end}`;
+                            option.textContent = `${slot.start} - ${slot.end}`;
+                            timeSelector.appendChild(option);
                         });
-
-                        selector.appendChild(option);
                     }
 
                     // Add event listener for change
-                    selector.addEventListener('change', handleDaySelection);
-                });
-            }
+                    timeSelector.addEventListener('change', function(e) {
+                        if (e.target.value) {
+                            const dayText = daySelector.options[daySelector.selectedIndex].text;
+                            const dayValue = daySelector.value;
+                            const timeText = e.target.value;
+                            const timeValue = e.target.value;
 
-            // Handle day selection
-            function handleDaySelection(event) {
-                const daySelector = event.target;
-                const sessionIndex = Array.from(document.querySelectorAll('.session-day')).indexOf(daySelector);
-                const timeSelector = document.querySelectorAll('.session-time')[sessionIndex];
+                            // Cek apakah kombinasi hari dan jam sudah dipilih sebelumnya
+                            const isDuplicate = selectedSchedules.some(schedule =>
+                                schedule.day === dayValue && schedule.time === timeValue
+                            );
 
-                if (daySelector.value) {
-                    // Enable time selector
-                    timeSelector.disabled = false;
-
-                    // Clear options
-                    timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
-
-                    // Tambahkan loading state
-                    const loadingOption = document.createElement('option');
-                    loadingOption.value = "";
-                    loadingOption.textContent = "Memuat slot tersedia...";
-                    timeSelector.appendChild(loadingOption);
-
-                    // Get available time slots based on field's available times and existing bookings
-                    getAvailableSlotsForDay(daySelector.value, fieldId)
-                        .then(availableSlots => {
-                            // Clear options including loading option
-                            timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
-
-                            if (availableSlots.length === 0) {
-                                const option = document.createElement('option');
-                                option.value = "";
-                                option.textContent = "Tidak ada slot tersedia";
-                                option.disabled = true;
-                                timeSelector.appendChild(option);
-                            } else {
-                                availableSlots.forEach(slot => {
-                                    const option = document.createElement('option');
-                                    option.value = `${slot.start} - ${slot.end}`;
-                                    option.textContent = `${slot.start} - ${slot.end}`;
-                                    timeSelector.appendChild(option);
-                                });
+                            if (isDuplicate) {
+                                // Tampilkan pesan error
+                                alert("Jadwal ini sudah dipilih. Silakan pilih hari atau jam yang berbeda.");
+                                // Reset pilihan
+                                e.target.value = "";
+                                return;
                             }
 
-                            // Add event listener for change
-                            timeSelector.addEventListener('change', function(e) {
-                                // Update summary when time is selected
-                                if (e.target.value) {
-                                    const dayText = daySelector.options[daySelector.selectedIndex].text;
-                                    const timeText = e.target.value;
-                                    document.getElementById(
-                                            `selected-session-${sessionIndex+1}-summary`).textContent =
-                                        `${dayText}, ${timeText}`;
+                            // Hapus jadwal lama jika ada perubahan
+                            selectedSchedules = selectedSchedules.filter(schedule => schedule.index !== sessionIndex);
 
-                                    // Show summary content
-                                    document.getElementById('summary-content').style.display = 'block';
-                                    document.getElementById('summary-empty').style.display = 'none';
-                                }
-
-                                checkFormCompletion();
+                            // Tambahkan jadwal baru
+                            selectedSchedules.push({
+                                index: sessionIndex,
+                                day: dayValue,
+                                time: timeValue
                             });
 
-                            checkFormCompletion();
-                        })
-                        .catch(error => {
-                            console.error('Error fetching available slots:', error);
-                            // Show error message
-                            timeSelector.innerHTML = '<option value="">Error memuat slot</option>';
-                        });
-                } else {
-                    // Disable time selector
-                    timeSelector.disabled = true;
-                    timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
-                    document.getElementById(`selected-session-${sessionIndex+1}-summary`).textContent = '-';
-                }
+                            // Update summary
+                            document.getElementById(`selected-session-${sessionIndex+1}-summary`).textContent =
+                                `${dayText}, ${timeText}`;
 
-                // Check if form is complete
-                checkFormCompletion();
-            }
+                            // Show summary content
+                            document.getElementById('summary-content').style.display = 'block';
+                            document.getElementById('summary-empty').style.display = 'none';
+                        }
 
-            // Fetch available slots for a specific day from server
-            function getAvailableSlotsForDay(day, fieldId) {
-                return new Promise((resolve, reject) => {
-                    fetch(`/membership/fields/${fieldId}/available-slots-membership?date=${day}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            resolve(data);
-                        })
-                        .catch(error => {
-                            console.error('Error fetching available slots:', error);
-                            reject(error);
-                        });
+                        checkFormCompletion();
+                    });
+
+                    checkFormCompletion();
+                })
+                .catch(error => {
+                    console.error('Error fetching available slots:', error);
+                    // Show error message
+                    timeSelector.innerHTML = '<option value="">Error memuat slot</option>';
                 });
-            }
+        } else {
+            // Disable time selector
+            timeSelector.disabled = true;
+            timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
+            document.getElementById(`selected-session-${sessionIndex+1}-summary`).textContent = '-';
+        }
 
-            // Check if form is complete
-            function checkFormCompletion() {
-                const daySelectors = document.querySelectorAll('.session-day');
-                const timeSelectors = document.querySelectorAll('.session-time');
-                let allSelected = true;
+        // Check if form is complete
+        checkFormCompletion();
+    }
 
-                // Check if all sessions have been selected
-                for (let i = 0; i < 3; i++) {
-                    if (!daySelectors[i].value || !timeSelectors[i].value) {
-                        allSelected = false;
-                        break;
+    // Fetch available slots for a specific day from server
+    function getAvailableSlotsForDay(day, fieldId) {
+        return new Promise((resolve, reject) => {
+            fetch(`/membership/fields/${fieldId}/available-slots-membership?date=${day}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
-                }
-
-                // Enable or disable submit button
-                document.getElementById('submit-btn').disabled = !allSelected;
-
-                // Activate step 3 if all selected
-                if (allSelected) {
-                    document.getElementById('step-2').classList.add('completed');
-                    document.getElementById('step-3').classList.add('active');
-                } else {
-                    document.getElementById('step-2').classList.remove('completed');
-                    document.getElementById('step-3').classList.remove('active');
-                }
-            }
-
-            // Form submission
-            document.getElementById('scheduleForm').addEventListener('submit', function(event) {
-                // Disable submit button to prevent double submission
-                document.getElementById('submit-btn').disabled = true;
-
-                // Show loading state
-                const originalButtonText = document.getElementById('submit-btn').innerHTML;
-                document.getElementById('submit-btn').innerHTML = `
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    <span class="ms-2">Memproses...</span>
-                `;
-
-                // Form will be submitted normally
-                return true;
-            });
+                    return response.json();
+                })
+                .then(data => {
+                    resolve(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching available slots:', error);
+                    reject(error);
+                });
         });
-    </script>
+    }
+
+    // Check if form is complete
+    function checkFormCompletion() {
+        const daySelectors = document.querySelectorAll('.session-day');
+        const timeSelectors = document.querySelectorAll('.session-time');
+        let allSelected = true;
+
+        // Check if all sessions have been selected
+        for (let i = 0; i < 3; i++) {
+            if (!daySelectors[i].value || !timeSelectors[i].value) {
+                allSelected = false;
+                break;
+            }
+        }
+
+        // Enable or disable submit button
+        document.getElementById('submit-btn').disabled = !allSelected;
+
+        // Activate step 3 if all selected
+        if (allSelected) {
+            document.getElementById('step-2').classList.add('completed');
+            document.getElementById('step-3').classList.add('active');
+        } else {
+            document.getElementById('step-2').classList.remove('completed');
+            document.getElementById('step-3').classList.remove('active');
+        }
+    }
+
+    // Tambahkan hidden field untuk tanggal saat ini
+    function addHiddenTodayField() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const date = String(today.getDate()).padStart(2, '0');
+        const todayDate = `${year}-${month}-${date}`;
+
+        const hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = 'today_date';
+        hiddenField.value = todayDate;
+
+        document.getElementById('scheduleForm').appendChild(hiddenField);
+    }
+
+    // Panggil fungsi untuk menambahkan tanggal hari ini
+    addHiddenTodayField();
+
+    // Form submission
+    document.getElementById('scheduleForm').addEventListener('submit', function(event) {
+        // Disable submit button to prevent double submission
+        document.getElementById('submit-btn').disabled = true;
+
+        // Show loading state
+        const originalButtonText = document.getElementById('submit-btn').innerHTML;
+        document.getElementById('submit-btn').innerHTML = `
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span class="ms-2">Memproses...</span>
+        `;
+
+        // Tambahkan debug info
+        console.log('Submitting form with selected schedules:', selectedSchedules);
+
+        // Form will be submitted normally
+        return true;
+    });
+});
+</script>
 
     <style>
         /* Modern Design System */
@@ -1131,7 +1181,7 @@
             }
         }
     </style>
-        @include('layouts.footer')
-        <link rel="stylesheet" href="{{ asset('css/users/welcome.css') }}">
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection

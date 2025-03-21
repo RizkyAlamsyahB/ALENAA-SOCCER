@@ -42,9 +42,10 @@
    /* Brand/Logo */
 .navbar-brand {
     font-weight: 700;
-    font-size: 1.5rem;
-    letter-spacing: -0.5px;
+    font-size: 2.2rem;
+        letter-spacing: -0.5px;
     color: var(--navbar-text); /* Base color */
+    font-family: 'Poppins', sans-serif;
 }
 
 /* Style for the first part (ALENA) */

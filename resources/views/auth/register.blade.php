@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,36 +133,27 @@
 
     <div class="container">
         <div class="register-container">
-            <!-- Logo -->
-            <div class="text-center mb-4">
-                <a href="/" class="text-decoration-none">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/3bc3f968d66dd0c368130525f00d42ec550c3ea8f6304c68cbb117fa6eb8dc08"
-                            width="50" height="50" class="me-2" alt="SportVue Logo">
-                        <span class="fw-bold fs-3" style="color: var(--primary-color);">Sport<span class="text-dark">Vue</span></span>
-                    </div>
-                </a>
-            </div>
+
 
             <div class="card register-card shadow-lg">
                 <div class="row g-0">
                     <!-- Register Form -->
                     <div class="col-lg-7">
                         <div class="card-body p-4 p-lg-5">
-                            <h1 class="h3 fw-bold mb-4 text-center">Create Your Account</h1>
+                            <h1 class="h3 fw-bold mb-4 text-center">Buat Akun Anda</h1>
 
                             <form method="POST" action="{{ route('register') }}">
                                 @csrf
 
                                 <!-- Full Name -->
                                 <div class="mb-4">
-                                    <label for="name" class="form-label fw-semibold">Full Name</label>
+                                    <label for="name" class="form-label fw-semibold">Nama Lengkap</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-user text-muted"></i>
                                         </span>
                                         <input id="name" type="text" class="form-control @error('name') is-invalid @enderror"
-                                            name="name" value="{{ old('name') }}" placeholder="Enter your full name" required autocomplete="name" autofocus>
+                                            name="name" value="{{ old('name') }}" placeholder="Masukkan nama lengkap Anda" required autocomplete="name" autofocus>
                                     </div>
                                     @error('name')
                                         <span class="invalid-feedback" role="alert">
@@ -173,13 +164,13 @@
 
                                 <!-- Email -->
                                 <div class="mb-4">
-                                    <label for="email" class="form-label fw-semibold">Email Address</label>
+                                    <label for="email" class="form-label fw-semibold">Alamat Email</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-envelope text-muted"></i>
                                         </span>
                                         <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
-                                            name="email" value="{{ old('email') }}" placeholder="Enter your email" required autocomplete="email">
+                                            name="email" value="{{ old('email') }}" placeholder="Masukkan email Anda" required autocomplete="email">
                                     </div>
                                     @error('email')
                                         <span class="invalid-feedback" role="alert">
@@ -190,17 +181,17 @@
 
                                 <!-- Password -->
                                 <div class="mb-4">
-                                    <label for="password" class="form-label fw-semibold">Password</label>
+                                    <label for="password" class="form-label fw-semibold">Kata Sandi</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
                                         <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
-                                            name="password" placeholder="Create a password" required autocomplete="new-password">
+                                            name="password" placeholder="Buat kata sandi" required autocomplete="new-password">
                                     </div>
                                     <div class="password-requirements mt-2">
-                                        <div><i class="fas fa-check-circle text-success me-1"></i> Minimum 8 characters</div>
-                                        <div><i class="fas fa-check-circle text-success me-1"></i> Include numbers & symbols</div>
+                                        <div><i class="fas fa-check-circle text-success me-1"></i> Minimal 8 karakter</div>
+                                        <div><i class="fas fa-check-circle text-success me-1"></i> Sertakan angka & simbol</div>
                                     </div>
                                     @error('password')
                                         <span class="invalid-feedback" role="alert">
@@ -211,26 +202,26 @@
 
                                 <!-- Confirm Password -->
                                 <div class="mb-4">
-                                    <label for="password-confirm" class="form-label fw-semibold">Confirm Password</label>
+                                    <label for="password-confirm" class="form-label fw-semibold">Konfirmasi Kata Sandi</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
                                         <input id="password-confirm" type="password" class="form-control"
-                                            name="password_confirmation" placeholder="Confirm your password" required autocomplete="new-password">
+                                            name="password_confirmation" placeholder="Konfirmasi kata sandi Anda" required autocomplete="new-password">
                                     </div>
                                 </div>
 
                                 <!-- Submit Button -->
                                 <button type="submit" class="btn btn-danger w-100 mb-4">
-                                    Create Account
+                                    Buat Akun
                                     <i class="fas fa-arrow-right ms-2"></i>
                                 </button>
 
                                 <!-- Login Link -->
                                 <p class="text-center mb-0">
-                                    Already have an account?
-                                    <a href="{{ route('login') }}" class="text-danger text-decoration-none fw-semibold">Sign In</a>
+                                    Sudah punya akun?
+                                    <a href="{{ route('login') }}" class="text-danger text-decoration-none fw-semibold">Masuk</a>
                                 </p>
                             </form>
                         </div>
@@ -239,25 +230,25 @@
                     <!-- Register Sidebar -->
                     <div class="col-lg-5 register-sidebar">
                         <div>
-                            <h2 class="h3 fw-bold mb-4">Join Our Community!</h2>
-                            <p class="mb-4 opacity-75">Get access to premium features and join our growing community of sports enthusiasts.</p>
+                            <h2 class="h3 fw-bold mb-4">Bergabunglah dengan Komunitas Kami!</h2>
+                            <p class="mb-4 opacity-75">Dapatkan akses ke fitur premium dan bergabunglah dengan komunitas penggemar olahraga kami yang terus berkembang.</p>
 
                             <ul class="benefits-list mb-4">
                                 <li>
                                     <i class="fas fa-calendar-check"></i>
-                                    <span>Easy booking system</span>
+                                    <span>Sistem pemesanan yang mudah</span>
                                 </li>
                                 <li>
                                     <i class="fas fa-percentage"></i>
-                                    <span>Exclusive member discounts</span>
+                                    <span>Diskon eksklusif anggota</span>
                                 </li>
                                 <li>
                                     <i class="fas fa-users"></i>
-                                    <span>Join sports communities</span>
+                                    <span>Bergabung dengan komunitas olahraga</span>
                                 </li>
                                 <li>
                                     <i class="fas fa-trophy"></i>
-                                    <span>Participate in tournaments</span>
+                                    <span>Berpartisipasi dalam turnamen</span>
                                 </li>
                             </ul>
                         </div>
@@ -267,11 +258,11 @@
                                 <div class="d-flex gap-3">
                                     <div>
                                         <h4 class="h2 fw-bold mb-0">500+</h4>
-                                        <p class="mb-0 opacity-75">Active Members</p>
+                                        <p class="mb-0 opacity-75">Anggota Aktif</p>
                                     </div>
                                     <div class="border-start border-white border-opacity-25 ps-3">
                                         <h4 class="h2 fw-bold mb-0">4.9</h4>
-                                        <p class="mb-0 opacity-75">User Rating</p>
+                                        <p class="mb-0 opacity-75">Rating Pengguna</p>
                                     </div>
                                 </div>
                             </div>

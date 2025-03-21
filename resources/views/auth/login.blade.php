@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk - SportVue</title>
+    <title>Masuk - AlenaSoccer</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -149,35 +149,22 @@
 
     <div class="container">
         <div class="login-container">
-           <!-- Logo -->
-<div class="text-center mb-4">
-    <a href="/" class="text-decoration-none">
-        <div class="d-flex align-items-center justify-content-center">
 
-            <span class="fw-bold fs-3" style="color: black;">
-                Alena<span class="text-dark">
-                    S<img src="https://cdn.builder.io/api/v1/image/assets/TEMP/3bc3f968d66dd0c368130525f00d42ec550c3ea8f6304c68cbb117fa6eb8dc08"
-                    width="30" height="30" class="" alt="Alena Soccer Logo">ccer
-                </span>
-            </span>
-        </div>
-    </a>
-</div>
 
             <div class="card login-card shadow-lg">
                 <div class="row g-0">
                     <!-- Login Sidebar -->
                     <div class="col-lg-5 login-sidebar">
-                        <h2 class="h3 fw-bold mb-4">Welcome Back!</h2>
-                        <p class="mb-4 opacity-75">Sign in to access your account and enjoy our premium sports facilities.</p>
+                        <h2 class="h3 fw-bold mb-4">Selamat Datang Kembali!</h2>
+                        <p class="mb-4 opacity-75">Masuk untuk mengakses akun Anda dan nikmati fasilitas olahraga premium kami.</p>
                         <div class="d-flex gap-3 mb-4">
                             <div>
                                 <h4 class="h2 fw-bold mb-0">500+</h4>
-                                <p class="mb-0 opacity-75">Happy Players</p>
+                                <p class="mb-0 opacity-75">Pemain Bahagia</p>
                             </div>
                             <div class="border-start border-white border-opacity-25 ps-3">
                                 <h4 class="h2 fw-bold mb-0">4.9</h4>
-                                <p class="mb-0 opacity-75">User Rating</p>
+                                <p class="mb-0 opacity-75">Rating Pengguna</p>
                             </div>
                         </div>
                     </div>
@@ -185,19 +172,19 @@
                     <!-- Login Form -->
                     <div class="col-lg-7">
                         <div class="card-body p-4 p-lg-5">
-                            <h1 class="h3 fw-bold mb-4 text-center">Sign In to Your Account</h1>
+                            <h1 class="h3 fw-bold mb-4 text-center">Masuk ke Akun Anda</h1>
 
                             <form method="POST" action="{{ route('login') }}">
                                 @csrf
                                 <!-- Email -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-semibold">Email Address</label>
+                                    <label class="form-label fw-semibold">Alamat Email</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-envelope text-muted"></i>
                                         </span>
                                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                               placeholder="Enter your email" value="{{ old('email') }}" required autocomplete="email">
+                                               placeholder="Masukkan email Anda" value="{{ old('email') }}" required autocomplete="email">
                                         @error('email')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -208,13 +195,13 @@
 
                                 <!-- Password -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-semibold">Password</label>
+                                    <label class="form-label fw-semibold">Kata Sandi</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
                                         <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
-                                               placeholder="Enter your password" required autocomplete="current-password">
+                                               placeholder="Masukkan kata sandi Anda" required autocomplete="current-password">
                                         @error('password')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -228,23 +215,21 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" name="remember" id="remember"
                                                {{ old('remember') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="remember">Remember me</label>
+                                        <label class="form-check-label" for="remember">Ingat saya</label>
                                     </div>
-                                    <a href="/forgot-password" class="text-danger text-decoration-none">Forgot Password?</a>
+                                    <a href="/forgot-password" class="text-danger text-decoration-none">Lupa Kata Sandi?</a>
                                 </div>
 
                                 <!-- Submit Button -->
                                 <button type="submit" class="btn btn-danger w-100 mb-4">
-                                    Sign In
+                                    Masuk
                                     <i class="fas fa-arrow-right ms-2"></i>
                                 </button>
                             </form>
 
-
-
                             <!-- Divider -->
                             <div class="divider mb-4">
-                                <span>or continue with</span>
+                                <span>atau lanjutkan dengan</span>
                             </div>
 
                             <!-- Social Login -->
@@ -261,8 +246,8 @@
 
                             <!-- Register Link -->
                             <p class="text-center mb-0">
-                                Don't have an account?
-                                <a href="/register" class="text-danger text-decoration-none fw-semibold">Create Account</a>
+                                Belum punya akun?
+                                <a href="/register" class="text-danger text-decoration-none fw-semibold">Buat Akun</a>
                             </p>
                         </div>
                     </div>

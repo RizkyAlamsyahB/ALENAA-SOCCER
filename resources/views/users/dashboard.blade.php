@@ -470,9 +470,6 @@
     </style>
 
 
-    <!-- Modern Footer -->
-@include('layouts.footer')
-
     <!-- WhatsApp Button -->
     <a href="https://wa.me/628784017803" class="whatsapp-button" title="Chat on WhatsApp">
         <i class="fab fa-whatsapp"></i>

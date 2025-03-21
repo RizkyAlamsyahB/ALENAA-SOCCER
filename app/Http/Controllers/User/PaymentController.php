@@ -3,22 +3,31 @@
 namespace App\Http\Controllers\User;
 
 use Carbon\Carbon;
+use Midtrans\Snap;
 use App\Models\Cart;
+use App\Models\User;
 use App\Models\Review;
 use App\Models\Payment;
 use App\Models\CartItem;
 use App\Models\Discount;
 use Barryvdh\DomPDF\PDF;
+use App\Models\Membership;
+use Midtrans\Notification;
 use Illuminate\Support\Str;
 use App\Models\FieldBooking;
 use Illuminate\Http\Request;
 use App\Models\DiscountUsage;
 use App\Models\RentalBooking;
+use App\Mail\MembershipExpired;
+use App\Models\MembershipSession;
 use Illuminate\Support\Facades\DB;
 use App\Models\PhotographerBooking;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MembershipRenewalInvoice;
+use App\Mail\MembershipRenewalSuccess;
 use App\Models\MembershipSubscription;
 use Midtrans\Exceptions\MidtransApiException;
 
@@ -561,7 +570,7 @@ class PaymentController extends Controller
             ];
 
             // Dapatkan Snap Token baru
-            $snapToken = \Midtrans\Snap::getSnapToken($params);
+            $snapToken = Snap::getSnapToken($params);
 
             // Kirim ke view dengan format data yang sesuai, termasuk expires_at
             return view('users.payment.checkout', [
@@ -583,178 +592,266 @@ class PaymentController extends Controller
                 ->with('error', 'Gagal melanjutkan pembayaran: ' . $e->getMessage());
         }
     }
-/**
- * Handle payment notification from Midtrans
- */
-public function notification(Request $request)
-{
-    // Set Midtrans configuration
-    $this->setupMidtransConfig(false);
 
-    try {
-        // Simpan data mentah dulu
-        $rawData = $request->all();
-        Log::info('Notification raw data:', $rawData);
+    /**
+     * Handle payment notification from Midtrans
+     */
+    public function notification(Request $request)
+    {
+        // Set Midtrans configuration
+        $this->setupMidtransConfig(false);
 
-        // Ambil order_id dari data mentah
-        $orderId = $rawData['order_id'] ?? null;
-        if (!$orderId) {
-            Log::warning('No order_id found in notification data');
-            return response('No order_id found', 400);
-        }
+        try {
+            // Simpan data mentah dulu
+            $rawData = $request->all();
+            Log::info('Notification raw data:', $rawData);
 
-        // Cek apakah ini order_id retry (memiliki format originalId-RETRY-timestamp)
-        $isRetry = strpos($orderId, '-RETRY-') !== false;
-        $payment = null;
+            // Ambil order_id dari data mentah
+            $orderId = $rawData['order_id'] ?? null;
+            if (!$orderId) {
+                Log::warning('No order_id found in notification data');
+                return response('No order_id found', 400);
+            }
 
-        if ($isRetry) {
-            // Ambil original order_id jika ini adalah retry payment
-            $originalOrderId = explode('-RETRY-', $orderId)[0];
-            $payment = Payment::where('order_id', $originalOrderId)->first();
+            // Cek apakah ini order_id retry (memiliki format originalId-RETRY-timestamp)
+            $isRetry = strpos($orderId, '-RETRY-') !== false;
+            $payment = null;
 
-            if ($payment) {
-                Log::info('Retry payment notification for original order_id: ' . $originalOrderId);
+            if ($isRetry) {
+                // Ambil original order_id jika ini adalah retry payment
+                $originalOrderId = explode('-RETRY-', $orderId)[0];
+                $payment = Payment::where('order_id', $originalOrderId)->first();
+
+                if ($payment) {
+                    Log::info('Retry payment notification for original order_id: ' . $originalOrderId);
+                } else {
+                    Log::error('Payment not found for retry order_id: ' . $orderId);
+                    return response('Payment not found', 404);
+                }
             } else {
-                Log::error('Payment not found for retry order_id: ' . $orderId);
-                return response('Payment not found', 404);
+                // Jika bukan retry, ambil payment berdasarkan order_id asli
+                $payment = Payment::where('order_id', $orderId)->first();
+
+                if (!$payment) {
+                    Log::error('Payment not found for order_id: ' . $orderId);
+                    return response('Payment not found', 404);
+                }
             }
-        } else {
-            // Jika bukan retry, ambil payment berdasarkan order_id asli
-            $payment = Payment::where('order_id', $orderId)->first();
 
-            if (!$payment) {
-                Log::error('Payment not found for order_id: ' . $orderId);
-                return response('Payment not found', 404);
-            }
-        }
+            // Simpan data notifikasi mentah di payment_details
+            $payment->payment_details = json_encode($rawData);
 
-        // Simpan data notifikasi mentah di payment_details
-        $payment->payment_details = json_encode($rawData);
+            // Update payment dengan data dari notifikasi
+            $status = $rawData['transaction_status'] ?? '';
+            $type = $rawData['payment_type'] ?? '';
+            $fraudStatus = $rawData['fraud_status'] ?? '';
+            $transactionId = $rawData['transaction_id'] ?? '';
 
-        // Update payment dengan data dari notifikasi
-        $status = $rawData['transaction_status'] ?? '';
-        $type = $rawData['payment_type'] ?? '';
-        $fraudStatus = $rawData['fraud_status'] ?? '';
-        $transactionId = $rawData['transaction_id'] ?? '';
+            $payment->payment_type = $type;
+            $payment->transaction_id = $transactionId;
 
-        $payment->payment_type = $type;
-        $payment->transaction_id = $transactionId;
+            // Simpan status transaksi sebelumnya
+            $previousStatus = $payment->transaction_status;
 
-        // Simpan status transaksi sebelumnya
-        $previousStatus = $payment->transaction_status;
-
-        // Update payment status based on notification
-        if ($status == 'capture') {
-            if ($fraudStatus == 'challenge') {
-                $payment->transaction_status = 'challenge';
-            } elseif ($fraudStatus == 'accept') {
+            // Update payment status based on notification
+            if ($status == 'capture') {
+                if ($fraudStatus == 'challenge') {
+                    $payment->transaction_status = 'challenge';
+                } elseif ($fraudStatus == 'accept') {
+                    $payment->transaction_status = 'success';
+                }
+            } elseif ($status == 'settlement') {
                 $payment->transaction_status = 'success';
+                $payment->transaction_time = $rawData['settlement_time'] ?? now();
+            } elseif ($status == 'cancel' || $status == 'deny' || $status == 'expire') {
+                $payment->transaction_status = 'failed';
+            } elseif ($status == 'pending') {
+                $payment->transaction_status = 'pending';
             }
-        } elseif ($status == 'settlement') {
-            $payment->transaction_status = 'success';
-            $payment->transaction_time = $rawData['settlement_time'] ?? now();
-        } elseif ($status == 'cancel' || $status == 'deny' || $status == 'expire') {
-            $payment->transaction_status = 'failed';
-        } elseif ($status == 'pending') {
-            $payment->transaction_status = 'pending';
-        }
 
-        $payment->save();
-        Log::info('Payment status updated to: ' . $payment->transaction_status);
+            $payment->save();
+            Log::info('Payment status updated to: ' . $payment->transaction_status);
 
-        // Tambahkan points jika payment statusnya berubah menjadi success dan sebelumnya bukan success
-        if ($payment->transaction_status === 'success' && $previousStatus !== 'success') {
-            // Berikan points kepada user (1 point untuk setiap 10000 rupiah)
-            $user = \App\Models\User::find($payment->user_id);
-            if ($user) {
-                // Kalkulasi points berdasarkan amount pembayaran (1 point untuk setiap 10000 rupiah)
-                $points = floor($payment->original_amount / 10000);
-                $user->points += $points;
-                $user->save();
+            // Tambahkan points jika payment statusnya berubah menjadi success dan sebelumnya bukan success
+            if ($payment->transaction_status === 'success' && $previousStatus !== 'success') {
+                // Berikan points kepada user (1 point untuk setiap 10000 rupiah)
+                $user = User::find($payment->user_id);
+                if ($user) {
+                    // Kalkulasi points berdasarkan amount pembayaran (1 point untuk setiap 10000 rupiah)
+                    $points = floor($payment->original_amount / 10000);
+                    $user->points += $points;
+                    $user->save();
 
-                Log::info('Added ' . $points . ' points to user #' . $user->id . ' for payment #' . $payment->id);
+                    Log::info('Added ' . $points . ' points to user #' . $user->id . ' for payment #' . $payment->id);
+                }
             }
-        }
 
-        // Catat penggunaan diskon hanya jika pembayaran berhasil dan status berubah dari pending ke success
-        if ($payment->transaction_status === 'success' && $previousStatus !== 'success' && $payment->discount_id) {
-            // Cek apakah sudah ada catatan penggunaan
-            $existingUsage = DiscountUsage::where('payment_id', $payment->id)->where('discount_id', $payment->discount_id)->first();
+            // Catat penggunaan diskon hanya jika pembayaran berhasil dan status berubah dari pending ke success
+            if ($payment->transaction_status === 'success' && $previousStatus !== 'success' && $payment->discount_id) {
+                // Cek apakah sudah ada catatan penggunaan
+                $existingUsage = DiscountUsage::where('payment_id', $payment->id)->where('discount_id', $payment->discount_id)->first();
 
-            // Jika belum ada, buat catatan baru
-            if (!$existingUsage) {
-                DiscountUsage::create([
-                    'discount_id' => $payment->discount_id,
-                    'user_id' => $payment->user_id,
-                    'payment_id' => $payment->id,
-                    'discount_amount' => $payment->discount_amount,
-                ]);
+                // Jika belum ada, buat catatan baru
+                if (!$existingUsage) {
+                    DiscountUsage::create([
+                        'discount_id' => $payment->discount_id,
+                        'user_id' => $payment->user_id,
+                        'payment_id' => $payment->id,
+                        'discount_amount' => $payment->discount_amount,
+                    ]);
 
-                Log::info('Discount usage recorded for payment #' . $payment->id . ' with discount #' . $payment->discount_id);
+                    Log::info('Discount usage recorded for payment #' . $payment->id . ' with discount #' . $payment->discount_id);
+                }
             }
-        }
 
-        // Update field bookings
-        if ($payment->fieldBookings && $payment->fieldBookings->count() > 0) {
-            foreach ($payment->fieldBookings as $booking) {
-                $booking->status = 'confirmed';
-                $booking->save();
-                Log::info('Field Booking #' . $booking->id . ' status updated to: confirmed');
+            // Update field bookings
+            if ($payment->fieldBookings && $payment->fieldBookings->count() > 0) {
+                foreach ($payment->fieldBookings as $booking) {
+                    $booking->status = 'confirmed';
+                    $booking->save();
+                    Log::info('Field Booking #' . $booking->id . ' status updated to: confirmed');
+                }
             }
-        }
 
-        // Update rental bookings
-        if ($payment->rentalBookings && $payment->rentalBookings->count() > 0) {
-            foreach ($payment->rentalBookings as $booking) {
-                $booking->status = 'confirmed';
-                $booking->save();
-                Log::info('Rental Booking #' . $booking->id . ' status updated to: confirmed');
+            // Update rental bookings
+            if ($payment->rentalBookings && $payment->rentalBookings->count() > 0) {
+                foreach ($payment->rentalBookings as $booking) {
+                    $booking->status = 'confirmed';
+                    $booking->save();
+                    Log::info('Rental Booking #' . $booking->id . ' status updated to: confirmed');
+                }
             }
-        }
 
-        // Update membership subscriptions - only if the relationship exists
-        if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
-            foreach ($payment->membershipSubscriptions as $subscription) {
-                $subscription->status = 'active';
-                $subscription->save();
+            // Update membership subscriptions - only if the relationship exists
+            if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
+                foreach ($payment->membershipSubscriptions as $subscription) {
+                    $subscription->status = 'active';
+                    $subscription->save();
 
-                // Jika ada session membership, update juga statusnya menjadi scheduled
-                if (method_exists($subscription, 'sessions') && $subscription->sessions) {
-                    foreach ($subscription->sessions as $session) {
-                        $session->status = 'scheduled';
-                        $session->save();
+                    // Jika ada session membership, update juga statusnya menjadi scheduled
+                    if (method_exists($subscription, 'sessions') && $subscription->sessions) {
+                        foreach ($subscription->sessions as $session) {
+                            $session->status = 'scheduled';
+                            $session->save();
 
-                        // Perbarui juga status field booking terkait jika ada
-                        if (method_exists($session, 'fieldBooking') && $session->fieldBooking) {
-                            $fieldBooking = $session->fieldBooking;
-                            $fieldBooking->status = 'confirmed';
-                            $fieldBooking->save();
-                            Log::info('Field Booking #' . $fieldBooking->id . ' for Membership Session #' . $session->id . ' status updated to: confirmed');
+                            // Perbarui juga status field booking terkait jika ada
+                            if (method_exists($session, 'fieldBooking') && $session->fieldBooking) {
+                                $fieldBooking = $session->fieldBooking;
+                                $fieldBooking->status = 'confirmed';
+                                $fieldBooking->save();
+                                Log::info('Field Booking #' . $fieldBooking->id . ' for Membership Session #' . $session->id . ' status updated to: confirmed');
+                            }
                         }
                     }
+
+                    Log::info('Membership #' . $subscription->id . ' status updated to: active');
+                }
+            }
+
+            // Update photographer bookings - only if the relationship exists
+            if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
+                foreach ($payment->photographerBookings as $booking) {
+                    $booking->status = 'confirmed';
+                    $booking->save();
+                    Log::info('Photographer Booking #' . $booking->id . ' status updated to: confirmed');
+                }
+            }
+
+// Tambahkan penanganan untuk pembayaran perpanjangan membership
+if (strpos($orderId, 'RENEW-MEM-') === 0 && $payment->transaction_status === 'success') {
+    // Ekstrak subscription ID dari order_id
+    $subscriptionId = null;
+    $orderParts = explode('-', $orderId);
+
+    // Cek format order_id dan ambil subscription ID
+    if (count($orderParts) >= 3) {
+        // Format: RENEW-MEM-{subscription_id}-{anything}
+        $subscriptionId = $orderParts[2];
+
+        // Jika ada 'RETRY' dalam order_id, sesuaikan pengambilan subscription ID
+        if ($subscriptionId === 'RETRY' && count($orderParts) >= 4) {
+            $subscriptionId = $orderParts[3];
+        }
+
+        Log::info('Processing membership renewal', ['subscription_id' => $subscriptionId, 'order_id' => $orderId]);
+
+        // Cari subscription berdasarkan ID
+        $subscription = MembershipSubscription::find($subscriptionId);
+
+        if ($subscription) {
+            DB::beginTransaction();
+            try {
+                // Update status renewal
+                $subscription->renewal_status = 'renewed';
+                $subscription->last_payment_date = now();
+
+                // Hitung tanggal baru untuk periode berikutnya (7 hari untuk membership mingguan)
+                $newEndDate = Carbon::parse($subscription->end_date)->addDays(7);
+                $subscription->end_date = $newEndDate;
+                $subscription->save();
+
+                Log::info('Membership #' . $subscription->id . ' has been renewed until ' . $newEndDate);
+
+                // Buat session dan booking baru untuk periode berikutnya
+                $this->createNewBookingsForRenewal($subscription);
+
+                // Reload subscription dengan relasi yang dibutuhkan
+                $subscription = $subscription->fresh(['membership', 'sessions']);
+
+                // Siapkan pengiriman email
+                Log::info('Preparing to send renewal success email', [
+                    'user_id' => $subscription->user_id,
+                    'subscription_id' => $subscription->id,
+                    'sessions_count' => $subscription->sessions->count()
+                ]);
+
+                // Kirim email konfirmasi perpanjangan
+                try {
+                    Mail::to($subscription->user->email)->send(
+                        new MembershipRenewalSuccess([
+                            'user' => $subscription->user,
+                            'subscription' => $subscription
+                        ])
+                    );
+                    Log::info('Success email sent successfully');
+                } catch (\Exception $emailError) {
+                    // Tangkap error pengiriman email tanpa menggagalkan transaksi
+                    Log::error('Failed to send success email: ' . $emailError->getMessage(), [
+                        'user_id' => $subscription->user_id,
+                        'subscription_id' => $subscription->id
+                    ]);
                 }
 
-                Log::info('Membership #' . $subscription->id . ' status updated to: active');
+                DB::commit();
+                Log::info('Membership renewal transaction completed successfully', [
+                    'subscription_id' => $subscription->id
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error processing membership renewal: ' . $e->getMessage(), [
+                    'subscription_id' => $subscriptionId,
+                    'trace' => $e->getTraceAsString()
+                ]);
             }
+        } else {
+            Log::error('Subscription not found for renewal', [
+                'subscription_id' => $subscriptionId,
+                'order_id' => $orderId
+            ]);
         }
-
-        // Update photographer bookings - only if the relationship exists
-        if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
-            foreach ($payment->photographerBookings as $booking) {
-                $booking->status = 'confirmed';
-                $booking->save();
-                Log::info('Photographer Booking #' . $booking->id . ' status updated to: confirmed');
-            }
-        }
-
-        return response('OK', 200);
-    } catch (\Exception $e) {
-        Log::error('Notification error: ' . $e->getMessage());
-        Log::error('Notification error stack trace: ' . $e->getTraceAsString());
-        return response($e->getMessage(), 500);
+    } else {
+        Log::error('Invalid order_id format for membership renewal', [
+            'order_id' => $orderId
+        ]);
     }
 }
-
+            return response('OK', 200);
+        } catch (\Exception $e) {
+            Log::error('Notification error: ' . $e->getMessage());
+            Log::error('Notification error stack trace: ' . $e->getTraceAsString());
+            return response($e->getMessage(), 500);
+        }
+    }
     /**
      * Handle payment finish redirect from Midtrans
      */
@@ -782,12 +879,35 @@ public function notification(Request $request)
             // Hanya menghitung points untuk ditampilkan di view, tanpa menyimpannya ke database
             $pointsEarned = floor($payment->original_amount / 10000);
 
+            // Cek jika ini pembayaran perpanjangan membership berdasarkan order_id
+            if (strpos($payment->order_id, 'RENEW-MEM-') === 0) {
+                // Ambil informasi subscription yang diperbarui
+                $subscription = MembershipSubscription::where('user_id', Auth::id())
+                    ->where('status', 'active')
+                    ->where('renewal_status', 'renewed')
+                    ->first();
+
+                return view('users.payment.renewal_success', compact('payment', 'pointsEarned', 'subscription'));
+            }
+
             return view('users.payment.success', compact('payment', 'pointsEarned'));
         } elseif ($payment->transaction_status == 'pending') {
             return view('users.payment.unfinish', ['orderId' => $orderId]);
         } else {
             return view('users.payment.error', ['errorMessage' => 'Pembayaran gagal atau dibatalkan']);
         }
+    }
+
+    /**
+     * Handle payment finish/unfinish/error redirect dari Midtrans
+     * Identifikasi jenis pembayaran dari order_id
+     */
+    private function identifyPaymentType($orderId)
+    {
+        if (strpos($orderId, 'RENEW-MEM-') === 0) {
+            return 'membership_renewal';
+        }
+        return 'regular';
     }
 
     /**
@@ -802,20 +922,39 @@ public function notification(Request $request)
             return redirect()->route('users.dashboard')->with('warning', 'Pembayaran belum selesai');
         }
 
-        // Periksa jika pembayaran sudah kadaluarsa
+        // Periksa jika pembayaran sudah kedaluarsa
         $payment = $this->checkExpiredPayment($payment);
 
-        // Jika statusnya berubah menjadi failed, tampilkan pesan kadaluarsa
-        if ($payment->transaction_status === 'failed') {
+        // Identifikasi tipe pembayaran dari order_id
+        $paymentType = $this->identifyPaymentType($orderId);
+
+        // Jika ini adalah pembayaran perpanjangan membership
+        if ($paymentType === 'membership_renewal') {
+            // Jika statusnya berubah menjadi failed karena kadaluarsa
+            if ($payment->transaction_status === 'failed') {
+                return redirect()
+                    ->route('user.membership.my-memberships')
+                    ->with('error', 'Pembayaran perpanjangan telah kadaluwarsa. Silakan mencoba lagi.');
+            }
+
+            // Redirect ke halaman memberships
+            return redirect()
+                ->route('user.membership.my-memberships')
+                ->with('warning', 'Pembayaran perpanjangan belum selesai. Anda dapat melanjutkan pembayaran dari halaman Membership Saya.');
+        } else {
+            // Proses normal untuk pembayaran biasa
+            // Jika statusnya berubah menjadi failed karena kadaluarsa
+            if ($payment->transaction_status === 'failed') {
+                return redirect()
+                    ->route('user.payment.detail', ['id' => $payment->id])
+                    ->with('error', 'Pembayaran telah kadaluwarsa. Silakan membuat pesanan baru.');
+            }
+
+            // Redirect ke detail pembayaran dengan pesan untuk melanjutkan pembayaran
             return redirect()
                 ->route('user.payment.detail', ['id' => $payment->id])
-                ->with('error', 'Pembayaran telah kadaluwarsa. Silakan membuat pesanan baru.');
+                ->with('warning', 'Pembayaran belum selesai. Anda dapat melanjutkan pembayaran dari halaman ini.');
         }
-
-        // Redirect ke detail pembayaran dengan pesan untuk melanjutkan pembayaran
-        return redirect()
-            ->route('user.payment.detail', ['id' => $payment->id])
-            ->with('warning', 'Pembayaran belum selesai. Anda dapat melanjutkan pembayaran dari halaman ini.');
     }
 
     /**
@@ -833,17 +972,33 @@ public function notification(Request $request)
         // Periksa jika pembayaran sudah kadaluarsa
         $payment = $this->checkExpiredPayment($payment);
 
-        // Jika statusnya berubah menjadi failed karena kadaluarsa, tampilkan pesan kadaluarsa
-        if ($payment->transaction_status === 'failed') {
+        // Jika ini adalah pembayaran perpanjangan membership
+        if ($payment->payment_type === 'membership_renewal') {
+            // Jika statusnya berubah menjadi failed karena kadaluarsa
+            if ($payment->transaction_status === 'failed') {
+                return redirect()
+                    ->route('user.membership.my-memberships')
+                    ->with('error', 'Pembayaran perpanjangan telah kadaluwarsa. Silakan mencoba lagi.');
+            }
+
+            // Redirect ke halaman memberships
+            return redirect()
+                ->route('user.membership.my-memberships')
+                ->with('error', 'Terjadi kesalahan pada pembayaran perpanjangan. Silakan coba lagi.');
+        } else {
+            // Proses normal untuk pembayaran biasa
+            // Jika statusnya berubah menjadi failed karena kadaluarsa
+            if ($payment->transaction_status === 'failed') {
+                return redirect()
+                    ->route('user.payment.detail', ['id' => $payment->id])
+                    ->with('error', 'Pembayaran telah kadaluwarsa. Silakan membuat pesanan baru.');
+            }
+
+            // Redirect ke detail pembayaran
             return redirect()
                 ->route('user.payment.detail', ['id' => $payment->id])
-                ->with('error', 'Pembayaran telah kadaluwarsa. Silakan membuat pesanan baru.');
+                ->with('error', 'Terjadi kesalahan pada pembayaran. Silakan coba lagi.');
         }
-
-        // Redirect ke detail pembayaran
-        return redirect()
-            ->route('user.payment.detail', ['id' => $payment->id])
-            ->with('error', 'Terjadi kesalahan pada pembayaran. Silakan coba lagi.');
     }
 
     /**
@@ -879,19 +1034,60 @@ public function notification(Request $request)
             $pointsEarned = floor($payment->original_amount / 10000);
         }
 
+        // Identifikasi jenis pembayaran (pembayaran biasa atau perpanjangan membership)
+        $isMembershipRenewal = strpos($payment->order_id, 'RENEW-MEM-') === 0;
+        $membershipInfo = null;
+
+        // Jika ini adalah pembayaran perpanjangan, ambil data subscription terkait
+        if ($isMembershipRenewal) {
+            // Jika ini adalah pembayaran perpanjangan yang berhasil, cari subscription yang sudah diperbarui
+            if ($payment->transaction_status === 'success') {
+                $subscription = MembershipSubscription::where('user_id', Auth::id())
+                    ->where('status', 'active')
+                    ->where('renewal_status', 'renewed')
+                    ->first();
+            } else {
+                // Jika belum berhasil, cari subscription dalam status renewal_pending
+                $subscription = MembershipSubscription::where('user_id', Auth::id())
+                    ->where('status', 'active')
+                    ->where('renewal_status', 'renewal_pending')
+                    ->first();
+            }
+
+            if ($subscription) {
+                $membershipInfo = [
+                    'subscription' => $subscription,
+                    'membership' => $subscription->membership,
+                    'field' => $subscription->membership->field ?? null,
+                    'next_period_start' => Carbon::parse($subscription->end_date)->format('d M Y'),
+                    'next_period_end' => Carbon::parse($subscription->end_date)
+                        ->addMonths($subscription->membership->duration)
+                        ->format('d M Y')
+                ];
+            }
+        }
+
         // Cek apakah user sudah memberikan review untuk item di payment ini
         $reviewedItems = [];
         if ($payment->transaction_status === 'success') {
             // Cek review untuk field bookings
             foreach ($payment->fieldBookings as $booking) {
-                $review = Review::where('user_id', Auth::id())->where('item_id', $booking->field_id)->where('item_type', 'App\\Models\\Field')->where('payment_id', $payment->id)->first();
+                $review = Review::where('user_id', Auth::id())
+                    ->where('item_id', $booking->field_id)
+                    ->where('item_type', 'App\\Models\\Field')
+                    ->where('payment_id', $payment->id)
+                    ->first();
 
                 $reviewedItems['field_' . $booking->field_id] = $review ? true : false;
             }
 
             // Cek review untuk rental bookings
             foreach ($payment->rentalBookings as $booking) {
-                $review = Review::where('user_id', Auth::id())->where('item_id', $booking->rental_item_id)->where('item_type', 'App\\Models\\RentalItem')->where('payment_id', $payment->id)->first();
+                $review = Review::where('user_id', Auth::id())
+                    ->where('item_id', $booking->rental_item_id)
+                    ->where('item_type', 'App\\Models\\RentalItem')
+                    ->where('payment_id', $payment->id)
+                    ->first();
 
                 $reviewedItems['rental_' . $booking->rental_item_id] = $review ? true : false;
             }
@@ -899,15 +1095,27 @@ public function notification(Request $request)
             // Jika ada booking fotografer, tambahkan cek review untuk itu juga
             if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings) {
                 foreach ($payment->photographerBookings as $booking) {
-                    $review = Review::where('user_id', Auth::id())->where('item_id', $booking->photographer_id)->where('item_type', 'App\\Models\\Photographer')->where('payment_id', $payment->id)->first();
+                    $review = Review::where('user_id', Auth::id())
+                        ->where('item_id', $booking->photographer_id)
+                        ->where('item_type', 'App\\Models\\Photographer')
+                        ->where('payment_id', $payment->id)
+                        ->first();
 
                     $reviewedItems['photographer_' . $booking->photographer_id] = $review ? true : false;
                 }
             }
         }
 
-        return view('users.payment.detail', compact('payment', 'reviewedItems', 'pointsEarned'));
+        // Kirim semua data yang dibutuhkan ke view
+        return view('users.payment.detail', compact(
+            'payment',
+            'reviewedItems',
+            'pointsEarned',
+            'isMembershipRenewal',
+            'membershipInfo'
+        ));
     }
+
     /**
      * Handle recurring payment notification from Midtrans
      */
@@ -917,7 +1125,7 @@ public function notification(Request $request)
         $this->setupMidtransConfig(false);
 
         try {
-            $notification = new \Midtrans\Notification();
+            $notification = new Notification();
 
             // Log or process the recurring payment notification
             // This would depend on your specific implementation needs
@@ -937,7 +1145,7 @@ public function notification(Request $request)
         $this->setupMidtransConfig(false);
 
         try {
-            $notification = new \Midtrans\Notification();
+            $notification = new Notification();
 
             // Process the pay account notification
             // You might want to log the notification or update relevant records
@@ -996,5 +1204,577 @@ public function notification(Request $request)
 
         // Return the PDF for download
         return $pdf->download('Invoice-' . $payment->order_id . '.pdf');
+    }
+
+    public function scheduleMembershipRenewalInvoices()
+    {
+        // Temukan booking sesi kedua yang akan datang (dalam 7 hari)
+        $secondSessionBookings = FieldBooking::where('is_membership', true)
+            ->whereHas('membershipSession', function ($query) {
+                $query->where('session_number', 2);
+                $query->whereDate('start_time', '>=', Carbon::now())
+                    ->whereDate('start_time', '<=', Carbon::now()->addDays(7));
+                $query->whereHas('subscription', function ($q) {
+                    $q->where('status', 'active')
+                        ->where('renewal_status', 'not_due')
+                        ->where('invoice_sent', false); // Pastikan belum dikirim
+                });
+            })
+            ->get();
+
+        $count = 0;
+        foreach ($secondSessionBookings as $booking) {
+            $session = $booking->membershipSession;
+            $subscription = $session->subscription;
+
+            // Tambahkan pengecekan untuk memastikan invoice belum dikirim
+            if ($subscription->invoice_sent) {
+                Log::info('Invoice sudah dikirim untuk subscription #' . $subscription->id);
+                continue;
+            }
+
+            // Tandai bahwa invoice telah dikirim
+            $subscription->invoice_sent = true;
+            $subscription->renewal_status = 'renewal_pending';
+            $subscription->next_invoice_date = now();
+            $subscription->save();
+
+            // Buat invoice dengan objek subscription
+            $payment = $this->createRenewalInvoice($subscription);
+
+            // Jika payment berhasil dibuat, kirim email
+            if ($payment) {
+                // Kirim email invoice
+                try {
+                    Mail::to($subscription->user->email)->send(
+                        new MembershipRenewalInvoice([
+                            'user' => $subscription->user,
+                            'membership' => $subscription->membership,
+                            'subscription' => $subscription,
+                            'payment' => $payment,
+                            'payment_url' => route('user.membership.renewal.pay', ['id' => $payment->id]),
+                            'deadline' => Carbon::parse($payment->expires_at)->format('d M Y H:i'),
+                        ])
+                    );
+                    Log::info('Renewal invoice email sent to ' . $subscription->user->email . ' for subscription #' . $subscription->id);
+                    $count++;
+                } catch (\Exception $e) {
+                    Log::error('Failed to send renewal invoice email: ' . $e->getMessage());
+                }
+            }
+        }
+
+        return response()->json([
+            'message' => $count . ' renewal invoices scheduled',
+            'bookings' => $secondSessionBookings->pluck('id'),
+        ]);
+    }
+
+    /**
+     * Membuat invoice untuk perpanjangan membership
+     *
+     * @param \Illuminate\Http\Request|MembershipSubscription|int $subscriptionOrRequest
+     * @param int|null $id ID dari subscription (jika parameter pertama adalah Request)
+     * @return \Illuminate\Http\JsonResponse|Payment|null
+     */
+    public function createRenewalInvoice($subscriptionOrRequest, $id = null)
+    {
+        try {
+            // Tentukan mode (AJAX request atau direct call)
+            $isAjaxRequest = $subscriptionOrRequest instanceof Request;
+
+            // Ambil subscription berdasarkan parameter yang diberikan
+            $subscription = null;
+
+            if ($isAjaxRequest) {
+                $id = $id ?? $subscriptionOrRequest->route('id'); // Pastikan id diambil dari route jika null
+                // Mode AJAX request (dipanggil dari web)
+                $subscription = MembershipSubscription::where('id', $id)
+                    ->where('user_id', Auth::id())
+                    ->where('status', 'active')
+                    ->first();
+            } else {
+                // Mode direct call (dipanggil dari scheduleMembershipRenewalInvoices)
+                if (is_numeric($subscriptionOrRequest)) {
+                    $subscription = MembershipSubscription::where('id', $subscriptionOrRequest)
+                        ->where('status', 'active')
+                        ->first();
+                } elseif ($subscriptionOrRequest instanceof MembershipSubscription) {
+                    $subscription = $subscriptionOrRequest;
+                }
+            }
+
+            // Validasi subscription
+            if (!$subscription || !($subscription instanceof MembershipSubscription)) {
+                $errorMessage = 'Invalid subscription parameter in createRenewalInvoice';
+                Log::error($errorMessage);
+
+                if ($isAjaxRequest) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Membership tidak ditemukan atau tidak aktif'
+                    ], 404);
+                }
+
+                return null;
+            }
+
+            // Cek jika sudah ada invoice pending untuk membership ini
+            $existingPayment = Payment::where('user_id', $subscription->user_id)
+                ->where('order_id', 'like', 'RENEW-MEM-' . $subscription->id . '%')
+                ->where('transaction_status', 'pending')
+                ->first();
+
+            if ($existingPayment) {
+                Log::info('Using existing pending renewal invoice', ['payment_id' => $existingPayment->id]);
+
+                if ($isAjaxRequest) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Melanjutkan pembayaran yang sudah ada',
+                        'payment_url' => route('user.membership.renewal.pay', ['id' => $existingPayment->id])
+                    ]);
+                }
+
+                return $existingPayment;
+            }
+
+            // Buat order ID unik (format: RENEW-MEM-{subscription_id}-{timestamp})
+// Buat order ID unik (format: RENEW-MEM-{subscription_id}-{random}-{timestamp})
+$orderId = 'RENEW-MEM-' . $subscription->id . '-' . substr(md5(uniqid()), 0, 8) . '-' . time();
+
+            // Ambil jadwal sesi ke-3 untuk menentukan batas waktu pembayaran
+            $thirdSession = MembershipSession::where('membership_subscription_id', $subscription->id)
+                ->where('session_number', 3)
+                ->first();
+
+            // Set tanggal kedaluwarsa invoice berdasarkan jadwal sesi ke-3 atau default 3 hari
+            if ($thirdSession && $thirdSession->end_time > now()) {
+                $expiresAt = Carbon::parse($thirdSession->end_time);
+                Log::info('Setting invoice expiry based on third session', [
+                    'subscription_id' => $subscription->id,
+                    'session_id' => $thirdSession->id,
+                    'expires_at' => $expiresAt->format('Y-m-d H:i:s')
+                ]);
+            } else {
+                $expiresAt = now()->addDays(3);
+                Log::info('Setting default invoice expiry (3 days)', [
+                    'subscription_id' => $subscription->id,
+                    'expires_at' => $expiresAt->format('Y-m-d H:i:s')
+                ]);
+            }
+
+            // Buat record payment
+            $payment = Payment::create([
+                'order_id' => $orderId,
+                'user_id' => $subscription->user_id,
+                'amount' => $subscription->price,
+                'original_amount' => $subscription->price,
+                'transaction_status' => 'pending',
+                'expires_at' => $expiresAt,
+                'payment_type' => 'membership_renewal' // Tandai sebagai pembayaran perpanjangan
+            ]);
+
+            // Update status renewal subscription
+            $subscription->renewal_status = 'renewal_pending';
+            $subscription->next_invoice_date = now();
+            $subscription->save();
+
+            Log::info('Renewal invoice created successfully', [
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'expires_at' => $expiresAt->format('Y-m-d H:i:s')
+            ]);
+
+            // Return sesuai dengan mode
+            if ($isAjaxRequest) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Invoice perpanjangan berhasil dibuat',
+                    'payment_url' => route('user.membership.renewal.pay', ['id' => $payment->id])
+                ]);
+            }
+
+            return $payment;
+        } catch (\Exception $e) {
+            Log::error('Create Renewal Invoice Error: ' . $e->getMessage(), [
+                'subscription_id' => $isAjaxRequest ? $id : ($subscription->id ?? 'unknown'),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if ($isAjaxRequest) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Kirim email invoice perpanjangan
+     */
+    private function sendRenewalInvoiceEmail($subscription, $payment)
+    {
+        try {
+            $user = User::find($subscription->user_id);
+            $membership = Membership::find($subscription->membership_id);
+
+            // URL untuk pembayaran
+            $paymentUrl = route('user.membership.renewal.pay', ['id' => $payment->id]);
+
+            // Tanggal berakhir invoice dalam format yang mudah dibaca
+            $deadlineFormatted = Carbon::parse($payment->expires_at)->format('d M Y H:i');
+
+            // Kirim email
+            Mail::to($user->email)->send(
+                new MembershipRenewalInvoice([
+                    'user' => $user,
+                    'membership' => $membership,
+                    'subscription' => $subscription,
+                    'payment' => $payment,
+                    'payment_url' => $paymentUrl,
+                    'deadline' => $deadlineFormatted,
+                ]),
+            );
+
+            Log::info('Email invoice perpanjangan berhasil dikirim', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Gagal mengirim email invoice perpanjangan: ' . $e->getMessage(), [
+                'subscription_id' => $subscription->id,
+                'user_id' => $subscription->user_id,
+            ]);
+
+            return false;
+        }
+    }
+    /**
+     * Cek membership yang kedaluwarsa setiap hari
+     * Dipanggil oleh scheduler setiap hari
+     */
+    public function checkExpiredMembershipRenewals()
+    {
+        // Ambil membership yang sedang dalam proses perpanjangan (renewal_pending)
+        // dan jadwal sesi ketiga sudah lewat
+        $now = Carbon::now();
+
+        // Pendekatan 1: Cari berdasarkan sesi yang sudah selesai
+        $expiredSubscriptions = DB::table('membership_sessions')
+            ->join('membership_subscriptions', 'membership_sessions.membership_subscription_id', '=', 'membership_subscriptions.id')
+            ->where('membership_sessions.session_number', 3)
+            ->where('membership_sessions.end_time', '<', $now) // Sesi ke-3 sudah lewat
+            ->where('membership_subscriptions.renewal_status', 'renewal_pending')
+            ->where('membership_subscriptions.status', 'active')
+            ->select('membership_subscriptions.id')
+            ->distinct()
+            ->get()
+            ->pluck('id')
+            ->toArray();
+
+        // Jika tidak ada data, cari juga berdasarkan tanggal kedaluwarsa pembayaran
+        if (empty($expiredSubscriptions)) {
+            $expiredPayments = Payment::where('payment_type', 'membership_renewal')
+                ->where('transaction_status', 'pending')
+                ->where('expires_at', '<', $now)
+                ->get();
+
+            foreach ($expiredPayments as $payment) {
+                // Ekstrak subscription ID dari order_id (format: RENEW-MEM-{subscription_id}-{timestamp})
+                $orderParts = explode('-', $payment->order_id);
+                if (count($orderParts) >= 3) {
+                    $subscriptionId = $orderParts[2];
+                    $expiredSubscriptions[] = $subscriptionId;
+                }
+            }
+        }
+
+        $expiredCount = 0;
+        $processedIds = [];
+
+        // Proses subscription yang sudah kedaluwarsa
+        foreach ($expiredSubscriptions as $subscriptionId) {
+            // Hindari pemrosesan duplikat
+            if (in_array($subscriptionId, $processedIds)) {
+                continue;
+            }
+
+            $processedIds[] = $subscriptionId;
+
+            $subscription = MembershipSubscription::find($subscriptionId);
+            if (!$subscription || $subscription->status !== 'active' || $subscription->renewal_status !== 'renewal_pending') {
+                continue;
+            }
+
+            Log::info('Processing expired membership renewal', [
+                'subscription_id' => $subscription->id,
+                'user_id' => $subscription->user_id
+            ]);
+
+            // Cek apakah ada pembayaran perpanjangan yang pending
+            $pendingPayment = Payment::where('order_id', 'like', 'RENEW-MEM-' . $subscription->id . '%')
+                ->where('transaction_status', 'pending')
+                ->first();
+
+            if ($pendingPayment) {
+                // Update status payment jadi expired
+                $pendingPayment->transaction_status = 'failed';
+                $pendingPayment->save();
+
+                Log::info('Marked pending renewal payment as failed', [
+                    'payment_id' => $pendingPayment->id,
+                    'subscription_id' => $subscription->id
+                ]);
+            }
+
+            // Update status subscription menjadi expired
+            $subscription->status = 'expired';
+            $subscription->renewal_status = 'not_due'; // atau nilai lain yang sesuai
+            $subscription->save();
+            $expiredCount++;
+
+            // Kirim email notifikasi
+            try {
+                Mail::to($subscription->user->email)->send(
+                    new MembershipExpired([
+                        'user' => $subscription->user,
+                        'subscription' => $subscription,
+                    ])
+                );
+
+                Log::info('Sent expiration email to user', [
+                    'user_id' => $subscription->user_id,
+                    'subscription_id' => $subscription->id
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send expiration email: ' . $e->getMessage(), [
+                    'user_id' => $subscription->user_id,
+                    'subscription_id' => $subscription->id
+                ]);
+            }
+
+            Log::info('Membership has been marked as expired due to non-payment', [
+                'subscription_id' => $subscription->id
+            ]);
+        }
+
+        return response()->json([
+            'message' => $expiredCount . ' memberships deactivated',
+            'subscription_ids' => $processedIds
+        ]);
+    }
+
+/**
+ * Halaman pembayaran perpanjangan membership
+ */
+public function showRenewalPayment($id)
+{
+    $payment = Payment::where('id', $id)
+                     ->where('order_id', 'like', 'RENEW-MEM-%')
+                     ->where('transaction_status', 'pending')
+                     ->firstOrFail();
+
+    // Cek apakah sudah kadaluarsa
+    if (Carbon::parse($payment->expires_at)->isPast()) {
+        return redirect()->route('user.membership.my-memberships')
+               ->with('error', 'Invoice perpanjangan sudah kedaluarsa');
+    }
+
+    // Cek apakah ini adalah pembayaran milik user yang login
+    if ($payment->user_id !== Auth::id()) {
+        return redirect()->route('user.membership.my-memberships')
+               ->with('error', 'Anda tidak memiliki akses ke pembayaran ini');
+    }
+
+    // Ekstrak subscription ID dari order_id (format: RENEW-MEM-{subscription_id}-{random}-{timestamp})
+    $orderParts = explode('-', $payment->order_id);
+    $subscriptionId = isset($orderParts[2]) ? $orderParts[2] : null;
+
+    if (!$subscriptionId) {
+        return redirect()->route('user.membership.my-memberships')
+               ->with('error', 'Format order ID tidak valid');
+    }
+
+    // Cari subscription terkait
+    $subscription = MembershipSubscription::find($subscriptionId);
+
+    if (!$subscription) {
+        return redirect()->route('user.membership.my-memberships')
+               ->with('error', 'Membership tidak ditemukan');
+    }
+
+    // Setup Midtrans
+    $this->setupMidtransConfig();
+
+    // Ambil data membership
+    $membership = $subscription->membership;
+
+    // Buat order ID baru untuk Midtrans (untuk menghindari duplikat)
+    $newOrderId = $payment->order_id . '-RETRY-' . time();
+
+    // Siapkan item details untuk Midtrans
+    $itemDetails = [
+        [
+            'id' => 'RENEW-MEM-' . $subscription->id,
+            'price' => $payment->amount,
+            'quantity' => 1,
+            'name' => 'Perpanjangan ' . $membership->name,
+        ],
+    ];
+
+    // Parameter untuk Midtrans
+    $params = [
+        'transaction_details' => [
+            'order_id' => $newOrderId, // Gunakan order ID baru
+            'gross_amount' => $payment->amount,
+        ],
+        'customer_details' => [
+            'first_name' => Auth::user()->name,
+            'email' => Auth::user()->email,
+            'phone' => Auth::user()->phone ?? '',
+        ],
+        'item_details' => $itemDetails,
+    ];
+
+    // Dapatkan Snap Token
+    $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+    return view('users.membership.renewal_payment', [
+        'payment' => $payment,
+        'subscription' => $subscription,
+        'membership' => $membership,
+        'snap_token' => $snapToken,
+        'order_id' => $newOrderId, // Kirim order ID baru ke view
+    ]);
+}
+
+    private function createNewBookingsForRenewal(MembershipSubscription $subscription)
+    {
+        try {
+            // Ambil sesi membership yang ada, diurutkan berdasarkan session_number
+            $existingSessions = MembershipSession::where('membership_subscription_id', $subscription->id)
+                ->orderBy('session_number', 'asc')
+                ->get();
+
+            if ($existingSessions->isEmpty()) {
+                Log::error('Tidak ada sesi existing untuk subscription #' . $subscription->id);
+                return;
+            }
+
+            // Hitung tanggal mulai periode baru (dari akhir periode saat ini)
+            $newPeriodStart = Carbon::parse($subscription->end_date);
+
+            // Ambil payment ID dari membership yang baru dibayar
+            $paymentId = null;
+            $payment = Payment::where('order_id', 'like', 'RENEW-MEM-' . $subscription->id . '%')
+                ->where('transaction_status', 'success')
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if ($payment) {
+                $paymentId = $payment->id;
+            }
+
+            // Ambil field ID dan harga dari membership
+            $membership = $subscription->membership;
+            $fieldId = $membership->field_id;
+            $field = \App\Models\Field::find($fieldId);
+            $originalPrice = $field ? $field->price : 0;
+
+            // Untuk membership mingguan, kita perlu mempertahankan pola hari
+            // Tanggal pertama dari periode baru adalah hari setelah tanggal terakhir membership sebelumnya
+            $dayOfWeekMap = [];
+
+            foreach ($existingSessions as $session) {
+                $startTime = Carbon::parse($session->start_time);
+                $dayOfWeekMap[$session->session_number] = [
+                    'dayOfWeek' => $startTime->dayOfWeek,
+                    'startHour' => $startTime->format('H:i'),
+                    'endHour' => Carbon::parse($session->end_time)->format('H:i')
+                ];
+            }
+
+            // Temukan tanggal pertama dari periode baru untuk setiap sesi
+            $newSessionDates = [];
+            $firstSessionDate = null;
+
+            // Untuk session pertama, gunakan hari berikutnya yang sesuai setelah newPeriodStart
+            $firstDayOfWeek = $dayOfWeekMap[1]['dayOfWeek'];
+            $firstSessionDate = $newPeriodStart->copy();
+
+            // Jika hari yang diinginkan berbeda dengan hari newPeriodStart, cari hari berikutnya
+            if ($firstSessionDate->dayOfWeek != $firstDayOfWeek) {
+                $firstSessionDate = $firstSessionDate->next($firstDayOfWeek);
+            }
+
+            $newSessionDates[1] = $firstSessionDate->format('Y-m-d');
+
+            // Untuk session 2 dan 3, cari hari berikutnya yang sesuai setelah session sebelumnya
+            for ($i = 2; $i <= count($existingSessions); $i++) {
+                $prevDate = Carbon::parse($newSessionDates[$i - 1]);
+                $targetDayOfWeek = $dayOfWeekMap[$i]['dayOfWeek'];
+
+                $nextDate = $prevDate->copy();
+                // Jika hari saat ini sama dengan target, maka cari di minggu depan
+                if ($nextDate->dayOfWeek == $targetDayOfWeek) {
+                    $nextDate->addDays(7);
+                } else {
+                    // Cari hari berikutnya yang sesuai
+                    $nextDate = $nextDate->next($targetDayOfWeek);
+                }
+
+                $newSessionDates[$i] = $nextDate->format('Y-m-d');
+            }
+
+            Log::info('Jadwal baru untuk perpanjangan membership:', $newSessionDates);
+
+            // Buat booking dan session baru
+            foreach ($dayOfWeekMap as $sessionNumber => $details) {
+                $newSessionDate = $newSessionDates[$sessionNumber];
+                $newStartTime = Carbon::parse($newSessionDate . ' ' . $details['startHour']);
+                $newEndTime = Carbon::parse($newSessionDate . ' ' . $details['endHour']);
+
+                // 1. Buat field booking baru
+                $newBooking = new \App\Models\FieldBooking();
+                $newBooking->user_id = $subscription->user_id;
+                $newBooking->field_id = $fieldId;
+                $newBooking->payment_id = $paymentId;
+                $newBooking->start_time = $newStartTime;
+                $newBooking->end_time = $newEndTime;
+                $newBooking->total_price = $originalPrice;
+                $newBooking->status = 'confirmed';
+                $newBooking->is_membership = true;
+                $newBooking->save();
+
+                // 2. Buat membership session baru
+                $newSession = new MembershipSession();
+                $newSession->membership_subscription_id = $subscription->id;
+                $newSession->session_number = $sessionNumber;
+                $newSession->status = 'scheduled';
+                $newSession->session_date = $newStartTime->format('Y-m-d');
+                $newSession->start_time = $newStartTime;
+                $newSession->end_time = $newEndTime;
+                $newSession->save();
+
+                // 3. Update field booking dengan session ID
+                $newBooking->membership_session_id = $newSession->id;
+                $newBooking->save();
+
+                Log::info('Membuat jadwal #' . $sessionNumber . ' baru: ' . $newStartTime->format('Y-m-d H:i') . ' - ' . $newEndTime->format('H:i'));
+            }
+
+            Log::info('Berhasil membuat jadwal baru untuk perpanjangan membership #' . $subscription->id);
+        } catch (\Exception $e) {
+            Log::error('Error creating new bookings for renewal: ' . $e->getMessage(), [
+                'subscription_id' => $subscription->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
     }
 }

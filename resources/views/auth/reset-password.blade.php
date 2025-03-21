@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - SportVue</title>
+    <title>Reset Kata Sandi - SportVue</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -128,8 +128,8 @@
                                     <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
                                         <i class="fas fa-key text-danger fa-2x"></i>
                                     </div>
-                                    <h2 class="h3 fw-bold">Reset Password</h2>
-                                    <p class="text-muted">Create a new strong password for your account</p>
+                                    <h2 class="h3 fw-bold">Reset Kata Sandi</h2>
+                                    <p class="text-muted">Buat kata sandi baru yang kuat untuk akun Anda</p>
                                 </div>
 
                                 <form method="POST" action="{{ route('password.store') }}" class="needs-validation" novalidate>
@@ -139,7 +139,7 @@
 
                                     <!-- Email -->
                                     <div class="mb-4">
-                                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                                        <label for="email" class="form-label fw-semibold">Alamat Email</label>
                                         <div class="input-group">
                                             <span class="input-group-text border-0 bg-light">
                                                 <i class="fas fa-envelope text-muted"></i>
@@ -160,7 +160,7 @@
 
                                     <!-- Password -->
                                     <div class="mb-4">
-                                        <label for="password" class="form-label fw-semibold">New Password</label>
+                                        <label for="password" class="form-label fw-semibold">Kata Sandi Baru</label>
                                         <div class="position-relative">
                                             <div class="input-group">
                                                 <span class="input-group-text border-0 bg-light">
@@ -184,7 +184,7 @@
 
                                     <!-- Confirm Password -->
                                     <div class="mb-4">
-                                        <label for="password_confirmation" class="form-label fw-semibold">Confirm Password</label>
+                                        <label for="password_confirmation" class="form-label fw-semibold">Konfirmasi Kata Sandi</label>
                                         <div class="position-relative">
                                             <div class="input-group">
                                                 <span class="input-group-text border-0 bg-light">
@@ -204,7 +204,7 @@
                                     </div>
 
                                     <button type="submit" class="btn btn-submit text-white w-100 mb-4">
-                                        Reset Password
+                                        Reset Kata Sandi
                                         <i class="fas fa-arrow-right ms-2"></i>
                                     </button>
                                 </form>
@@ -213,19 +213,19 @@
 
                         <!-- Info Sidebar -->
                         <div class="col-md-5 reset-sidebar p-4 p-lg-5 d-flex flex-column justify-content-center">
-                            <h3 class="h4 text-white mb-4">Password Requirements</h3>
+                            <h3 class="h4 text-white mb-4">Persyaratan Kata Sandi</h3>
                             <ul class="password-requirements mb-4" id="passwordRequirements">
-                                <li><i class="fas fa-circle"></i>At least 8 characters long</li>
-                                <li><i class="fas fa-circle"></i>Contains uppercase letter</li>
-                                <li><i class="fas fa-circle"></i>Contains lowercase letter</li>
-                                <li><i class="fas fa-circle"></i>Contains number</li>
-                                <li><i class="fas fa-circle"></i>Contains special character</li>
+                                <li><i class="fas fa-circle"></i>Minimal 8 karakter</li>
+                                <li><i class="fas fa-circle"></i>Mengandung huruf kapital</li>
+                                <li><i class="fas fa-circle"></i>Mengandung huruf kecil</li>
+                                <li><i class="fas fa-circle"></i>Mengandung angka</li>
+                                <li><i class="fas fa-circle"></i>Mengandung karakter khusus</li>
                             </ul>
 
                             <div class="mt-auto">
                                 <div class="bg-white bg-opacity-10 rounded-3 p-3">
-                                    <h4 class="h6 mb-2">Need Help?</h4>
-                                    <p class="mb-0 small">Contact our support team at
+                                    <h4 class="h6 mb-2">Butuh Bantuan?</h4>
+                                    <p class="mb-0 small">Hubungi tim dukungan kami di
                                         <a href="mailto:support@sportvue.com" class="text-white">support@sportvue.com</a>
                                     </p>
                                 </div>
@@ -314,7 +314,7 @@
             submitButton.disabled = true;
             submitButton.innerHTML = `
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Resetting Password...
+                Memproses Reset Kata Sandi...
             `;
         });
     </script>

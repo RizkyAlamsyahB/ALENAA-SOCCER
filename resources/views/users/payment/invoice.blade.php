@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Invoice #{{ $payment->order_id }}</title>
+    <title>Faktur #{{ $payment->order_id }}</title>
     <style>
         @font-face {
             font-family: 'Poppins';
@@ -301,12 +301,12 @@
                 <tr>
                     <td class="brand">
                         <h1>ALENA<span style="opacity: 0.8">SOCCER</span></h1>
-                        <p>Premium Sports Facility</p>
+                        <p>Fasilitas Olahraga Premium</p>
                     </td>
                     <td class="invoice-title">
-                        <h2>INVOICE</h2>
-                        <p>ORDER #{{ $payment->order_id }}</p>
-                        <p>{{ Carbon\Carbon::parse($payment->transaction_time ?? $payment->created_at)->format('d MMMM Y') }}</p>
+                        <h2>FAKTUR</h2>
+                        <p>PESANAN #{{ $payment->order_id }}</p>
+                        <p>{{ Carbon\Carbon::parse($payment->transaction_time ?? $payment->created_at)->locale('id')->isoFormat('D MMMM Y') }}</p>
                     </td>
                 </tr>
             </table>
@@ -315,47 +315,47 @@
         <!-- Main Content -->
         <div class="content">
             <!-- Watermark -->
-            <div class="watermark">PAID</div>
+            <div class="watermark">LUNAS</div>
 
             <!-- Info Section -->
             <table class="info-table">
                 <tr>
                     <td class="info-box">
-                        <h3>Customer</h3>
-                        <span class="info-label">Name</span>
+                        <h3>Pelanggan</h3>
+                        <span class="info-label">Nama</span>
                         <div class="info-value">{{ $payment->user->name }}</div>
 
                         <span class="info-label">Email</span>
                         <div class="info-value">{{ $payment->user->email }}</div>
 
                         @if($payment->user->phone)
-                        <span class="info-label">Phone</span>
+                        <span class="info-label">Telepon</span>
                         <div class="info-value">{{ $payment->user->phone }}</div>
                         @endif
                     </td>
 
                     <td class="info-box">
-                        <h3>Payment Details</h3>
-                        <span class="info-label">Method</span>
-                        <div class="info-value">{{ ucwords(str_replace('_', ' ', $payment->payment_type ?? 'Online Payment')) }}</div>
+                        <h3>Detail Pembayaran</h3>
+                        <span class="info-label">Metode</span>
+                        <div class="info-value">{{ ucwords(str_replace('_', ' ', $payment->payment_type ?? 'Pembayaran Online')) }}</div>
 
-                        <span class="info-label">Transaction ID</span>
+                        <span class="info-label">ID Transaksi</span>
                         <div class="info-value">{{ $payment->transaction_id ?? '-' }}</div>
 
                         <span class="info-label">Status</span>
-                        <div class="info-value"><span class="status-badge">Paid</span></div>
+                        <div class="info-value"><span class="status-badge">Lunas</span></div>
                     </td>
 
                     <td class="info-box">
-                        <h3>Invoice Details</h3>
-                        <span class="info-label">Invoice Date</span>
-                        <div class="info-value">{{ Carbon\Carbon::parse($payment->created_at)->format('d M Y') }}</div>
+                        <h3>Detail Faktur</h3>
+                        <span class="info-label">Tanggal Faktur</span>
+                        <div class="info-value">{{ Carbon\Carbon::parse($payment->created_at)->locale('id')->isoFormat('D MMM Y') }}</div>
 
-                        <span class="info-label">Due Date</span>
-                        <div class="info-value">{{ Carbon\Carbon::parse($payment->created_at)->format('d M Y') }}</div>
+                        <span class="info-label">Jatuh Tempo</span>
+                        <div class="info-value">{{ Carbon\Carbon::parse($payment->created_at)->locale('id')->isoFormat('D MMM Y') }}</div>
 
-                        <span class="info-label">Payment Date</span>
-                        <div class="info-value">{{ Carbon\Carbon::parse($payment->transaction_time ?? $payment->updated_at)->format('d M Y') }}</div>
+                        <span class="info-label">Tanggal Pembayaran</span>
+                        <div class="info-value">{{ Carbon\Carbon::parse($payment->transaction_time ?? $payment->updated_at)->locale('id')->isoFormat('D MMM Y') }}</div>
                     </td>
                 </tr>
             </table>
@@ -364,11 +364,11 @@
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th width="35%">Description</th>
-                        <th width="20%">Date</th>
-                        <th width="15%" class="text-center">Time</th>
-                        <th width="15%" class="text-center">Quantity/Duration</th>
-                        <th width="15%" class="text-right">Amount</th>
+                        <th width="35%">Deskripsi</th>
+                        <th width="20%">Tanggal</th>
+                        <th width="15%" class="text-center">Waktu</th>
+                        <th width="15%" class="text-center">Jumlah/Durasi</th>
+                        <th width="15%" class="text-right">Harga</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -398,12 +398,12 @@
                     <!-- Field Bookings -->
                     @if(isset($payment->fieldBookings) && count($payment->fieldBookings) > 0)
                         <tr>
-                            <td colspan="5" class="item-type">Field Booking</td>
+                            <td colspan="5" class="item-type">Sewa Lapangan</td>
                         </tr>
                         @foreach($payment->fieldBookings->take($visibleFieldItems) as $booking)
                         <tr>
-                            <td>{{ $booking->field->name ?? 'Field Booking' }}</td>
-                            <td>{{ Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</td>
+                            <td>{{ $booking->field->name ?? 'Sewa Lapangan' }}</td>
+                            <td>{{ Carbon\Carbon::parse($booking->start_time)->locale('id')->isoFormat('D MMM Y') }}</td>
                             <td class="text-center">
                                 {{ Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
                                 {{ Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
@@ -414,7 +414,7 @@
                                     $endTime = Carbon\Carbon::parse($booking->end_time);
                                     $durationInHours = $startTime->diffInHours($endTime);
                                 @endphp
-                                {{ $durationInHours }} hour(s)
+                                {{ $durationInHours }} jam
                             </td>
                             <td class="text-right">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
                         </tr>
@@ -424,17 +424,17 @@
                     <!-- Rental Bookings -->
                     @if(isset($payment->rentalBookings) && count($payment->rentalBookings) > 0 && $visibleRentalItems > 0)
                         <tr>
-                            <td colspan="5" class="item-type">Equipment Rental</td>
+                            <td colspan="5" class="item-type">Sewa Perlengkapan</td>
                         </tr>
                         @foreach($payment->rentalBookings->take($visibleRentalItems) as $booking)
                         <tr>
-                            <td>{{ $booking->rentalItem->name ?? 'Equipment Rental' }}</td>
-                            <td>{{ Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</td>
+                            <td>{{ $booking->rentalItem->name ?? 'Sewa Perlengkapan' }}</td>
+                            <td>{{ Carbon\Carbon::parse($booking->start_time)->locale('id')->isoFormat('D MMM Y') }}</td>
                             <td class="text-center">
                                 {{ Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
                                 {{ Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
                             </td>
-                            <td class="text-center">{{ $booking->quantity }} unit(s)</td>
+                            <td class="text-center">{{ $booking->quantity }} unit</td>
                             <td class="text-right">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
                         </tr>
                         @endforeach
@@ -443,12 +443,12 @@
                     <!-- Photographer Bookings -->
                     @if(isset($payment->photographerBookings) && count($payment->photographerBookings) > 0 && $visiblePhotographerItems > 0)
                         <tr>
-                            <td colspan="5" class="item-type">Photography Service</td>
+                            <td colspan="5" class="item-type">Jasa Fotografi</td>
                         </tr>
                         @foreach($payment->photographerBookings->take($visiblePhotographerItems) as $booking)
                         <tr>
-                            <td>{{ $booking->photographer->name ?? 'Photography Service' }}</td>
-                            <td>{{ Carbon\Carbon::parse($booking->start_time)->format('d M Y') }}</td>
+                            <td>{{ $booking->photographer->name ?? 'Jasa Fotografi' }}</td>
+                            <td>{{ Carbon\Carbon::parse($booking->start_time)->locale('id')->isoFormat('D MMM Y') }}</td>
                             <td class="text-center">
                                 {{ Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
                                 {{ Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
@@ -459,7 +459,7 @@
                                     $endTime = Carbon\Carbon::parse($booking->end_time);
                                     $durationInHours = $startTime->diffInHours($endTime);
                                 @endphp
-                                {{ $durationInHours }} hour(s)
+                                {{ $durationInHours }} jam
                             </td>
                             <td class="text-right">Rp {{ number_format($booking->price, 0, ',', '.') }}</td>
                         </tr>
@@ -468,7 +468,7 @@
 
                     @if($hiddenItems > 0)
                         <tr>
-                            <td colspan="5" class="more-items">and {{ $hiddenItems }} more item(s)</td>
+                            <td colspan="5" class="more-items">dan {{ $hiddenItems }} item lainnya</td>
                         </tr>
                     @endif
                 </tbody>
@@ -484,18 +484,18 @@
 
                     @if($payment->discount_amount > 0)
                     <tr class="discount-row">
-                        <td class="label">Discount</td>
+                        <td class="label">Diskon</td>
                         <td class="value">- Rp {{ number_format($payment->discount_amount, 0, ',', '.') }}</td>
                     </tr>
                     @endif
 
                     <tr>
-                        <td class="label">Admin Fee</td>
+                        <td class="label">Biaya Admin</td>
                         <td class="value">Rp 0</td>
                     </tr>
 
                     <tr>
-                        <td class="label">Tax (0%)</td>
+                        <td class="label">Pajak (0%)</td>
                         <td class="value">Rp 0</td>
                     </tr>
 
@@ -516,11 +516,11 @@
         <div class="footer">
             <table class="footer-table">
                 <tr>
-                    <td class="footer-left">Thank You!</td>
+                    <td class="footer-left">Terima Kasih!</td>
                     <td class="footer-right">
-                        <p>This invoice was generated electronically and is valid without a signature.</p>
-                        <p>Your booking has been confirmed and is ready to use as scheduled.</p>
-                        <p>&copy; {{ date('Y') }} Alena Soccer. All rights reserved.</p>
+                        <p>Faktur ini dibuat secara elektronik dan sah tanpa tanda tangan.</p>
+                        <p>Pemesanan Anda telah dikonfirmasi dan siap digunakan sesuai jadwal.</p>
+                        <p>&copy; {{ date('Y') }} Alena Soccer. Hak Cipta Dilindungi.</p>
                     </td>
                 </tr>
             </table>

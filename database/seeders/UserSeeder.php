@@ -60,6 +60,21 @@ class UserSeeder extends Seeder
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
+            [
+                'name'              => 'Rizky Alamsyah',
+                'email'             => 'rizkyalamsyah.dev@gmail.com',
+                'email_verified_at' => now(),
+                'password'          => Hash::make('password'),
+                'role'              => 'user',
+                'phone_number'      => '081299887766',
+                'address'           => 'Jl. Teknologi No. 99, Jakarta',
+                'birthdate'         => '1993-09-25',
+                'points'            => 100,
+                'profile_picture'   => 'rizky_profile.jpg',
+                'remember_token'    => Str::random(10),
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ],
         ]);
     }
 }

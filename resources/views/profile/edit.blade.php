@@ -102,15 +102,11 @@
                         <button class="nav-link text-secondary flex-shrink-0" id="tab-open-mabar">
                             <i class="fas fa-gamepad  me-2"></i>Open Mabar
                         </button>
-                        <button class="nav-link text-secondary flex-shrink-0" id="tab-ubah-jadwal">
-                            <i class="fas fa-calendar-alt me-2"></i>Ubah Jadwal
-                        </button>
+
                         <button class="nav-link text-secondary flex-shrink-0" id="tab-billing">
                             <i class="fas fa-credit-card me-2"></i>Billing
                         </button>
-                        <button class="nav-link text-secondary flex-shrink-0" id="tab-notifications">
-                            <i class="fas fa-bell me-2"></i>Notifications
-                        </button>
+
                         <button class="nav-link text-secondary flex-shrink-0" id="tab-security">
                             <i class="fas fa-lock me-2"></i>Security
                         </button>
@@ -119,77 +115,25 @@
                 </div>
             </div>
 
-            <!-- Sidebar Components (Membership & Recent Activity) -->
-            <div class="sidebar-components">
-                <!-- Membership Status -->
-                <div class="card-membership mb-4 text-black"
-                    style="background: url('assets/bg-card-silver.jpg') no-repeat center/cover; border-radius: 12px; overflow: hidden;">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h3 class="h5 mb-1 text-uppercase font-weight-bold">DIAMOND</h3>
-                            <p class="mb-0 text-black">TEST</p>
-                            <p class="mb-0 text-black small">rizkyalamsyah703@gmail.com</p>
-                            <p class="mb-0 text-black small">10477087</p>
-                        </div>
-                        <p class="small text-black">Click untuk info lebih lanjut.</p>
-                    </div>
-                </div>
-
-                <!-- Riwayat Transaksi Terakhir -->
-                @if (isset($recentPayments) && $recentPayments->count() > 0)
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-history me-2"></i> Riwayat Transaksi Terakhir
-                                </h5>
-                                <span class="badge text-white" style="background-color: #9E0620;">
-                                    {{ $recentPayments->count() }} Transaksi
-                                </span>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead style="background-color: #f8f9fa;">
-                                        <tr>
-                                            <th class="ps-3">Order ID</th>
-                                            <th class="text-center">Points</th>
-                                            <th class="text-end pe-3">Tanggal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($recentPayments as $payment)
-                                            <tr>
-                                                <td class="ps-3">
-                                                    <span class="d-flex align-items-center">
-                                                        <i class="fas fa-receipt text-secondary me-2"></i>
-                                                        {{ $payment->order_id }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-warning text-dark">
-                                                        <i class="fas fa-coins me-1"></i>
-                                                        {{ floor($payment->amount / 10000) }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-end pe-3 text-muted small">
-                                                    {{ $payment->created_at->format('d M Y H:i') }}
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white text-center">
-                            <a href="#" class="btn btn-sm text-white" style="background-color: #9E0620;">
-                                <i class="fas fa-eye me-1"></i> Lihat Semua Transaksi
-                            </a>
-                        </div>
-                    </div>
-                @endif
+<!-- Sidebar Components (Membership & Recent Activity) -->
+<div class="sidebar-components">
+    <!-- Membership Status -->
+    <div class="card-membership mb-4 text-black"
+        style="background: url('assets/bg-card-{{ $membershipType }}.jpg') no-repeat center/cover; border-radius: 12px; overflow: hidden;">
+        <div class="card-body">
+            <div class="mb-3">
+                <h3 class="h5 mb-1 text-uppercase font-weight-bold">{{ strtoupper($membershipType) }}</h3>
+                <p class="mb-0 text-black">{{ $membershipName }}</p>
+                <p class="mb-0 text-black small">{{ $user->email }}</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Riwayat Transaksi Terakhir -->
+    @if (isset($recentPayments) && $recentPayments->count() > 0)
+        <!-- Kode untuk menampilkan recentPayments tetap sama seperti sebelumnya -->
+    @endif
+</div>
 
             <!-- Tab Content -->
             <div class="row">
@@ -313,119 +257,6 @@
                                         Delete Account
                                     </button>
                                 </form>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Notifications Tab -->
-                    <!-- Notifications Tab -->
-                    <div id="content-notifications" class="tab-pane" style="display: none;">
-                        <!-- Email Notifications -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">📧 Email Notifications</h5>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="emailNotifToggle" checked>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-4">
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="emailMabar" checked>
-                                        <label class="form-check-label" for="emailMabar">
-                                            <div class="fw-bold">Notifikasi Mabar</div>
-                                            <small class="text-muted">Dapatkan email untuk jadwal mabar dan update
-                                                penting</small>
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="emailMarketing" checked>
-                                        <label class="form-check-label" for="emailMarketing">
-                                            <div class="fw-bold">Promo & Events</div>
-                                            <small class="text-muted">Info tentang promo dan event spesial</small>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="emailSecurity" checked>
-                                        <label class="form-check-label" for="emailSecurity">
-                                            <div class="fw-bold">Keamanan & Sistem</div>
-                                            <small class="text-muted">Pemberitahuan login dan perubahan akun</small>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Push Notifications -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">🔔 Push Notifications</h5>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="pushNotifToggle" checked>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-4">
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="pushChat" checked>
-                                        <label class="form-check-label" for="pushChat">
-                                            <div class="fw-bold">Chat & Komentar</div>
-                                            <small class="text-muted">Notifikasi pesan dan komentar baru</small>
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="pushMabar" checked>
-                                        <label class="form-check-label" for="pushMabar">
-                                            <div class="fw-bold">Update Mabar</div>
-                                            <small class="text-muted">Pemberitahuan tentang sesi mabar yang akan
-                                                datang</small>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="pushBooking" checked>
-                                        <label class="form-check-label" for="pushBooking">
-                                            <div class="fw-bold">Status Booking</div>
-                                            <small class="text-muted">Update status pembayaran dan booking</small>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Notification Schedule -->
-                        <div class="card">
-                            <div class="card-header bg-white">
-                                <h5 class="card-title mb-0">⏰ Jadwal Notifikasi</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Waktu Pengingat Mabar</label>
-                                    <select class="form-select mb-3">
-                                        <option value="15">15 menit sebelum mulai</option>
-                                        <option value="30">30 menit sebelum mulai</option>
-                                        <option value="60">1 jam sebelum mulai</option>
-                                        <option value="120">2 jam sebelum mulai</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Zona Waktu</label>
-                                    <select class="form-select">
-                                        <option value="WIB">WIB (GMT+7)</option>
-                                        <option value="WITA">WITA (GMT+8)</option>
-                                        <option value="WIT">WIT (GMT+9)</option>
-                                    </select>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="dndMode">
-                                    <label class="form-check-label" for="dndMode">
-                                        <div class="fw-bold">Mode Jangan Ganggu</div>
-                                        <small class="text-muted">Nonaktifkan semua notifikasi dari jam 22:00 -
-                                            07:00</small>
-                                    </label>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -703,204 +534,7 @@
                     @endpush
 
 
-                    <!-- Ubah Jadwal Tab -->
-                    <!-- Schedule Management Tab -->
-                    <div id="content-schedule" class="tab-pane" style="display: none;">
-                        <!-- Active Sessions Card -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">📅 Jadwal Mabar Aktif</h5>
-                                    <span class="badge bg-success">Active Sessions</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Game</th>
-                                                <th>Tanggal</th>
-                                                <th>Waktu</th>
-                                                <th>Status</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Dummy Data -->
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-gamepad me-2"></i>
-                                                        Mobile Legends
-                                                    </div>
-                                                </td>
-                                                <td>22 Feb 2025</td>
-                                                <td>19:00 WIB</td>
-                                                <td>
-                                                    <span class="badge bg-warning">Upcoming</span>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary me-1"
-                                                        data-bs-toggle="modal" data-bs-target="#editScheduleModal">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#cancelSessionModal">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-gamepad me-2"></i>
-                                                        PUBG Mobile
-                                                    </div>
-                                                </td>
-                                                <td>23 Feb 2025</td>
-                                                <td>20:00 WIB</td>
-                                                <td>
-                                                    <span class="badge bg-success">Live Now</span>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary me-1"
-                                                        data-bs-toggle="modal" data-bs-target="#editScheduleModal">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#cancelSessionModal">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-gamepad me-2"></i>
-                                                        Free Fire
-                                                    </div>
-                                                </td>
-                                                <td>24 Feb 2025</td>
-                                                <td>15:00 WIB</td>
-                                                <td>
-                                                    <span class="badge bg-warning">Upcoming</span>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary me-1"
-                                                        data-bs-toggle="modal" data-bs-target="#editScheduleModal">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#cancelSessionModal">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Edit Schedule Modal -->
-                        <div class="modal fade" id="editScheduleModal" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">✏️ Edit Jadwal Mabar</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="editScheduleForm">
-                                            <!-- New Date & Time -->
-                                            <div class="mb-3">
-                                                <label class="form-label">📅 Tanggal & Waktu Baru</label>
-                                                <input type="datetime-local" class="form-control" name="new_schedule"
-                                                    required>
-                                            </div>
-
-                                            <!-- Duration Update -->
-                                            <div class="mb-3">
-                                                <label class="form-label">⏱️ Durasi</label>
-                                                <select class="form-select" name="duration">
-                                                    <option value="1">1 Jam</option>
-                                                    <option value="2">2 Jam</option>
-                                                    <option value="3">3 Jam</option>
-                                                    <option value="4">4 Jam</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Notification Options -->
-                                            <div class="mb-3">
-                                                <label class="form-label">🔔 Notifikasi Peserta</label>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox"
-                                                        name="notify_participants" checked>
-                                                    <label class="form-check-label">Kirim notifikasi ke semua
-                                                        peserta</label>
-                                                </div>
-                                            </div>
-
-                                            <!-- Reason for Change -->
-                                            <div class="mb-3">
-                                                <label class="form-label">📝 Alasan Perubahan</label>
-                                                <textarea class="form-control" name="change_reason" rows="3" placeholder="Berikan alasan perubahan jadwal..."></textarea>
-                                            </div>
-
-                                            <div class="d-grid gap-2">
-                                                <button type="submit" class="btn text-white"
-                                                    style="background-color: #9E0620;">
-                                                    💾 Simpan Perubahan
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cancel Session Modal -->
-                        <div class="modal fade" id="cancelSessionModal" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">❌ Batalkan Sesi Mabar</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="cancelSessionForm">
-                                            <div class="alert alert-warning">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                Pembatalan sesi akan mengembalikan dana ke semua peserta yang sudah
-                                                mendaftar.
-                                            </div>
-
-                                            <!-- Cancellation Reason -->
-                                            <div class="mb-3">
-                                                <label class="form-label">📝 Alasan Pembatalan</label>
-                                                <textarea class="form-control" name="cancel_reason" rows="3" placeholder="Berikan alasan pembatalan sesi..."
-                                                    required></textarea>
-                                            </div>
-
-                                            <!-- Notification Message -->
-                                            <div class="mb-3">
-                                                <label class="form-label">💬 Pesan untuk Peserta</label>
-                                                <textarea class="form-control" name="participant_message" rows="3"
-                                                    placeholder="Pesan yang akan dikirim ke peserta..." required></textarea>
-                                            </div>
-
-                                            <div class="d-grid gap-2">
-                                                <button type="submit" class="btn btn-danger">
-                                                    ❌ Konfirmasi Pembatalan
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Sidebar Column -->

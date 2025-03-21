@@ -1125,45 +1125,52 @@ class CartController extends Controller
                                 'invoice_sent' => false,
                             ]);
 
-                            // Jika ada data sesi membership, buat jadwal sesi
-                            if (!empty($item->membership_sessions)) {
-                                $sessions = json_decode($item->membership_sessions, true);
-                                foreach ($sessions as $session) {
-                                    // Ambil tanggal dari session date
-                                    $sessionDate = Carbon::parse($session['date'])->toDateString();
+// Jika ada data sesi membership, buat jadwal sesi
+if (!empty($item->membership_sessions)) {
+    $sessions = json_decode($item->membership_sessions, true);
 
-                                    // Parse waktu awal & akhir, pastikan hanya komponen waktu
-                                    $startTime = Carbon::parse($session['start_time'])->format('H:i:s');
-                                    $endTime = Carbon::parse($session['end_time'])->format('H:i:s');
+    // Tambahkan counter untuk nomor sesi
+    $sessionNumber = 1;
 
-                                    // Gabungkan tanggal dan waktu dengan aman
-                                    $startDateTime = Carbon::parse($sessionDate . ' ' . $startTime);
-                                    $endDateTime = Carbon::parse($sessionDate . ' ' . $endTime);
+    foreach ($sessions as $session) {
+        // Ambil tanggal dari session date
+        $sessionDate = Carbon::parse($session['date'])->toDateString();
 
-                                    // Buat membership session
-                                    $membershipSession = MembershipSession::create([
-                                        'membership_subscription_id' => $subscription->id,
-                                        'session_date' => $sessionDate,
-                                        'start_time' => $startDateTime,
-                                        'end_time' => $endDateTime,
-                                        'status' => 'scheduled',
-                                    ]);
-                                    $field = Field::find($membership->field_id);
-                                    $originalPrice = $field ? $field->price : 0;
-                                    // Buat juga entri di FieldBooking untuk mencegah double booking
-                                    FieldBooking::create([
-                                        'user_id' => Auth::id(),
-                                        'field_id' => $membership->field_id,
-                                        'payment_id' => $payment->id,
-                                        'membership_session_id' => $membershipSession->id,
-                                        'start_time' => $startDateTime,
-                                        'end_time' => $endDateTime,
-                                       'total_price' => $originalPrice, // Menggunakan harga normal lapangan
-                                        'status' => 'pending', // Akan berubah menjadi 'confirmed' ketika payment dikonfirmasi
-                                        'is_membership' => true, // Tandai ini sebagai booking dari membership
-                                    ]);
-                                }
-                            }
+        // Parse waktu awal & akhir, pastikan hanya komponen waktu
+        $startTime = Carbon::parse($session['start_time'])->format('H:i:s');
+        $endTime = Carbon::parse($session['end_time'])->format('H:i:s');
+
+        // Gabungkan tanggal dan waktu dengan aman
+        $startDateTime = Carbon::parse($sessionDate . ' ' . $startTime);
+        $endDateTime = Carbon::parse($sessionDate . ' ' . $endTime);
+
+        // Buat membership session
+        $membershipSession = MembershipSession::create([
+            'membership_subscription_id' => $subscription->id,
+            'session_date' => $sessionDate,
+            'start_time' => $startDateTime,
+            'end_time' => $endDateTime,
+            'status' => 'scheduled',
+            'session_number' => $sessionNumber++, // Tambahkan nomor sesi dan increment
+        ]);
+
+        $field = Field::find($membership->field_id);
+        $originalPrice = $field ? $field->price : 0;
+
+        // Buat juga entri di FieldBooking untuk mencegah double booking
+        FieldBooking::create([
+            'user_id' => Auth::id(),
+            'field_id' => $membership->field_id,
+            'payment_id' => $payment->id,
+            'membership_session_id' => $membershipSession->id,
+            'start_time' => $startDateTime,
+            'end_time' => $endDateTime,
+            'total_price' => $originalPrice, // Menggunakan harga normal lapangan
+            'status' => 'pending', // Akan berubah menjadi 'confirmed' ketika payment dikonfirmasi
+            'is_membership' => true, // Tandai ini sebagai booking dari membership
+        ]);
+    }
+}
                         }
                     } elseif ($item->type == 'photographer') {
                         $photographer = Photographer::find($item->item_id);

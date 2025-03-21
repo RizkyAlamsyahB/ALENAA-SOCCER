@@ -44,11 +44,17 @@ Route::get('/', function () {
 
     return view('welcome', compact('testimonials'));
 })->name('welcome');
+// Route testing untuk invoice membership
+Route::get('/test-membership-invoice', function() {
+    $controller = new PaymentController();
+    return $controller->scheduleMembershipRenewalInvoices();
+})->name('test.membership.invoice');
 // User Routes
-Route::middleware(['auth', 'checkRole:user'])->group(function () {
+Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
     // Dashboard
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('users.dashboard');
+
 
     // Fields (Lapangan) Management
     Route::prefix('fields')
@@ -103,22 +109,35 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
             Route::get('/{photographerId}/available-slots', [PhotographerController::class, 'getAvailableSlots'])->name('availableSlots');
             Route::post('/bookings/{bookingId}/cancel', [PhotographerController::class, 'cancelBooking'])->name('bookings.cancel');
         });
-        // Membership Management
-        Route::prefix('membership')
-        ->name('user.membership.') // Harus ada titik di akhir
-        ->group(function () {
-            Route::get('/', [MembershipController::class, 'index'])->name('index'); // Tambahkan ini
-            Route::get('/{id}', [MembershipController::class, 'show'])->name('show');
-            Route::get('/{id}/schedule', [MembershipController::class, 'selectSchedule'])->name('select.schedule');
-            Route::post('/{id}/schedule', [MembershipController::class, 'saveScheduleToCart'])->name('save.schedule');
-            Route::get('/my/memberships', [MembershipController::class, 'myMemberships'])->name('my');
-            Route::get('/my/subscription/{id}', [MembershipController::class, 'subscriptionDetail'])->name('subscription.detail');
-// Ubah menjadi
-Route::get('/fields/{fieldId}/available-slots-membership', [MembershipController::class, 'getAvailableTimeSlotsByDate'])
-    ->name('user.membership.availableSlots');
-        });
+// Tambahkan route ini di file routes jika belum ada
+Route::get('/my/subscription/{id}', [MembershipController::class, 'subscriptionDetail'])
+    ->name('user.membership.subscription-detail'); // sesuaikan dengan nama di template email
+    // Membership Management
+Route::prefix('membership')
+->name('user.membership.')
+->middleware(['auth', 'verified', 'checkRole:user'])
+->group(function () {
+    // Daftar membership
+    Route::get('/', [MembershipController::class, 'index'])->name('index');
 
+    // Detail membership
+    Route::get('/{id}', [MembershipController::class, 'show'])->name('show')->where('id', '[0-9]+');
 
+    // Pilih jadwal membership
+    Route::get('/{id}/schedule', [MembershipController::class, 'selectSchedule'])->name('select.schedule');
+    Route::post('/{id}/schedule', [MembershipController::class, 'saveScheduleToCart'])->name('save.schedule');
+
+    // Membership pengguna
+    Route::get('/my/memberships', [MembershipController::class, 'myMemberships'])->name('my-memberships');
+    Route::get('/my/subscription/{id}', [MembershipController::class, 'subscriptionDetail'])->name('subscription.detail');
+
+    // Slot waktu tersedia
+    Route::get('/fields/{fieldId}/available-slots-membership', [MembershipController::class, 'getAvailableTimeSlotsByDate'])->name('availableSlots');
+
+    // Pembayaran perpanjangan
+    Route::get('/renewal/pay/{id}', [PaymentController::class, 'showRenewalPayment'])->name('renewal.pay');
+    Route::post('/create-renewal/{id}', [PaymentController::class, 'createRenewalInvoice'])->name('create.renewal');
+});
 
     // Payment Management
     Route::prefix('payment')
@@ -146,14 +165,30 @@ Route::get('/fields/{fieldId}/available-slots-membership', [MembershipController
         return view('users.mabar');
     })->name('mabar.index');
 
-
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/picture', [ProfileController::class, 'updateProfilePicture'])->name('profile.picture.update');
 });
+Route::get('/test-renewal-email', function() {
+    $subscriptionId = 1; // Ganti dengan ID subscription yang valid
+    $subscription = \App\Models\MembershipSubscription::with(['user', 'membership', 'sessions'])
+        ->find($subscriptionId);
 
+    if (!$subscription) {
+        return 'Subscription tidak ditemukan';
+    }
+
+    \Illuminate\Support\Facades\Mail::to($subscription->user->email)->send(
+        new \App\Mail\MembershipRenewalSuccess([
+            'user' => $subscription->user,
+            'subscription' => $subscription,
+        ])
+    );
+
+    return 'Email test telah dikirim ke ' . $subscription->user->email;
+})->middleware('auth');
 // Payment Notification Endpoints (Diakses oleh Midtrans, tidak memerlukan auth)
 Route::prefix('payment')
     ->name('payment.')

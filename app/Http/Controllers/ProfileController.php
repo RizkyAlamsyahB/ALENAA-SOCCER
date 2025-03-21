@@ -7,6 +7,7 @@ use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+use App\Models\MembershipSubscription;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
 use App\Http\Requests\ProfileUpdateRequest;
@@ -27,9 +28,28 @@ class ProfileController extends Controller
             ->limit(5)
             ->get();
 
+        // Ambil data membership aktif user
+        $activeMembership = MembershipSubscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with('membership') // Load relasi membership
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Default tipe membership jika tidak memiliki membership aktif
+        $membershipType = 'bronze';
+        $membershipName = 'Belum Memiliki Membership';
+
+        if ($activeMembership && $activeMembership->membership) {
+            $membershipType = $activeMembership->membership->type ?? 'bronze';
+            $membershipName = $activeMembership->membership->name ?? 'Membership';
+        }
+
         return view('profile.edit', [
             'user' => $user,
             'recentPayments' => $recentPayments,
+            'activeMembership' => $activeMembership,
+            'membershipType' => $membershipType,
+            'membershipName' => $membershipName,
         ]);
     }
 

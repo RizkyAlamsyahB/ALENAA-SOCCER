@@ -17,12 +17,14 @@ class MembershipSession extends Model
         'start_time',
         'end_time',
         'status', // scheduled, completed, cancelled
+        'session_number', // 1, 2, 3 untuk identifikasi urutan sesi
     ];
 
     protected $casts = [
         'session_date' => 'date',
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'session_number' => 'integer',
     ];
 
     public function subscription()
