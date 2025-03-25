@@ -476,6 +476,7 @@
                                     dateFormat: 'Y-m-d',
                                     minDate: 'today',
                                     responsive: true, // Enable responsive mode
+                                    maxDate: new Date().fp_incr(6), // Set maximum date to today + 6 days (total of 7 days including today)
                                     onChange: function(selectedDates, dateStr) {
                                         selectedDate = dateStr;
                                         document.getElementById('selectedDate').value = dateStr;
@@ -1173,21 +1174,19 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border-color: #9e0620;
         }
-
         .slot-time {
-            padding: 0.75rem;
-            text-align: center;
-            font-weight: 600;
-            color: #495057;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px; /* Adjust as needed */
+    text-align: center;
         }
+        
 
         .slot-time i {
             font-size: 0.9rem;
             color: #6c757d;
+
         }
 
         .slot-price {

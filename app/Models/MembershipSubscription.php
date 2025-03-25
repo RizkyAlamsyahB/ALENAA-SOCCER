@@ -25,6 +25,7 @@ class MembershipSubscription extends Model
         'renewal_status', // not_due, renewal_pending, renewed
         'next_invoice_date', // tanggal pengiriman invoice berikutnya
         'last_payment_date', // tanggal pembayaran terakhir
+        'next_period_bookings', // booking yang sudah dilakukan untuk periode berikutnya
     ];
 
     protected $casts = [

@@ -61,7 +61,7 @@ class MembershipController extends Controller
 
             $request->validate([
                 'sessions' => 'required|array|size:3',
-                'sessions.*.day' => "required|date|date_format:Y-m-d", // Hapus after_or_equal:today
+                'sessions.*.day' => 'required|date|date_format:Y-m-d', // Hapus after_or_equal:today
                 'sessions.*.time' => 'required|string',
             ]);
 
@@ -98,7 +98,7 @@ class MembershipController extends Controller
                 Log::debug('Validasi rentang tanggal gagal', [
                     'tanggal_awal' => $earliestDate->format('Y-m-d'),
                     'tanggal_akhir' => $latestDate->format('Y-m-d'),
-                    'perbedaan_hari' => $daysDifference
+                    'perbedaan_hari' => $daysDifference,
                 ]);
 
                 return back()->with('error', 'Semua jadwal harus berada dalam rentang maksimal 7 hari');
@@ -110,14 +110,14 @@ class MembershipController extends Controller
 
             foreach ($request->sessions as $sessionData) {
                 $date = $sessionData['day'];
-                list($startTime, $endTime) = explode(' - ', $sessionData['time']);
+                [$startTime, $endTime] = explode(' - ', $sessionData['time']);
 
                 // Debug data yang diterima
-                Log::debug("Processing session", [
+                Log::debug('Processing session', [
                     'date' => $date,
                     'time' => $sessionData['time'],
                     'startTime' => $startTime,
-                    'endTime' => $endTime
+                    'endTime' => $endTime,
                 ]);
 
                 try {
@@ -126,20 +126,20 @@ class MembershipController extends Controller
                     $endDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$endTime}", 'Asia/Jakarta');
 
                     // Log untuk debug
-                    Log::debug("Created datetime objects", [
+                    Log::debug('Created datetime objects', [
                         'start' => $startDateTime->toDateTimeString(),
                         'end' => $endDateTime->toDateTimeString(),
-                        'timezone' => $startDateTime->timezone->getName()
+                        'timezone' => $startDateTime->timezone->getName(),
                     ]);
                 } catch (\Exception $e) {
                     // Log error parsing
-                    Log::error("Error parsing dates: " . $e->getMessage(), [
+                    Log::error('Error parsing dates: ' . $e->getMessage(), [
                         'date' => $date,
                         'startTime' => $startTime,
-                        'endTime' => $endTime
+                        'endTime' => $endTime,
                     ]);
 
-                    throw new \Exception("Format tanggal atau waktu tidak valid: " . $e->getMessage());
+                    throw new \Exception('Format tanggal atau waktu tidak valid: ' . $e->getMessage());
                 }
 
                 // Periksa konflik dengan booking lapangan yang sudah ada
@@ -157,18 +157,18 @@ class MembershipController extends Controller
             }
 
             // Debug data sesi yang sudah diolah
-            Log::debug("Processed sessions data:", $sessionsData);
+            Log::debug('Processed sessions data:', $sessionsData);
 
             // Simpan data sesi ke session untuk digunakan saat checkout
             session()->put('membership_sessions', [
                 'membership_id' => $membership->id,
-                'sessions' => $sessionsData
+                'sessions' => $sessionsData,
             ]);
 
             // Debug simpan ke session
-            Log::debug("Saved session data", [
+            Log::debug('Saved session data', [
                 'membership_id' => $membership->id,
-                'sessions' => $sessionsData
+                'sessions' => $sessionsData,
             ]);
 
             // Redirect ke controller cart untuk menambahkan ke keranjang
@@ -185,22 +185,21 @@ class MembershipController extends Controller
     private function checkTimeConflict($fieldId, $startTime, $endTime)
     {
         // Cek konflik dengan field bookings (termasuk yang berasal dari membership)
+        // Termasuk cek status 'on_hold' untuk booking perpanjangan
         $conflictBookings = DB::table('field_bookings')
             ->where('field_id', $fieldId)
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['pending', 'confirmed', 'on_hold']) // tambahkan on_hold di sini
             ->where(function ($query) use ($startTime, $endTime) {
-                $query->where(function ($q) use ($startTime, $endTime) {
-                    $q->where('start_time', '<=', $startTime)
-                       ->where('end_time', '>', $startTime);
-                })
-                ->orWhere(function ($q) use ($startTime, $endTime) {
-                    $q->where('start_time', '<', $endTime)
-                       ->where('end_time', '>=', $endTime);
-                })
-                ->orWhere(function ($q) use ($startTime, $endTime) {
-                    $q->where('start_time', '>=', $startTime)
-                       ->where('end_time', '<=', $endTime);
-                });
+                $query
+                    ->where(function ($q) use ($startTime, $endTime) {
+                        $q->where('start_time', '<=', $startTime)->where('end_time', '>', $startTime);
+                    })
+                    ->orWhere(function ($q) use ($startTime, $endTime) {
+                        $q->where('start_time', '<', $endTime)->where('end_time', '>=', $endTime);
+                    })
+                    ->orWhere(function ($q) use ($startTime, $endTime) {
+                        $q->where('start_time', '>=', $startTime)->where('end_time', '<=', $endTime);
+                    });
             })
             ->exists();
 
@@ -213,23 +212,7 @@ class MembershipController extends Controller
     private function getAvailableTimeSlots($fieldId)
     {
         // Definisikan semua slot waktu (1 jam per slot)
-        $allSlots = [
-            ['start' => '08:00', 'end' => '09:00'],
-            ['start' => '09:00', 'end' => '10:00'],
-            ['start' => '10:00', 'end' => '11:00'],
-            ['start' => '11:00', 'end' => '12:00'],
-            ['start' => '12:00', 'end' => '13:00'],
-            ['start' => '13:00', 'end' => '14:00'],
-            ['start' => '14:00', 'end' => '15:00'],
-            ['start' => '15:00', 'end' => '16:00'],
-            ['start' => '16:00', 'end' => '17:00'],
-            ['start' => '17:00', 'end' => '18:00'],
-            ['start' => '18:00', 'end' => '19:00'],
-            ['start' => '19:00', 'end' => '20:00'],
-            ['start' => '20:00', 'end' => '21:00'],
-            ['start' => '21:00', 'end' => '22:00'],
-            ['start' => '22:00', 'end' => '23:00'],
-        ];
+        $allSlots = [['start' => '08:00', 'end' => '09:00'], ['start' => '09:00', 'end' => '10:00'], ['start' => '10:00', 'end' => '11:00'], ['start' => '11:00', 'end' => '12:00'], ['start' => '12:00', 'end' => '13:00'], ['start' => '13:00', 'end' => '14:00'], ['start' => '14:00', 'end' => '15:00'], ['start' => '15:00', 'end' => '16:00'], ['start' => '16:00', 'end' => '17:00'], ['start' => '17:00', 'end' => '18:00'], ['start' => '18:00', 'end' => '19:00'], ['start' => '19:00', 'end' => '20:00'], ['start' => '20:00', 'end' => '21:00'], ['start' => '21:00', 'end' => '22:00'], ['start' => '22:00', 'end' => '23:00']];
 
         return $allSlots;
     }
@@ -240,7 +223,7 @@ class MembershipController extends Controller
     public function getAvailableTimeSlotsByDate(Request $request, $fieldId)
     {
         $request->validate([
-            'date' => 'required|date'
+            'date' => 'required|date',
         ]);
 
         $date = $request->date;
@@ -252,7 +235,7 @@ class MembershipController extends Controller
         $bookedSlots = DB::table('field_bookings')
             ->where('field_id', $fieldId)
             ->whereDate('start_time', $date)
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['pending', 'confirmed', 'on_hold'])
             ->get(['start_time', 'end_time']);
 
         // Filter slot yang tersedia
@@ -266,11 +249,7 @@ class MembershipController extends Controller
                 $bookedStart = Carbon::parse($bookedSlot->start_time);
                 $bookedEnd = Carbon::parse($bookedSlot->end_time);
 
-                if (
-                    ($startTime >= $bookedStart && $startTime < $bookedEnd) ||
-                    ($endTime > $bookedStart && $endTime <= $bookedEnd) ||
-                    ($startTime <= $bookedStart && $endTime >= $bookedEnd)
-                ) {
+                if (($startTime >= $bookedStart && $startTime < $bookedEnd) || ($endTime > $bookedStart && $endTime <= $bookedEnd) || ($startTime <= $bookedStart && $endTime >= $bookedEnd)) {
                     $isAvailable = false;
                     break;
                 }

@@ -23,6 +23,7 @@ class CreatePaymentsTable extends Migration
             $table->string('transaction_status')->default('pending');
             $table->string('transaction_time')->nullable();
             $table->text('payment_details')->nullable(); // For storing JSON response
+              $table->text('on_hold_booking_ids')->nullable();
             $table->timestamps();
         });
     }

@@ -29,6 +29,7 @@ return new class extends Migration
 
     // Kolom untuk tanggal pembayaran terakhir (opsional)
     $table->timestamp('last_payment_date')->nullable();
+    $table->text('next_period_bookings')->nullable();
             $table->timestamps();
         });
     }
