@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\User\MembershipController;
 use Illuminate\Console\Command;
 use App\Http\Controllers\User\PaymentController;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,7 @@ class CheckExpiredMembershipRenewals extends Command
         $this->info('Memulai proses pengecekan membership kedaluwarsa...');
 
         try {
-            $controller = new PaymentController();
+            $controller = new MembershipController();
             $result = $controller->checkExpiredMembershipRenewals();
 
             // Parse response dari JSON

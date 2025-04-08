@@ -1121,7 +1121,7 @@ $isBooked = FieldBooking::where('field_id', $fieldId)
                                 'price' => $item->price,
                                 'status' => 'pending',
                                 'start_date' => now(),
-                                'end_date' => now()->addWeeks(1), // Untuk membership mingguan
+'end_date' => now()->addDays(6)->endOfDay(),
                                 'invoice_sent' => false,
                             ]);
 

@@ -124,7 +124,7 @@
                                     </div>
                                     <div class="col-sm-6">
                                         <div class="detail-value">
-                                            <span>{{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }} -
+                                            <span>{{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }} -
                                             {{ \Carbon\Carbon::parse($subscription->end_date)->addMonths($subscription->membership->duration)->format('d M Y') }}</span>
                                         </div>
                                     </div>

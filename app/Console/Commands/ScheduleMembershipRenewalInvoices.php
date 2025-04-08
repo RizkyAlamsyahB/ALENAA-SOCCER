@@ -3,8 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Http\Controllers\User\PaymentController;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\User\PaymentController;
+use App\Http\Controllers\User\MembershipController;
 
 class ScheduleMembershipRenewalInvoices extends Command
 {
@@ -16,7 +17,7 @@ class ScheduleMembershipRenewalInvoices extends Command
         $this->info('Memulai proses pengiriman invoice perpanjangan membership...');
 
         try {
-            $controller = new PaymentController();
+            $controller = new MembershipController();
             $result = $controller->scheduleMembershipRenewalInvoices();
 
             // Parse response dari JSON

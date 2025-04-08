@@ -102,25 +102,25 @@
                                         <span>Detail</span>
                                     </a>
                                     @if($subscription->status === 'active')
-                                        @php
-                                            $pendingPayment = App\Models\Payment::where('user_id', Auth::id())
-                                                ->where('payment_type', 'membership_renewal')
-                                                ->where('transaction_status', 'pending')
-                                                ->first();
-                                        @endphp
+                                    @php
+                                        $pendingPayment = App\Models\Payment::where('user_id', Auth::id())
+                                            ->where('payment_type', 'membership_renewal')
+                                            ->where('transaction_status', 'pending')
+                                            ->first();
+                                    @endphp
 
-                                        @if($pendingPayment)
-                                            <a href="{{ route('user.membership.renewal.pay', $pendingPayment->id) }}" class="btn-primary">
-                                                <i class="fas fa-sync me-2"></i>
-                                                <span>Lanjutkan Pembayaran</span>
-                                            </a>
-                                        @else
-                                            <button onclick="renewMembership({{ $subscription->id }})" class="btn-primary">
-                                                <i class="fas fa-sync me-2"></i>
-                                                <span>Perpanjang</span>
-                                            </button>
-                                        @endif
+                                    @if($pendingPayment)
+                                        <a href="{{ route('user.membership.renewal.pay', $pendingPayment->id) }}" class="btn-primary">
+                                            <i class="fas fa-sync me-2"></i>
+                                            <span>Lanjutkan Pembayaran</span>
+                                        </a>
+                                    @elseif($subscription->renewal_status !== 'renewed')
+                                        <button onclick="renewMembership({{ $subscription->id }})" class="btn-primary">
+                                            <i class="fas fa-sync me-2"></i>
+                                            <span>Perpanjang</span>
+                                        </button>
                                     @endif
+                                @endif
                                 </div>
                             </div>
                         </div>

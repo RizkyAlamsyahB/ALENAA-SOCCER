@@ -19,9 +19,6 @@ class Membership extends Model
         'description',
         'sessions_per_week', // jumlah sesi per minggu (default 3)
         'session_duration', // dalam jam (1, 2, atau 3 jam)
-        'includes_ball',
-        'includes_water',
-        'includes_photographer',
         'photographer_duration', // dalam jam
         'status', // active, inactive
         'image',
@@ -32,9 +29,7 @@ class Membership extends Model
         'sessions_per_week' => 'integer',
         'session_duration' => 'integer',
         'photographer_duration' => 'integer',
-        'includes_ball' => 'boolean',
-        'includes_water' => 'boolean',
-        'includes_photographer' => 'boolean',
+
     ];
 
     public function field()
