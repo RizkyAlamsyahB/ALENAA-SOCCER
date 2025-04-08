@@ -442,6 +442,7 @@
                 locale: 'id',
                 dateFormat: 'Y-m-d',
                 minDate: 'today',
+                maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
                 responsive: true, // Enable responsive mode
                 onChange: function(selectedDates, dateStr) {
                     selectedDate = dateStr;

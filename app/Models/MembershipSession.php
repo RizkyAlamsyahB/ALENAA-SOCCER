@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use App\Models\FieldBooking;
 use App\Models\MembershipSubscription;
 use Illuminate\Database\Eloquent\Model;
@@ -27,13 +28,41 @@ class MembershipSession extends Model
         'session_number' => 'integer',
     ];
 
+    protected $appends = ['display_status'];
+
     public function subscription()
     {
         return $this->belongsTo(MembershipSubscription::class, 'membership_subscription_id');
     }
 
     public function fieldBooking()
-{
-    return $this->hasOne(FieldBooking::class);
-}
+    {
+        return $this->hasOne(FieldBooking::class);
+    }
+
+    /**
+     * Mendapatkan status yang ditampilkan, menampilkan 'upcoming'
+     * untuk sesi yang terjadwal dan belum lewat
+     */
+    public function getDisplayStatusAttribute()
+    {
+        if ($this->status === 'scheduled' &&
+            $this->start_time > Carbon::now() &&
+            $this->start_time < Carbon::now()->addDays(7)) {
+            return 'upcoming';
+        }
+
+        return $this->status;
+    }
+
+    /**
+     * Scope untuk sesi yang akan datang
+     */
+    public function scopeUpcoming($query)
+    {
+        return $query->where('status', 'scheduled')
+                     ->where('start_time', '>', Carbon::now())
+                     ->where('start_time', '<', Carbon::now()->addDays(7))
+                     ->orderBy('start_time', 'asc');
+    }
 }

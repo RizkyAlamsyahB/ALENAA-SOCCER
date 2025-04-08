@@ -26,7 +26,6 @@ class Payment extends Model
         'payment_type',
         'payment_details',
         'expires_at',
-        'on_hold_booking_ids',
     ];
 
     protected $casts = [
@@ -59,14 +58,6 @@ class Payment extends Model
     public function fieldBookings(): HasMany
     {
         return $this->hasMany(FieldBooking::class);
-    }
-
-    /**
-     * Get the field bookings on hold for renewal associated with this payment.
-     */
-    public function onHoldBookings(): HasMany
-    {
-        return $this->hasMany(FieldBooking::class, 'renewal_payment_id');
     }
 
     /**
@@ -123,17 +114,5 @@ class Payment extends Model
     public function isRenewalPayment(): bool
     {
         return $this->payment_type === 'membership_renewal' || strpos($this->order_id, 'RENEW-MEM-') === 0;
-    }
-
-    /**
-     * Get on-hold bookings IDs as array.
-     */
-    public function getOnHoldBookingIdsAttribute($value)
-    {
-        if (!$value) {
-            return [];
-        }
-
-        return json_decode($value, true) ?? [];
     }
 }

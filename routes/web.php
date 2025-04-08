@@ -171,24 +171,7 @@ Route::prefix('membership')
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/picture', [ProfileController::class, 'updateProfilePicture'])->name('profile.picture.update');
 });
-Route::get('/test-renewal-email', function() {
-    $subscriptionId = 1; // Ganti dengan ID subscription yang valid
-    $subscription = \App\Models\MembershipSubscription::with(['user', 'membership', 'sessions'])
-        ->find($subscriptionId);
 
-    if (!$subscription) {
-        return 'Subscription tidak ditemukan';
-    }
-
-    \Illuminate\Support\Facades\Mail::to($subscription->user->email)->send(
-        new \App\Mail\MembershipRenewalSuccess([
-            'user' => $subscription->user,
-            'subscription' => $subscription,
-        ])
-    );
-
-    return 'Email test telah dikirim ke ' . $subscription->user->email;
-})->middleware('auth');
 // Payment Notification Endpoints (Diakses oleh Midtrans, tidak memerlukan auth)
 Route::prefix('payment')
     ->name('payment.')

@@ -147,64 +147,71 @@
                     </div>
                     <div class="card-body">
                         @if($subscription->sessions && $subscription->sessions->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table custom-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Sesi</th>
-                                            <th>Tanggal</th>
-                                            <th>Waktu</th>
-                                            <th>Status</th>
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sesi</th>
+                                        <th>Tanggal</th>
+                                        <th>Waktu</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        // Sort sessions by date first, then by time
+                                        $sortedSessions = $subscription->sessions->sortBy([
+                                            ['start_time', 'asc']
+                                        ]);
+                                    @endphp
+
+                                    @foreach($sortedSessions as $session)
+                                        <tr class="session-row">
+                                            <td class="session-number">{{ $session->session_number }}</td>
+                                            <td>
+                                                <div class="session-date">
+                                                    <div class="day-name">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
+                                                    <div class="date">{{ \Carbon\Carbon::parse($session->start_time)->format('d M Y') }}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="session-time">
+                                                    <i class="far fa-clock"></i>
+                                                    <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge
+                                                    @if($session->status === 'completed') badge-completed
+                                                    @elseif($session->status === 'cancelled') badge-cancelled
+                                                    @elseif($session->status === 'upcoming') badge-upcoming
+                                                    @else badge-scheduled @endif">
+                                                    @if($session->status === 'completed')
+                                                        <i class="fas fa-check-circle"></i>
+                                                    @elseif($session->status === 'cancelled')
+                                                        <i class="fas fa-times-circle"></i>
+                                                    @elseif($session->status === 'upcoming')
+                                                        <i class="fas fa-hourglass-start"></i>
+                                                    @else
+                                                        <i class="far fa-calendar-alt"></i>
+                                                    @endif
+                                                    <span>{{ ucfirst($session->status) }}</span>
+                                                </span>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($subscription->sessions->sortBy('session_number') as $session)
-                                            <tr class="session-row">
-                                                <td class="session-number">{{ $session->session_number }}</td>
-                                                <td>
-                                                    <div class="session-date">
-                                                        <div class="day-name">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
-                                                        <div class="date">{{ \Carbon\Carbon::parse($session->start_time)->format('d M Y') }}</div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="session-time">
-                                                        <i class="far fa-clock"></i>
-                                                        <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span class="status-badge
-                                                        @if($session->status === 'completed') badge-completed
-                                                        @elseif($session->status === 'cancelled') badge-cancelled
-                                                        @elseif($session->status === 'upcoming') badge-upcoming
-                                                        @else badge-scheduled @endif">
-                                                        @if($session->status === 'completed')
-                                                            <i class="fas fa-check-circle"></i>
-                                                        @elseif($session->status === 'cancelled')
-                                                            <i class="fas fa-times-circle"></i>
-                                                        @elseif($session->status === 'upcoming')
-                                                            <i class="fas fa-hourglass-start"></i>
-                                                        @else
-                                                            <i class="far fa-calendar-alt"></i>
-                                                        @endif
-                                                        <span>{{ ucfirst($session->status) }}</span>
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="far fa-calendar-times"></i>
                             </div>
-                        @else
-                            <div class="empty-state">
-                                <div class="empty-icon">
-                                    <i class="far fa-calendar-times"></i>
-                                </div>
-                                <h4>Belum Ada Jadwal</h4>
-                                <p>Belum ada jadwal sesi untuk membership ini.</p>
-                            </div>
-                        @endif
+                            <h4>Belum Ada Jadwal</h4>
+                            <p>Belum ada jadwal sesi untuk membership ini.</p>
+                        </div>
+                    @endif
                     </div>
                 </div>
             </div>
@@ -261,45 +268,51 @@
                     </div>
                 </div>
 
-                <!-- Upcoming Sessions Card -->
-                <div class="card upcoming-card">
-                    <div class="card-header">
-                        <h3>
-                            <i class="fas fa-calendar-day"></i>
-                            Sesi Mendatang
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        @php
-                            $upcomingSessions = $subscription->sessions->where('status', 'upcoming')->take(3);
-                        @endphp
+<!-- Upcoming Sessions Card -->
+<div class="card upcoming-card">
+    <div class="card-header">
+        <h3>
+            <i class="fas fa-calendar-day"></i>
+            Sesi Mendatang
+        </h3>
+    </div>
+    <div class="card-body">
+        @php
+            // Menggunakan scope upcoming atau filter manual
+            $upcomingSessions = $subscription->sessions()
+                ->where('status', 'scheduled')
+                ->where('start_time', '>', now())
+                ->orderBy('start_time', 'asc')
+                ->take(3)
+                ->get();
+        @endphp
 
-                        @if($upcomingSessions->count() > 0)
-                            @foreach($upcomingSessions as $session)
-                                <div class="upcoming-session">
-                                    <div class="session-day">
-                                        <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}</div>
-                                        <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->format('M') }}</div>
-                                    </div>
-                                    <div class="session-details">
-                                        <div class="time">
-                                            <i class="far fa-clock"></i>
-                                            <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
-                                        </div>
-                                        <div class="weekday">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="empty-upcoming">
-                                <div class="empty-icon">
-                                    <i class="far fa-calendar"></i>
-                                </div>
-                                <p>Tidak ada sesi mendatang.</p>
-                            </div>
-                        @endif
+        @if($upcomingSessions->count() > 0)
+            @foreach($upcomingSessions as $session)
+                <div class="upcoming-session">
+                    <div class="session-day">
+                        <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}</div>
+                        <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->format('M') }}</div>
+                    </div>
+                    <div class="session-details">
+                        <div class="time">
+                            <i class="far fa-clock"></i>
+                            <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
+                        </div>
+                        <div class="weekday">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
                     </div>
                 </div>
+            @endforeach
+        @else
+            <div class="empty-upcoming">
+                <div class="empty-icon">
+                    <i class="far fa-calendar"></i>
+                </div>
+                <p>Tidak ada sesi mendatang.</p>
+            </div>
+        @endif
+    </div>
+</div>
             </div>
         </div>
     </div>

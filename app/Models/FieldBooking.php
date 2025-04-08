@@ -21,7 +21,6 @@ class FieldBooking extends Model
         'total_price',
         'status',
         'payment_id',
-        'renewal_payment_id',
         'is_membership',
         'membership_session_id',
     ];
@@ -55,14 +54,6 @@ class FieldBooking extends Model
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
-    }
-
-    /**
-     * Get the renewal payment associated with this booking.
-     */
-    public function renewalPayment(): BelongsTo
-    {
-        return $this->belongsTo(Payment::class, 'renewal_payment_id');
     }
 
     /**
@@ -103,14 +94,6 @@ class FieldBooking extends Model
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
-    }
-
-    /**
-     * Check if booking is on hold.
-     */
-    public function isOnHold(): bool
-    {
-        return $this->status === 'on_hold';
     }
 
     /**

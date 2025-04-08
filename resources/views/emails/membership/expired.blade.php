@@ -110,12 +110,7 @@
 <body>
     <div class="email-wrapper">
         <div class="email-container">
-            <!-- Logo -->
-            <div class="logo">
-                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/3bc3f968d66dd0c368130525f00d42ec550c3ea8f6304c68cbb117fa6eb8dc08"
-                alt="Alena Soccer Logo">
-                <div class="brand-name">Alena<span>Soccer</span></div>
-            </div>
+
 
             <!-- Content -->
             <div class="greeting">Membership Anda Telah Kedaluwarsa</div>

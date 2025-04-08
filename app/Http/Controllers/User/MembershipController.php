@@ -180,31 +180,31 @@ class MembershipController extends Controller
         }
     }
     /**
-     * Memeriksa konflik waktu dengan booking yang sudah ada
-     */
-    private function checkTimeConflict($fieldId, $startTime, $endTime)
-    {
-        // Cek konflik dengan field bookings (termasuk yang berasal dari membership)
-        // Termasuk cek status 'on_hold' untuk booking perpanjangan
-        $conflictBookings = DB::table('field_bookings')
-            ->where('field_id', $fieldId)
-            ->whereIn('status', ['pending', 'confirmed', 'on_hold']) // tambahkan on_hold di sini
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query
-                    ->where(function ($q) use ($startTime, $endTime) {
-                        $q->where('start_time', '<=', $startTime)->where('end_time', '>', $startTime);
-                    })
-                    ->orWhere(function ($q) use ($startTime, $endTime) {
-                        $q->where('start_time', '<', $endTime)->where('end_time', '>=', $endTime);
-                    })
-                    ->orWhere(function ($q) use ($startTime, $endTime) {
-                        $q->where('start_time', '>=', $startTime)->where('end_time', '<=', $endTime);
-                    });
-            })
-            ->exists();
+ * Memeriksa konflik waktu dengan booking yang sudah ada
+ */
+private function checkTimeConflict($fieldId, $startTime, $endTime)
+{
+    // Cek konflik dengan field bookings (termasuk yang berasal dari membership)
+    // Hapus cek status 'on_hold' karena sudah tidak digunakan lagi
+    $conflictBookings = DB::table('field_bookings')
+        ->where('field_id', $fieldId)
+        ->whereIn('status', ['pending', 'confirmed']) // hapus 'on_hold' dari sini
+        ->where(function ($query) use ($startTime, $endTime) {
+            $query
+                ->where(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '<=', $startTime)->where('end_time', '>', $startTime);
+                })
+                ->orWhere(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '<', $endTime)->where('end_time', '>=', $endTime);
+                })
+                ->orWhere(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '>=', $startTime)->where('end_time', '<=', $endTime);
+                });
+        })
+        ->exists();
 
-        return $conflictBookings;
-    }
+    return $conflictBookings;
+}
 
     /**
      * Mendapatkan slot waktu yang tersedia
@@ -217,51 +217,52 @@ class MembershipController extends Controller
         return $allSlots;
     }
 
-    /**
-     * Mendapatkan slot waktu yang tersedia berdasarkan tanggal
-     */
-    public function getAvailableTimeSlotsByDate(Request $request, $fieldId)
-    {
-        $request->validate([
-            'date' => 'required|date',
-        ]);
+   /**
+ * Mendapatkan slot waktu yang tersedia berdasarkan tanggal
+ */
+public function getAvailableTimeSlotsByDate(Request $request, $fieldId)
+{
+    $request->validate([
+        'date' => 'required|date',
+    ]);
 
-        $date = $request->date;
+    $date = $request->date;
 
-        // Ambil semua slot waktu
-        $allSlots = $this->getAvailableTimeSlots($fieldId);
+    // Ambil semua slot waktu
+    $allSlots = $this->getAvailableTimeSlots($fieldId);
 
-        // Dapatkan booking yang sudah ada pada tanggal tersebut
-        $bookedSlots = DB::table('field_bookings')
-            ->where('field_id', $fieldId)
-            ->whereDate('start_time', $date)
-            ->whereIn('status', ['pending', 'confirmed', 'on_hold'])
-            ->get(['start_time', 'end_time']);
+    // Dapatkan booking yang sudah ada pada tanggal tersebut
+    // Hapus status 'on_hold' dari query
+    $bookedSlots = DB::table('field_bookings')
+        ->where('field_id', $fieldId)
+        ->whereDate('start_time', $date)
+        ->whereIn('status', ['pending', 'confirmed']) // hapus 'on_hold'
+        ->get(['start_time', 'end_time']);
 
-        // Filter slot yang tersedia
-        $availableSlots = [];
-        foreach ($allSlots as $slot) {
-            $startTime = Carbon::parse("{$date} {$slot['start']}");
-            $endTime = Carbon::parse("{$date} {$slot['end']}");
-            $isAvailable = true;
+    // Filter slot yang tersedia
+    $availableSlots = [];
+    foreach ($allSlots as $slot) {
+        $startTime = Carbon::parse("{$date} {$slot['start']}");
+        $endTime = Carbon::parse("{$date} {$slot['end']}");
+        $isAvailable = true;
 
-            foreach ($bookedSlots as $bookedSlot) {
-                $bookedStart = Carbon::parse($bookedSlot->start_time);
-                $bookedEnd = Carbon::parse($bookedSlot->end_time);
+        foreach ($bookedSlots as $bookedSlot) {
+            $bookedStart = Carbon::parse($bookedSlot->start_time);
+            $bookedEnd = Carbon::parse($bookedSlot->end_time);
 
-                if (($startTime >= $bookedStart && $startTime < $bookedEnd) || ($endTime > $bookedStart && $endTime <= $bookedEnd) || ($startTime <= $bookedStart && $endTime >= $bookedEnd)) {
-                    $isAvailable = false;
-                    break;
-                }
-            }
-
-            if ($isAvailable) {
-                $availableSlots[] = $slot;
+            if (($startTime >= $bookedStart && $startTime < $bookedEnd) || ($endTime > $bookedStart && $endTime <= $bookedEnd) || ($startTime <= $bookedStart && $endTime >= $bookedEnd)) {
+                $isAvailable = false;
+                break;
             }
         }
 
-        return response()->json($availableSlots);
+        if ($isAvailable) {
+            $availableSlots[] = $slot;
+        }
     }
+
+    return response()->json($availableSlots);
+}
 
     /**
      * Menampilkan riwayat membership user
@@ -276,28 +277,39 @@ class MembershipController extends Controller
         return view('users.membership.my-memberships', compact('subscriptions'));
     }
 
-    /**
-     * Menampilkan detail langganan membership
-     */
-    public function subscriptionDetail($id)
-    {
-        $subscription = MembershipSubscription::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->with(['membership', 'membership.field', 'sessions', 'payment'])
-            ->firstOrFail();
+ /**
+ * Menampilkan detail langganan membership
+ */
+public function subscriptionDetail($id)
+{
+    $subscription = MembershipSubscription::where('id', $id)
+        ->where('user_id', Auth::id())
+        ->with(['membership', 'membership.field', 'payment'])
+        ->firstOrFail();
 
-        // Update status sesi yang sudah lewat
-        $now = Carbon::now();
-        foreach ($subscription->sessions as $session) {
-            if ($session->status === 'scheduled' && $now > Carbon::parse($session->end_time)) {
-                $session->status = 'completed';
-                $session->save();
-            }
+    // Load sessions
+    $subscription->load('sessions');
+
+    // Update status sesi yang sudah lewat
+    $now = Carbon::now();
+    foreach ($subscription->sessions as $session) {
+        if ($session->status === 'scheduled' && $now > Carbon::parse($session->end_time)) {
+            $session->status = 'completed';
+            $session->save();
         }
-
-        // Reload sessions setelah update
-        $subscription->load('sessions');
-
-        return view('users.membership.subscription-detail', compact('subscription'));
     }
+
+    // Reload sessions setelah update
+    $subscription->load('sessions');
+
+    // Manual sorting of sessions by date first, then by time
+    $sortedSessions = $subscription->sessions->sortBy([
+        ['start_time', 'asc']
+    ]);
+
+    // Replace the collection with the sorted one
+    $subscription->setRelation('sessions', $sortedSessions);
+
+    return view('users.membership.subscription-detail', compact('subscription'));
+}
 }

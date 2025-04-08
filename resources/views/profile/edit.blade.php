@@ -52,20 +52,28 @@
                             @endif
                         </div>
 
-                        <!-- User Info Section -->
-                        <div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
-                            style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
-                            <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
-                            <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
-                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
-                                <span class="badge text-white" style="background-color: #9E0620;">
-                                    <i class="fas fa-crown me-1"></i> Premium Member
-                                </span>
-                                <span class="badge bg-success">
-                                    <i class="fas fa-check-circle me-1"></i> Verified
-                                </span>
-                            </div>
-                        </div>
+<!-- User Info Section -->
+<div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
+    style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
+    <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
+    <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
+    <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
+        <span class="badge text-white" style="background-color: #9E0620;">
+            <i class="fas fa-crown me-1"></i> Premium Member
+        </span>
+
+        @if(Auth::user()->email_verified_at)
+            <span class="badge bg-success">
+                <i class="fas fa-check-circle me-1"></i> Verified
+            </span>
+        @else
+            <span class="badge bg-danger">
+                <i class="fas fa-times-circle me-1"></i> Unverified
+            </span>
+        @endif
+    </div>
+</div>
+
 
                         <!-- Points Card (Positioned to the right) -->
                         <div class="mt-4 mt-sm-0 ms-sm-auto text-center text-sm-start"
@@ -103,10 +111,6 @@
                             <i class="fas fa-gamepad  me-2"></i>Open Mabar
                         </button>
 
-                        <button class="nav-link text-secondary flex-shrink-0" id="tab-billing">
-                            <i class="fas fa-credit-card me-2"></i>Billing
-                        </button>
-
                         <button class="nav-link text-secondary flex-shrink-0" id="tab-security">
                             <i class="fas fa-lock me-2"></i>Security
                         </button>
@@ -118,6 +122,7 @@
 <!-- Sidebar Components (Membership & Recent Activity) -->
 <div class="sidebar-components">
     <!-- Membership Status -->
+    @if ($membershipType && $membershipName)
     <div class="card-membership mb-4 text-black"
         style="background: url('assets/bg-card-{{ $membershipType }}.jpg') no-repeat center/cover; border-radius: 12px; overflow: hidden;">
         <div class="card-body">
@@ -128,11 +133,9 @@
             </div>
         </div>
     </div>
+@endif
 
-    <!-- Riwayat Transaksi Terakhir -->
-    @if (isset($recentPayments) && $recentPayments->count() > 0)
-        <!-- Kode untuk menampilkan recentPayments tetap sama seperti sebelumnya -->
-    @endif
+
 </div>
 
             <!-- Tab Content -->
@@ -261,94 +264,7 @@
                         </div>
                     </div>
 
-                    <!-- Billing Tab -->
-                    <div id="content-billing" class="tab-pane" style="display: none;">
-                        <!-- Current Subscription -->
-                        <div class="card mb-4">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="card-title mb-0">Current Subscription</h5>
-                                    <span class="badge bg-success">Active</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p class="mb-1"><strong>Plan:</strong> Premium Member</p>
-                                        <p class="mb-1"><strong>Billing Period:</strong> Monthly</p>
-                                        <p class="mb-3"><strong>Next Payment:</strong> March 22, 2025</p>
-                                        <button class="btn text-white" style="background-color: #9E0620;">Upgrade
-                                            Plan</button>
-                                    </div>
-                                    <div class="col-md-6 text-end">
-                                        <h3 class="mb-1">Rp 150.000</h3>
-                                        <p class="text-muted">per month</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Payment Method -->
-                        <div class="card mb-4">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="card-title mb-0">Payment Method</h5>
-                                    <button class="btn btn-outline-secondary btn-sm">Add New</button>
-                                </div>
-                                <div class="d-flex align-items-center mb-3">
-                                    <i class="fas fa-credit-card me-3" style="font-size: 24px; color: #9E0620;"></i>
-                                    <div>
-                                        <h6 class="mb-1">•••• •••• •••• 4242</h6>
-                                        <p class="text-muted mb-0">Expires 12/2025</p>
-                                    </div>
-                                    <button class="btn btn-link ms-auto">Edit</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Billing History -->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="card-title mb-0">Billing History</h5>
-                                    <button class="btn btn-outline-secondary btn-sm">Download All</button>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Amount</th>
-                                                <th>Status</th>
-                                                <th>Invoice</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Feb 22, 2025</td>
-                                                <td>Rp 150.000</td>
-                                                <td><span class="badge bg-success">Paid</span></td>
-                                                <td><a href="#" class="btn btn-sm btn-link"><i
-                                                            class="fas fa-download"></i></a></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Jan 22, 2025</td>
-                                                <td>Rp 150.000</td>
-                                                <td><span class="badge bg-success">Paid</span></td>
-                                                <td><a href="#" class="btn btn-sm btn-link"><i
-                                                            class="fas fa-download"></i></a></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Dec 22, 2024</td>
-                                                <td>Rp 150.000</td>
-                                                <td><span class="badge bg-success">Paid</span></td>
-                                                <td><a href="#" class="btn btn-sm btn-link"><i
-                                                            class="fas fa-download"></i></a></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <!-- Open Mabar Tab -->
                     <div id="content-open-mabar" class="tab-pane" style="display: none;">
                         <!-- Create Mabar Card -->

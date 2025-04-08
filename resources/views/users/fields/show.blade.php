@@ -475,8 +475,8 @@
                                     locale: 'id',
                                     dateFormat: 'Y-m-d',
                                     minDate: 'today',
+                                    maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
                                     responsive: true, // Enable responsive mode
-                                    maxDate: new Date().fp_incr(6), // Set maximum date to today + 6 days (total of 7 days including today)
                                     onChange: function(selectedDates, dateStr) {
                                         selectedDate = dateStr;
                                         document.getElementById('selectedDate').value = dateStr;
@@ -739,25 +739,31 @@
                                         const slotDiv = document.createElement('div');
 
                                         let statusClass = '';
-                                        let statusIcon = '';
-                                        let isDisabled = false;
+    let statusIcon = '';
+    let isDisabled = false;
+    let statusText = '';
 
-                                        switch (slot.status) {
-                                            case 'booked':
-                                                statusClass = 'slot-booked';
-                                                statusIcon = '<i class="fas fa-lock"></i>';
-                                                isDisabled = true;
-                                                break;
-                                            case 'in_cart':
-                                                statusClass = 'slot-in-cart';
-                                                statusIcon = '<i class="fas fa-shopping-cart"></i>';
-                                                break;
-                                            case 'available':
-                                                statusClass = 'slot-available';
-                                                statusIcon = '<i class="fas fa-clock"></i>';
-                                                break;
-                                        }
-
+    switch (slot.status) {
+        case 'booked':
+            statusClass = 'slot-booked';
+            statusIcon = '<i class="fas fa-lock"></i>';
+            isDisabled = true;
+            break;
+            case 'membership':
+    statusClass = 'slot-membership';
+    statusIcon = '<i class="fas fa-users"></i>';
+    statusText = 'Member';
+    isDisabled = true;
+    break;
+        case 'in_cart':
+            statusClass = 'slot-in-cart';
+            statusIcon = '<i class="fas fa-shopping-cart"></i>';
+            break;
+        case 'available':
+            statusClass = 'slot-available';
+            statusIcon = '<i class="fas fa-clock"></i>';
+            break;
+    }
                                         const isSelected = selectedSlots.has(slot.display);
                                         if (isSelected) {
                                             statusClass = 'slot-selected';
@@ -1181,7 +1187,7 @@
     min-height: 50px; /* Adjust as needed */
     text-align: center;
         }
-        
+
 
         .slot-time i {
             font-size: 0.9rem;
@@ -1373,5 +1379,14 @@
                 line-height: 30px;
             }
         }
+        .slot-membership {
+    background-color: #ffeeba; /* Warna kuning lembut */
+    border-color: #ffdf7e;
+    cursor: not-allowed;
+}
+
+.slot-membership .slot-time {
+    color: #856404; /* Warna text kuning gelap */
+}
     </style>
 @endsection

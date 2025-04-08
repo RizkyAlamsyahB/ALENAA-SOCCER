@@ -824,33 +824,33 @@ class CartController extends Controller
 
         foreach ($cartItems as $item) {
             if ($item->type == 'field_booking') {
-                // Cek apakah masih tersedia
-                $field = Field::find($item->item_id);
-                if ($field) {
-                    $isBooked = FieldBooking::where('field_id', $item->item_id)
-                        ->whereDate('start_time', Carbon::parse($item->start_time)->toDateString())
-                        ->where(function ($query) use ($item) {
-                            // Logika pengecekan overlap waktu
-                            $query
-                                ->where(function ($q) use ($item) {
-                                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
-                                });
-                        })
-                        ->where('status', '!=', 'cancelled')
-                        ->exists();
+// Cek apakah masih tersedia
+$field = Field::find($item->item_id);
+if ($field) {
+    $isBooked = FieldBooking::where('field_id', $item->item_id)
+        ->whereDate('start_time', Carbon::parse($item->start_time)->toDateString())
+        ->where(function ($query) use ($item) {
+            // Logika pengecekan overlap waktu
+            $query
+                ->where(function ($q) use ($item) {
+                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
+                })
+                ->orWhere(function ($q) use ($item) {
+                    $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
+                })
+                ->orWhere(function ($q) use ($item) {
+                    $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
+                });
+        })
+        ->where('status', '!=', 'cancelled') // Tidak perlu mengecualikan 'on_hold' secara eksplisit
+        ->exists();
 
-                    if ($isBooked) {
-                        $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
-                        $endTime = Carbon::parse($item->end_time)->format('H:i');
-                        $unavailableItems[] = $field->name . ' (' . $startTime . ' - ' . $endTime . ')';
-                    }
-                }
+    if ($isBooked) {
+        $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+        $endTime = Carbon::parse($item->end_time)->format('H:i');
+        $unavailableItems[] = $field->name . ' (' . $startTime . ' - ' . $endTime . ')';
+    }
+}
             } elseif ($item->type == 'rental_item') {
                 // Cek ketersediaan rental item
                 $rentalItem = RentalItem::find($item->item_id);
@@ -925,22 +925,22 @@ class CartController extends Controller
                             $startDateTime = Carbon::parse($sessionDate . ' ' . $startTime);
                             $endDateTime = Carbon::parse($sessionDate . ' ' . $endTime);
 
-                            // Cek apakah ada booking lain di waktu yang sama
-                            $isBooked = FieldBooking::where('field_id', $fieldId)
-                                ->where(function ($query) use ($startDateTime, $endDateTime) {
-                                    $query
-                                        ->where(function ($q) use ($startDateTime, $endDateTime) {
-                                            $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
-                                        })
-                                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                            $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
-                                        })
-                                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                            $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
-                                        });
-                                })
-                                ->where('status', '!=', 'cancelled')
-                                ->exists();
+// Cek apakah ada booking lain di waktu yang sama
+$isBooked = FieldBooking::where('field_id', $fieldId)
+    ->where(function ($query) use ($startDateTime, $endDateTime) {
+        $query
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
+            })
+            ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
+            })
+            ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
+            });
+    })
+    ->where('status', '!=', 'cancelled') // Tidak perlu mengecualikan 'on_hold' secara eksplisit
+    ->exists();
 
                             if ($isBooked) {
                                 $startTimeFormat = $startDateTime->format('d M Y H:i');

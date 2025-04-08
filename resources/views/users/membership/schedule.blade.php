@@ -291,6 +291,8 @@
         locale: 'id',
         dateFormat: "Y-m-d",
         minDate: "today",
+        maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
+
         onChange: function(selectedDates, dateStr, instance) {
             if (selectedDates.length > 0) {
                 // Mulai minggu dari tanggal yang dipilih

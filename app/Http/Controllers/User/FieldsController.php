@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\User;
 
 use Carbon\Carbon;
+use App\Models\Cart;
 use App\Models\Field;
+use App\Models\CartItem;
 use App\Models\FieldBooking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Cart;
-use App\Models\CartItem;
 
 class FieldsController extends Controller
 {
@@ -32,87 +33,131 @@ class FieldsController extends Controller
         return view('users.fields.show', compact('field'));
     }
 
-    /**
-     * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu
-     */
-    public function getAvailableSlots(Request $request, $fieldId)
-    {
-        try {
-            // Validasi input
-            $request->validate([
-                'date' => 'required|date'
-            ]);
+/**
+ * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu
+ */
+public function getAvailableSlots(Request $request, $fieldId)
+{
+    try {
+        // Validasi input
+        $request->validate([
+            'date' => 'required|date'
+        ]);
 
-            // Cari lapangan
-            $field = Field::findOrFail($fieldId);
+        // Cari lapangan
+        $field = Field::findOrFail($fieldId);
 
-            $date = $request->date;
-            $carbonDate = Carbon::parse($date);
+        $date = $request->date;
+        $carbonDate = Carbon::parse($date);
+        $dayOfWeek = $carbonDate->dayOfWeek; // 0 (Minggu) sampai 6 (Sabtu)
 
-            // Definisikan semua slot waktu (1 jam per slot)
-            $allSlots = [
-                ['start' => '08:00', 'end' => '09:00'],
-                ['start' => '09:00', 'end' => '10:00'],
-                ['start' => '10:00', 'end' => '11:00'],
-                ['start' => '11:00', 'end' => '12:00'],
-                ['start' => '12:00', 'end' => '13:00'],
-                ['start' => '13:00', 'end' => '14:00'],
-                ['start' => '14:00', 'end' => '15:00'],
-                ['start' => '15:00', 'end' => '16:00'],
-                ['start' => '16:00', 'end' => '17:00'],
-                ['start' => '17:00', 'end' => '18:00'],
-                ['start' => '18:00', 'end' => '19:00'],
-                ['start' => '19:00', 'end' => '20:00'],
-                ['start' => '20:00', 'end' => '21:00'],
-                ['start' => '21:00', 'end' => '22:00'],
-                ['start' => '22:00', 'end' => '23:00'],
-            ];
+        // Definisikan semua slot waktu (1 jam per slot)
+        $allSlots = [
+            ['start' => '08:00', 'end' => '09:00'],
+            ['start' => '09:00', 'end' => '10:00'],
+            ['start' => '10:00', 'end' => '11:00'],
+            ['start' => '11:00', 'end' => '12:00'],
+            ['start' => '12:00', 'end' => '13:00'],
+            ['start' => '13:00', 'end' => '14:00'],
+            ['start' => '14:00', 'end' => '15:00'],
+            ['start' => '15:00', 'end' => '16:00'],
+            ['start' => '16:00', 'end' => '17:00'],
+            ['start' => '17:00', 'end' => '18:00'],
+            ['start' => '18:00', 'end' => '19:00'],
+            ['start' => '19:00', 'end' => '20:00'],
+            ['start' => '20:00', 'end' => '21:00'],
+            ['start' => '21:00', 'end' => '22:00'],
+            ['start' => '22:00', 'end' => '23:00'],
+        ];
 
-            // Get cart items for current user, field, and date
-            $cartSlots = [];
-            if (Auth::check()) {
-                $userCart = Cart::where('user_id', Auth::id())->first();
+        // Get cart items for current user, field, and date
+        $cartSlots = [];
+        if (Auth::check()) {
+            $userCart = Cart::where('user_id', Auth::id())->first();
 
-                if ($userCart) {
-                    $cartItems = CartItem::where('cart_id', $userCart->id)
-                        ->where('type', 'field_booking')
-                        ->where('item_id', $fieldId)
-                        ->whereDate('start_time', $date)
-                        ->get();
+            if ($userCart) {
+                $cartItems = CartItem::where('cart_id', $userCart->id)
+                    ->where('type', 'field_booking')
+                    ->where('item_id', $fieldId)
+                    ->whereDate('start_time', $date)
+                    ->get();
 
-                    foreach ($cartItems as $item) {
-                        $startFormatted = Carbon::parse($item->start_time)->format('H:i');
-                        $endFormatted = Carbon::parse($item->end_time)->format('H:i');
-                        $cartSlots[] = $startFormatted . ' - ' . $endFormatted;
-                    }
+                foreach ($cartItems as $item) {
+                    $startFormatted = Carbon::parse($item->start_time)->format('H:i');
+                    $endFormatted = Carbon::parse($item->end_time)->format('H:i');
+                    $cartSlots[] = $startFormatted . ' - ' . $endFormatted;
                 }
             }
+        }
 
-            // Dapatkan booking yang sudah ada pada tanggal tersebut
-            // Perhatikan bahwa kita mengambil semua booking termasuk yang berasal dari membership
-            $bookedSlots = FieldBooking::where('field_id', $fieldId)
-                ->whereDate('start_time', $date)
+        // Dapatkan booking yang sudah ada pada tanggal tersebut
+        $bookedSlots = FieldBooking::where('field_id', $fieldId)
+            ->whereDate('start_time', $date)
+            ->where('status', '!=', 'cancelled')
+            ->get();
+
+        // Dapatkan membership slots yang aktif
+        // 1. Ambil semua active membership untuk field ini
+        $activeSubscriptions = DB::table('membership_subscriptions')
+            ->join('memberships', 'membership_subscriptions.membership_id', '=', 'memberships.id')
+            ->where('memberships.field_id', $fieldId)
+            ->where('membership_subscriptions.status', 'active')
+            ->select('membership_subscriptions.id')
+            ->get()
+            ->pluck('id')
+            ->toArray();
+
+        // 2. Ambil semua session dari active memberships
+        $membershipSlots = [];
+        if (!empty($activeSubscriptions)) {
+            $membershipSessions = DB::table('membership_sessions')
+                ->whereIn('membership_subscription_id', $activeSubscriptions)
                 ->where('status', '!=', 'cancelled')
                 ->get();
 
-            // Filter slot yang tersedia
-            $availableSlots = [];
-            foreach ($allSlots as $slot) {
-                $startTime = Carbon::parse("{$date} {$slot['start']}");
-                $endTime = Carbon::parse("{$date} {$slot['end']}");
-                $displaySlot = $slot['start'] . ' - ' . $slot['end'];
+            // 3. Temukan pola membership yang jatuh pada hari yang sama
+            foreach ($membershipSessions as $session) {
+                $sessionStartTime = Carbon::parse($session->start_time);
+                $sessionEndTime = Carbon::parse($session->end_time);
 
-                $isAvailable = true;
-                $isInCart = in_array($displaySlot, $cartSlots);
+                // Jika hari dalam seminggu sama dengan tanggal yang diminta
+                if ($sessionStartTime->dayOfWeek === $dayOfWeek) {
+                    $startFormatted = $sessionStartTime->format('H:i');
+                    $endFormatted = $sessionEndTime->format('H:i');
 
+                    $membershipSlots[] = [
+                        'start' => $startFormatted,
+                        'end' => $endFormatted,
+                        'display' => $startFormatted . ' - ' . $endFormatted
+                    ];
+                }
+            }
+        }
+
+        // Filter slot yang tersedia
+        $availableSlots = [];
+        foreach ($allSlots as $slot) {
+            $startTime = Carbon::parse("{$date} {$slot['start']}");
+            $endTime = Carbon::parse("{$date} {$slot['end']}");
+            $displaySlot = $slot['start'] . ' - ' . $slot['end'];
+
+            $isAvailable = true;
+            $isInCart = in_array($displaySlot, $cartSlots);
+            $isMembershipSlot = false;
+
+            // Cek apakah slot ini termasuk dalam membership pattern
+            foreach ($membershipSlots as $membershipSlot) {
+                if ($slot['start'] === $membershipSlot['start'] && $slot['end'] === $membershipSlot['end']) {
+                    $isAvailable = false;
+                    $isMembershipSlot = true;
+                    break;
+                }
+            }
+
+            // Jika belum ditandai sebagai slot membership, cek terhadap booking reguler
+            if (!$isMembershipSlot) {
                 // Check against booked slots
                 foreach ($bookedSlots as $bookedBooking) {
-                    // Perbaikan logika untuk menghindari false positive pada slot yang berdekatan
-                    // Slot dianggap tidak tersedia jika:
-                    // 1. Waktu mulai slot berada di dalam range booking yang ada (tapi tidak tepat di akhir booking)
-                    // 2. Waktu selesai slot berada di dalam range booking yang ada (tapi tidak tepat di awal booking)
-                    // 3. Booking yang ada berada dalam range waktu slot
-
                     $bookedStart = $bookedBooking->start_time;
                     $bookedEnd = $bookedBooking->end_time;
 
@@ -125,39 +170,61 @@ class FieldsController extends Controller
                         ($startTime <= $bookedStart && $endTime >= $bookedEnd)
                     ) {
                         $isAvailable = false;
+
+                        // Cek apakah booking ini adalah booking dari membership
+                        if ($bookedBooking->is_membership) {
+                            $isMembershipSlot = true;
+                        }
+
                         break;
                     }
                 }
-
-                // Calculate price (1 hours per slot)
-                $slotPrice = $field->price * 1;
-
-                $availableSlots[] = [
-                    'start' => $slot['start'],
-                    'end' => $slot['end'],
-                    'display' => $displaySlot,
-                    'is_available' => $isAvailable,
-                    'in_cart' => $isInCart,
-                    'price' => $slotPrice,
-                    'status' => $isInCart ? 'in_cart' : ($isAvailable ? 'available' : 'booked')
-                ];
             }
 
-            return response()->json($availableSlots);
-        } catch (\Exception $e) {
-            // Log full error
-            Log::error('Error in getAvailableSlots', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            // Calculate price (1 hour per slot)
+            $slotPrice = $field->price * 1;
 
-            // Return error response
-            return response()->json([
-                'error' => 'Failed to retrieve available slots',
-                'message' => $e->getMessage()
-            ], 500);
+            // Tentukan status slot
+            $status = 'available';
+            if ($isInCart) {
+                $status = 'in_cart';
+            } else if (!$isAvailable) {
+                if ($isMembershipSlot) {
+                    $status = 'membership';
+                } else {
+                    $status = 'booked';
+                }
+            }
+
+            $availableSlots[] = [
+                'start' => $slot['start'],
+                'end' => $slot['end'],
+                'display' => $displaySlot,
+                'is_available' => $isAvailable,
+                'in_cart' => $isInCart,
+                'price' => $slotPrice,
+                'status' => $status,
+                'is_membership' => $isMembershipSlot
+            ];
         }
+        Log::debug('Membership slots found:', $membershipSlots);
+        Log::debug('Final available slots:', $availableSlots);
+
+        return response()->json($availableSlots);
+    } catch (\Exception $e) {
+        // Log full error
+        Log::error('Error in getAvailableSlots', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        // Return error response
+        return response()->json([
+            'error' => 'Failed to retrieve available slots',
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Membatalkan booking

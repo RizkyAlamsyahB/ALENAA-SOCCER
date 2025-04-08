@@ -479,6 +479,7 @@
         locale: 'id',
         dateFormat: 'Y-m-d',
         minDate: 'today',
+        maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
         disableMobile: true,
         onChange: function(selectedDates, dateStr) {
             selectedDate = dateStr;
@@ -1325,6 +1326,16 @@
             transform: translateX(5px);
         }
 
+        .wizard-btn-submit {
+            background-color: #9e0620;
+            color: white;
+        }
+
+        .wizard-btn-submit:hover {
+            background-color: #bb2d3b;
+            transform: scale(1.05);
+        }
+
         .wizard-btn i {
             transition: transform 0.3s ease;
         }
@@ -1366,21 +1377,19 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border-color: #9e0620;
         }
-
         .slot-time {
-            padding: 0.75rem;
-            text-align: center;
-            font-weight: 600;
-            color: #495057;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px; /* Adjust as needed */
+    text-align: center;
         }
+
 
         .slot-time i {
             font-size: 0.9rem;
             color: #6c757d;
+
         }
 
         .slot-price {
@@ -1426,48 +1435,52 @@
             color: #fd7e14;
         }
 
-        /* Selected Slots Display */
-        .selected-slots-display {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+        /* Selected Slots List */
+        .selected-slots-list {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
         }
 
-        .selected-slot-item {
+        .selected-slots-list .list-group-item {
+            background-color: transparent;
+            border-color: #e9ecef;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .selected-slots-list .list-group-item:hover {
             background-color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
+            transform: translateX(5px);
+        }
+
+        /* Confirmation Details */
+        .confirmation-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .confirmation-item {
             display: flex;
-            align-items: center;
-            font-size: 14px;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
-        /* Quantity Selector */
-        .quantity-selector {
-            width: 200px;
-            margin: 0 auto;
+        .confirmation-item:last-child {
+            border-bottom: none;
         }
 
-        .quantity-btn {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-color: #dee2e6;
-        }
-
-        .quantity-btn:hover {
-            background-color: #9e0620;
-            border-color: #9e0620;
-            color: white;
-        }
-
-        #quantity-input {
-            width: 80px;
-            text-align: center;
+        .confirmation-item .label {
             font-weight: 600;
-            border-color: #dee2e6;
+            color: #495057;
+        }
+
+        .confirmation-item .value {
+            color: #212529;
         }
 
         /* Responsive adjustments */
@@ -1512,31 +1525,65 @@
                 order: 2;
             }
 
-            .wizard-btn-next {
+            .wizard-btn-next,
+            .wizard-btn-submit {
                 order: 1;
             }
         }
-        .selected-slots-section {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
+
+        /* Responsive Flatpickr Styles */
+        .flatpickr-responsive {
+            width: 100% !important;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .flatpickr-responsive .flatpickr-months {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flatpickr-responsive .flatpickr-month {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .flatpickr-responsive .flatpickr-weekdays {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .flatpickr-responsive .flatpickr-weekday {
+            flex: 1;
+            text-align: center;
+        }
+
+        .flatpickr-responsive .flatpickr-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        @media (max-width: 576px) {
+            .flatpickr-responsive {
+                font-size: 0.9rem;
+            }
+
+            .flatpickr-responsive .flatpickr-day {
+                max-width: 30px;
+                max-height: 30px;
+                line-height: 30px;
+            }
+        }
+        .slot-membership {
+    background-color: #ffeeba; /* Warna kuning lembut */
+    border-color: #ffdf7e;
+    cursor: not-allowed;
 }
 
-.selected-slot-item {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 10px 15px;
-    margin-bottom: 10px;
-}
-
-.slot-qty-input {
-    width: 60px;
-    text-align: center;
-}
-
-.selected-slots-detail {
-    max-height: 200px;
-    overflow-y: auto;
+.slot-membership .slot-time {
+    color: #856404; /* Warna text kuning gelap */
 }
     </style>
     <!-- Include Flatpickr JS -->

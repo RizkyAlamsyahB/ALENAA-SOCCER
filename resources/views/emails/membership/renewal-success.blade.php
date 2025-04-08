@@ -148,12 +148,7 @@
 <body>
     <div class="email-wrapper">
         <div class="email-container">
-            <!-- Logo -->
-            <div class="logo">
-                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/3bc3f968d66dd0c368130525f00d42ec550c3ea8f6304c68cbb117fa6eb8dc08"
-                alt="Alena Soccer Logo">
-                <div class="brand-name">Alena<span>Soccer</span></div>
-            </div>
+
 
             <!-- Content -->
             <div class="greeting">Perpanjangan Membership Berhasil!</div>
@@ -187,11 +182,23 @@
 
                 <h3 style="margin-top: 30px;">Jadwal Membership Anda</h3>
 
+                <h3 style="margin-top: 30px;">Jadwal Membership Anda</h3>
+
                 <p>Berikut adalah jadwal untuk periode membership yang baru:</p>
 
                 @if(isset($data['subscription']->sessions) && count($data['subscription']->sessions) > 0)
                 <ul class="session-list">
-                    @foreach($data['subscription']->sessions->sortBy('session_number') as $session)
+                    @php
+                        // Ambil tanggal renewal terakhir
+                        $renewalDate = $data['subscription']->last_payment_date ?? \Carbon\Carbon::now();
+
+                        // Filter hanya sesi yang dibuat setelah tanggal perpanjangan terakhir
+                        $newSessions = $data['subscription']->sessions->filter(function($session) use ($renewalDate) {
+                            return \Carbon\Carbon::parse($session->created_at)->gt($renewalDate->subMinutes(5));
+                        })->sortBy('session_number');
+                    @endphp
+
+                    @foreach($newSessions as $session)
                     <li>
                         Sesi {{ $session->session_number }}:
                         {{ \Carbon\Carbon::parse($session->start_time)->format('l, d M Y') }},

@@ -190,11 +190,6 @@ private function checkExpiredPayment($payment)
             // Batalkan semua booking reguler
             $this->cancelAllBookings($payment);
 
-            // Batalkan semua booking on_hold jika ini adalah pembayaran perpanjangan
-            if (strpos($payment->order_id, 'RENEW-MEM-') === 0) {
-                $this->cancelOnHoldBookings($payment);
-            }
-
             DB::commit();
             Log::info('Payment #' . $payment->id . ' (Order: ' . $payment->order_id . ') status updated to failed due to expiration on page access');
         } catch (\Exception $e) {
@@ -309,37 +304,37 @@ public function checkout(Request $request)
         // Hitung total setelah diskon
         $totalPrice = $subtotal - $discountAmount;
 
-        // Periksa ketersediaan field bookings
-        foreach ($fieldBookings as $booking) {
-            $conflictingBooking = FieldBooking::where('field_id', $booking->field_id)
-                ->where('id', '!=', $booking->id)
-                ->whereIn('status', ['confirmed', 'on_hold']) // Tambahkan on_hold ke dalam kondisi
-                ->where(function ($query) use ($booking) {
-                    // Cek overlap waktu
-                    $query
-                        ->where(function ($q) use ($booking) {
-                            $q->where('start_time', '<=', $booking->start_time)
-                              ->where('end_time', '>', $booking->start_time);
-                        })
-                        ->orWhere(function ($q) use ($booking) {
-                            $q->where('start_time', '<', $booking->end_time)
-                              ->where('end_time', '>=', $booking->end_time);
-                        })
-                        ->orWhere(function ($q) use ($booking) {
-                            $q->where('start_time', '>=', $booking->start_time)
-                              ->where('end_time', '<=', $booking->end_time);
-                        });
+// Periksa ketersediaan field bookings
+foreach ($fieldBookings as $booking) {
+    $conflictingBooking = FieldBooking::where('field_id', $booking->field_id)
+        ->where('id', '!=', $booking->id)
+        ->whereIn('status', ['confirmed']) // Hapus 'on_hold' dari kondisi
+        ->where(function ($query) use ($booking) {
+            // Cek overlap waktu
+            $query
+                ->where(function ($q) use ($booking) {
+                    $q->where('start_time', '<=', $booking->start_time)
+                      ->where('end_time', '>', $booking->start_time);
                 })
-                ->lockForUpdate()
-                ->first();
+                ->orWhere(function ($q) use ($booking) {
+                    $q->where('start_time', '<', $booking->end_time)
+                      ->where('end_time', '>=', $booking->end_time);
+                })
+                ->orWhere(function ($q) use ($booking) {
+                    $q->where('start_time', '>=', $booking->start_time)
+                      ->where('end_time', '<=', $booking->end_time);
+                });
+        })
+        ->lockForUpdate()
+        ->first();
 
-            if ($conflictingBooking) {
-                DB::rollBack();
-                return redirect()
-                    ->route('user.cart.view')
-                    ->with('error', 'Maaf, slot untuk ' . $booking->field->name . ' sudah dibooking oleh pengguna lain');
-            }
-        }
+    if ($conflictingBooking) {
+        DB::rollBack();
+        return redirect()
+            ->route('user.cart.view')
+            ->with('error', 'Maaf, slot untuk ' . $booking->field->name . ' sudah dibooking oleh pengguna lain');
+    }
+}
 
         // Periksa ketersediaan rental bookings
         foreach ($rentalBookings as $booking) {
@@ -627,10 +622,7 @@ public function checkout(Request $request)
         }
     }
 
-    /**
- * Handle payment notification from Midtrans
- */
-public function notification(Request $request)
+    public function notification(Request $request)
 {
     // Set Midtrans configuration
     $this->setupMidtransConfig(false);
@@ -756,39 +748,33 @@ public function notification(Request $request)
             }
         }
 
+        // Update membership subscriptions
+        if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
+            foreach ($payment->membershipSubscriptions as $subscription) {
+                $subscription->status = 'active';
+                $subscription->save();
 
-// Update membership subscriptions - only if the relationship exists
-if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSubscriptions && $payment->membershipSubscriptions->count() > 0) {
-    foreach ($payment->membershipSubscriptions as $subscription) {
-        $subscription->status = 'active';
-        $subscription->save();
+                // Jika ada session membership, update juga statusnya menjadi scheduled
+                if (method_exists($subscription, 'sessions') && $subscription->sessions) {
+                    foreach ($subscription->sessions as $session) {
+                        $session->status = 'scheduled';
+                        $session->save();
 
-        // Jika ada session membership, update juga statusnya menjadi scheduled
-        if (method_exists($subscription, 'sessions') && $subscription->sessions) {
-            foreach ($subscription->sessions as $session) {
-                $session->status = 'scheduled';
-                $session->save();
-
-                // Perbarui juga status field booking terkait jika ada
-                if (method_exists($session, 'fieldBooking') && $session->fieldBooking) {
-                    $fieldBooking = $session->fieldBooking;
-                    $fieldBooking->status = 'confirmed';
-                    $fieldBooking->save();
-                    Log::info('Field Booking #' . $fieldBooking->id . ' for Membership Session #' . $session->id . ' status updated to: confirmed');
+                        // Perbarui juga status field booking terkait jika ada
+                        if (method_exists($session, 'fieldBooking') && $session->fieldBooking) {
+                            $fieldBooking = $session->fieldBooking;
+                            $fieldBooking->status = 'confirmed';
+                            $fieldBooking->save();
+                            Log::info('Field Booking #' . $fieldBooking->id . ' for Membership Session #' . $session->id . ' status updated to: confirmed');
+                        }
+                    }
                 }
-            }
 
-            // BUAT BOOKING ON_HOLD HANYA JIKA TRANSAKSI BERHASIL (success/settlement)
-            if ($payment->transaction_status === 'success') {
-                $this->createNextPeriodOnHoldBookings($subscription);
+                Log::info('Membership #' . $subscription->id . ' status updated to: active');
             }
         }
 
-        Log::info('Membership #' . $subscription->id . ' status updated to: active');
-    }
-}
-
-        // Update photographer bookings - only if the relationship exists
+        // Update photographer bookings
         if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
             foreach ($payment->photographerBookings as $booking) {
                 $booking->status = 'confirmed';
@@ -832,10 +818,8 @@ if (method_exists($payment, 'membershipSubscriptions') && $payment->membershipSu
 
                         Log::info('Membership #' . $subscription->id . ' has been renewed until ' . $newEndDate);
 
-                        // Proses booking on_hold
-                        if (!empty($payment->on_hold_booking_ids)) {
-                            $this->confirmOnHoldBookings($subscription, $payment);
-                        }
+                        // Buat booking baru untuk periode berikutnya
+                        $this->createNewBookingsForRenewal($subscription);
 
                         // Reload subscription dengan relasi yang dibutuhkan
                         $subscription = $subscription->fresh(['membership', 'sessions']);
@@ -1387,17 +1371,17 @@ public function createRenewalInvoice($subscriptionOrRequest, $id = null)
         // Buat order ID unik (format: RENEW-MEM-{subscription_id}-{random}-{timestamp})
         $orderId = 'RENEW-MEM-' . $subscription->id . '-' . substr(md5(uniqid()), 0, 8) . '-' . time();
 
-        // Ambil jadwal sesi ke-3 untuk menentukan batas waktu pembayaran
-        $thirdSession = MembershipSession::where('membership_subscription_id', $subscription->id)
-            ->where('session_number', 3)
+        // Ambil sesi terakhir untuk menentukan batas waktu pembayaran
+        $lastSession = MembershipSession::where('membership_subscription_id', $subscription->id)
+            ->orderBy('start_time', 'desc')
             ->first();
 
-        // Set tanggal kedaluwarsa invoice berdasarkan jadwal sesi ke-3 atau default 3 hari
-        if ($thirdSession && $thirdSession->start_time > now()) {
-            $expiresAt = Carbon::parse($thirdSession->start_time);
-            Log::info('Setting invoice expiry based on third session', [
+        // Set tanggal kedaluwarsa invoice berdasarkan jadwal sesi terakhir atau default 3 hari
+        if ($lastSession && Carbon::parse($lastSession->start_time)->gt(now())) {
+            $expiresAt = Carbon::parse($lastSession->start_time);
+            Log::info('Setting invoice expiry based on last session', [
                 'subscription_id' => $subscription->id,
-                'session_id' => $thirdSession->id,
+                'session_id' => $lastSession->id,
                 'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
             ]);
         } else {
@@ -1423,31 +1407,6 @@ public function createRenewalInvoice($subscriptionOrRequest, $id = null)
         $subscription->renewal_status = 'renewal_pending';
         $subscription->next_invoice_date = now();
         $subscription->save();
-
-        // Tidak perlu membuat booking on_hold lagi karena sudah dibuat sejak awal periode
-        // Dapatkan ID booking on_hold yang sudah ada untuk payment ini
-        if (!empty($subscription->next_period_bookings)) {
-            $bookingIds = json_decode($subscription->next_period_bookings, true);
-            if (is_array($bookingIds) && !empty($bookingIds)) {
-                // Update payment dengan ID booking on_hold yang sudah ada
-                $payment->on_hold_booking_ids = json_encode($bookingIds);
-                $payment->save();
-
-                // Update booking dengan renewal_payment_id
-                foreach ($bookingIds as $bookingId) {
-                    $booking = FieldBooking::find($bookingId);
-                    if ($booking && $booking->status === 'on_hold') {
-                        $booking->renewal_payment_id = $payment->id;
-                        $booking->save();
-                    }
-                }
-
-                Log::info('Menggunakan booking on_hold yang sudah ada untuk pembayaran perpanjangan', [
-                    'payment_id' => $payment->id,
-                    'booking_ids' => $bookingIds
-                ]);
-            }
-        }
 
         Log::info('Renewal invoice created successfully', [
             'subscription_id' => $subscription->id,
@@ -1599,22 +1558,6 @@ public function checkExpiredMembershipRenewals()
             $pendingPayment->transaction_status = 'failed';
             $pendingPayment->save();
 
-            // Batalkan booking on_hold yang terkait
-            if (!empty($pendingPayment->on_hold_booking_ids)) {
-                $bookingIds = json_decode($pendingPayment->on_hold_booking_ids, true);
-                if (is_array($bookingIds)) {
-                    foreach ($bookingIds as $bookingId) {
-                        $booking = FieldBooking::find($bookingId);
-                        if ($booking && $booking->status === 'on_hold') {
-                            $booking->status = 'cancelled';
-                            $booking->save();
-
-                            Log::info('On-hold booking #' . $booking->id . ' dibatalkan karena invoice perpanjangan kedaluwarsa');
-                        }
-                    }
-                }
-            }
-
             Log::info('Marked pending renewal payment as failed', [
                 'payment_id' => $pendingPayment->id,
                 'subscription_id' => $subscription->id,
@@ -1657,7 +1600,6 @@ public function checkExpiredMembershipRenewals()
         'subscription_ids' => $processedIds,
     ]);
 }
-
 /**
  * Halaman pembayaran perpanjangan membership
  */
@@ -1742,296 +1684,153 @@ public function showRenewalPayment($id)
     ]);
 }
 
-    private function createNewBookingsForRenewal(MembershipSubscription $subscription)
-    {
-        try {
-            // Ambil sesi membership yang ada, diurutkan berdasarkan session_number
-            $existingSessions = MembershipSession::where('membership_subscription_id', $subscription->id)
-                ->orderBy('session_number', 'asc')
-                ->get();
-
-            if ($existingSessions->isEmpty()) {
-                Log::error('Tidak ada sesi existing untuk subscription #' . $subscription->id);
-                return;
-            }
-
-            // Hitung tanggal mulai periode baru (dari akhir periode saat ini)
-            $newPeriodStart = Carbon::parse($subscription->end_date);
-
-            // Ambil payment ID dari membership yang baru dibayar
-            $paymentId = null;
-            $payment = Payment::where('order_id', 'like', 'RENEW-MEM-' . $subscription->id . '%')
-                ->where('transaction_status', 'success')
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            if ($payment) {
-                $paymentId = $payment->id;
-            }
-
-            // Ambil field ID dan harga dari membership
-            $membership = $subscription->membership;
-            $fieldId = $membership->field_id;
-            $field = \App\Models\Field::find($fieldId);
-            $originalPrice = $field ? $field->price : 0;
-
-            // Untuk membership mingguan, kita perlu mempertahankan pola hari
-            // Tanggal pertama dari periode baru adalah hari setelah tanggal terakhir membership sebelumnya
-            $dayOfWeekMap = [];
-
-            foreach ($existingSessions as $session) {
-                $startTime = Carbon::parse($session->start_time);
-                $dayOfWeekMap[$session->session_number] = [
-                    'dayOfWeek' => $startTime->dayOfWeek,
-                    'startHour' => $startTime->format('H:i'),
-                    'endHour' => Carbon::parse($session->end_time)->format('H:i')
-                ];
-            }
-
-            // Temukan tanggal pertama dari periode baru untuk setiap sesi
-            $newSessionDates = [];
-            $firstSessionDate = null;
-
-            // Untuk session pertama, gunakan hari berikutnya yang sesuai setelah newPeriodStart
-            $firstDayOfWeek = $dayOfWeekMap[1]['dayOfWeek'];
-            $firstSessionDate = $newPeriodStart->copy();
-
-            // Jika hari yang diinginkan berbeda dengan hari newPeriodStart, cari hari berikutnya
-            if ($firstSessionDate->dayOfWeek != $firstDayOfWeek) {
-                $firstSessionDate = $firstSessionDate->next($firstDayOfWeek);
-            }
-
-            $newSessionDates[1] = $firstSessionDate->format('Y-m-d');
-
-            // Untuk session 2 dan 3, cari hari berikutnya yang sesuai setelah session sebelumnya
-            for ($i = 2; $i <= count($existingSessions); $i++) {
-                $prevDate = Carbon::parse($newSessionDates[$i - 1]);
-                $targetDayOfWeek = $dayOfWeekMap[$i]['dayOfWeek'];
-
-                $nextDate = $prevDate->copy();
-                // Jika hari saat ini sama dengan target, maka cari di minggu depan
-                if ($nextDate->dayOfWeek == $targetDayOfWeek) {
-                    $nextDate->addDays(7);
-                } else {
-                    // Cari hari berikutnya yang sesuai
-                    $nextDate = $nextDate->next($targetDayOfWeek);
-                }
-
-                $newSessionDates[$i] = $nextDate->format('Y-m-d');
-            }
-
-            Log::info('Jadwal baru untuk perpanjangan membership:', $newSessionDates);
-
-            // Buat booking dan session baru
-            foreach ($dayOfWeekMap as $sessionNumber => $details) {
-                $newSessionDate = $newSessionDates[$sessionNumber];
-                $newStartTime = Carbon::parse($newSessionDate . ' ' . $details['startHour']);
-                $newEndTime = Carbon::parse($newSessionDate . ' ' . $details['endHour']);
-
-                // 1. Buat field booking baru
-                $newBooking = new \App\Models\FieldBooking();
-                $newBooking->user_id = $subscription->user_id;
-                $newBooking->field_id = $fieldId;
-                $newBooking->payment_id = $paymentId;
-                $newBooking->start_time = $newStartTime;
-                $newBooking->end_time = $newEndTime;
-                $newBooking->total_price = $originalPrice;
-                $newBooking->status = 'confirmed';
-                $newBooking->is_membership = true;
-                $newBooking->save();
-
-                // 2. Buat membership session baru
-                $newSession = new MembershipSession();
-                $newSession->membership_subscription_id = $subscription->id;
-                $newSession->session_number = $sessionNumber;
-                $newSession->status = 'scheduled';
-                $newSession->session_date = $newStartTime->format('Y-m-d');
-                $newSession->start_time = $newStartTime;
-                $newSession->end_time = $newEndTime;
-                $newSession->save();
-
-                // 3. Update field booking dengan session ID
-                $newBooking->membership_session_id = $newSession->id;
-                $newBooking->save();
-
-                Log::info('Membuat jadwal #' . $sessionNumber . ' baru: ' . $newStartTime->format('Y-m-d H:i') . ' - ' . $newEndTime->format('H:i'));
-            }
-
-            Log::info('Berhasil membuat jadwal baru untuk perpanjangan membership #' . $subscription->id);
-        } catch (\Exception $e) {
-            Log::error('Error creating new bookings for renewal: ' . $e->getMessage(), [
-                'subscription_id' => $subscription->id,
-                'trace' => $e->getTraceAsString()
-            ]);
-        }
-    }
-
-/**
- * Batalkan semua booking on_hold terkait dengan pembayaran perpanjangan
- *
- * @param Payment $payment
- * @return void
- */
-private function cancelOnHoldBookings(Payment $payment)
+private function createNewBookingsForRenewal(MembershipSubscription $subscription)
 {
-    // Cek apakah ada booking IDs dalam payment
-    if (empty($payment->on_hold_booking_ids)) {
-        return;
-    }
-
     try {
-        $bookingIds = json_decode($payment->on_hold_booking_ids, true);
-        if (!is_array($bookingIds)) {
+        // Ambil sesi membership yang ada, diurutkan berdasarkan tanggal
+        $existingSessions = MembershipSession::where('membership_subscription_id', $subscription->id)
+            ->get()
+            ->sortBy(function($session) {
+                return Carbon::parse($session->start_time)->timestamp;
+            });
+
+        if ($existingSessions->isEmpty()) {
+            Log::error('Tidak ada sesi existing untuk subscription #' . $subscription->id);
             return;
         }
 
-        foreach ($bookingIds as $bookingId) {
-            $booking = \App\Models\FieldBooking::find($bookingId);
-            if ($booking && $booking->status === 'on_hold') {
-                $booking->status = 'cancelled';
-                $booking->save();
+        // Ambil payment ID dari membership yang baru dibayar
+        $paymentId = null;
+        $payment = Payment::where('order_id', 'like', 'RENEW-MEM-' . $subscription->id . '%')
+            ->where('transaction_status', 'success')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-                Log::info('On-hold booking #' . $booking->id . ' dibatalkan karena invoice perpanjangan kedaluwarsa');
-            }
+        if ($payment) {
+            $paymentId = $payment->id;
         }
 
-        // Juga perbarui subscription untuk menandai bahwa booking on_hold telah dibatalkan
-        if (strpos($payment->order_id, 'RENEW-MEM-') === 0) {
-            // Ekstrak subscription ID dari order_id
-            $orderParts = explode('-', $payment->order_id);
-            if (count($orderParts) >= 3) {
-                $subscriptionId = $orderParts[2];
-                $subscription = MembershipSubscription::find($subscriptionId);
+        // Ambil field ID dan harga dari membership
+        $membership = $subscription->membership;
+        $fieldId = $membership->field_id;
+        $field = Field::find($fieldId);
+        $originalPrice = $field ? $field->price : 0;
 
-                if ($subscription) {
-                    // Tandai bahwa booking on_hold telah dibatalkan
-                    $subscription->next_period_bookings = null;
-                    $subscription->save();
+        // Temukan tanggal sesi pertama dan terakhir
+        $firstSession = $existingSessions->first();
+        $lastSession = $existingSessions->last();
+
+        $firstSessionDate = Carbon::parse($firstSession->start_time);
+        $lastSessionDate = Carbon::parse($lastSession->start_time);
+
+        // Hitung durasi dalam hari dari sesi pertama ke sesi terakhir
+        $periodDuration = $lastSessionDate->diffInDays($firstSessionDate);
+
+        // Tanggal pertama periode baru adalah hari setelah tanggal terakhir periode lama
+        $newFirstDate = $lastSessionDate->copy()->addDay();
+
+        // Siapkan array untuk menyimpan informasi detail setiap sesi
+        $sessionInfos = [];
+        foreach ($existingSessions as $index => $session) {
+            $startTime = Carbon::parse($session->start_time);
+            $endTime = Carbon::parse($session->end_time);
+
+            $sessionInfos[] = [
+                'session_number' => $session->session_number,
+                'original_date' => $startTime->format('Y-m-d'),
+                'start_hour' => $startTime->format('H:i'),
+                'end_hour' => $endTime->format('H:i'),
+                'day_of_week' => $startTime->dayOfWeek
+            ];
+        }
+
+        // Urutkan session_infos berdasarkan tanggal original
+        usort($sessionInfos, function($a, $b) {
+            return strtotime($a['original_date']) - strtotime($b['original_date']);
+        });
+
+        // Tanggal untuk sesi pertama di periode baru
+        $newFirstDate = $lastSessionDate->copy()->addDay();
+
+        // Hitung tanggal untuk setiap sesi baru
+        $newSessionDates = [];
+
+        foreach ($sessionInfos as $index => $info) {
+            // Cari hari dalam seminggu yang sama dengan sesi original
+            $targetDayOfWeek = $info['day_of_week'];
+            $newDate = $newFirstDate->copy();
+
+            // Sesuaikan ke hari dalam seminggu yang sama
+            $daysToAdd = ($targetDayOfWeek - $newDate->dayOfWeek + 7) % 7;
+            if ($daysToAdd == 0) {
+                // Jika kebetulan sudah hari yang sama, tambah 7 hari untuk minggu berikutnya
+                // kecuali untuk sesi pertama
+                if ($index > 0) {
+                    $daysToAdd = 7;
                 }
             }
+
+            $newDate->addDays($daysToAdd);
+
+            // Simpan tanggal baru untuk sesi ini
+            $newSessionDates[$info['session_number']] = [
+                'date' => $newDate->format('Y-m-d'),
+                'start_hour' => $info['start_hour'],
+                'end_hour' => $info['end_hour']
+            ];
         }
+
+        // Log tanggal-tanggal yang akan digunakan
+        $dateArray = array_map(function($item) {
+            return $item['date'];
+        }, $newSessionDates);
+
+        Log::info('Jadwal baru untuk perpanjangan membership:', $dateArray);
+
+        // Buat booking dan session baru
+        foreach ($newSessionDates as $sessionNumber => $details) {
+            $newSessionDate = $details['date'];
+            $newStartTime = Carbon::parse($newSessionDate . ' ' . $details['start_hour']);
+            $newEndTime = Carbon::parse($newSessionDate . ' ' . $details['end_hour']);
+
+            // 1. Buat field booking baru
+            $newBooking = new FieldBooking();
+            $newBooking->user_id = $subscription->user_id;
+            $newBooking->field_id = $fieldId;
+            $newBooking->payment_id = $paymentId;
+            $newBooking->start_time = $newStartTime;
+            $newBooking->end_time = $newEndTime;
+            $newBooking->total_price = $originalPrice;
+            $newBooking->status = 'confirmed';
+            $newBooking->is_membership = true;
+            $newBooking->save();
+
+            // 2. Buat membership session baru
+            $newSession = new MembershipSession();
+            $newSession->membership_subscription_id = $subscription->id;
+            $newSession->session_number = $sessionNumber;
+            $newSession->status = 'scheduled';
+            $newSession->session_date = $newStartTime->format('Y-m-d');
+            $newSession->start_time = $newStartTime;
+            $newSession->end_time = $newEndTime;
+            $newSession->save();
+
+            // 3. Update field booking dengan session ID
+            $newBooking->membership_session_id = $newSession->id;
+            $newBooking->save();
+
+            Log::info('Membuat jadwal #' . $sessionNumber . ' baru: ' . $newStartTime->format('Y-m-d H:i') . ' - ' . $newEndTime->format('H:i'));
+        }
+
+        Log::info('Berhasil membuat jadwal baru untuk perpanjangan membership #' . $subscription->id);
     } catch (\Exception $e) {
-        Log::error('Error cancelling on-hold bookings: ' . $e->getMessage(), [
-            'payment_id' => $payment->id,
-            'trace' => $e->getTraceAsString(),
-        ]);
-    }
-}
-/**
- * Proses booking on_hold menjadi confirmed dan tambahkan ke subscription setelah pembayaran berhasil
- *
- * @param MembershipSubscription $subscription
- * @param Payment $payment
- * @return void
- */
-private function confirmOnHoldBookings(MembershipSubscription $subscription, Payment $payment)
-{
-    if (empty($payment->on_hold_booking_ids)) {
-        Log::info('Tidak ada booking on_hold untuk diproses', [
-            'payment_id' => $payment->id
-        ]);
-        return;
-    }
-
-    try {
-        // Ambil booking IDs dengan menangani berbagai kemungkinan format
-        $bookingIds = [];
-
-        if (is_string($payment->on_hold_booking_ids)) {
-            // Jika masih berupa string JSON, decode terlebih dahulu
-            $bookingIds = json_decode($payment->on_hold_booking_ids, true);
-        } elseif (is_array($payment->on_hold_booking_ids)) {
-            // Jika sudah berupa array, gunakan langsung
-            $bookingIds = $payment->on_hold_booking_ids;
-        }
-
-        // Periksa hasil setelah decoding
-        if (!is_array($bookingIds) || empty($bookingIds)) {
-            Log::error('Format on_hold_booking_ids tidak valid atau kosong', [
-                'payment_id' => $payment->id,
-                'type' => gettype($payment->on_hold_booking_ids),
-                'value' => $payment->on_hold_booking_ids
-            ]);
-            return;
-        }
-
-        Log::info('Memproses ' . count($bookingIds) . ' booking on_hold', [
-            'payment_id' => $payment->id,
-            'booking_ids' => $bookingIds
-        ]);
-
-        // Ambil semua booking on_hold sekaligus untuk menghemat query
-        $bookings = FieldBooking::whereIn('id', $bookingIds)
-                              ->where('status', 'on_hold')
-                              ->get();
-
-        // Check jika jumlah booking yang ditemukan tidak sesuai
-        if ($bookings->count() !== count($bookingIds)) {
-            Log::warning('Beberapa booking tidak ditemukan atau bukan on_hold', [
-                'expected' => count($bookingIds),
-                'found' => $bookings->count()
-            ]);
-        }
-
-        // Buat array untuk menyimpan nomor sesi yang sudah digunakan
-        $usedSessionNumbers = [];
-
-        foreach ($bookings as $booking) {
-            DB::beginTransaction();
-            try {
-                // Ubah status booking dari on_hold menjadi confirmed
-                $booking->status = 'confirmed';
-                $booking->payment_id = $payment->id; // Set payment_id ke payment yang berhasil
-                $booking->save();
-
-                Log::info('Booking #' . $booking->id . ' berhasil diupdate ke confirmed');
-
-                // Tentukan nomor sesi untuk booking ini
-                $sessionNumber = $this->determineSessionNumber($booking, $subscription);
-
-                // Pastikan nomor sesi unik
-                while (in_array($sessionNumber, $usedSessionNumbers)) {
-                    $sessionNumber++;
-                }
-                $usedSessionNumbers[] = $sessionNumber;
-
-                // Buat session membership baru
-                $newSession = new MembershipSession();
-                $newSession->membership_subscription_id = $subscription->id;
-                $newSession->session_number = $sessionNumber;
-                $newSession->status = 'scheduled';
-                $newSession->session_date = Carbon::parse($booking->start_time)->format('Y-m-d');
-                $newSession->start_time = $booking->start_time;
-                $newSession->end_time = $booking->end_time;
-                $newSession->save();
-
-                Log::info('Session membership baru dibuat', [
-                    'session_id' => $newSession->id,
-                    'session_number' => $newSession->session_number
-                ]);
-
-                // Update field booking dengan session ID
-                $booking->membership_session_id = $newSession->id;
-                $booking->save();
-
-                Log::info('On-hold booking #' . $booking->id . ' diubah menjadi confirmed untuk perpanjangan membership');
-
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error('Error saat memproses booking #' . $booking->id . ': ' . $e->getMessage(), [
-                    'trace' => $e->getTraceAsString()
-                ]);
-            }
-        }
-    } catch (\Exception $e) {
-        Log::error('Error confirming on-hold bookings: ' . $e->getMessage(), [
+        Log::error('Error creating new bookings for renewal: ' . $e->getMessage(), [
             'subscription_id' => $subscription->id,
-            'payment_id' => $payment->id,
-            'trace' => $e->getTraceAsString(),
+            'trace' => $e->getTraceAsString()
         ]);
     }
 }
+
 /**
  * Menentukan nomor sesi berdasarkan urutan tanggal booking
  *
@@ -2048,11 +1847,6 @@ private function determineSessionNumber($newBooking, $subscription)
     $renewalBookings = FieldBooking::where('field_id', $newBooking->field_id)
         ->where('user_id', $subscription->user_id)
         ->where('is_membership', true)
-        ->where(function ($query) use ($newBooking) {
-            // Termasuk booking yang sedang diproses dan booking lain yang terkait perpanjangan
-            $query->where('id', $newBooking->id)
-                  ->orWhere('renewal_payment_id', $newBooking->renewal_payment_id);
-        })
         ->orderBy('start_time', 'asc')
         ->get();
 
@@ -2071,185 +1865,10 @@ private function determineSessionNumber($newBooking, $subscription)
         'booking_id' => $newBooking->id,
         'start_time' => $newBooking->start_time,
         'position' => $position
-    ]);
+   ]);
 
-    return $position;
+   return $position;
 }
 
-/**
- * Membuat booking on_hold untuk periode berikutnya sejak awal membership diaktifkan
- *
- * @param MembershipSubscription $subscription
- * @return void
- */
-private function createNextPeriodOnHoldBookings(MembershipSubscription $subscription)
-{
-    try {
-        // Ambil sesi membership yang ada, diurutkan berdasarkan session_number
-        $existingSessions = MembershipSession::where('membership_subscription_id', $subscription->id)
-            ->orderBy('session_number', 'asc')
-            ->get();
-
-        if ($existingSessions->isEmpty()) {
-            Log::error('Tidak ada sesi existing untuk subscription #' . $subscription->id);
-            return;
-        }
-
-        // Hitung tanggal mulai periode baru (dari akhir periode saat ini)
-        $newPeriodStart = Carbon::parse($subscription->end_date);
-
-        // Ambil field ID dan harga dari membership
-        $membership = $subscription->membership;
-        $fieldId = $membership->field_id;
-        $field = Field::find($fieldId);
-        $originalPrice = $field ? $field->price : 0;
-
-        // Cek apakah semua sesi di hari yang sama
-        $firstSession = $existingSessions->first();
-        $firstSessionDay = Carbon::parse($firstSession->start_time)->format('Y-m-d');
-        $allSameDay = $existingSessions->every(function ($session) use ($firstSessionDay) {
-            return Carbon::parse($session->start_time)->format('Y-m-d') === $firstSessionDay;
-        });
-
-        // Buat booking on_hold untuk setiap sesi
-        $onHoldBookings = [];
-
-        if ($allSameDay) {
-            // Kasus khusus: semua sesi di hari yang sama
-            // Tentukan hari dalam seminggu dari sesi existing
-            $dayOfWeek = Carbon::parse($firstSession->start_time)->dayOfWeek;
-
-            // Tentukan tanggal di minggu berikutnya dengan hari yang sama
-            $newSessionDate = $newPeriodStart->copy();
-
-            // Jika tanggal akhir adalah hari yang sama, tambahkan 7 hari
-            if ($newPeriodStart->dayOfWeek === $dayOfWeek) {
-                $newSessionDate->addDays(7);
-            } else {
-                // Jika tidak, cari hari yang sama pada minggu yang sama atau berikutnya
-                while ($newSessionDate->dayOfWeek !== $dayOfWeek) {
-                    $newSessionDate->addDay();
-                }
-            }
-
-            $newDateStr = $newSessionDate->format('Y-m-d');
-            Log::info('Jadwal on_hold untuk periode berikutnya: ["' . $newDateStr . '"]');
-
-            // Buat booking on_hold untuk setiap sesi dengan tanggal yang sama
-            foreach ($existingSessions as $session) {
-                $sessionStartTime = Carbon::parse($session->start_time);
-                $sessionEndTime = Carbon::parse($session->end_time);
-
-                // Ambil jam dan menit dari sesi existing
-                $startTimeStr = $sessionStartTime->format('H:i');
-                $endTimeStr = $sessionEndTime->format('H:i');
-
-                // Buat waktu baru dengan tanggal baru dan jam yang sama
-                $newStartTime = Carbon::parse($newDateStr . ' ' . $startTimeStr);
-                $newEndTime = Carbon::parse($newDateStr . ' ' . $endTimeStr);
-
-                // Buat field booking dengan status on_hold
-                $onHoldBooking = new FieldBooking();
-                $onHoldBooking->user_id = $subscription->user_id;
-                $onHoldBooking->field_id = $fieldId;
-                $onHoldBooking->start_time = $newStartTime;
-                $onHoldBooking->end_time = $newEndTime;
-                $onHoldBooking->total_price = $originalPrice;
-                $onHoldBooking->status = 'on_hold';
-                $onHoldBooking->is_membership = true;
-                $onHoldBooking->save();
-
-                $onHoldBookings[] = $onHoldBooking->id;
-
-                Log::info('Membuat jadwal on_hold #' . $session->session_number . ' untuk periode berikutnya: ' .
-                         $newStartTime->format('Y-m-d H:i') . ' - ' . $newEndTime->format('H:i'));
-            }
-        } else {
-            // Kasus umum: sesi di hari yang berbeda-beda
-            // Untuk membership mingguan, kita perlu mempertahankan pola hari
-            $dayOfWeekMap = [];
-            foreach ($existingSessions as $session) {
-                $startTime = Carbon::parse($session->start_time);
-                $endTime = Carbon::parse($session->end_time);
-
-                $dayOfWeekMap[$session->session_number] = [
-                    'dayOfWeek' => $startTime->dayOfWeek,
-                    'startHour' => $startTime->format('H:i'),
-                    'endHour' => $endTime->format('H:i'),
-                ];
-            }
-
-            // Temukan tanggal pertama dari periode baru untuk setiap sesi
-            $newSessionDates = [];
-
-            // Untuk session pertama, gunakan hari berikutnya yang sesuai setelah newPeriodStart
-            $firstDayOfWeek = $dayOfWeekMap[1]['dayOfWeek'];
-            $firstSessionDate = $newPeriodStart->copy();
-
-            // Jika hari yang diinginkan berbeda dengan hari newPeriodStart, cari hari berikutnya
-            if ($firstSessionDate->dayOfWeek != $firstDayOfWeek) {
-                $firstSessionDate = $firstSessionDate->next($firstDayOfWeek);
-            } else {
-                // Jika sama, tambahkan 7 hari (1 minggu)
-                $firstSessionDate->addDays(7);
-            }
-
-            $newSessionDates[1] = $firstSessionDate->format('Y-m-d');
-
-            // Untuk session 2 dan 3, cari hari berikutnya yang sesuai
-            for ($i = 2; $i <= count($existingSessions); $i++) {
-                $targetDayOfWeek = $dayOfWeekMap[$i]['dayOfWeek'];
-
-                $nextDate = $newPeriodStart->copy();
-                while ($nextDate->dayOfWeek !== $targetDayOfWeek || $nextDate->lt($newPeriodStart)) {
-                    $nextDate->addDay();
-                }
-
-                // Jika tanggal sama dengan tanggal start, tambahkan 7 hari
-                if ($nextDate->format('Y-m-d') === $newPeriodStart->format('Y-m-d')) {
-                    $nextDate->addDays(7);
-                }
-
-                $newSessionDates[$i] = $nextDate->format('Y-m-d');
-            }
-
-            Log::info('Jadwal on_hold untuk periode berikutnya:', $newSessionDates);
-
-            // Buat booking on_hold untuk setiap sesi
-            foreach ($dayOfWeekMap as $sessionNumber => $details) {
-                $newSessionDate = $newSessionDates[$sessionNumber];
-                $newStartTime = Carbon::parse($newSessionDate . ' ' . $details['startHour']);
-                $newEndTime = Carbon::parse($newSessionDate . ' ' . $details['endHour']);
-
-                // Buat field booking dengan status on_hold
-                $onHoldBooking = new \App\Models\FieldBooking();
-                $onHoldBooking->user_id = $subscription->user_id;
-                $onHoldBooking->field_id = $fieldId;
-                $onHoldBooking->start_time = $newStartTime;
-                $onHoldBooking->end_time = $newEndTime;
-                $onHoldBooking->total_price = $originalPrice;
-                $onHoldBooking->status = 'on_hold';
-                $onHoldBooking->is_membership = true;
-                $onHoldBooking->save();
-
-                $onHoldBookings[] = $onHoldBooking->id;
-
-                Log::info('Membuat jadwal on_hold #' . $sessionNumber . ' untuk periode berikutnya: ' .
-                         $newStartTime->format('Y-m-d H:i') . ' - ' . $newEndTime->format('H:i'));
-            }
-        }
-
-        // Simpan informasi booking on_hold untuk penggunaan di masa depan
-        $subscription->next_period_bookings = json_encode($onHoldBookings);
-        $subscription->save();
-
-        Log::info('Berhasil membuat jadwal on_hold untuk periode berikutnya membership #' . $subscription->id);
-    } catch (\Exception $e) {
-        Log::error('Error creating on_hold bookings for next period: ' . $e->getMessage(), [
-            'subscription_id' => $subscription->id,
-            'trace' => $e->getTraceAsString(),
-        ]);
-    }
-}
 
 }
