@@ -1,5 +1,9 @@
 @extends('layouts.app')
 @section('content')
+    <!-- Link untuk font dan stylesheet tambahan -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <!-- Hero Section -->
     <div class="hero-section" style="margin-top: 50px;">
         <div class="container">
@@ -22,10 +26,10 @@
     <div class="container mt-4">
         <!-- Header Section -->
         <div class="text-center mb-5">
-            <h2 class="section-title fw-bold mb-3">Lapangan</h2>
             <p class="section-desc mx-auto" style="max-width: 700px;">
                 Temukan Lapangan Terbaik
-                Alena Soccer menyediakan berbagai pilihan lapangan berkualitas untuk kegiatan olahraga Anda. Dengan fasilitas modern dan lokasi strategis, kami memastikan pengalaman bermain yang nyaman dan memuaskan.
+                Alena Soccer menyediakan berbagai pilihan lapangan berkualitas untuk kegiatan olahraga Anda. Dengan
+                fasilitas modern dan lokasi strategis, kami memastikan pengalaman bermain yang nyaman dan memuaskan.
             </p>
         </div>
 
@@ -38,10 +42,12 @@
                     <div class="card border-0 rounded-4 shadow-sm hover-shadow">
                         <div class="gallery-card">
                             <div class="gallery-img">
-                                @if($field->image)
-                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
+                                @if ($field->image)
+                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
                                 @else
-                                    <img src="{{ asset('images/default-field.jpg') }}" class="img-fluid w-100" alt="{{ $field->name }}">
+                                    <img src="{{ asset('images/default-field.jpg') }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
                                 @endif
                                 <div class="gallery-overlay">
                                     <a href="{{ route('user.fields.show', $field->id) }}" class="view-btn">
@@ -62,10 +68,11 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="location-badge">
                                     <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                                    <span>{{'Sidoarjo, Indonesia' }}</span>
+                                    <span>{{ 'Sidoarjo, Indonesia' }}</span>
                                 </div>
                                 <div class="price-tag">
-                                    <span class="text-danger fw-bold">Rp {{ number_format($field->price, 0, ',', '.') }}</span>
+                                    <span class="text-danger fw-bold">Rp
+                                        {{ number_format($field->price, 0, ',', '.') }}</span>
                                     <small class="text-muted">/hour</small>
                                 </div>
                             </div>
@@ -73,7 +80,8 @@
                                 <div class="badge bg-success bg-opacity-10 text-success p-2">
                                     <i class="fas fa-check-circle me-1"></i>Available
                                 </div>
-                                <a href="{{ route('user.fields.show', $field->id) }}" class="btn btn-primary btn-sm rounded-pill">
+                                <a href="{{ route('user.fields.show', $field->id) }}"
+                                    class="btn btn-primary btn-sm rounded-pill">
                                     Book Now
                                     <i class="fas fa-arrow-right ms-2"></i>
                                 </a>
@@ -84,7 +92,8 @@
             @empty
                 <div class="col-12 text-center py-5">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>No fields found matching your criteria. Please try a different search.
+                        <i class="fas fa-info-circle me-2"></i>No fields found matching your criteria. Please try a
+                        different search.
                     </div>
                 </div>
             @endforelse
@@ -94,16 +103,15 @@
     </div>
 
     <style>
-        /* Venues Page Specific Styles */
-
-        /* Breadcrumb Wrapper */
-        /* Hero Section */
+        /* Hero Section - Consolidated Version */
         .hero-section {
             background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%);
             height: 220px;
             position: relative;
             display: flex;
             align-items: center;
+            margin-top: 50px;
+            /* Moved from inline style */
             margin-bottom: 0;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
@@ -157,27 +165,8 @@
         .breadcrumb-item+.breadcrumb-item::before {
             color: rgba(255, 255, 255, 0.6);
         }
-        /* Venues Filter Card */
-        .venues-filter .input-group-text {
-            background: white;
-            border-right: none;
-        }
 
-        .venues-filter .form-control.border-start-0 {
-            border-left: none;
-        }
-
-        /* Venue Cards */
-        .hover-shadow {
-            transition: all 0.3s ease;
-        }
-
-        .hover-shadow:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        /* Gallery Card Styling (Reused from Detail Page) */
+        /* Gallery Card Styling */
         .gallery-card {
             position: relative;
             border-radius: 20px;
@@ -269,60 +258,46 @@
             gap: 4px;
         }
 
-        /* Pagination */
-        .pagination .page-link {
-            color: #9e0620;
-            background: white;
-            border: 1px solid #dee2e6;
-            margin: 0 5px;
-            border-radius: 50px;
+        /* Hover Shadow Effect */
+        .hover-shadow {
             transition: all 0.3s ease;
         }
 
-        .pagination .page-link:hover {
-            background: #9e0620;
-            color: white;
-        }
-
-        .pagination .page-item.active .page-link {
-            background: #9e0620;
-            border-color: #9e0620;
-            color: white;
+        .hover-shadow:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
         }
 
         /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .breadcrumb-wrapper {
-                height: 150px;
+            .hero-section {
+                height: 180px;
             }
 
-            .breadcrumb-item,
-            .breadcrumb-link {
-                font-size: 1.1rem;
-            }
-
-            .venues-filter .row>div {
-                margin-bottom: 10px;
+            .hero-title {
+                font-size: 1.8rem;
             }
 
             .gallery-img img {
                 height: 200px;
             }
         }
-          /* Section Styles */
-          .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #212529;
-        }
 
-        .section-desc {
-            font-size: 1.1rem;
-            color: #6c757d;
-            line-height: 1.6;
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .breadcrumb {
+                padding: 0.6rem 1rem;
+            }
+
+            .breadcrumb-item {
+                font-size: 0.8rem;
+            }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-</script>
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection
