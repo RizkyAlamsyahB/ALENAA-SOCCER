@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             RentalItemSeeder::class,
             DiscountSeeder::class,
             PhotographerSeeder::class,
-            MembershipSeeder::class
+            MembershipSeeder::class,
+            PointVoucherSeeder::class,
         ]);
     }
 }

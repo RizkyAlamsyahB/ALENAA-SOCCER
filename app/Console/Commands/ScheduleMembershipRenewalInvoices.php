@@ -4,13 +4,12 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\User\MembershipController;
 
 class ScheduleMembershipRenewalInvoices extends Command
 {
     protected $signature = 'membership:schedule-renewals';
-    protected $description = 'Schedule membership renewal invoices for upcoming second sessions';
+    protected $description = 'Schedule membership renewal invoices for memberships expiring in 3 days';
 
     public function handle()
     {
@@ -25,14 +24,14 @@ class ScheduleMembershipRenewalInvoices extends Command
 
             $this->info('Proses selesai. ' . $data['message']);
 
-            if (!empty($data['bookings'])) {
-                // Periksa apakah bookings adalah array atau object
-                if (is_object($data['bookings']) && method_exists($data['bookings'], 'toArray')) {
-                    $bookingIds = implode(', ', $data['bookings']->toArray());
+            if (!empty($data['subscriptions'])) {
+                // Periksa apakah subscriptions adalah array atau object
+                if (is_object($data['subscriptions']) && method_exists($data['subscriptions'], 'toArray')) {
+                    $subscriptionIds = implode(', ', $data['subscriptions']->toArray());
                 } else {
-                    $bookingIds = is_array($data['bookings']) ? implode(', ', $data['bookings']) : $data['bookings'];
+                    $subscriptionIds = is_array($data['subscriptions']) ? implode(', ', $data['subscriptions']) : $data['subscriptions'];
                 }
-                $this->info('Booking IDs: ' . $bookingIds);
+                $this->info('Subscription IDs: ' . $subscriptionIds);
             }
 
             Log::info('Command membership:schedule-renewals berhasil dijalankan', [

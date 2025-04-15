@@ -4,6 +4,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\User\CartController;
+use App\Http\Controllers\User\PointController;
 use App\Http\Controllers\Admin\FieldController;
 use App\Http\Controllers\User\FieldsController;
 use App\Http\Controllers\User\ReviewController;
@@ -76,6 +77,7 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
             // Dalam grup cart management, tambahkan ini:
             Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
+            Route::post('/apply-point-voucher', [CartController::class, 'applyPointVoucher'])->name('apply.point.voucher');
             Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name('remove.discount');
             Route::get('/add-membership/{id}', [CartController::class, 'addMembershipToCartRoute'])->name('add.membership');
         });
@@ -165,6 +167,28 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::get('/item', [ReviewController::class, 'getItemReviews'])->name('item');
         });
 
+
+// Points Management
+Route::prefix('points')
+->name('user.points.')
+->middleware(['auth', 'verified', 'checkRole:user'])
+->group(function () {
+    // Daftar voucher yang tersedia
+    Route::get('/', [PointController::class, 'index'])->name('index');
+
+    // Detail voucher
+    Route::get('/voucher/{id}', [PointController::class, 'showVoucher'])->name('voucher-detail');
+
+    // Proses penukaran voucher
+    Route::post('/redeem/{id}', [PointController::class, 'redeemVoucher'])->name('redeem');
+
+    // Riwayat poin
+    Route::get('/history', [PointController::class, 'history'])->name('history');
+
+    // Detail penukaran
+    Route::get('/redemption/{id}', [PointController::class, 'showRedemption'])->name('redemption-detail');
+});
+
     // Other Features
     Route::get('/mabar', function () {
         return view('users.mabar');
@@ -175,6 +199,8 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/picture', [ProfileController::class, 'updateProfilePicture'])->name('profile.picture.update');
+
+
 });
 
 // Payment Notification Endpoints (Diakses oleh Midtrans, tidak memerlukan auth)

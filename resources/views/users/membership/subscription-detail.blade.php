@@ -20,7 +20,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container content-wrapper">
+    <div class="container content-wrapper mt-4">
         <!-- Alerts Section -->
         @if(session('error'))
             <div class="alert alert-danger" role="alert">
@@ -182,19 +182,23 @@
                                             </td>
                                             <td>
                                                 <span class="status-badge
-                                                    @if($session->status === 'completed') badge-completed
-                                                    @elseif($session->status === 'cancelled') badge-cancelled
-                                                    @elseif($session->status === 'upcoming') badge-upcoming
-                                                    @else badge-scheduled @endif">
-                                                    @if($session->status === 'completed')
-                                                        <i class="fas fa-check-circle"></i>
-                                                    @elseif($session->status === 'cancelled')
-                                                        <i class="fas fa-times-circle"></i>
-                                                    @elseif($session->status === 'upcoming')
-                                                        <i class="fas fa-hourglass-start"></i>
-                                                    @else
-                                                        <i class="far fa-calendar-alt"></i>
-                                                    @endif
+@if($session->status === 'completed') badge-completed
+    @elseif($session->status === 'cancelled') badge-cancelled
+    @elseif($session->status === 'upcoming') badge-upcoming
+    @elseif($session->status === 'ongoing') badge-ongoing
+    @else badge-scheduled @endif">
+    @if($session->status === 'completed')
+    <i class="fas fa-check-circle"></i>
+@elseif($session->status === 'cancelled')
+    <i class="fas fa-times-circle"></i>
+@elseif($session->status === 'upcoming')
+    <i class="fas fa-hourglass-start"></i>
+@elseif($session->status === 'ongoing')
+    <i class="fas fa-play-circle"></i>
+@else
+    <i class="far fa-calendar-alt"></i>
+@endif
+
                                                     <span>{{ ucfirst($session->status) }}</span>
                                                 </span>
                                             </td>
@@ -280,11 +284,12 @@
         @php
             // Menggunakan scope upcoming atau filter manual
             $upcomingSessions = $subscription->sessions()
-                ->where('status', 'scheduled')
-                ->where('start_time', '>', now())
-                ->orderBy('start_time', 'asc')
-                ->take(3)
-                ->get();
+    ->whereIn('status', ['scheduled', 'ongoing'])
+    ->where('end_time', '>', now()) // Menyaring yang masih relevan (belum selesai)
+    ->orderBy('start_time', 'asc')
+    ->take(3)
+    ->get();
+
         @endphp
 
         @if($upcomingSessions->count() > 0)
@@ -327,7 +332,7 @@
 
         /* Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%);
+    background: linear-gradient(to right, #9e0620, #bb2d3b);
             padding: 3.5rem 0;
             text-align: center;
             color: white;

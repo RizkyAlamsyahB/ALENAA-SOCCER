@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('quantity')->default(1); // Untuk rental produk (jumlah barang)
             $table->decimal('price', 10, 2);
             $table->text('membership_sessions')->nullable();
+            $table->string('payment_period')->nullable(); // Untuk membership (periode pembayaran)
             $table->timestamps();
         });
 

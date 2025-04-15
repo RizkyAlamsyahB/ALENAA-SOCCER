@@ -90,10 +90,9 @@
                                     aria-valuenow="{{ $user->points ?? 0 }}" aria-valuemin="0" aria-valuemax="1000">
                                 </div>
                             </div>
-
-                            <button class="btn btn-sm w-100 mt-2 text-white" style="background-color: #9E0620;">
+                            <a href="{{ route('user.points.index') }}" class="btn btn-sm w-100 mt-2 text-white" style="background-color: #9E0620;">
                                 <i class="fas fa-gift me-1"></i> Redeem Rewards
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

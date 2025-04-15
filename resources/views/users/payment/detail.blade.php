@@ -192,7 +192,7 @@
                                             <a href="{{ route('user.payment.invoice', ['id' => $payment->id]) }}"
                                                 class="btn-success-action">
                                                 <i class="fas fa-download me-2"></i>
-                                                <span>Download Invoice</span>
+                                                <span>Download Faktur</span>
                                             </a>
                                         </div>
                                     @elseif($payment->transaction_status == 'pending')
@@ -318,10 +318,7 @@
                                                                     {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
                                                                 </span>
                                                             </div>
-                                                            <div class="info-item">
-                                                                <i class="fas fa-map-marker-alt"></i>
-                                                                <span>{{ $booking->field->location ?? 'Lokasi tidak tersedia' }}</span>
-                                                            </div>
+
                                                         </div>
                                                     </div>
 
@@ -341,14 +338,7 @@
                                                     </div>
                                                 </div>
 
-                                                @if ($booking->status == 'confirmed')
-                                                    <div class="booking-item-actions">
-                                                        <a href="#" class="btn-outline-action">
-                                                            <i class="far fa-calendar-check me-2"></i>
-                                                            <span>Lihat Tiket</span>
-                                                        </a>
-                                                    </div>
-                                                @endif
+
                                             </div>
                                         @endforeach
                                     </div>
@@ -582,10 +572,7 @@
 
         @if($subscription)
             <div class="membership-item p-3 bg-white rounded shadow-sm">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h6 class="mb-0 fw-bold">{{ $subscription->membership->name }}</h6>
-                    <span class="badge bg-primary rounded-pill">{{ $subscription->membership->duration }} bulan</span>
-                </div>
+
 
                 <div class="membership-details">
                     <div class="detail-row">
@@ -595,7 +582,7 @@
                     <div class="detail-row">
                         <span class="detail-label">Periode Baru:</span>
                         <span class="detail-value">
-                            {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }} -
+                            {{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }} -
                             {{ \Carbon\Carbon::parse($subscription->end_date)->addMonths($subscription->membership->duration)->format('d M Y') }}
                         </span>
                     </div>

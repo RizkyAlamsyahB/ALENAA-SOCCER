@@ -17,8 +17,8 @@ class MembershipSession extends Model
         'session_date',
         'start_time',
         'end_time',
-        'status', // scheduled, completed, cancelled
-        'session_number', // 1, 2, 3 untuk identifikasi urutan sesi
+        'status', // scheduled, upcoming, ongoing, completed, cancelled
+        'session_number',
     ];
 
     protected $casts = [
@@ -41,15 +41,22 @@ class MembershipSession extends Model
     }
 
     /**
-     * Mendapatkan status yang ditampilkan, menampilkan 'upcoming'
-     * untuk sesi yang terjadwal dan belum lewat
+     * Mendapatkan status yang ditampilkan:
+     * - upcoming: sesi akan dimulai dalam 7 hari ke depan
+     * - ongoing: sesi sedang berlangsung sekarang
      */
     public function getDisplayStatusAttribute()
     {
-        if ($this->status === 'scheduled' &&
-            $this->start_time > Carbon::now() &&
-            $this->start_time < Carbon::now()->addDays(7)) {
-            return 'upcoming';
+        $now = Carbon::now();
+
+        if ($this->status === 'scheduled') {
+            if ($this->start_time <= $now && $this->end_time >= $now) {
+                return 'ongoing';
+            }
+
+            if ($this->start_time > $now && $this->start_time < $now->copy()->addDays(7)) {
+                return 'upcoming';
+            }
         }
 
         return $this->status;
@@ -64,5 +71,16 @@ class MembershipSession extends Model
                      ->where('start_time', '>', Carbon::now())
                      ->where('start_time', '<', Carbon::now()->addDays(7))
                      ->orderBy('start_time', 'asc');
+    }
+
+    /**
+     * Scope untuk sesi yang sedang berlangsung
+     */
+    public function scopeOngoing($query)
+    {
+        $now = Carbon::now();
+        return $query->where('status', 'scheduled')
+                     ->where('start_time', '<=', $now)
+                     ->where('end_time', '>=', $now);
     }
 }

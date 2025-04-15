@@ -17,6 +17,7 @@ class CartItem extends Model
         'quantity',
         'price',
         'membership_sessions',
+        'payment_period'
     ];
 
     protected $dates = ['start_time', 'end_time'];

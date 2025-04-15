@@ -148,8 +148,6 @@
 <body>
     <div class="email-wrapper">
         <div class="email-container">
-
-
             <!-- Content -->
             <div class="greeting">Perpanjangan Membership Berhasil!</div>
 
@@ -180,35 +178,34 @@
                     <p>Membership Anda telah diperpanjang dan akan tetap aktif hingga tanggal {{ \Carbon\Carbon::parse($data['subscription']->end_date)->format('d F Y') }}.</p>
                 </div>
 
-                <h3 style="margin-top: 30px;">Jadwal Membership Anda</h3>
-
-                <h3 style="margin-top: 30px;">Jadwal Membership Anda</h3>
+                <h3 style="margin-top: 30px;">Jadwal Membership Baru Anda</h3>
 
                 <p>Berikut adalah jadwal untuk periode membership yang baru:</p>
 
-                @if(isset($data['subscription']->sessions) && count($data['subscription']->sessions) > 0)
-                <ul class="session-list">
-                    @php
-                        // Ambil tanggal renewal terakhir
-                        $renewalDate = $data['subscription']->last_payment_date ?? \Carbon\Carbon::now();
+                @php
+                    // Ambil tanggal renewal terakhir
+                    $renewalDate = \Carbon\Carbon::parse($data['subscription']->last_payment_date ?? now());
 
-                        // Filter hanya sesi yang dibuat setelah tanggal perpanjangan terakhir
-                        $newSessions = $data['subscription']->sessions->filter(function($session) use ($renewalDate) {
-                            return \Carbon\Carbon::parse($session->created_at)->gt($renewalDate->subMinutes(5));
-                        })->sortBy('session_number');
-                    @endphp
+                    // Filter hanya sesi yang dibuat setelah tanggal perpanjangan terakhir (dengan toleransi 5 menit)
+                    $newSessions = $data['subscription']->sessions
+                        ->filter(function($session) use ($renewalDate) {
+                            return \Carbon\Carbon::parse($session->created_at)->gt($renewalDate->copy()->subMinutes(5));
+                        })
+                        ->sortBy('start_time');
+                @endphp
 
-                    @foreach($newSessions as $session)
-                    <li>
-                        Sesi {{ $session->session_number }}:
-                        {{ \Carbon\Carbon::parse($session->start_time)->format('l, d M Y') }},
-                        {{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} -
-                        {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}
-                    </li>
-                    @endforeach
-                </ul>
+                @if($newSessions->count() > 0)
+                    <ul class="session-list">
+                        @foreach($newSessions as $session)
+                        <li>
+                            <strong>{{ \Carbon\Carbon::parse($session->start_time)->format('l, d M Y') }}</strong>:
+                            {{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} -
+                            {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}
+                        </li>
+                        @endforeach
+                    </ul>
                 @else
-                <p>Jadwal akan muncul di halaman detail membership Anda.</p>
+                    <p>Jadwal akan muncul di halaman detail membership Anda.</p>
                 @endif
 
                 <center>

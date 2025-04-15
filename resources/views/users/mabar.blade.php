@@ -182,7 +182,7 @@
 
         /* Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%);
+    background: linear-gradient(to right, #9e0620, #bb2d3b);
             height: 220px;
             position: relative;
             display: flex;

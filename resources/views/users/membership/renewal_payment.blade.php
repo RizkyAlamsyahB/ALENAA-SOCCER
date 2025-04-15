@@ -66,30 +66,7 @@
                                             <div>{{ ucfirst($membership->type) }} Package</div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-center">
-                                            <div class="text-danger me-2">
-                                                <i class="fas fa-calendar-week"></i>
-                                            </div>
-                                            <div>3x permainan/minggu</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-center">
-                                            <div class="text-danger me-2">
-                                                <i class="fas fa-clock"></i>
-                                            </div>
-                                            <div>{{ $membership->session_duration }} jam/sesi</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-center">
-                                            <div class="text-danger me-2">
-                                                <i class="fas fa-calendar-alt"></i>
-                                            </div>
-                                            <div>Durasi {{ $membership->duration }} bulan</div>
-                                        </div>
-                                    </div>
+                                
                                 </div>
 
                                 <div class="position-absolute end-0 top-50 translate-middle-y pe-4">

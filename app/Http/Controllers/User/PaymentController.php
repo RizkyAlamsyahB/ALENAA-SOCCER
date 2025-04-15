@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use App\Models\DiscountUsage;
 use App\Models\RentalBooking;
 use App\Mail\MembershipExpired;
+use App\Models\PointRedemption;
 use App\Models\MembershipSession;
 use Illuminate\Support\Facades\DB;
 use App\Models\PhotographerBooking;
@@ -578,6 +579,7 @@ class PaymentController extends Controller
         $subtotal = 0;
         $discountId = null;
         $discountAmount = 0;
+        $pointRedemptionId = null; // Tambahkan ini
         $totalPrice = 0;
         $orderId = 'ORDER-' . time() . '-' . Str::random(5);
         $customer = Auth::user();
@@ -638,27 +640,50 @@ class PaymentController extends Controller
                        $membershipSubscriptions->sum('price') +
                        $photographerBookings->sum('price');
 
-            // Cek apakah ada diskon yang diterapkan
-            if (session()->has('cart_discount')) {
-                $cartDiscount = session('cart_discount');
-                $discountId = $cartDiscount['id'];
-                $discountAmount = $cartDiscount['amount'];
+                       if (session()->has('cart_discount')) {
+                        $cartDiscount = session('cart_discount');
+                        $discountId = $cartDiscount['id'];
+                        $discountAmount = $cartDiscount['amount'];
 
-                // Verifikasi ulang diskon
-                $discount = Discount::find($discountId);
+                        // Cek apakah ini diskon dari penukaran poin
+                        if (isset($cartDiscount['is_point_redemption']) && $cartDiscount['is_point_redemption']) {
+                            $pointRedemptionId = $cartDiscount['point_redemption_id'];
 
-                if (!$discount || !$discount->isValidForUser(Auth::id())) {
-                    // Diskon tidak valid, hapus dari session
-                    session()->forget('cart_discount');
-                    return redirect()->route('user.cart.view')->with('error', 'Kupon diskon tidak valid atau sudah tidak dapat digunakan');
-                }
+                            // Verifikasi ulang redemption
+                            $redemption = PointRedemption::find($pointRedemptionId);
 
-                // Re-calculate discount (untuk keamanan)
-                $discountAmount = $discount->calculateDiscount($subtotal);
-            }
+                            if (!$redemption || $redemption->user_id != Auth::id() || $redemption->status !== 'active') {
+                                // Voucher tidak valid, hapus dari session
+                                session()->forget('cart_discount');
+                                return redirect()->route('user.cart.view')->with('error', 'Voucher poin tidak valid atau sudah digunakan');
+                            }
 
-            // Hitung total setelah diskon
-            $totalPrice = $subtotal - $discountAmount;
+                            // Verifikasi apakah voucher masih berlaku
+                            if ($redemption->expires_at && Carbon::parse($redemption->expires_at)->isPast()) {
+                                session()->forget('cart_discount');
+                                return redirect()->route('user.cart.view')->with('error', 'Voucher poin sudah kadaluarsa');
+                            }
+
+                            // Re-calculate discount (untuk keamanan)
+                            $pointVoucher = $redemption->pointVoucher;
+                            $discountAmount = $pointVoucher->calculateDiscount($subtotal);
+                        } else {
+                            // Verifikasi ulang diskon biasa
+                            $discount = Discount::find($discountId);
+
+                            if (!$discount || !$discount->isValidForUser(Auth::id())) {
+                                // Diskon tidak valid, hapus dari session
+                                session()->forget('cart_discount');
+                                return redirect()->route('user.cart.view')->with('error', 'Kupon diskon tidak valid atau sudah tidak dapat digunakan');
+                            }
+
+                            // Re-calculate discount (untuk keamanan)
+                            $discountAmount = $discount->calculateDiscount($subtotal);
+                        }
+                    }
+
+                    // Hitung total setelah diskon
+                    $totalPrice = $subtotal - $discountAmount;
 
             // Periksa ketersediaan field bookings
             foreach ($fieldBookings as $booking) {
@@ -791,17 +816,18 @@ class PaymentController extends Controller
             // Get Snap token
             $snapToken = Snap::getSnapToken($params);
 
-            // Create payment record dengan informasi diskon
-            $payment = Payment::create([
-                'order_id' => $orderId,
-                'user_id' => Auth::id(),
-                'amount' => $totalPrice,
-                'discount_id' => $discountId,
-                'discount_amount' => $discountAmount,
-                'original_amount' => $subtotal,
-                'transaction_status' => 'pending',
-                'expires_at' => now()->addMinutes(30),
-            ]);
+// Create payment record dengan informasi diskon
+$payment = Payment::create([
+    'order_id' => $orderId,
+    'user_id' => Auth::id(),
+    'amount' => $totalPrice,
+    'discount_id' => $discountId,
+    'point_redemption_id' => $pointRedemptionId, // Tambahkan ini
+    'discount_amount' => $discountAmount,
+    'original_amount' => $subtotal,
+    'transaction_status' => 'pending',
+    'expires_at' => now()->addMinutes(30),
+]);
 
             // Update all bookings with payment ID
             foreach ($fieldBookings as $booking) {
@@ -918,15 +944,29 @@ class PaymentController extends Controller
             // Siapkan item details untuk Midtrans
             $itemDetails = $this->prepareItemDetails($payment->fieldBookings, $payment->rentalBookings, method_exists($payment, 'membershipSubscriptions') ? $payment->membershipSubscriptions : [], method_exists($payment, 'photographerBookings') ? $payment->photographerBookings : []);
 
-            // Jika ada diskon, tambahkan sebagai item negatif
-            if ($payment->discount_amount > 0) {
-                $itemDetails[] = [
-                    'id' => 'DISCOUNT',
-                    'price' => -$payment->discount_amount,
-                    'quantity' => 1,
-                    'name' => 'Diskon: ' . ($payment->discount ? $payment->discount->name : 'Kupon Diskon'),
-                ];
-            }
+// Jika ada diskon, tambahkan sebagai item negatif
+if ($payment->discount_amount > 0) {
+    // Cek apakah ini diskon dari redeem points atau diskon biasa
+    $discountName = 'Kupon Diskon';
+
+    if ($payment->point_redemption_id) {
+        // Jika dari redeem points, ambil data dari point redemption
+        $redemption = PointRedemption::find($payment->point_redemption_id);
+        if ($redemption && $redemption->pointVoucher) {
+            $discountName = 'Voucher Poin: ' . $redemption->pointVoucher->name;
+        }
+    } else if ($payment->discount) {
+        // Jika diskon biasa, gunakan nama diskon
+        $discountName = 'Diskon: ' . $payment->discount->name;
+    }
+
+    $itemDetails[] = [
+        'id' => 'DISCOUNT',
+        'price' => -$payment->discount_amount,
+        'quantity' => 1,
+        'name' => $discountName,
+    ];
+}
 
             // Buat koleksi cart_items yang sesuai format yang diharapkan view
             $allBookings = [
@@ -1056,6 +1096,14 @@ class PaymentController extends Controller
 
             // Tambahkan points jika payment statusnya berubah menjadi success dan sebelumnya bukan success
             if ($payment->transaction_status === 'success' && $previousStatus !== 'success') {
+               // Cari cart user
+    $cart = Cart::where('user_id', $payment->user_id)->first();
+    if ($cart) {
+        // Hapus semua item dari cart
+        CartItem::where('cart_id', $cart->id)->delete();
+        Log::info('Cart items cleared for user #' . $payment->user_id . ' after successful payment #' . $payment->id);
+    }
+
                 // Berikan points kepada user (1 point untuk setiap 10000 rupiah)
                 $user = User::find($payment->user_id);
                 if ($user) {
@@ -1068,24 +1116,56 @@ class PaymentController extends Controller
                 }
             }
 
-            // Catat penggunaan diskon hanya jika pembayaran berhasil dan status berubah dari pending ke success
-            if ($payment->transaction_status === 'success' && $previousStatus !== 'success' && $payment->discount_id) {
-                // Cek apakah sudah ada catatan penggunaan
-                $existingUsage = DiscountUsage::where('payment_id', $payment->id)->where('discount_id', $payment->discount_id)->first();
+            if ($payment->transaction_status === 'success' && $previousStatus !== 'success') {
+                // Cari cart user
+                $cart = Cart::where('user_id', $payment->user_id)->first();
+                if ($cart) {
+                    // Hapus semua item dari cart
+                    CartItem::where('cart_id', $cart->id)->delete();
+                    Log::info('Cart items cleared for user #' . $payment->user_id . ' after successful payment #' . $payment->id);
+                }
 
-                // Jika belum ada, buat catatan baru
-                if (!$existingUsage) {
-                    DiscountUsage::create([
-                        'discount_id' => $payment->discount_id,
-                        'user_id' => $payment->user_id,
-                        'payment_id' => $payment->id,
-                        'discount_amount' => $payment->discount_amount,
-                    ]);
+                // Berikan points kepada user (1 point untuk setiap 10000 rupiah)
+                $user = User::find($payment->user_id);
+                if ($user) {
+                    // Kalkulasi points berdasarkan amount pembayaran (1 point untuk setiap 10000 rupiah)
+                    $points = floor($payment->original_amount / 10000);
+                    $user->points += $points;
+                    $user->save();
 
-                    Log::info('Discount usage recorded for payment #' . $payment->id . ' with discount #' . $payment->discount_id);
+                    Log::info('Added ' . $points . ' points to user #' . $user->id . ' for payment #' . $payment->id);
+                }
+
+                // Proses diskon atau voucher poin
+                if ($payment->point_redemption_id) {
+                    // Jika ini adalah pembayaran dengan voucher poin
+                    $redemption = PointRedemption::find($payment->point_redemption_id);
+                    if ($redemption && $redemption->status === 'active') {
+                        $redemption->status = 'used';
+                        $redemption->used_at = now();
+                        $redemption->payment_id = $payment->id;
+                        $redemption->save();
+
+                        Log::info('Point redemption #' . $redemption->id . ' marked as used for payment #' . $payment->id);
+                    }
+                } else if ($payment->discount_id) {
+                    // Jika ini adalah pembayaran dengan diskon reguler
+                    $existingUsage = DiscountUsage::where('payment_id', $payment->id)
+                        ->where('discount_id', $payment->discount_id)
+                        ->first();
+
+                    if (!$existingUsage) {
+                        DiscountUsage::create([
+                            'discount_id' => $payment->discount_id,
+                            'user_id' => $payment->user_id,
+                            'payment_id' => $payment->id,
+                            'discount_amount' => $payment->discount_amount,
+                        ]);
+
+                        Log::info('Discount usage recorded for payment #' . $payment->id . ' with discount #' . $payment->discount_id);
+                    }
                 }
             }
-
             // Update field bookings
             if (method_exists($payment, 'fieldBookings') && $payment->fieldBookings && $payment->fieldBookings->count() > 0) {
                 foreach ($payment->fieldBookings as $booking) {

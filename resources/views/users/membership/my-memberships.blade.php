@@ -2,24 +2,29 @@
 
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/users/modern-payment.css') }}">
-
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-wrapper" style="margin-top: 50px;">
-        <div class="container py-2">
-            <ol class="custom-breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="/" class="breadcrumb-link">
-                        <i class="fas fa-home"></i>
-                        <span>Home</span>
-                    </a>
-                </li>
-                <li class="breadcrumb-item active">
-                    <i class="fas fa-user-tag"></i>
-                    <span>Membership Saya</span>
-                </li>
-            </ol>
+<!-- Hero Section -->
+<div class="hero-section" style="margin-top: 50px;">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Membership Saya</h1>
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">
+                                <i class="fas fa-home"></i> Home
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="fas fa-user-tag"></i> Membership Saya
+                        </li>
+                    </ol>
+                </nav>
+            </div>
         </div>
-    </nav>
+    </div>
+</div>
+
 
     <!-- Main Content -->
     <div class="container mt-4 mb-5">
@@ -172,64 +177,66 @@
 <style>
     /* Modern Payment Styling */
 
-    /* Breadcrumb */
-    .breadcrumb-wrapper {
+    /* Hero Section */
+    .hero-section {
         background: linear-gradient(to right, #9e0620, #bb2d3b);
-        position: relative;
-        overflow: hidden;
-        height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+        height: 220px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
 
-    .custom-breadcrumb {
-        display: flex;
-        flex-wrap: wrap;
-        padding: 0;
-        margin: 0;
-        list-style: none;
-        align-items: center;
-        justify-content: center;
-    }
+        .hero-content {
+            color: white;
+            text-align: center;
+            width: 100%;
+        }
 
-    .breadcrumb-item {
-        display: flex;
-        align-items: center;
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 700;
-        font-size: 1.3rem;
-    }
+        .hero-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
 
-    .breadcrumb-link {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        padding: 6px 12px;
-        border-radius: 50px;
-        transition: all 0.3s ease;
-        font-weight: 700;
-        font-size: 1.3rem;
-    }
+        .breadcrumb-wrapper {
+            display: flex;
+            justify-content: center;
+        }
 
-    .breadcrumb-link:hover {
-        background: rgba(255, 255, 255, 0.15);
-        color: white;
-    }
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            display: inline-flex;
+            margin-bottom: 0;
+        }
 
-    .breadcrumb-item.active {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: white;
-        padding: 6px 12px;
-        border-radius: 50px;
-        background: rgba(255, 255, 255, 0.15);
-        font-weight: 700;
-        font-size: 1.3rem;
-    }
+        .breadcrumb-item {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-item.active {
+            color: white;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: white;
+        }
+
+        .breadcrumb-item+.breadcrumb-item::before {
+            color: rgba(255, 255, 255, 0.6);
+        }
 
     /* Card Styling */
     .card {

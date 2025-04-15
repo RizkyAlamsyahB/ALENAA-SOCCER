@@ -46,6 +46,22 @@ class DiscountSeeder extends Seeder
             'is_active' => true,
         ]);
 
+                // Diskon nilai tetap 50rb
+                Discount::create([
+                    'code' => 'DISKON 2JT++',
+                    'name' => 'Diskon 2800K',
+                    'description' => 'Potongan langsung 2800K untuk pembelian minimal 2800K',
+                    'type' => 'fixed',
+                    'value' => 2807000,
+                    'min_order' => 2807000, // Minimal order 200rb
+                    'applicable_to' => 'all',
+                    'usage_limit' =>100000,
+                    'user_usage_limit' => 100000,
+                    'start_date' => Carbon::now(),
+                    'end_date' => Carbon::now()->addMonths(1),
+                    'is_active' => true,
+                ]);
+
         // Diskon khusus untuk booking lapangan
         Discount::create([
             'code' => 'FIELD20',
