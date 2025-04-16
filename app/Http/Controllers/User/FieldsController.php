@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Cart;
 use App\Models\Field;
 use App\Models\CartItem;
+use App\Models\Membership;
 use App\Models\FieldBooking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,8 @@ class FieldsController extends Controller
     public function show($id)
     {
         $field = Field::findOrFail($id);
-        return view('users.fields.show', compact('field'));
+        $memberships = Membership::where('field_id', $id)->get();
+        return view('users.fields.show', compact('field', 'memberships'));
     }
 
 /**

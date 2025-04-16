@@ -379,6 +379,12 @@
     </section>
 
     <style>
+        .bg-danger {
+            background-color: #9E0620 !important;
+        }
+        .text-danger {
+            color: #9E0620 !important;
+        }
         /* New Sections Styling */
         .section-title {
             font-size: 2.5rem;

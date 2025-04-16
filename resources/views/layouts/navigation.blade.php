@@ -112,9 +112,7 @@
         <li><a class="dropdown-item px-4 py-2" href="{{ route('user.membership.my-memberships') }}">
                 <i class="fas fa-user-tag me-2 text-muted"></i>My Membership
             </a></li>
-        <li><a class="dropdown-item px-4 py-2" href="#">
-                <i class="fas fa-cog me-2 text-muted"></i>Settings
-            </a></li>
+
         <li><a class="dropdown-item px-4 py-2" href="{{ route('user.payment.history') }}">
                 <i class="fas fa-receipt me-2 text-muted"></i>Payment History
             </a></li>

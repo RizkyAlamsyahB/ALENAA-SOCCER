@@ -28,7 +28,6 @@
         <div class="container py-4">
             <!-- Header Section -->
             <div class="text-center mb-5">
-                <h2 class="section-title fw-bold mb-3">Rental Equipment</h2>
                 <p class="section-desc mx-auto" style="max-width: 700px;">
                     Lupa bawa perlengkapan olahraga? Jangan khawatir! Alena Soccer menyediakan layanan penyewaan
                     perlengkapan olahraga berkualitas untuk kebutuhan bermain Anda.

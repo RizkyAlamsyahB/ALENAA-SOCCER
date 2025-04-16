@@ -29,7 +29,6 @@
         <div class="container py-4">
             <!-- Header Section -->
             <div class="text-center mb-5">
-                <h2 class="section-title fw-bold mb-3">Jasa Fotografer</h2>
                 <p class="section-desc mx-auto" style="max-width: 700px;">
                     Abadikan momen bermain sepak bola Anda dengan jasa fotografer profesional kami. Dapatkan foto berkualitas tinggi untuk kenangan tak terlupakan.
                 </p>

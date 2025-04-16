@@ -22,71 +22,11 @@
         </div>
     </div>
 
-    <!-- Intro Section -->
-    <div class="intro-section">
-        <div class="container">
-            <div class="intro-content">
-                <h2>Join Our Membership Program</h2>
-                <p>Nikmati berbagai keuntungan dengan menjadi member Alena Soccer. Jadwal bermain teratur 3x seminggu dengan
-                    harga lebih hemat dan fasilitas lengkap.</p>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Main Content -->
     <div class="container content-wrapper">
-        <!-- Field Selection Section -->
-        <section class="fields-section">
-            <div class="section-header">
-                <h2>Pilih Lapangan</h2>
-                <p>Pilih lapangan dengan fasilitas yang sesuai dengan kebutuhan Anda</p>
-            </div>
 
-            <div class="fields-grid">
-                @forelse($fields as $field)
-                    <div class="field-card">
-                        <div class="field-image">
-                            @if ($field->image)
-                                <img src="{{ Storage::url($field->image) }}" alt="{{ $field->name }}">
-                            @else
-                                <img src="{{ asset('images/default-field.jpg') }}" alt="{{ $field->name }}">
-                            @endif
-                            <div class="field-badges">
-                                <div class="badge-item">
-                                    <i class="fas fa-star"></i>
-                                    <span>{{ $field->rating ?? '4.5' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field-content">
-                            <h3>{{ $field->name }}</h3>
-                            <div class="field-meta">
-                                <div class="field-location">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span>Sidoarjo, Indonesia</span>
-                                </div>
-                                <div class="field-price">
-                                    <span class="price">Rp {{ number_format($field->price, 0, ',', '.') }}</span>
-                                    <span class="period">/jam</span>
-                                </div>
-                            </div>
-                            <a href="#membership-plans-{{ $field->id }}" class="btn-secondary">
-                                <span>Lihat Paket Membership</span>
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                @empty
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <h3>Belum Ada Lapangan</h3>
-                        <p>Saat ini belum ada lapangan tersedia untuk program membership.</p>
-                    </div>
-                @endforelse
-            </div>
-        </section>
 
         <!-- Membership Plans For Each Field -->
         @foreach ($fields as $field)
@@ -106,15 +46,7 @@
                                 <div class="period">3x main/minggu</div>
                             </div>
                         </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check-circle"></i> <span>Main 1 jam tiap sesi</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Sewa bola gratis</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Galon air mineral</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Fotografer 1 jam</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Loker gratis</span></li>
-                            </ul>
-                        </div>
+
                         <div class="plan-action">
                             @php
                                 $bronzeMembership = $memberships
@@ -123,7 +55,7 @@
                                     ->first();
                             @endphp
                             @if ($bronzeMembership)
-                                <a href="{{ route('user.membership.show', $bronzeMembership->id) }}" class="btn-primary">
+                                <a href="{{ route('user.membership.show', $bronzeMembership->id) }}" class="btn-primary mt-4" >
                                     <span>Pilih Paket</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </a>
@@ -146,16 +78,7 @@
                                 <div class="period">3x main/minggu</div>
                             </div>
                         </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check-circle"></i> <span>Main 2 jam tiap sesi</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Sewa bola gratis</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Galon air mineral</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Fotografer 2 jam</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Loker gratis</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Jersey latihan</span></li>
-                            </ul>
-                        </div>
+
                         <div class="plan-action">
                             @php
                                 $silverMembership = $memberships
@@ -164,7 +87,7 @@
                                     ->first();
                             @endphp
                             @if ($silverMembership)
-                                <a href="{{ route('user.membership.show', $silverMembership->id) }}" class="btn-primary">
+                                <a href="{{ route('user.membership.show', $silverMembership->id) }}" class="btn-primary mt-4">
                                     <span>Pilih Paket</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </a>
@@ -186,17 +109,7 @@
                                 <div class="period">3x main/minggu</div>
                             </div>
                         </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check-circle"></i> <span>Main 3 jam tiap sesi</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Sewa bola gratis</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Galon air mineral</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Fotografer 3 jam</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Loker gratis</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Jersey latihan premium</span></li>
-                                <li><i class="fas fa-check-circle"></i> <span>Pelatih pribadi 1x/bulan</span></li>
-                            </ul>
-                        </div>
+
                         <div class="plan-action">
                             @php
                                 $goldMembership = $memberships
@@ -205,7 +118,7 @@
                                     ->first();
                             @endphp
                             @if ($goldMembership)
-                                <a href="{{ route('user.membership.show', $goldMembership->id) }}" class="btn-primary">
+                                <a href="{{ route('user.membership.show', $goldMembership->id) }}" class="btn-primary mt-4">
                                     <span>Pilih Paket</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </a>
@@ -220,45 +133,7 @@
             </section>
         @endforeach
 
-        <!-- Benefits Section -->
-        <section class="benefits-section">
-            <div class="section-header">
-                <h2>Keuntungan Menjadi Member</h2>
-                <p>Nikmati berbagai keuntungan dengan bergabung program membership</p>
-            </div>
 
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="benefit-content">
-                        <h3>Hemat Biaya</h3>
-                        <p>Nikmati potongan harga hingga 20% dibandingkan booking reguler.</p>
-                    </div>
-                </div>
-
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="benefit-content">
-                        <h3>Jadwal Terjamin</h3>
-                        <p>Dapatkan slot permainan tetap 3x seminggu tanpa perlu rebutan jadwal.</p>
-                    </div>
-                </div>
-
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-gift"></i>
-                    </div>
-                    <div class="benefit-content">
-                        <h3>Fasilitas Ekslusif</h3>
-                        <p>Akses ke fasilitas tambahan seperti fotografer, bola, dan air mineral gratis.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- FAQ Section -->
         <section class="faq-section">
@@ -649,38 +524,7 @@
             opacity: 0.9;
         }
 
-        .plan-features {
-            padding: 2rem;
-        }
 
-        .plan-features ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .plan-features li {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            padding: 0.75rem 0;
-            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
-        }
-
-        .plan-features li:last-child {
-            border-bottom: none;
-        }
-
-        .plan-features i {
-            color: #2e7d32;
-            font-size: 1.1rem;
-            margin-top: 0.1rem;
-        }
-
-        .plan-features span {
-            font-size: 0.95rem;
-            color: #495057;
-        }
 
         .plan-action {
             padding: 0 2rem 2rem;

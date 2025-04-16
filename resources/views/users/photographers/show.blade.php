@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="{{ asset('css/users/field-show.css') }}">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_red.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/default.css">
 
     <!-- CSRF Token untuk AJAX Requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -199,26 +199,7 @@
                             </div>
                         </div>
 
-                        <!-- Package Features Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Fasilitas Paket</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-3">
-                                    @if(is_array($photographer->features))
-                                        @foreach($photographer->features as $feature)
-                                            <div class="col-md-6">
-                                                <div class="feature-badge">
-                                                    <i class="fas fa-check-circle text-success"></i>
-                                                    <span>{{ $feature }}</span>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
+
 
                         <!-- Booking Card -->
                         <!-- Booking Wizard Card -->
@@ -1187,6 +1168,133 @@
                 order: 1;
             }
         }
+
+    /* Custom Flatpickr Theme - brand color #9e0620 */
+/* Fix for calendar display issues */
+.flatpickr-calendar {
+    width: 100% !important; /* Make calendar responsive to container */
+    max-width: 350px; /* Prevent it from getting too wide on larger screens */
+    padding: 0 !important; /* Remove any padding that might cause overflow */
+}
+
+.flatpickr-days {
+    width: 100% !important; /* Ensure days container is full width */
+}
+
+.dayContainer {
+    width: 100% !important; /* Ensure day container is full width */
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.flatpickr-day {
+    width: 14.2857% !important; /* Equal width for all 7 days (100% ÷ 7) */
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+    height: 40px !important; /* Consistent height */
+    line-height: 40px !important;
+    margin: 0 !important;
+    border-radius: 24 !important;
+}
+
+/* Make sure headers align with days */
+span.flatpickr-weekday {
+    width: 14.2857% !important;
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .flatpickr-calendar {
+        max-width: 100%;
+    }
+
+    .flatpickr-day {
+        height: 35px !important;
+        line-height: 35px !important;
+    }
+}
+
+.flatpickr-months {
+    background-color: #ffffff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.flatpickr-month {
+    color: #fff;
+}
+
+.flatpickr-current-month {
+    font-weight: 600;
+}
+
+.flatpickr-monthDropdown-months,
+.numInputWrapper span.arrowUp,
+.numInputWrapper span.arrowDown {
+    color: #fff;
+}
+
+span.flatpickr-weekday {
+    color: #9e0620;
+    font-weight: 600;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected.prevMonthDay,
+.flatpickr-day.startRange.prevMonthDay,
+.flatpickr-day.endRange.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay,
+.flatpickr-day.startRange.nextMonthDay,
+.flatpickr-day.endRange.nextMonthDay {
+    background: #9e0620;
+    border-color: #9e0620;
+}
+
+.flatpickr-day.today {
+    border-color: #9e0620;
+}
+
+.flatpickr-day.today:hover {
+    background: #fff8f8;
+    color: #9e0620;
+}
+
+.flatpickr-day:hover {
+    background: #fff8f8;
+    border-color: #fff8f8;
+}
+
+.flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.endRange.startRange + .endRange:not(:nth-child(7n+1)) {
+    box-shadow: -10px 0 0 #9e0620;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    fill: #fff;
+}
+
+.flatpickr-prev-month:hover svg,
+.flatpickr-next-month:hover svg {
+    fill: #e9ecef;
+}
+
     </style>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">

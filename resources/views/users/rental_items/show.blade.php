@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="{{ asset('css/users/field-show.css') }}">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_red.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/default.css">
 
     <!-- CSRF Token untuk AJAX Requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -237,78 +237,6 @@
                             </div>
                         </div>
 
-                        <!-- Item Overview Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Item Overview</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <div class="description mb-4">
-                                            <h6 class="fw-semibold mb-2">Deskripsi</h6>
-                                            <p class="text-muted">
-                                                {{ $rentalItem->description ?: 'Tidak ada deskripsi tersedia.' }}</p>
-                                        </div>
-
-                                        <div class="specifications">
-                                            <h6 class="fw-semibold mb-3">Spesifikasi</h6>
-                                            <div class="row g-3">
-                                                <div class="col-6 col-md-3">
-                                                    <div class="overview-item text-center">
-                                                        <div class="icon-wrapper mb-2">
-                                                            <i class="fas fa-tag"></i>
-                                                        </div>
-                                                        <h6 class="mb-1 fw-semibold">Kategori</h6>
-                                                        <small class="text-muted">
-                                                            @if ($rentalItem->category == 'ball')
-                                                                Bola
-                                                            @elseif($rentalItem->category == 'jersey')
-                                                                Jersey
-                                                            @elseif($rentalItem->category == 'shoes')
-                                                                Sepatu
-                                                            @else
-                                                                Aksesoris
-                                                            @endif
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6 col-md-3">
-                                                    <div class="overview-item text-center">
-                                                        <div class="icon-wrapper mb-2">
-                                                            <i class="fas fa-box"></i>
-                                                        </div>
-                                                        <h6 class="mb-1 fw-semibold">Stok Total</h6>
-                                                        <small class="text-muted">{{ $rentalItem->stock_total }}
-                                                            unit</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6 col-md-3">
-                                                    <div class="overview-item text-center">
-                                                        <div class="icon-wrapper mb-2">
-                                                            <i class="fas fa-check-circle"></i>
-                                                        </div>
-                                                        <h6 class="mb-1 fw-semibold">Tersedia</h6>
-                                                        <small class="text-muted">{{ $rentalItem->stock_available }}
-                                                            unit</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6 col-md-3">
-                                                    <div class="overview-item text-center">
-                                                        <div class="icon-wrapper mb-2">
-                                                            <i class="fas fa-info-circle"></i>
-                                                        </div>
-                                                        <h6 class="mb-1 fw-semibold">Kondisi</h6>
-                                                        <small
-                                                            class="text-muted">{{ $rentalItem->condition ?: 'Baik' }}</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Booking Card -->
                         <!-- Booking Wizard Card -->
@@ -1531,51 +1459,133 @@
             }
         }
 
-        /* Responsive Flatpickr Styles */
-        .flatpickr-responsive {
-            width: 100% !important;
-            max-width: 400px;
-            margin: 0 auto;
-        }
 
-        .flatpickr-responsive .flatpickr-months {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    /* Custom Flatpickr Theme - brand color #9e0620 */
+/* Fix for calendar display issues */
+.flatpickr-calendar {
+    width: 100% !important; /* Make calendar responsive to container */
+    max-width: 350px; /* Prevent it from getting too wide on larger screens */
+    padding: 0 !important; /* Remove any padding that might cause overflow */
+}
 
-        .flatpickr-responsive .flatpickr-month {
-            flex-grow: 1;
-            text-align: center;
-        }
+.flatpickr-days {
+    width: 100% !important; /* Ensure days container is full width */
+}
 
-        .flatpickr-responsive .flatpickr-weekdays {
-            display: flex;
-            justify-content: space-between;
-        }
+.dayContainer {
+    width: 100% !important; /* Ensure day container is full width */
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: flex;
+    flex-wrap: wrap;
+}
 
-        .flatpickr-responsive .flatpickr-weekday {
-            flex: 1;
-            text-align: center;
-        }
+.flatpickr-day {
+    width: 14.2857% !important; /* Equal width for all 7 days (100% ÷ 7) */
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+    height: 40px !important; /* Consistent height */
+    line-height: 40px !important;
+    margin: 0 !important;
+    border-radius: 24 !important;
+}
 
-        .flatpickr-responsive .flatpickr-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
+/* Make sure headers align with days */
+span.flatpickr-weekday {
+    width: 14.2857% !important;
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+}
 
-        @media (max-width: 576px) {
-            .flatpickr-responsive {
-                font-size: 0.9rem;
-            }
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .flatpickr-calendar {
+        max-width: 100%;
+    }
 
-            .flatpickr-responsive .flatpickr-day {
-                max-width: 30px;
-                max-height: 30px;
-                line-height: 30px;
-            }
-        }
+    .flatpickr-day {
+        height: 35px !important;
+        line-height: 35px !important;
+    }
+}
+
+.flatpickr-months {
+    background-color: #ffffff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.flatpickr-month {
+    color: #fff;
+}
+
+.flatpickr-current-month {
+    font-weight: 600;
+}
+
+.flatpickr-monthDropdown-months,
+.numInputWrapper span.arrowUp,
+.numInputWrapper span.arrowDown {
+    color: #fff;
+}
+
+span.flatpickr-weekday {
+    color: #9e0620;
+    font-weight: 600;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected.prevMonthDay,
+.flatpickr-day.startRange.prevMonthDay,
+.flatpickr-day.endRange.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay,
+.flatpickr-day.startRange.nextMonthDay,
+.flatpickr-day.endRange.nextMonthDay {
+    background: #9e0620;
+    border-color: #9e0620;
+}
+
+.flatpickr-day.today {
+    border-color: #9e0620;
+}
+
+.flatpickr-day.today:hover {
+    background: #fff8f8;
+    color: #9e0620;
+}
+
+.flatpickr-day:hover {
+    background: #fff8f8;
+    border-color: #fff8f8;
+}
+
+.flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.endRange.startRange + .endRange:not(:nth-child(7n+1)) {
+    box-shadow: -10px 0 0 #9e0620;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    fill: #fff;
+}
+
+.flatpickr-prev-month:hover svg,
+.flatpickr-next-month:hover svg {
+    fill: #e9ecef;
+}
+
         .slot-membership {
     background-color: #ffeeba; /* Warna kuning lembut */
     border-color: #ffdf7e;

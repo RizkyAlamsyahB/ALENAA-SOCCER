@@ -4,7 +4,7 @@
 <div class="hero-section" style="margin-top: 50px;">
     <div class="container">
         <div class="hero-content">
-            <h1 class="hero-title">Venues</h1>
+            <h1 class="hero-title">Main Bareng</h1>
             <div class="breadcrumb-wrapper">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
@@ -23,7 +23,6 @@
         <div class="container py-4">
             <!-- Header Section -->
             <div class="text-center mb-5">
-                <h2 class="section-title fw-bold mb-3">Main Bareng</h2>
                 <p class="section-desc mx-auto" style="max-width: 700px;">
                     Komunitas Bola Tanpa Batas
                     Ingin bermain tapi tidak memiliki tim lengkap? Bergabunglah dengan program Main Bareng Alena Soccer!
