@@ -32,7 +32,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('mabar.index') }}">
+                    <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.mabar.index') }}">
                         <span>Main Bareng</span>
                     </a>
                 </li>

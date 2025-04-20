@@ -4,7 +4,9 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Field;
 use App\Models\Payment;
+use App\Models\RentalBooking;
 use App\Models\MembershipSession;
+use App\Models\PhotographerBooking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -63,6 +65,16 @@ class FieldBooking extends Model
     {
         return $this->belongsTo(MembershipSession::class);
     }
+    // Tambahkan metode ini di class FieldBooking
+public function photographerBookings()
+{
+    return $this->hasMany(PhotographerBooking::class);
+}
+
+public function rentalBookings()
+{
+    return $this->hasMany(RentalBooking::class);
+}
 
     /**
      * Check if booking is pending.

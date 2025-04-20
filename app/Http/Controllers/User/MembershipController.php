@@ -4,20 +4,24 @@ namespace App\Http\Controllers\User;
 
 use Carbon\Carbon;
 use Midtrans\Snap;
-use App\Models\Field;
 use App\Models\User;
+use App\Models\Field;
 use App\Models\Payment;
-use Illuminate\Support\Str;
 use App\Models\Membership;
-use Illuminate\Http\Request;
+use App\Models\RentalItem;
+use Illuminate\Support\Str;
 use App\Models\FieldBooking;
+use App\Models\Photographer;
+use Illuminate\Http\Request;
+use App\Models\RentalBooking;
+use App\Mail\MembershipExpired;
 use App\Models\MembershipSession;
 use Illuminate\Support\Facades\DB;
+use App\Models\PhotographerBooking;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\MembershipExpired;
 use App\Mail\MembershipRenewalInvoice;
 use App\Mail\MembershipRenewalSuccess;
 use App\Models\MembershipSubscription;
@@ -68,13 +72,32 @@ class MembershipController extends Controller
      */
     public function selectSchedule($id)
     {
-        $membership = Membership::findOrFail(id: $id);
+        $membership = Membership::findOrFail($id);
         $field = $membership->field;
 
-        // Dapatkan slot waktu yang tersedia untuk lapangan ini
+        // Tentukan jumlah jam total yang perlu dipilih berdasarkan tipe membership
+        $requiredHours = $this->getRequiredHoursByType($membership->type);
+
+        // Ambil semua slot waktu yang tersedia untuk lapangan ini
         $availableSlots = $this->getAvailableTimeSlots($field->id);
 
-        return view('users.membership.schedule', compact('membership', 'field', 'availableSlots'));
+        return view('users.membership.schedule', compact('membership', 'field', 'availableSlots', 'requiredHours'));
+    }
+    /**
+     * Menentukan jumlah jam yang dibutuhkan berdasarkan tipe membership
+     */
+    private function getRequiredHoursByType($type)
+    {
+        switch ($type) {
+            case 'bronze':
+                return 3; // Bronze: 3 sesi × 1 jam = 3 jam total
+            case 'silver':
+                return 6; // Silver: 3 sesi × 2 jam = 6 jam total
+            case 'gold':
+                return 9; // Gold: 3 sesi × 3 jam = 9 jam total
+            default:
+                return 3; // Default ke bronze jika tipe tidak dikenali
+        }
     }
 
     public function saveScheduleToCart(Request $request, $id)
@@ -85,107 +108,127 @@ class MembershipController extends Controller
             // Gunakan tanggal dari request sebagai referensi untuk validasi
             $todayDate = $request->input('today_date', date('Y-m-d'));
 
+            // Validasi data yang diterima
             $request->validate([
-                'sessions' => 'required|array|size:3',
-                'sessions.*.day' => 'required|date|date_format:Y-m-d',
-                'sessions.*.time' => 'required|string',
-                'payment_period' => 'required|in:weekly,monthly', // Tambahkan validasi periode pembayaran
+                'selected_slots' => 'required|array', // Array slot yang dipilih
+                'payment_period' => 'required|in:weekly,monthly', // Periode pembayaran
             ]);
 
             $membership = Membership::findOrFail($id);
-            $paymentPeriod = $request->payment_period; // Ambil pilihan periode pembayaran
+            $paymentPeriod = $request->payment_period;
 
-            // Periksa duplikasi jadwal
-            $sessions = collect($request->sessions);
-            $uniqueSessions = $sessions->unique(function ($session) {
-                return $session['day'] . '|' . $session['time'];
-            });
+            // Ambil array dari slot yang dipilih
+            $selectedSlots = $request->selected_slots;
 
-            if ($uniqueSessions->count() < $sessions->count()) {
-                return back()->with('error', 'Tidak boleh ada jadwal yang sama (hari dan jam yang sama)');
+            // Periksa jumlah slot berdasarkan tipe membership
+            $requiredHours = $this->getRequiredHoursByType($membership->type);
+
+            if (count($selectedSlots) != $requiredHours) {
+                return back()->with('error', "Untuk paket {$membership->type}, Anda harus memilih total {$requiredHours} jam slot waktu.");
             }
 
-            // Pendekatan alternatif: rentang 7 hari dari tanggal paling awal
-            $dates = $sessions->pluck('day')->toArray();
+            // Kelompokkan slot berdasarkan tanggal untuk validasi
+            $slotsByDate = [];
+            foreach ($selectedSlots as $slot) {
+                $parts = explode('|', $slot);
+                if (count($parts) != 3) {
+                    return back()->with('error', 'Format slot tidak valid');
+                }
 
-            // Urutkan tanggal
+                $date = $parts[0];
+                $timeRange = $parts[1];
+                [$startTime, $endTime] = explode(' - ', $timeRange);
+
+                if (!isset($slotsByDate[$date])) {
+                    $slotsByDate[$date] = [];
+                }
+
+                $slotsByDate[$date][] = [
+                    'time' => $timeRange,
+                    'start' => $startTime,
+                    'end' => $endTime,
+                ];
+            }
+
+            // Validasi: semua tanggal harus dalam rentang 7 hari
+            $dates = array_keys($slotsByDate);
             sort($dates);
 
-            // Log tanggal untuk debugging
-            Log::debug('Sorted dates', $dates);
+            if (empty($dates)) {
+                return back()->with('error', 'Tidak ada tanggal yang valid');
+            }
 
-            // Ambil tanggal paling awal dan paling akhir
             $earliestDate = Carbon::parse($dates[0]);
             $latestDate = Carbon::parse($dates[count($dates) - 1]);
-
-            // Hitung perbedaan hari
             $daysDifference = $earliestDate->diffInDays($latestDate);
 
-            // Jika perbedaan lebih dari 6 hari (lebih dari minggu yang dipilih), validasi gagal
             if ($daysDifference > 6) {
-                Log::debug('Validasi rentang tanggal gagal', [
-                    'tanggal_awal' => $earliestDate->format('Y-m-d'),
-                    'tanggal_akhir' => $latestDate->format('Y-m-d'),
-                    'perbedaan_hari' => $daysDifference,
-                ]);
-
                 return back()->with('error', 'Semua jadwal harus berada dalam rentang maksimal 7 hari');
             }
 
-            // Memeriksa konflik jadwal
-            $sessionsData = [];
-            $sessionNumber = 1; // Inisialisasi nomor sesi
-
-            foreach ($request->sessions as $sessionData) {
-                $date = $sessionData['day'];
-                [$startTime, $endTime] = explode(' - ', $sessionData['time']);
-
-                // Debug data yang diterima
-                Log::debug('Processing session', [
-                    'date' => $date,
-                    'time' => $sessionData['time'],
-                    'startTime' => $startTime,
-                    'endTime' => $endTime,
-                ]);
+            // Memeriksa konflik jadwal untuk semua slot yang dipilih
+            $conflictingSlots = [];
+            foreach ($selectedSlots as $slot) {
+                $parts = explode('|', $slot);
+                $date = $parts[0];
+                $timeRange = $parts[1];
+                [$startTime, $endTime] = explode(' - ', $timeRange);
 
                 try {
-                    // Set waktu lokal dengan jelas
                     $startDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$startTime}", 'Asia/Jakarta');
                     $endDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$endTime}", 'Asia/Jakarta');
 
-                    // Log untuk debug
-                    Log::debug('Created datetime objects', [
-                        'start' => $startDateTime->toDateTimeString(),
-                        'end' => $endDateTime->toDateTimeString(),
-                        'timezone' => $startDateTime->timezone->getName(),
-                    ]);
+                    // Periksa konflik dengan booking lapangan yang sudah ada
+                    $isConflict = $this->checkTimeConflict($membership->field_id, $startDateTime, $endDateTime);
+                    if ($isConflict) {
+                        $conflictingSlots[] = "{$startTime} - {$endTime} pada tanggal {$date}";
+                    }
+
+                    // BAGIAN BARU: Periksa ketersediaan fotografer dan rental item jika ada
+        $availabilityCheck = $this->checkAvailabilityForMembership($membership->field_id, $selectedSlots, $membership);
+        if ($availabilityCheck['error']) {
+            return back()->with('error', $availabilityCheck['message']);
+        }
                 } catch (\Exception $e) {
-                    // Log error parsing
                     Log::error('Error parsing dates: ' . $e->getMessage(), [
                         'date' => $date,
                         'startTime' => $startTime,
                         'endTime' => $endTime,
                     ]);
 
-                    throw new \Exception('Format tanggal atau waktu tidak valid: ' . $e->getMessage());
+                    return back()->with('error', 'Format tanggal atau waktu tidak valid: ' . $e->getMessage());
                 }
-
-                // Periksa konflik dengan booking lapangan yang sudah ada
-                $isConflict = $this->checkTimeConflict($membership->field_id, $startDateTime, $endDateTime);
-                if ($isConflict) {
-                    return back()->with('error', "Jadwal {$startTime} - {$endTime} pada tanggal {$date} sudah tidak tersedia");
-                }
-
-                $sessionsData[] = [
-                    'date' => $date,
-                    'start_time' => $startDateTime->format('Y-m-d H:i:s'),
-                    'end_time' => $endDateTime->format('Y-m-d H:i:s'),
-                    'session_number' => $sessionNumber++, // Tambahkan nomor sesi dan increment
-                ];
             }
 
-            // Debug data sesi yang sudah diolah
-            Log::debug('Processed sessions data:', $sessionsData);
+            if (!empty($conflictingSlots)) {
+                return back()->with('error', 'Beberapa slot waktu sudah tidak tersedia: ' . implode(', ', $conflictingSlots));
+            }
+
+            // Konversi slot terpilih ke format session untuk disimpan
+            $sessionsData = [];
+            $sessionNumber = 1;
+
+            foreach ($selectedSlots as $slot) {
+                $parts = explode('|', $slot);
+                $date = $parts[0];
+                $timeRange = $parts[1];
+                [$startTime, $endTime] = explode(' - ', $timeRange);
+
+                try {
+                    $startDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$startTime}", 'Asia/Jakarta');
+                    $endDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$endTime}", 'Asia/Jakarta');
+
+                    $sessionsData[] = [
+                        'date' => $date,
+                        'start_time' => $startDateTime->format('Y-m-d H:i:s'),
+                        'end_time' => $endDateTime->format('Y-m-d H:i:s'),
+                        'session_number' => $sessionNumber++,
+                    ];
+                } catch (\Exception $e) {
+                    Log::error('Error parsing session dates: ' . $e->getMessage());
+                    return back()->with('error', 'Error saat memproses tanggal: ' . $e->getMessage());
+                }
+            }
 
             // Hitung harga berdasarkan periode pembayaran
             $price = $membership->price; // Harga default mingguan
@@ -197,8 +240,8 @@ class MembershipController extends Controller
             session()->put('membership_sessions', [
                 'membership_id' => $membership->id,
                 'sessions' => $sessionsData,
-                'payment_period' => $paymentPeriod, // Tambahkan periode pembayaran ke session
-                'price' => $price, // Tambahkan harga sesuai periode pembayaran
+                'payment_period' => $paymentPeriod,
+                'price' => $price,
             ]);
 
             // Debug simpan ke session
@@ -271,11 +314,10 @@ class MembershipController extends Controller
         $allSlots = $this->getAvailableTimeSlots($fieldId);
 
         // Dapatkan booking yang sudah ada pada tanggal tersebut
-        // Hapus status 'on_hold' dari query
         $bookedSlots = DB::table('field_bookings')
             ->where('field_id', $fieldId)
             ->whereDate('start_time', $date)
-            ->whereIn('status', ['pending', 'confirmed']) // hapus 'on_hold'
+            ->whereIn('status', ['pending', 'confirmed'])
             ->get(['start_time', 'end_time']);
 
         // Filter slot yang tersedia
@@ -296,12 +338,166 @@ class MembershipController extends Controller
             }
 
             if ($isAvailable) {
-                $availableSlots[] = $slot;
+                $availableSlots[] = [
+                    'start' => $slot['start'],
+                    'end' => $slot['end'],
+                    'display' => $slot['start'] . ' - ' . $slot['end'],
+                    'date' => $date,
+                    'value' => $date . '|' . $slot['start'] . ' - ' . $slot['end'] . '|' . $fieldId,
+                ];
             }
         }
 
         return response()->json($availableSlots);
     }
+
+    /**
+ * Memeriksa ketersediaan untuk membership yang include fotografer dan rental item
+ */
+private function checkAvailabilityForMembership($fieldId, $selectedSlots, $membership)
+{
+    $unavailableSlots = [];
+    $includesPhotographer = $membership->includes_photographer && $membership->photographer_id;
+    $includesRentalItem = $membership->includes_rental_item && $membership->rental_item_id;
+
+    $photographer = null;
+    $rentalItem = null;
+
+    if ($includesPhotographer) {
+        $photographer = Photographer::find($membership->photographer_id);
+        if (!$photographer) {
+            return ['error' => true, 'message' => 'Fotografer tidak ditemukan'];
+        }
+    }
+
+    if ($includesRentalItem) {
+        $rentalItem = RentalItem::find($membership->rental_item_id);
+        if (!$rentalItem) {
+            return ['error' => true, 'message' => 'Item rental tidak ditemukan'];
+        }
+    }
+
+    foreach ($selectedSlots as $slot) {
+        $parts = explode('|', $slot);
+        $date = $parts[0];
+        $timeRange = $parts[1];
+        [$startTime, $endTime] = explode(' - ', $timeRange);
+
+        try {
+            $startDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$startTime}", 'Asia/Jakarta');
+            $endDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$date} {$endTime}", 'Asia/Jakarta');
+
+            // Cek konflik dengan booking lapangan yang sudah ada
+            $isFieldConflict = $this->checkTimeConflict($fieldId, $startDateTime, $endDateTime);
+            if ($isFieldConflict) {
+                $unavailableSlots[] = "{$startTime} - {$endTime} pada tanggal {$date} (lapangan sudah dibooking)";
+                continue;
+            }
+
+            // Cek ketersediaan fotografer jika membership include fotografer
+            if ($includesPhotographer && $photographer) {
+                $isPhotographerConflict = $this->checkPhotographerConflict($photographer->id, $startDateTime, $endDateTime);
+                if ($isPhotographerConflict) {
+                    $unavailableSlots[] = "{$startTime} - {$endTime} pada tanggal {$date} (fotografer tidak tersedia)";
+                    continue;
+                }
+            }
+
+            // Cek ketersediaan rental item jika membership include rental item
+            if ($includesRentalItem && $rentalItem) {
+                $requiredQuantity = $membership->rental_item_quantity ?? 1;
+                $isRentalItemAvailable = $this->checkRentalItemAvailability($rentalItem->id, $startDateTime, $endDateTime, $requiredQuantity);
+
+                if (!$isRentalItemAvailable['available']) {
+                    $unavailableSlots[] = "{$startTime} - {$endTime} pada tanggal {$date} (stok {$rentalItem->name} tidak cukup: tersedia {$isRentalItemAvailable['available_quantity']}, dibutuhkan {$requiredQuantity})";
+                    continue;
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error checking availability: ' . $e->getMessage(), [
+                'date' => $date,
+                'startTime' => $startTime,
+                'endTime' => $endTime,
+            ]);
+
+            return ['error' => true, 'message' => 'Format tanggal atau waktu tidak valid: ' . $e->getMessage()];
+        }
+    }
+
+    if (!empty($unavailableSlots)) {
+        return [
+            'error' => true,
+            'message' => 'Beberapa slot waktu tidak tersedia: ' . implode(', ', $unavailableSlots)
+        ];
+    }
+
+    return ['error' => false];
+}
+
+/**
+ * Memeriksa konflik waktu dengan booking fotografer yang sudah ada
+ */
+private function checkPhotographerConflict($photographerId, $startTime, $endTime)
+{
+    // Cek konflik dengan photographer bookings
+    $conflictBookings = DB::table('photographer_bookings')
+        ->where('photographer_id', $photographerId)
+        ->whereIn('status', ['pending', 'confirmed'])
+        ->where(function ($query) use ($startTime, $endTime) {
+            $query
+                ->where(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '<=', $startTime)->where('end_time', '>', $startTime);
+                })
+                ->orWhere(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '<', $endTime)->where('end_time', '>=', $endTime);
+                })
+                ->orWhere(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '>=', $startTime)->where('end_time', '<=', $endTime);
+                });
+        })
+        ->exists();
+
+    return $conflictBookings;
+}
+
+/**
+ * Memeriksa ketersediaan rental item
+ */
+private function checkRentalItemAvailability($rentalItemId, $startTime, $endTime, $requiredQuantity)
+{
+    // Cek item rental yang sudah dipesan pada waktu tersebut
+    $bookedQuantity = DB::table('rental_bookings')
+        ->where('rental_item_id', $rentalItemId)
+        ->whereIn('status', ['pending', 'confirmed'])
+        ->where(function ($query) use ($startTime, $endTime) {
+            $query
+                ->where(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '>=', $startTime)->where('start_time', '<', $endTime);
+                })
+                ->orWhere(function ($q) use ($startTime, $endTime) {
+                    $q->where('end_time', '>', $startTime)->where('end_time', '<=', $endTime);
+                })
+                ->orWhere(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '<=', $startTime)->where('end_time', '>=', $endTime);
+                });
+        })
+        ->sum('quantity');
+
+    // Dapatkan jumlah stok total item rental
+    $rentalItem = RentalItem::find($rentalItemId);
+    if (!$rentalItem) {
+        return ['available' => false, 'available_quantity' => 0];
+    }
+
+    $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+    $isAvailable = $availableQuantity >= $requiredQuantity;
+
+    return [
+        'available' => $isAvailable,
+        'available_quantity' => $availableQuantity
+    ];
+}
 
     /**
      * Menampilkan riwayat membership user
@@ -316,188 +512,180 @@ class MembershipController extends Controller
         return view('users.membership.my-memberships', compact('subscriptions'));
     }
 
-/**
- * Menampilkan detail langganan membership
- */
-public function subscriptionDetail($id)
-{
-    $subscription = MembershipSubscription::where('id', $id)
-        ->where('user_id', Auth::id())
-        ->with(['membership', 'membership.field', 'payment'])
-        ->firstOrFail();
+    /**
+     * Menampilkan detail langganan membership
+     */
+    public function subscriptionDetail($id)
+    {
+        $subscription = MembershipSubscription::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->with(['membership', 'membership.field', 'payment'])
+            ->firstOrFail();
 
-    // Load sessions
-    $subscription->load('sessions');
+        // Load sessions
+        $subscription->load('sessions');
 
-    $now = Carbon::now();
+        $now = Carbon::now();
 
-    foreach ($subscription->sessions as $session) {
-        if ($session->status === 'scheduled') {
-            if ($now->between($session->start_time, $session->end_time)) {
-                $session->status = 'ongoing';
-            } elseif ($now->gt($session->end_time)) {
-                $session->status = 'completed';
+        foreach ($subscription->sessions as $session) {
+            if ($session->status === 'scheduled') {
+                if ($now->between($session->start_time, $session->end_time)) {
+                    $session->status = 'ongoing';
+                } elseif ($now->gt($session->end_time)) {
+                    $session->status = 'completed';
+                }
+                $session->save();
             }
-            $session->save();
+
+            // Optional: bisa tambahkan pengecekan jika ongoing tapi waktu sudah habis
+            elseif ($session->status === 'ongoing' && $now->gt($session->end_time)) {
+                $session->status = 'completed';
+                $session->save();
+            }
         }
 
-        // Optional: bisa tambahkan pengecekan jika ongoing tapi waktu sudah habis
-        elseif ($session->status === 'ongoing' && $now->gt($session->end_time)) {
-            $session->status = 'completed';
-            $session->save();
-        }
+        // Reload sessions setelah update
+        $subscription->load('sessions');
+
+        // Manual sorting of sessions by date first, then by time
+        $sortedSessions = $subscription->sessions->sortBy([['start_time', 'asc']]);
+
+        // Replace the collection with the sorted one
+        $subscription->setRelation('sessions', $sortedSessions);
+
+        return view('users.membership.subscription-detail', compact('subscription'));
     }
 
-    // Reload sessions setelah update
-    $subscription->load('sessions');
+    /**
+     * Membuat invoice untuk perpanjangan membership
+     *
+     * @param \Illuminate\Http\Request|MembershipSubscription|int $subscriptionOrRequest
+     * @param int|null $id ID dari subscription (jika parameter pertama adalah Request)
+     * @return \Illuminate\Http\JsonResponse|Payment|null
+     */
+    public function createRenewalInvoice($subscriptionOrRequest, $id = null)
+    {
+        try {
+            // Tentukan mode (AJAX request atau direct call)
+            $isAjaxRequest = $subscriptionOrRequest instanceof Request;
 
-    // Manual sorting of sessions by date first, then by time
-    $sortedSessions = $subscription->sessions->sortBy([
-        ['start_time', 'asc']
-    ]);
+            // Ambil subscription berdasarkan parameter yang diberikan
+            $subscription = null;
 
-    // Replace the collection with the sorted one
-    $subscription->setRelation('sessions', $sortedSessions);
-
-    return view('users.membership.subscription-detail', compact('subscription'));
-}
-
-
-  /**
- * Membuat invoice untuk perpanjangan membership
- *
- * @param \Illuminate\Http\Request|MembershipSubscription|int $subscriptionOrRequest
- * @param int|null $id ID dari subscription (jika parameter pertama adalah Request)
- * @return \Illuminate\Http\JsonResponse|Payment|null
- */
-public function createRenewalInvoice($subscriptionOrRequest, $id = null)
-{
-    try {
-        // Tentukan mode (AJAX request atau direct call)
-        $isAjaxRequest = $subscriptionOrRequest instanceof Request;
-
-        // Ambil subscription berdasarkan parameter yang diberikan
-        $subscription = null;
-
-        if ($isAjaxRequest) {
-            $id = $id ?? $subscriptionOrRequest->route('id'); // Pastikan id diambil dari route jika null
-            // Mode AJAX request (dipanggil dari web)
-            $subscription = MembershipSubscription::where('id', $id)
-                ->where('user_id', Auth::id())
-                ->where('status', 'active')
-                ->first();
-        } else {
-            // Mode direct call (dipanggil dari scheduleMembershipRenewalInvoices)
-            if (is_numeric($subscriptionOrRequest)) {
-                $subscription = MembershipSubscription::where('id', $subscriptionOrRequest)
-                    ->where('status', 'active')
-                    ->first();
-            } elseif ($subscriptionOrRequest instanceof MembershipSubscription) {
-                $subscription = $subscriptionOrRequest;
+            if ($isAjaxRequest) {
+                $id = $id ?? $subscriptionOrRequest->route('id'); // Pastikan id diambil dari route jika null
+                // Mode AJAX request (dipanggil dari web)
+                $subscription = MembershipSubscription::where('id', $id)->where('user_id', Auth::id())->where('status', 'active')->first();
+            } else {
+                // Mode direct call (dipanggil dari scheduleMembershipRenewalInvoices)
+                if (is_numeric($subscriptionOrRequest)) {
+                    $subscription = MembershipSubscription::where('id', $subscriptionOrRequest)->where('status', 'active')->first();
+                } elseif ($subscriptionOrRequest instanceof MembershipSubscription) {
+                    $subscription = $subscriptionOrRequest;
+                }
             }
-        }
 
-        // Validasi subscription
-        if (!$subscription || !($subscription instanceof MembershipSubscription)) {
-            $errorMessage = 'Invalid subscription parameter in createRenewalInvoice';
-            Log::error($errorMessage);
+            // Validasi subscription
+            if (!$subscription || !($subscription instanceof MembershipSubscription)) {
+                $errorMessage = 'Invalid subscription parameter in createRenewalInvoice';
+                Log::error($errorMessage);
+
+                if ($isAjaxRequest) {
+                    return response()->json(
+                        [
+                            'success' => false,
+                            'message' => 'Membership tidak ditemukan atau tidak aktif',
+                        ],
+                        404,
+                    );
+                }
+
+                return null;
+            }
+
+            // Cek jika sudah ada invoice pending untuk membership ini
+            $existingPayment = Payment::where('user_id', $subscription->user_id)
+                ->where('order_id', 'like', 'RENEW-MEM-' . $subscription->id . '%')
+                ->where('transaction_status', 'pending')
+                ->first();
+
+            if ($existingPayment) {
+                Log::info('Using existing pending renewal invoice', ['payment_id' => $existingPayment->id]);
+
+                if ($isAjaxRequest) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Melanjutkan pembayaran yang sudah ada',
+                        'payment_url' => route('user.membership.renewal.pay', ['id' => $existingPayment->id]),
+                    ]);
+                }
+
+                return $existingPayment;
+            }
+
+            // Buat order ID unik (format: RENEW-MEM-{subscription_id}-{random}-{timestamp})
+            $orderId = 'RENEW-MEM-' . $subscription->id . '-' . substr(md5(uniqid()), 0, 8) . '-' . time();
+
+            // Set tanggal kedaluwarsa invoice 3 hari dari sekarang
+            // Ini untuk memberikan waktu yang cukup untuk pembayaran
+            $expiresAt = now()->addDays(3);
+
+            Log::info('Setting invoice expiry (3 days from now)', [
+                'subscription_id' => $subscription->id,
+                'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
+            ]);
+
+            // Buat record payment
+            $payment = Payment::create([
+                'order_id' => $orderId,
+                'user_id' => $subscription->user_id,
+                'amount' => $subscription->membership->price,
+                'original_amount' => $subscription->membership->price,
+                'transaction_status' => 'pending',
+                'expires_at' => $expiresAt,
+                'payment_type' => 'membership_renewal', // Tandai sebagai pembayaran perpanjangan
+            ]);
+
+            // Update status renewal subscription
+            $subscription->renewal_status = 'renewal_pending';
+            $subscription->next_invoice_date = now();
+            $subscription->save();
+
+            Log::info('Renewal invoice created successfully', [
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
+            ]);
+
+            // Return sesuai dengan mode
+            if ($isAjaxRequest) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Invoice perpanjangan berhasil dibuat',
+                    'payment_url' => route('user.membership.renewal.pay', ['id' => $payment->id]),
+                ]);
+            }
+
+            return $payment;
+        } catch (\Exception $e) {
+            Log::error('Create Renewal Invoice Error: ' . $e->getMessage(), [
+                'subscription_id' => $id ?? ($subscription->id ?? 'unknown'),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             if ($isAjaxRequest) {
                 return response()->json(
                     [
                         'success' => false,
-                        'message' => 'Membership tidak ditemukan atau tidak aktif',
+                        'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
                     ],
-                    404,
+                    500,
                 );
             }
 
             return null;
         }
-
-        // Cek jika sudah ada invoice pending untuk membership ini
-        $existingPayment = Payment::where('user_id', $subscription->user_id)
-            ->where('order_id', 'like', 'RENEW-MEM-' . $subscription->id . '%')
-            ->where('transaction_status', 'pending')
-            ->first();
-
-        if ($existingPayment) {
-            Log::info('Using existing pending renewal invoice', ['payment_id' => $existingPayment->id]);
-
-            if ($isAjaxRequest) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Melanjutkan pembayaran yang sudah ada',
-                    'payment_url' => route('user.membership.renewal.pay', ['id' => $existingPayment->id]),
-                ]);
-            }
-
-            return $existingPayment;
-        }
-
-        // Buat order ID unik (format: RENEW-MEM-{subscription_id}-{random}-{timestamp})
-        $orderId = 'RENEW-MEM-' . $subscription->id . '-' . substr(md5(uniqid()), 0, 8) . '-' . time();
-
-        // Set tanggal kedaluwarsa invoice 3 hari dari sekarang
-        // Ini untuk memberikan waktu yang cukup untuk pembayaran
-        $expiresAt = now()->addDays(3);
-
-        Log::info('Setting invoice expiry (3 days from now)', [
-            'subscription_id' => $subscription->id,
-            'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
-        ]);
-
-        // Buat record payment
-        $payment = Payment::create([
-            'order_id' => $orderId,
-            'user_id' => $subscription->user_id,
-            'amount' => $subscription->membership->price,
-            'original_amount' => $subscription->membership->price,
-            'transaction_status' => 'pending',
-            'expires_at' => $expiresAt,
-            'payment_type' => 'membership_renewal', // Tandai sebagai pembayaran perpanjangan
-        ]);
-
-        // Update status renewal subscription
-        $subscription->renewal_status = 'renewal_pending';
-        $subscription->next_invoice_date = now();
-        $subscription->save();
-
-        Log::info('Renewal invoice created successfully', [
-            'subscription_id' => $subscription->id,
-            'payment_id' => $payment->id,
-            'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
-        ]);
-
-        // Return sesuai dengan mode
-        if ($isAjaxRequest) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Invoice perpanjangan berhasil dibuat',
-                'payment_url' => route('user.membership.renewal.pay', ['id' => $payment->id]),
-            ]);
-        }
-
-        return $payment;
-    } catch (\Exception $e) {
-        Log::error('Create Renewal Invoice Error: ' . $e->getMessage(), [
-            'subscription_id' => $id ?? ($subscription->id ?? 'unknown'),
-            'trace' => $e->getTraceAsString(),
-        ]);
-
-        if ($isAjaxRequest) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
-                ],
-                500,
-            );
-        }
-
-        return null;
     }
-}
 
     /**
      * Kirim email invoice perpanjangan
@@ -547,21 +735,16 @@ public function createRenewalInvoice($subscriptionOrRequest, $id = null)
      */
     public function showRenewalPayment($id)
     {
-        $payment = Payment::where('id', $id)
-                        ->where('order_id', 'like', 'RENEW-MEM-%')
-                        ->where('transaction_status', 'pending')
-                        ->firstOrFail();
+        $payment = Payment::where('id', $id)->where('order_id', 'like', 'RENEW-MEM-%')->where('transaction_status', 'pending')->firstOrFail();
 
         // Cek apakah sudah kadaluarsa
         if (Carbon::parse($payment->expires_at)->isPast()) {
-            return redirect()->route('user.membership.my-memberships')
-                ->with('error', 'Invoice perpanjangan sudah kedaluarsa');
+            return redirect()->route('user.membership.my-memberships')->with('error', 'Invoice perpanjangan sudah kedaluarsa');
         }
 
         // Cek apakah ini adalah pembayaran milik user yang login
         if ($payment->user_id !== Auth::id()) {
-            return redirect()->route('user.membership.my-memberships')
-                ->with('error', 'Anda tidak memiliki akses ke pembayaran ini');
+            return redirect()->route('user.membership.my-memberships')->with('error', 'Anda tidak memiliki akses ke pembayaran ini');
         }
 
         // Ekstrak subscription ID dari order_id (format: RENEW-MEM-{subscription_id}-{random}-{timestamp})
@@ -569,16 +752,14 @@ public function createRenewalInvoice($subscriptionOrRequest, $id = null)
         $subscriptionId = isset($orderParts[2]) ? $orderParts[2] : null;
 
         if (!$subscriptionId) {
-            return redirect()->route('user.membership.my-memberships')
-                ->with('error', 'Format order ID tidak valid');
+            return redirect()->route('user.membership.my-memberships')->with('error', 'Format order ID tidak valid');
         }
 
         // Cari subscription terkait
         $subscription = MembershipSubscription::find($subscriptionId);
 
         if (!$subscription) {
-            return redirect()->route('user.membership.my-memberships')
-                ->with('error', 'Membership tidak ditemukan');
+            return redirect()->route('user.membership.my-memberships')->with('error', 'Membership tidak ditemukan');
         }
 
         // Setup Midtrans
@@ -651,10 +832,7 @@ public function createRenewalInvoice($subscriptionOrRequest, $id = null)
 
         // Jika tidak ada data, cari juga berdasarkan tanggal kedaluwarsa pembayaran
         if (empty($expiredSubscriptions)) {
-            $expiredPayments = Payment::where('payment_type', 'membership_renewal')
-                ->where('transaction_status', 'pending')
-                ->where('expires_at', '<', $now)
-                ->get();
+            $expiredPayments = Payment::where('payment_type', 'membership_renewal')->where('transaction_status', 'pending')->where('expires_at', '<', $now)->get();
 
             foreach ($expiredPayments as $payment) {
                 // Ekstrak subscription ID dari order_id (format: RENEW-MEM-{subscription_id}-{timestamp})
@@ -741,79 +919,79 @@ public function createRenewalInvoice($subscriptionOrRequest, $id = null)
         ]);
     }
 
- /**
- * Jadwalkan pengiriman invoice perpanjangan membership
- * Mengirim invoice 3 hari sebelum masa berlaku membership berakhir
- */
-public function scheduleMembershipRenewalInvoices()
-{
-    // Ambil semua subscription aktif yang akan berakhir dalam 3 hari
-    // dan belum dikirim invoice (invoice_sent = false)
-    $expiringSubscriptions = MembershipSubscription::where('status', 'active')
-        ->where('renewal_status', 'not_due')
-        ->where('invoice_sent', false)
-        ->where('end_date', '<=', now()->addDays(3))
-        ->where('end_date', '>', now())
-        ->get();
+    /**
+     * Jadwalkan pengiriman invoice perpanjangan membership
+     * Mengirim invoice 3 hari sebelum masa berlaku membership berakhir
+     */
+    public function scheduleMembershipRenewalInvoices()
+    {
+        // Ambil semua subscription aktif yang akan berakhir dalam 3 hari
+        // dan belum dikirim invoice (invoice_sent = false)
+        $expiringSubscriptions = MembershipSubscription::where('status', 'active')
+            ->where('renewal_status', 'not_due')
+            ->where('invoice_sent', false)
+            ->where('end_date', '<=', now()->addDays(3))
+            ->where('end_date', '>', now())
+            ->get();
 
-    $count = 0;
+        $count = 0;
 
-    foreach ($expiringSubscriptions as $subscription) {
-        Log::info('Memproses invoice perpanjangan untuk subscription', [
-            'subscription_id' => $subscription->id,
-            'user_id' => $subscription->user_id,
-            'end_date' => $subscription->end_date
-        ]);
+        foreach ($expiringSubscriptions as $subscription) {
+            Log::info('Memproses invoice perpanjangan untuk subscription', [
+                'subscription_id' => $subscription->id,
+                'user_id' => $subscription->user_id,
+                'end_date' => $subscription->end_date,
+            ]);
 
-        // Tandai bahwa invoice telah dikirim
-        $subscription->invoice_sent = true;
-        $subscription->renewal_status = 'renewal_pending';
-        $subscription->next_invoice_date = now();
-        $subscription->save();
+            // Tandai bahwa invoice telah dikirim
+            $subscription->invoice_sent = true;
+            $subscription->renewal_status = 'renewal_pending';
+            $subscription->next_invoice_date = now();
+            $subscription->save();
 
-        // Buat invoice dengan objek subscription
-        $payment = $this->createRenewalInvoice($subscription);
+            // Buat invoice dengan objek subscription
+            $payment = $this->createRenewalInvoice($subscription);
 
-        // Jika payment berhasil dibuat, kirim email
-        if ($payment) {
-            // Kirim email invoice
-            try {
-                Mail::to($subscription->user->email)->send(
-                    new MembershipRenewalInvoice([
-                        'user' => $subscription->user,
-                        'membership' => $subscription->membership,
-                        'subscription' => $subscription,
-                        'payment' => $payment,
-                        'payment_url' => route('user.membership.renewal.pay', ['id' => $payment->id]),
+            // Jika payment berhasil dibuat, kirim email
+            if ($payment) {
+                // Kirim email invoice
+                try {
+                    Mail::to($subscription->user->email)->send(
+                        new MembershipRenewalInvoice([
+                            'user' => $subscription->user,
+                            'membership' => $subscription->membership,
+                            'subscription' => $subscription,
+                            'payment' => $payment,
+                            'payment_url' => route('user.membership.renewal.pay', ['id' => $payment->id]),
+                            'deadline' => Carbon::parse($payment->expires_at)->format('d M Y H:i'),
+                        ]),
+                    );
+                    Log::info('Email invoice perpanjangan berhasil dikirim', [
+                        'user_id' => $subscription->user_id,
+                        'subscription_id' => $subscription->id,
+                        'payment_id' => $payment->id,
                         'deadline' => Carbon::parse($payment->expires_at)->format('d M Y H:i'),
-                    ])
-                );
-                Log::info('Email invoice perpanjangan berhasil dikirim', [
-                    'user_id' => $subscription->user_id,
+                    ]);
+                    $count++;
+                } catch (\Exception $e) {
+                    Log::error('Gagal mengirim email invoice perpanjangan', [
+                        'error' => $e->getMessage(),
+                        'user_id' => $subscription->user_id,
+                        'subscription_id' => $subscription->id,
+                    ]);
+                }
+            } else {
+                Log::error('Gagal membuat payment untuk invoice perpanjangan', [
                     'subscription_id' => $subscription->id,
-                    'payment_id' => $payment->id,
-                    'deadline' => Carbon::parse($payment->expires_at)->format('d M Y H:i')
-                ]);
-                $count++;
-            } catch (\Exception $e) {
-                Log::error('Gagal mengirim email invoice perpanjangan', [
-                    'error' => $e->getMessage(),
-                    'user_id' => $subscription->user_id,
-                    'subscription_id' => $subscription->id
                 ]);
             }
-        } else {
-            Log::error('Gagal membuat payment untuk invoice perpanjangan', [
-                'subscription_id' => $subscription->id
-            ]);
         }
-    }
 
-    return response()->json([
-        'message' => $count . ' invoice perpanjangan telah dijadwalkan',
-        'subscriptions' => $expiringSubscriptions->pluck('id'),
-    ]);
-}
+        return response()->json([
+            'message' => $count . ' invoice perpanjangan telah dijadwalkan',
+            'subscriptions' => $expiringSubscriptions->pluck('id'),
+        ]);
+    }
 
 /**
  * Membuat booking baru untuk perpanjangan membership
@@ -821,10 +999,20 @@ public function scheduleMembershipRenewalInvoices()
 public function createNewBookingsForRenewal(MembershipSubscription $subscription)
 {
     try {
-        // Ambil 3 sesi membership pertama yang ada (yang dijadikan sebagai template perpanjangan)
+        // Ambil data membership
+        $membership = $subscription->membership;
+        if (!$membership) {
+            Log::error('Membership tidak ditemukan untuk subscription #' . $subscription->id);
+            return;
+        }
+
+        // Tentukan jumlah jam yang dibutuhkan berdasarkan tipe membership
+        $requiredHours = $this->getRequiredHoursByType($membership->type);
+
+        // Ambil sesi membership yang ada sesuai jumlah jam yang dibutuhkan
         $existingSessions = MembershipSession::where('membership_subscription_id', $subscription->id)
-            ->orderBy('session_number')  // Urutkan berdasarkan nomor sesi
-            ->take(3)  // Ambil hanya 3 sesi pertama sebagai template (untuk weekly)
+            ->orderBy('session_number')
+            ->take($requiredHours)
             ->get();
 
         if ($existingSessions->isEmpty()) {
@@ -843,21 +1031,40 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
             $paymentId = $payment->id;
         }
 
-        // Ambil field ID dan harga dari membership
-        $membership = $subscription->membership;
+        // Ambil field ID
         $fieldId = $membership->field_id;
-        $field = Field::find($fieldId);
-        $originalPrice = $field ? $field->price : 0;
 
-        // Tentukan tanggal mulai perpanjangan
-        // PENTING: Tanggal subscription->end_date adalah 6 hari setelah tanggal perpanjangan terakhir
-        // Jadi kita gunakan tanggal end_date sebagai patokan (tanpa perlu menambah/mengurangi hari)
+        // Ambil data fotografer dan rental item jika dibutuhkan
+        $photographer = null;
+        $rentalItem = null;
+        $requiredRentalQuantity = 0;
+
+        // Cek apakah membership include fotografer
+        if ($membership->includes_photographer && $membership->photographer_id) {
+            $photographer = Photographer::find($membership->photographer_id);
+            if (!$photographer) {
+                Log::error('Fotografer tidak ditemukan untuk perpanjangan membership #' . $subscription->id);
+                return;
+            }
+        }
+
+        // Cek apakah membership include rental item
+        if ($membership->includes_rental_item && $membership->rental_item_id) {
+            $rentalItem = RentalItem::find($membership->rental_item_id);
+            if (!$rentalItem) {
+                Log::error('Item rental tidak ditemukan untuk perpanjangan membership #' . $subscription->id);
+                return;
+            }
+            $requiredRentalQuantity = $membership->rental_item_quantity ?? 1;
+        }
+
+        // Tentukan tanggal mulai perpanjangan (7 hari setelah end_date saat ini)
         $renewalStartDate = Carbon::parse($subscription->end_date)->subDays(6);
 
         // Siapkan array untuk sesi baru
         $newSessions = [];
 
-        // Gunakan pola waktu dari 3 sesi pertama untuk membuat sesi baru
+        // Gunakan pola waktu dari sesi yang ada untuk membuat sesi baru
         foreach ($existingSessions as $index => $session) {
             // Ambil jam dari sesi yang ada
             $origStartTime = Carbon::parse($session->start_time);
@@ -865,8 +1072,6 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
             $startHour = $origStartTime->format('H:i');
             $endHour = $origEndTime->format('H:i');
 
-            // Untuk penyederhanaan, gunakan tanggal yang sama dengan renewalStartDate
-            // Ini karena kita ingin membuat 3 sesi di hari dan tanggal yang sama
             $newDate = $renewalStartDate->copy();
 
             $newSessions[] = [
@@ -883,8 +1088,109 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
         }, $newSessions);
 
         Log::info('Jadwal baru untuk perpanjangan membership:', $dateArray);
+        Log::info('Jumlah sesi yang dibuat: ' . count($newSessions) . ' untuk tipe membership ' . $membership->type);
 
-        // Buat booking dan session baru
+        // TAMBAHAN BARU: Validasi ketersediaan semua sumber daya
+        $unavailableSessions = [];
+        foreach ($newSessions as $sessionData) {
+            $newSessionDate = $sessionData['date'];
+            $newStartTime = Carbon::parse($newSessionDate . ' ' . $sessionData['start_hour']);
+            $newEndTime = Carbon::parse($newSessionDate . ' ' . $sessionData['end_hour']);
+
+            // Cek ketersediaan lapangan
+            $isFieldBooked = FieldBooking::where('field_id', $fieldId)
+                ->where(function ($query) use ($newStartTime, $newEndTime) {
+                    $query->where(function ($q) use ($newStartTime, $newEndTime) {
+                            $q->where('start_time', '<=', $newStartTime)->where('end_time', '>', $newStartTime);
+                        })
+                        ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                            $q->where('start_time', '<', $newEndTime)->where('end_time', '>=', $newEndTime);
+                        })
+                        ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                            $q->where('start_time', '>=', $newStartTime)->where('end_time', '<=', $newEndTime);
+                        });
+                })
+                ->where('status', '!=', 'cancelled')
+                ->exists();
+
+            if ($isFieldBooked) {
+                $unavailableSessions[] = "Lapangan pada " . $newStartTime->format('d M Y H:i') . " - " . $newEndTime->format('H:i');
+                continue;
+            }
+
+            // Cek ketersediaan fotografer jika include fotografer
+            if ($photographer) {
+                $isPhotographerBooked = PhotographerBooking::where('photographer_id', $photographer->id)
+                    ->where(function ($query) use ($newStartTime, $newEndTime) {
+                        $query->where(function ($q) use ($newStartTime, $newEndTime) {
+                                $q->where('start_time', '<=', $newStartTime)->where('end_time', '>', $newStartTime);
+                            })
+                            ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                                $q->where('start_time', '<', $newEndTime)->where('end_time', '>=', $newEndTime);
+                            })
+                            ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                                $q->where('start_time', '>=', $newStartTime)->where('end_time', '<=', $newEndTime);
+                            });
+                    })
+                    ->where('status', '!=', 'cancelled')
+                    ->exists();
+
+                if ($isPhotographerBooked) {
+                    $unavailableSessions[] = "Fotografer " . $photographer->name . " pada " . $newStartTime->format('d M Y H:i') . " - " . $newEndTime->format('H:i');
+                    continue;
+                }
+            }
+
+            // Cek ketersediaan rental item jika include rental item
+            if ($rentalItem && $requiredRentalQuantity > 0) {
+                $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+                    ->whereNotIn('status', ['cancelled'])
+                    ->where(function ($query) use ($newStartTime, $newEndTime) {
+                        $query->where(function ($q) use ($newStartTime, $newEndTime) {
+                                $q->where('start_time', '>=', $newStartTime)->where('start_time', '<', $newEndTime);
+                            })
+                            ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                                $q->where('end_time', '>', $newStartTime)->where('end_time', '<=', $newEndTime);
+                            })
+                            ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                                $q->where('start_time', '<=', $newStartTime)->where('end_time', '>=', $newEndTime);
+                            });
+                    })
+                    ->sum('quantity');
+
+                $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+
+                if ($requiredRentalQuantity > $availableQuantity) {
+                    $unavailableSessions[] = "Item " . $rentalItem->name . " pada " . $newStartTime->format('d M Y H:i') . " - " . $newEndTime->format('H:i') . " (Tersedia: " . $availableQuantity . ", Dibutuhkan: " . $requiredRentalQuantity . ")";
+                    continue;
+                }
+            }
+        }
+
+        // Jika ada sesi yang tidak tersedia, catat di log dan batalkan perpanjangan
+        if (!empty($unavailableSessions)) {
+            Log::error('Perpanjangan membership #' . $subscription->id . ' gagal karena konflik: ' . implode(', ', $unavailableSessions));
+
+            // Update status subscription
+            $subscription->renewal_status = 'renewal_failed';
+            $subscription->renewal_notes = 'Perpanjangan gagal: ' . implode(', ', $unavailableSessions);
+            $subscription->save();
+
+            // Kirim email notifikasi ke admin
+            try {
+                Mail::to(config('mail.admin_email'))
+                    ->send(new MembershipRenewalFailedNotification([
+                        'subscription' => $subscription,
+                        'unavailableSessions' => $unavailableSessions
+                    ]));
+            } catch (\Exception $e) {
+                Log::error('Gagal mengirim notifikasi email: ' . $e->getMessage());
+            }
+
+            return;
+        }
+
+        // Buat booking dan session baru jika semua validasi berhasil
         foreach ($newSessions as $sessionData) {
             $newSessionDate = $sessionData['date'];
             $newStartTime = Carbon::parse($newSessionDate . ' ' . $sessionData['start_hour']);
@@ -917,6 +1223,43 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
             $newBooking->membership_session_id = $newSession->id;
             $newBooking->save();
 
+            // 4. Buat fotografer booking jika include fotografer
+            if ($photographer) {
+                $photographerBooking = new PhotographerBooking();
+                $photographerBooking->user_id = $subscription->user_id;
+                $photographerBooking->photographer_id = $photographer->id;
+                $photographerBooking->payment_id = $paymentId;
+                $photographerBooking->field_booking_id = $newBooking->id;
+                $photographerBooking->membership_session_id = $newSession->id;
+                $photographerBooking->start_time = $newStartTime;
+                $photographerBooking->end_time = $newEndTime;
+                $photographerBooking->price = 0; // Gratis karena sudah termasuk dalam membership
+                $photographerBooking->status = 'confirmed';
+                $photographerBooking->is_membership = true;
+                $photographerBooking->save();
+
+                Log::info('Membuat booking fotografer untuk perpanjangan membership #' . $subscription->id . ' session #' . $sessionNumber);
+            }
+
+            // 5. Buat rental item booking jika include rental item
+            if ($rentalItem) {
+                $rentalBooking = new RentalBooking();
+                $rentalBooking->user_id = $subscription->user_id;
+                $rentalBooking->rental_item_id = $rentalItem->id;
+                $rentalBooking->payment_id = $paymentId;
+                $rentalBooking->field_booking_id = $newBooking->id;
+                $rentalBooking->membership_session_id = $newSession->id;
+                $rentalBooking->start_time = $newStartTime;
+                $rentalBooking->end_time = $newEndTime;
+                $rentalBooking->quantity = $membership->rental_item_quantity ?? 1;
+                $rentalBooking->total_price = 0; // Gratis karena sudah termasuk dalam membership
+                $rentalBooking->status = 'confirmed';
+                $rentalBooking->is_membership = true;
+                $rentalBooking->save();
+
+                Log::info('Membuat booking rental item untuk perpanjangan membership #' . $subscription->id . ' session #' . $sessionNumber);
+            }
+
             Log::info('Membuat jadwal #' . $sessionNumber . ' baru: ' . $newStartTime->format('Y-m-d H:i') . ' - ' . $newEndTime->format('H:i'));
         }
 
@@ -926,6 +1269,15 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
             'subscription_id' => $subscription->id,
             'trace' => $e->getTraceAsString()
         ]);
+
+        // Update status subscription jika terjadi error
+        try {
+            $subscription->renewal_status = 'renewal_error';
+            $subscription->renewal_notes = 'Error: ' . $e->getMessage();
+            $subscription->save();
+        } catch (\Exception $e2) {
+            Log::error('Error updating subscription status: ' . $e2->getMessage());
+        }
     }
 }
 
@@ -942,11 +1294,7 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
         $bookingDate = Carbon::parse($newBooking->start_time)->format('Y-m-d');
 
         // Cari semua booking yang terkait dengan perpanjangan ini, urutkan berdasarkan tanggal
-        $renewalBookings = FieldBooking::where('field_id', $newBooking->field_id)
-            ->where('user_id', $subscription->user_id)
-            ->where('is_membership', true)
-            ->orderBy('start_time', 'asc')
-            ->get();
+        $renewalBookings = FieldBooking::where('field_id', $newBooking->field_id)->where('user_id', $subscription->user_id)->where('is_membership', true)->orderBy('start_time', 'asc')->get();
 
         // Temukan posisi booking saat ini dalam daftar yang diurutkan
         $position = 1; // Default ke sesi pertama
@@ -962,7 +1310,7 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
         Log::info('Menentukan session number', [
             'booking_id' => $newBooking->id,
             'start_time' => $newBooking->start_time,
-            'position' => $position
+            'position' => $position,
         ]);
 
         return $position;

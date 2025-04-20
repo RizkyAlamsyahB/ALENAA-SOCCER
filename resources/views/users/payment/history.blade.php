@@ -121,7 +121,7 @@
                                                     @endif
                                                     <div class="payment-details">
                                                         <div class="payment-method-name">
-                                                            {{ $payment->payment_type ?? 'Midtrans' }}</div>
+                                                            {{ $payment->payment_type ?? '' }}</div>
                                                         <div class="payment-items">
                                                             @php
                                                                 $totalItems = 0;

@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             PhotographerSeeder::class,
             MembershipSeeder::class,
             PointVoucherSeeder::class,
+            OpenMabarSeeder::class,
         ]);
     }
 }

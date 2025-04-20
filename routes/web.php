@@ -12,6 +12,7 @@ use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\User\DashboardController;
+use App\Http\Controllers\User\OpenMabarController;
 use App\Http\Controllers\User\MembershipController;
 use App\Http\Controllers\Admin\RentalItemController;
 use App\Http\Controllers\User\RentalItemsController;
@@ -74,6 +75,7 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
             Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
             Route::get('/clear', [CartController::class, 'clearCart'])->name('clear');
+            Route::get('/checkout', [CartController::class, 'showCheckout'])->name('show.checkout');
             Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
             // Dalam grup cart management, tambahkan ini:
             Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
@@ -167,40 +169,66 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::get('/item', [ReviewController::class, 'getItemReviews'])->name('item');
         });
 
+    // Points Management
+    Route::prefix('points')
+        ->name('user.points.')
+        ->middleware(['auth', 'verified', 'checkRole:user'])
+        ->group(function () {
+            // Daftar voucher yang tersedia
+            Route::get('/', [PointController::class, 'index'])->name('index');
 
-// Points Management
-Route::prefix('points')
-->name('user.points.')
-->middleware(['auth', 'verified', 'checkRole:user'])
-->group(function () {
-    // Daftar voucher yang tersedia
-    Route::get('/', [PointController::class, 'index'])->name('index');
+            // Detail voucher
+            Route::get('/voucher/{id}', [PointController::class, 'showVoucher'])->name('voucher-detail');
 
-    // Detail voucher
-    Route::get('/voucher/{id}', [PointController::class, 'showVoucher'])->name('voucher-detail');
+            // Proses penukaran voucher
+            Route::post('/redeem/{id}', [PointController::class, 'redeemVoucher'])->name('redeem');
 
-    // Proses penukaran voucher
-    Route::post('/redeem/{id}', [PointController::class, 'redeemVoucher'])->name('redeem');
+            // Riwayat poin
+            Route::get('/history', [PointController::class, 'history'])->name('history');
 
-    // Riwayat poin
-    Route::get('/history', [PointController::class, 'history'])->name('history');
+            // Detail penukaran
+            Route::get('/redemption/{id}', [PointController::class, 'showRedemption'])->name('redemption-detail');
+        });
 
-    // Detail penukaran
-    Route::get('/redemption/{id}', [PointController::class, 'showRedemption'])->name('redemption-detail');
-});
+    Route::prefix('mabar')
+        ->name('user.mabar.')
+        ->middleware(['auth', 'verified', 'checkRole:user'])
+        ->group(function () {
+            // Menampilkan daftar open mabar
+            Route::get('/', [OpenMabarController::class, 'index'])->name('index');
+
+            // Menampilkan detail open mabar
+            Route::get('/{id}', [OpenMabarController::class, 'show'])->name('show');
+
+            // Form pembuatan open mabar baru
+            Route::get('/create/new', [OpenMabarController::class, 'create'])->name('create');
+
+            // Menyimpan open mabar baru
+            Route::post('/store', [OpenMabarController::class, 'store'])->name('store');
+
+            // Bergabung dengan open mabar
+            Route::post('/{id}/join', [OpenMabarController::class, 'join'])->name('join');
+
+            // Batalkan keikutsertaan
+            Route::post('/{id}/cancel', [OpenMabarController::class, 'cancel'])->name('cancel');
+
+            // Tandai peserta hadir (untuk pembuat mabar)
+            Route::post('/{mabarId}/participants/{participantId}/attended', [OpenMabarController::class, 'markAttended'])->name('mark.attended');
+
+            // Daftar mabar yang diikuti user
+            Route::get('/my/mabars', [OpenMabarController::class, 'myMabars'])->name('my');
+        });
 
     // Other Features
-    Route::get('/mabar', function () {
-        return view('users.mabar');
-    })->name('mabar.index');
+    // Route::get('/mabar', function () {
+    //     return view('users.mabar');
+    // })->name('mabar.index');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/picture', [ProfileController::class, 'updateProfilePicture'])->name('profile.picture.update');
-
-
 });
 
 // Payment Notification Endpoints (Diakses oleh Midtrans, tidak memerlukan auth)

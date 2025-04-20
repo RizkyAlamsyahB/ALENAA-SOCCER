@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('price_per_slot', 10, 2);
             $table->integer('total_slots');
             $table->integer('filled_slots')->default(0);
+            $table->enum('level', ['beginner', 'intermediate', 'advanced', 'all'])->default('all');
             $table->enum('status', ['open', 'full', 'cancelled', 'completed'])->default('open');
             $table->timestamps();
         });

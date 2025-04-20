@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Payment;
+use App\Models\FieldBooking;
 use App\Models\Photographer;
+use App\Models\MembershipSession;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -21,6 +23,9 @@ class PhotographerBooking extends Model
         'price',
         'status', // pending, confirmed, cancelled
         'notes',
+        'field_booking_id',
+        'membership_session_id',
+        'is_membership',
     ];
 
     protected $casts = [
@@ -54,5 +59,14 @@ class PhotographerBooking extends Model
     }
 
 
+// Tambahkan metode ini di class PhotographerBooking
+public function fieldBooking()
+{
+    return $this->belongsTo(FieldBooking::class);
+}
 
+public function membershipSession()
+{
+    return $this->belongsTo(MembershipSession::class);
+}
 }

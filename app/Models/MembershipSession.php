@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use App\Models\FieldBooking;
+use App\Models\RentalBooking;
+use App\Models\PhotographerBooking;
 use App\Models\MembershipSubscription;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,6 +41,16 @@ class MembershipSession extends Model
     {
         return $this->hasOne(FieldBooking::class);
     }
+    // Tambahkan metode ini di class MembershipSession
+public function photographerBookings()
+{
+    return $this->hasMany(PhotographerBooking::class);
+}
+
+public function rentalBookings()
+{
+    return $this->hasMany(RentalBooking::class);
+}
 
     /**
      * Mendapatkan status yang ditampilkan:

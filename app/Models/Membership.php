@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Field;
+use App\Models\RentalItem;
+use App\Models\Photographer;
 use App\Models\MembershipSubscription;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +24,9 @@ class Membership extends Model
         'photographer_duration', // dalam jam
         'status', // active, inactive
         'image',
+        'includes_photographer', // apakah termasuk fotografer
+        'includes_rental_item', // apakah termasuk rental item
+        'rental_item_quantity', // jumlah rental item
     ];
 
     protected $casts = [
@@ -41,4 +46,14 @@ class Membership extends Model
     {
         return $this->hasMany(MembershipSubscription::class);
     }
+    // Tambahkan metode ini di class Membership
+public function photographer()
+{
+    return $this->belongsTo(Photographer::class);
+}
+
+public function rentalItem()
+{
+    return $this->belongsTo(RentalItem::class);
+}
 }

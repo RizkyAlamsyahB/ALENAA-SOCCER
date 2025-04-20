@@ -34,7 +34,7 @@
     <div class="container mt-5 mb-5">
         <!-- Alerts -->
         <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-lg-10 mx-auto">
                 @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                         <div class="d-flex align-items-center">
@@ -58,7 +58,7 @@
         </div>
 
         <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-lg-10 mx-auto">
                 <!-- Schedule Card -->
                 <div class="card card-schedule">
                     <div class="card-header">
@@ -66,62 +66,106 @@
                     </div>
                     <div class="card-body">
                         <!-- Information Card -->
+<!-- Di file view membership/schedule.blade.php -->
+<div class="info-card mb-4">
+    <div class="info-card-icon">
+        <i class="fas fa-info-circle"></i>
+    </div>
+    <div class="info-card-content">
+        <h5>Paket {{ ucfirst($membership->type) }}</h5>
+        <p>Untuk paket {{ ucfirst($membership->type) }}, Anda perlu memilih
+            <strong>{{ $requiredHours }} jam</strong> slot waktu dalam seminggu. Anda bebas memilih
+            kapan saja dalam rentang 7 hari ke depan.</p>
 
+        @if($membership->includes_photographer || $membership->includes_rental_item)
+            <div class="package-includes mt-2">
+                <h6>Paket ini sudah termasuk:</h6>
+                <ul>
+                    @if($membership->includes_photographer)
+                        @php $photographer = App\Models\Photographer::find($membership->photographer_id); @endphp
+                        @if($photographer)
+                            <li>
+                                <i class="fas fa-camera text-success"></i>
+                                Fotografer {{ $photographer->name }} ({{ $membership->photographer_duration }} jam)
+                            </li>
+                        @endif
+                    @endif
+
+                    @if($membership->includes_rental_item)
+                        @php $rentalItem = App\Models\RentalItem::find($membership->rental_item_id); @endphp
+                        @if($rentalItem)
+                            <li>
+                                <i class="fas fa-futbol text-success"></i>
+                                {{ $rentalItem->name }} ({{ $membership->rental_item_quantity }} pcs)
+                            </li>
+                        @endif
+                    @endif
+                </ul>
+                <p class="text-muted small">Fotografer dan perlengkapan akan tersedia sesuai dengan jadwal yang Anda pilih.</p>
+            </div>
+        @endif
+    </div>
+</div>
 
                         <form action="{{ route('user.membership.save.schedule', $membership->id) }}" method="POST"
                             id="scheduleForm">
                             @csrf
                             <!-- Tambahkan bagian ini sebelum form di Schedule.blade.php -->
-<div class="info-card mb-4">
-    <div class="info-card-icon">
-        <i class="fas fa-money-bill-wave"></i>
-    </div>
-    <div class="info-card-content">
-        <h5>Pilih Periode Pembayaran</h5>
-        <p>Anda dapat memilih untuk membayar keanggotaan secara mingguan atau langsung bayar bulanan.</p>
-    </div>
-</div>
+                            <div class="info-card mb-4">
+                                <div class="info-card-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <h5>Pilih Periode Pembayaran</h5>
+                                    <p>Anda dapat memilih untuk membayar keanggotaan secara mingguan atau langsung bayar
+                                        bulanan.</p>
+                                </div>
+                            </div>
 
-<div class="payment-options mb-4">
-    <div class="form-check form-check-inline payment-option-card">
-        <input class="form-check-input" type="radio" name="payment_period" id="weekly-payment" value="weekly" checked>
-        <label class="form-check-label payment-label" for="weekly-payment">
-            <div class="payment-option-content">
-                <div class="payment-option-icon">
-                    <i class="fas fa-calendar-week"></i>
-                </div>
-                <div class="payment-option-details">
-                    <h6>Pembayaran Mingguan</h6>
-                    <p class="mb-0">Rp {{ number_format($membership->price, 0, ',', '.') }}</p>
-                    <small class="text-muted">Perpanjangan otomatis setiap minggu</small>
-                </div>
-            </div>
-        </label>
-    </div>
+                            <div class="payment-options mb-4">
+                                <div class="form-check form-check-inline payment-option-card">
+                                    <input class="form-check-input" type="radio" name="payment_period" id="weekly-payment"
+                                        value="weekly" checked>
+                                    <label class="form-check-label payment-label" for="weekly-payment">
+                                        <div class="payment-option-content">
+                                            <div class="payment-option-icon">
+                                                <i class="fas fa-calendar-week"></i>
+                                            </div>
+                                            <div class="payment-option-details">
+                                                <h6>Pembayaran Mingguan</h6>
+                                                <p class="mb-0">Rp {{ number_format($membership->price, 0, ',', '.') }}
+                                                </p>
+                                                <small class="text-muted">Perpanjangan otomatis setiap minggu</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
 
-    <div class="form-check form-check-inline payment-option-card">
-        <input class="form-check-input" type="radio" name="payment_period" id="monthly-payment" value="monthly">
-        <label class="form-check-label payment-label" for="monthly-payment">
-            <div class="payment-option-content">
-                <div class="payment-option-icon">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <div class="payment-option-details">
-                    <h6>Pembayaran Bulanan</h6>
-                    <p class="mb-0">Rp {{ number_format($membership->price * 4, 0, ',', '.') }}</p>
-                    <small class="text-muted">Hemat waktu dengan pembayaran bulanan</small>
-                </div>
-            </div>
-        </label>
-    </div>
-</div>
+                                <div class="form-check form-check-inline payment-option-card">
+                                    <input class="form-check-input" type="radio" name="payment_period"
+                                        id="monthly-payment" value="monthly">
+                                    <label class="form-check-label payment-label" for="monthly-payment">
+                                        <div class="payment-option-content">
+                                            <div class="payment-option-icon">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div class="payment-option-details">
+                                                <h6>Pembayaran Bulanan</h6>
+                                                <p class="mb-0">Rp
+                                                    {{ number_format($membership->price * 4, 0, ',', '.') }}</p>
+                                                <small class="text-muted">Hemat waktu dengan pembayaran bulanan</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
 
                             <div class="schedule-steps">
                                 <!-- Step 1: Pick Week -->
                                 <div class="schedule-step active" id="step-1">
                                     <div class="step-number">1</div>
                                     <div class="step-content">
-                                        <h5>Pilih Minggu</h5>
+                                        <h5>Pilih Minggu</h5>4
                                         <div class="week-picker-wrapper">
                                             <div id="week-picker" class="mb-3"></div>
                                             <div class="selected-week-display" id="selected-week-display">
@@ -134,112 +178,29 @@
                                     </div>
                                 </div>
 
-                                <!-- Step 2: Pick Sessions -->
+                                <!-- Step 2: Pick Time Slots -->
                                 <div class="schedule-step" id="step-2">
                                     <div class="step-number">2</div>
                                     <div class="step-content">
-                                        <h5>Pilih 3 Jadwal</h5>
-                                        <div class="session-cards">
-                                            <!-- Session 1 -->
-                                            <div class="session-card">
-                                                <div class="session-card-header">
-                                                    <span class="session-number">1</span>
-                                                    <h6>Jadwal Pertama</h6>
-                                                </div>
-                                                <div class="session-card-body">
-                                                    <div class="row g-3">
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Hari</label>
-                                                            <div class="input-group">
-                                                                <span class="input-group-text"><i
-                                                                        class="fas fa-calendar-day"></i></span>
-                                                                <select class="form-select session-day"
-                                                                    name="sessions[0][day]" required disabled>
-                                                                    <option value="">Pilih Hari</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Jam</label>
-                                                            <div class="input-group">
-                                                                <span class="input-group-text"><i
-                                                                        class="fas fa-clock"></i></span>
-                                                                <select class="form-select session-time"
-                                                                    name="sessions[0][time]" required disabled>
-                                                                    <option value="">Pilih Jam</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <h5>Pilih Slot Waktu ({{ $requiredHours }} jam)</h5>
+                                        <div class="day-tabs-container mb-4">
+                                            <ul class="nav nav-tabs day-tabs" id="dayTabs" role="tablist"></ul>
+                                        </div>
 
-                                            <!-- Session 2 -->
-                                            <div class="session-card">
-                                                <div class="session-card-header">
-                                                    <span class="session-number">2</span>
-                                                    <h6>Jadwal Kedua</h6>
-                                                </div>
-                                                <div class="session-card-body">
-                                                    <div class="row g-3">
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Hari</label>
-                                                            <div class="input-group">
-                                                                <span class="input-group-text"><i
-                                                                        class="fas fa-calendar-day"></i></span>
-                                                                <select class="form-select session-day"
-                                                                    name="sessions[1][day]" required disabled>
-                                                                    <option value="">Pilih Hari</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Jam</label>
-                                                            <div class="input-group">
-                                                                <span class="input-group-text"><i
-                                                                        class="fas fa-clock"></i></span>
-                                                                <select class="form-select session-time"
-                                                                    name="sessions[1][time]" required disabled>
-                                                                    <option value="">Pilih Jam</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="tab-content" id="dayTabsContent">
+                                            <!-- Tab panes akan dibuat dinamis dengan JavaScript -->
+                                        </div>
 
-                                            <!-- Session 3 -->
-                                            <div class="session-card">
-                                                <div class="session-card-header">
-                                                    <span class="session-number">3</span>
-                                                    <h6>Jadwal Ketiga</h6>
+                                        <div class="time-slot-counter mt-3">
+                                            <div
+                                                class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                                <span>Slot Dipilih: <span id="selected-slots-count">0</span> dari
+                                                    {{ $requiredHours }} jam</span>
+                                                <div class="progress flex-grow-1 mx-3" style="height: 10px;">
+                                                    <div id="slots-progress-bar" class="progress-bar bg-success"
+                                                        role="progressbar" style="width: 0%"></div>
                                                 </div>
-                                                <div class="session-card-body">
-                                                    <div class="row g-3">
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Hari</label>
-                                                            <div class="input-group">
-                                                                <span class="input-group-text"><i
-                                                                        class="fas fa-calendar-day"></i></span>
-                                                                <select class="form-select session-day"
-                                                                    name="sessions[2][day]" required disabled>
-                                                                    <option value="">Pilih Hari</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Jam</label>
-                                                            <div class="input-group">
-                                                                <span class="input-group-text"><i
-                                                                        class="fas fa-clock"></i></span>
-                                                                <select class="form-select session-time"
-                                                                    name="sessions[2][time]" required disabled>
-                                                                    <option value="">Pilih Jam</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <span id="slots-percentage">0%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -271,17 +232,9 @@
                                                     <i class="fas fa-calendar-week"></i>
                                                     <span>Minggu: <span id="selected-week-summary">-</span></span>
                                                 </div>
-                                                <div class="summary-item" id="summary-session-1">
-                                                    <i class="fas fa-calendar-check"></i>
-                                                    <span>Jadwal 1: <span id="selected-session-1-summary">-</span></span>
-                                                </div>
-                                                <div class="summary-item" id="summary-session-2">
-                                                    <i class="fas fa-calendar-check"></i>
-                                                    <span>Jadwal 2: <span id="selected-session-2-summary">-</span></span>
-                                                </div>
-                                                <div class="summary-item" id="summary-session-3">
-                                                    <i class="fas fa-calendar-check"></i>
-                                                    <span>Jadwal 3: <span id="selected-session-3-summary">-</span></span>
+                                                <div class="selected-slots-list mt-3">
+                                                    <h6>Slot Waktu Terpilih:</h6>
+                                                    <ul id="selected-slots-summary" class="list-group"></ul>
                                                 </div>
                                             </div>
                                         </div>
@@ -289,12 +242,23 @@
                                 </div>
                             </div>
 
+                            <!-- Hidden field to store selected slots -->
+                            <div id="selected-slots-container"></div>
+                            <input type="hidden" name="today_date" id="today-date" value="{{ date('Y-m-d') }}">
+
                             <div class="form-actions mt-4">
                                 <a href="{{ route('user.membership.show', $membership->id) }}"
                                     class="btn btn-outline-secondary">
                                     <i class="fas fa-arrow-left me-2"></i>Kembali
                                 </a>
-                                <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                                <button type="button" class="btn btn-outline-secondary" id="prev-btn"
+                                    style="display: none;">
+                                    <i class="fas fa-arrow-left me-2"></i>Sebelumnya
+                                </button>
+                                <button type="button" class="btn btn-primary" id="next-btn" disabled>
+                                    Selanjutnya<i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="submit-btn" style="display: none;">
                                     <i class="fas fa-cart-plus me-2"></i>Tambahkan ke Keranjang
                                 </button>
                             </div>
@@ -306,275 +270,178 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-        // Initialize variables
-        let selectedWeekStart = null;
-        let selectedWeekEnd = null;
-        let canSubmit = false;
-        let selectedSchedules = []; // Untuk menyimpan jadwal yang dipilih
-        const fieldId = {{ $field->id }}; // Ambil ID field dari Blade template
+            // Inisialisasi variabel
+            const requiredHours = {{ $requiredHours }};
+            let selectedWeekStart = null;
+            let selectedWeekEnd = null;
+            let selectedSlots = new Set();
+            let currentStep = 1;
+            const fieldId = {{ $field->id }};
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const availableDays = [];
+            let availableSlotsByDay = {};
 
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            // Initialize Flatpickr for week selection
+            const weekPicker = flatpickr("#week-picker", {
+                inline: true,
+                locale: 'id',
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        // Mulai minggu dari tanggal yang dipilih
+                        selectedWeekStart = new Date(selectedDates[0]);
+                        selectedWeekEnd = new Date(selectedWeekStart);
+                        selectedWeekEnd.setDate(selectedWeekStart.getDate() + 6);
 
-        // Initialize Flatpickr for week selection
-        const weekPicker = flatpickr("#week-picker", {
-            inline: true,
-            locale: 'id',
-            dateFormat: "Y-m-d",
-            minDate: "today",
-            maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
+                        // Format dates for display
+                        const formattedStart = formatDate(selectedWeekStart);
+                        const formattedEnd = formatDate(selectedWeekEnd);
 
-            onChange: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length > 0) {
-                    // Mulai minggu dari tanggal yang dipilih
-                    selectedWeekStart = new Date(selectedDates[0]);
-                    selectedWeekEnd = new Date(selectedWeekStart);
-                    selectedWeekEnd.setDate(selectedWeekStart.getDate() + 6);
-
-                    // Format dates for display
-                    const formattedStart = formatDate(selectedWeekStart);
-                    const formattedEnd = formatDate(selectedWeekEnd);
-
-                    // Update the week display
-                    document.getElementById('selected-week-display').innerHTML = `
-                        <div class="selected-week-content">
-                            <div class="selected-week-info">
-                                <span class="week-label">Minggu Terpilih:</span>
-                                <span class="week-value">${formattedStart} - ${formattedEnd}</span>
+                        // Update the week display
+                        document.getElementById('selected-week-display').innerHTML = `
+                            <div class="selected-week-content">
+                                <div class="selected-week-info">
+                                    <span class="week-label">Minggu Terpilih:</span>
+                                    <span class="week-value">${formattedStart} - ${formattedEnd}</span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" id="change-week-btn">
+                                    <i class="fas fa-exchange-alt me-1"></i> Ubah
+                                </button>
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" id="change-week-btn">
-                                <i class="fas fa-exchange-alt me-1"></i> Ubah
-                            </button>
-                        </div>
-                    `;
+                        `;
 
-                    // Update summary
-                    document.getElementById('selected-week-summary').textContent =
-                        `${formattedStart} - ${formattedEnd}`;
+                        // Update summary
+                        document.getElementById('selected-week-summary').textContent =
+                            `${formattedStart} - ${formattedEnd}`;
 
-                    // Activate step 2
-                    document.getElementById('step-1').classList.add('completed');
-                    document.getElementById('step-2').classList.add('active');
+                        // Aktifkan step berikutnya
+                        document.getElementById('next-btn').disabled = false;
 
-                    // Populate day selectors with days of the selected week
-                    populateDaySelectors();
+                        // Add event listener to change week button
+                        document.getElementById('change-week-btn').addEventListener('click',
+                    function() {
+                            resetSelection();
+                        });
 
-                    // Add event listener to change week button
-                    document.getElementById('change-week-btn').addEventListener('click', function() {
-                        resetSelection();
-                    });
+                        // Dapatkan rentang tanggal untuk seminggu
+                        const weekDates = getWeekDates(selectedWeekStart);
 
-                    // Hide the calendar
-                    weekPicker._input.style.display = 'none';
+                        // Simpan ke variabel global
+                        availableDays.length = 0;
+                        weekDates.forEach(date => {
+                            availableDays.push({
+                                dateObj: date,
+                                dateStr: formatDateToYMD(date)
+                            });
+                        });
+                    }
                 }
-            }
-        });
-
-        // Format date for display
-        function formatDate(date) {
-            return date.toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-        }
-
-        // Reset the selection
-        function resetSelection() {
-            // Reset variables
-            selectedWeekStart = null;
-            selectedWeekEnd = null;
-            canSubmit = false;
-            selectedSchedules = []; // Reset pilihan jadwal
-
-            // Reset week display
-            document.getElementById('selected-week-display').innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-calendar-alt"></i>
-                    <p>Belum ada minggu yang dipilih</p>
-                </div>
-            `;
-
-            // Reset steps
-            document.getElementById('step-1').classList.remove('completed');
-            document.getElementById('step-2').classList.remove('active');
-            document.getElementById('step-2').classList.remove('completed');
-            document.getElementById('step-3').classList.remove('active');
-
-            // Show calendar
-            weekPicker._input.style.display = 'block';
-
-            // Disable day and time selectors
-            const daySelectors = document.querySelectorAll('.session-day');
-            const timeSelectors = document.querySelectorAll('.session-time');
-
-            daySelectors.forEach(selector => {
-                selector.disabled = true;
-                selector.innerHTML = '<option value="">Pilih Hari</option>';
             });
 
-            timeSelectors.forEach(selector => {
-                selector.disabled = true;
-                selector.innerHTML = '<option value="">Pilih Jam</option>';
-            });
+            // Generate tab hari dan konten
+            function generateDayTabs() {
+                const dayTabsContainer = document.getElementById('dayTabs');
+                const dayTabsContent = document.getElementById('dayTabsContent');
 
-            // Reset summary
-            document.getElementById('summary-content').style.display = 'none';
-            document.getElementById('summary-empty').style.display = 'block';
-            document.getElementById('selected-week-summary').textContent = '-';
-            document.getElementById('selected-session-1-summary').textContent = '-';
-            document.getElementById('selected-session-2-summary').textContent = '-';
-            document.getElementById('selected-session-3-summary').textContent = '-';
+                // Reset containers
+                dayTabsContainer.innerHTML = '';
+                dayTabsContent.innerHTML = '';
 
-            // Disable submit button
-            document.getElementById('submit-btn').disabled = true;
-        }
-
-        // Populate day selectors with days of the selected week
-        function populateDaySelectors() {
-            const daySelectors = document.querySelectorAll('.session-day');
-
-            daySelectors.forEach(selector => {
-                // Enable selector
-                selector.disabled = false;
-
-                // Clear options
-                selector.innerHTML = '<option value="">Pilih Hari</option>';
-
-                // Add days - mulai dari tanggal yang dipilih hingga 6 hari ke depan
-                for (let i = 0; i < 7; i++) {
-                    const day = new Date(selectedWeekStart);
-                    day.setDate(selectedWeekStart.getDate() + i);
-
-                    // FIX: Gunakan format yang konsisten untuk nilai tanggal
-                    // Buat string dengan format YYYY-MM-DD secara manual
-                    const year = day.getFullYear();
-                    const month = String(day.getMonth() + 1).padStart(2, '0');
-                    const date = String(day.getDate()).padStart(2, '0');
-                    const isoDate = `${year}-${month}-${date}`;
-
-                    const option = document.createElement('option');
-                    option.value = isoDate; // Format YYYY-MM-DD yang konsisten
-                    option.textContent = day.toLocaleDateString('id-ID', {
-                        weekday: 'long',
+                // Buat tab untuk setiap hari
+                availableDays.forEach((day, index) => {
+                    const isActive = index === 0;
+                    const dayName = day.dateObj.toLocaleDateString('id-ID', {
+                        weekday: 'long'
+                    });
+                    const dateStr = day.dateObj.toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'long'
                     });
+                    const tabId = `day-tab-${index}`;
+                    const contentId = `day-content-${index}`;
 
-                    selector.appendChild(option);
-                }
+                    // Buat tab
+                    const tabItem = document.createElement('li');
+                    tabItem.className = 'nav-item';
+                    tabItem.innerHTML = `
+                        <a class="nav-link ${isActive ? 'active' : ''}" id="${tabId}" data-bs-toggle="tab"
+                           href="#${contentId}" role="tab" aria-controls="${contentId}"
+                           aria-selected="${isActive ? 'true' : 'false'}" data-date="${day.dateStr}">
+                            <div class="day-tab-content">
+                                <div class="day-name">${dayName}</div>
+                                <div class="day-date">${dateStr}</div>
+                            </div>
+                        </a>
+                    `;
+                    dayTabsContainer.appendChild(tabItem);
 
-                // Add event listener for change
-                selector.addEventListener('change', handleDaySelection);
-            });
-        }
+                    // Buat konten tab
+                    const tabContent = document.createElement('div');
+                    tabContent.className = `tab-pane fade ${isActive ? 'show active' : ''}`;
+                    tabContent.id = contentId;
+                    tabContent.setAttribute('role', 'tabpanel');
+                    tabContent.setAttribute('aria-labelledby', tabId);
 
-        // Handle day selection
-        function handleDaySelection(event) {
-            const daySelector = event.target;
-            const sessionIndex = Array.from(document.querySelectorAll('.session-day')).indexOf(daySelector);
-            const timeSelector = document.querySelectorAll('.session-time')[sessionIndex];
+                    // Tambahkan placeholder loading
+                    tabContent.innerHTML = `
+                        <div class="time-slots-loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Memuat slot tersedia...</p>
+                        </div>
+                    `;
 
-            if (daySelector.value) {
-                // Enable time selector
-                timeSelector.disabled = false;
+                    dayTabsContent.appendChild(tabContent);
 
-                // Clear options
-                timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
+                    // Load available slots for this date
+                    loadAvailableSlots(day.dateStr, contentId);
+                });
 
-                // Tambahkan loading state
-                const loadingOption = document.createElement('option');
-                loadingOption.value = "";
-                loadingOption.textContent = "Memuat slot tersedia...";
-                timeSelector.appendChild(loadingOption);
+                // Tambahkan event listener untuk tab switch
+                document.querySelectorAll('#dayTabs .nav-link').forEach(tabLink => {
+                    tabLink.addEventListener('click', function(e) {
+                        const date = this.getAttribute('data-date');
+                        const tabId = this.getAttribute('aria-controls');
 
-                // Get available time slots based on field's available times and existing bookings
-                getAvailableSlotsForDay(daySelector.value, fieldId)
-                    .then(availableSlots => {
-                        // Clear options including loading option
-                        timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
-
-                        if (availableSlots.length === 0) {
-                            const option = document.createElement('option');
-                            option.value = "";
-                            option.textContent = "Tidak ada slot tersedia";
-                            option.disabled = true;
-                            timeSelector.appendChild(option);
-                        } else {
-                            availableSlots.forEach(slot => {
-                                const option = document.createElement('option');
-                                option.value = `${slot.start} - ${slot.end}`;
-                                option.textContent = `${slot.start} - ${slot.end}`;
-                                timeSelector.appendChild(option);
-                            });
+                        // Jika belum ada data untuk hari ini, muat slot yang tersedia
+                        if (!availableSlotsByDay[date]) {
+                            loadAvailableSlots(date, tabId);
                         }
-
-                        // Add event listener for change
-                        timeSelector.addEventListener('change', function(e) {
-                            if (e.target.value) {
-                                const dayText = daySelector.options[daySelector.selectedIndex].text;
-                                const dayValue = daySelector.value;
-                                const timeText = e.target.value;
-                                const timeValue = e.target.value;
-
-                                // Cek apakah kombinasi hari dan jam sudah dipilih sebelumnya
-                                const isDuplicate = selectedSchedules.some(schedule =>
-                                    schedule.day === dayValue && schedule.time === timeValue
-                                );
-
-                                if (isDuplicate) {
-                                    // Tampilkan pesan error
-                                    alert("Jadwal ini sudah dipilih. Silakan pilih hari atau jam yang berbeda.");
-                                    // Reset pilihan
-                                    e.target.value = "";
-                                    return;
-                                }
-
-                                // Hapus jadwal lama jika ada perubahan
-                                selectedSchedules = selectedSchedules.filter(schedule => schedule.index !== sessionIndex);
-
-                                // Tambahkan jadwal baru
-                                selectedSchedules.push({
-                                    index: sessionIndex,
-                                    day: dayValue,
-                                    time: timeValue
-                                });
-
-                                // Update summary
-                                document.getElementById(`selected-session-${sessionIndex+1}-summary`).textContent =
-                                    `${dayText}, ${timeText}`;
-
-                                // Show summary content
-                                document.getElementById('summary-content').style.display = 'block';
-                                document.getElementById('summary-empty').style.display = 'none';
-                            }
-
-                            checkFormCompletion();
-                        });
-
-                        checkFormCompletion();
-                    })
-                    .catch(error => {
-                        console.error('Error fetching available slots:', error);
-                        // Show error message
-                        timeSelector.innerHTML = '<option value="">Error memuat slot</option>';
                     });
-            } else {
-                // Disable time selector
-                timeSelector.disabled = true;
-                timeSelector.innerHTML = '<option value="">Pilih Jam</option>';
-                document.getElementById(`selected-session-${sessionIndex+1}-summary`).textContent = '-';
+                });
             }
 
-            // Check if form is complete
-            checkFormCompletion();
-        }
+            // Fungsi untuk memuat slot tersedia dari server
+            function loadAvailableSlots(date, contentId) {
+                const tabContent = document.getElementById(contentId);
 
-        // Fetch available slots for a specific day from server
-        function getAvailableSlotsForDay(day, fieldId) {
-            return new Promise((resolve, reject) => {
-                fetch(`/membership/fields/${fieldId}/available-slots-membership?date=${day}`)
+                // Jika sudah ada data di cache, gunakan itu
+                if (availableSlotsByDay[date]) {
+                    renderTimeSlots(availableSlotsByDay[date], tabContent);
+                    return;
+                }
+
+                // Tampilkan loader
+                tabContent.innerHTML = `
+                    <div class="time-slots-loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Memuat slot tersedia...</p>
+                    </div>
+                `;
+
+                // Fetch slot dari server
+                fetch(`/membership/fields/${fieldId}/available-slots-membership?date=${date}`, {
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
@@ -582,86 +449,330 @@
                         return response.json();
                     })
                     .then(data => {
-                        resolve(data);
+                        // Simpan ke cache
+                        availableSlotsByDay[date] = data;
+
+                        // Render slot
+                        renderTimeSlots(data, tabContent);
                     })
                     .catch(error => {
-                        console.error('Error fetching available slots:', error);
-                        reject(error);
+                        console.error('Error loading slots:', error);
+                        tabContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Gagal memuat slot waktu. Silakan coba lagi.
+                        </div>
+                    `;
                     });
-            });
-        }
+            }
 
-        // Check if form is complete
-        function checkFormCompletion() {
-            const daySelectors = document.querySelectorAll('.session-day');
-            const timeSelectors = document.querySelectorAll('.session-time');
-            let allSelected = true;
+            // Render slot waktu
+            function renderTimeSlots(slots, container) {
+                if (!slots || slots.length === 0) {
+                    container.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Tidak ada slot waktu tersedia untuk tanggal ini.
+                        </div>
+                    `;
+                    return;
+                }
 
-            // Check if all sessions have been selected
-            for (let i = 0; i < 3; i++) {
-                if (!daySelectors[i].value || !timeSelectors[i].value) {
-                    allSelected = false;
-                    break;
+                // Buat grid slots
+                const timeSlotsGrid = document.createElement('div');
+                timeSlotsGrid.className = 'time-slots-grid';
+
+                // Tambahkan setiap slot
+                slots.forEach(slot => {
+                    const slotElement = document.createElement('div');
+                    const slotValue = `${slot.date}|${slot.display}|${fieldId}`;
+                    const isSelected = selectedSlots.has(slotValue);
+
+                    slotElement.className = `time-slot ${isSelected ? 'selected' : ''}`;
+                    slotElement.dataset.value = slotValue;
+                    slotElement.innerHTML = `
+                        <div class="slot-time">
+                            <i class="fas ${isSelected ? 'fa-check' : 'fa-clock'}"></i>
+                            <span>${slot.display}</span>
+                        </div>
+                        <div class="slot-price">
+                            <span>1 jam</span>
+                        </div>
+                    `;
+
+                    // Tambahkan event listener
+                    slotElement.addEventListener('click', function() {
+                        toggleSlotSelection(this);
+                    });
+
+                    timeSlotsGrid.appendChild(slotElement);
+                });
+
+                // Tambahkan ke container
+                container.innerHTML = '';
+                container.appendChild(timeSlotsGrid);
+            }
+
+            // Toggle pemilihan slot
+            function toggleSlotSelection(slotElement) {
+                const slotValue = slotElement.dataset.value;
+
+                if (selectedSlots.has(slotValue)) {
+                    // Hapus dari pilihan
+                    selectedSlots.delete(slotValue);
+                    slotElement.classList.remove('selected');
+                    slotElement.querySelector('i').className = 'fas fa-clock';
+                } else {
+                    // Tambahkan ke pilihan jika belum cukup
+                    if (selectedSlots.size < requiredHours) {
+                        selectedSlots.add(slotValue);
+                        slotElement.classList.add('selected');
+                        slotElement.querySelector('i').className = 'fas fa-check';
+                    } else {
+                        // Tampilkan pesan batas maksimum
+                        alert(`Anda hanya dapat memilih maksimal ${requiredHours} jam untuk paket ini.`);
+                        return;
+                    }
+                }
+
+                // Update UI
+                updateSelectedSlotsCount();
+                updateHiddenFields();
+            }
+
+            // Update counter dan progress bar
+            function updateSelectedSlotsCount() {
+                const countElement = document.getElementById('selected-slots-count');
+                const progressBar = document.getElementById('slots-progress-bar');
+                const percentageElement = document.getElementById('slots-percentage');
+                const count = selectedSlots.size;
+                const percentage = Math.round((count / requiredHours) * 100);
+
+                countElement.textContent = count;
+                progressBar.style.width = `${percentage}%`;
+                percentageElement.textContent = `${percentage}%`;
+
+                // Enable/disable next button
+                document.getElementById('next-btn').disabled = count !== requiredHours;
+            }
+
+            // Update hidden fields untuk form submission
+            function updateHiddenFields() {
+                const container = document.getElementById('selected-slots-container');
+                container.innerHTML = '';
+
+                selectedSlots.forEach(slot => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'selected_slots[]';
+                    input.value = slot;
+                    container.appendChild(input);
+                });
+            }
+
+            // Perbarui ringkasan slot terpilih
+            function updateSelectedSlotsSummary() {
+                const summaryList = document.getElementById('selected-slots-summary');
+                summaryList.innerHTML = '';
+
+                // Kelompokkan slot berdasarkan tanggal
+                const slotsByDate = {};
+
+                selectedSlots.forEach(slotValue => {
+                    const [date, timeRange] = slotValue.split('|');
+                    if (!slotsByDate[date]) {
+                        slotsByDate[date] = [];
+                    }
+                    slotsByDate[date].push(timeRange);
+                });
+
+                // Urutkan berdasarkan tanggal
+                const sortedDates = Object.keys(slotsByDate).sort();
+
+                // Tambahkan ke summary
+                sortedDates.forEach(date => {
+                    const formattedDate = new Date(date).toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long'
+                    });
+
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item';
+
+                    let slotsHtml = '';
+                    slotsByDate[date].sort().forEach(timeRange => {
+                        slotsHtml += `
+                            <div class="slot-summary-item">
+                                <i class="fas fa-clock text-success"></i>
+                                <span>${timeRange}</span>
+                            </div>
+                        `;
+                    });
+
+                    listItem.innerHTML = `
+                        <div class="slot-date-header">
+                            <i class="fas fa-calendar-day"></i>
+                            <strong>${formattedDate}</strong>
+                        </div>
+                        <div class="slot-time-list">
+                            ${slotsHtml}
+                        </div>
+                    `;
+
+                    summaryList.appendChild(listItem);
+                });
+            }
+
+            // Fungsi untuk mendapatkan tanggal dalam seminggu
+            function getWeekDates(startDate) {
+                const dates = [];
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(startDate);
+                    date.setDate(date.getDate() + i);
+                    dates.push(date);
+                }
+                return dates;
+            }
+
+            // Format tanggal untuk tampilan
+            function formatDate(date) {
+                return date.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+            }
+
+            // Format tanggal ke YYYY-MM-DD
+            function formatDateToYMD(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            // Pindah ke langkah berikutnya
+            function goToStep(step) {
+                // Sembunyikan semua langkah
+                document.querySelectorAll('.schedule-step').forEach(el => {
+                    el.classList.remove('active', 'completed');
+                });
+
+                // Tandai langkah sebelumnya sebagai selesai
+                for (let i = 1; i < step; i++) {
+                    document.getElementById(`step-${i}`).classList.add('completed');
+                }
+
+                // Aktifkan langkah saat ini
+                document.getElementById(`step-${step}`).classList.add('active');
+
+                // Update tombol navigasi
+                updateNavigationButtons(step);
+
+                // Tindakan khusus berdasarkan langkah
+                if (step === 2 && selectedWeekStart) {
+                    // Generate tab hari dan muat slot
+                    generateDayTabs();
+                } else if (step === 3) {
+                    // Update ringkasan
+                    updateSelectedSlotsSummary();
+                    document.getElementById('summary-empty').style.display = 'none';
+                    document.getElementById('summary-content').style.display = 'block';
+                }
+
+                currentStep = step;
+            }
+
+            // Update tombol navigasi
+            function updateNavigationButtons(step) {
+                const prevBtn = document.getElementById('prev-btn');
+                const nextBtn = document.getElementById('next-btn');
+                const submitBtn = document.getElementById('submit-btn');
+
+                // Reset tampilan
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'none';
+
+                if (step === 1) {
+                    // Langkah pertama: hanya tampilkan next
+                    nextBtn.style.display = 'inline-block';
+                    nextBtn.disabled = !selectedWeekStart;
+                } else if (step === 2) {
+                    // Langkah kedua: tampilkan prev dan next
+                    prevBtn.style.display = 'inline-block';
+                    nextBtn.style.display = 'inline-block';
+                    nextBtn.disabled = selectedSlots.size !== requiredHours;
+                } else if (step === 3) {
+                    // Langkah terakhir: tampilkan prev dan submit
+                    prevBtn.style.display = 'inline-block';
+                    submitBtn.style.display = 'inline-block';
                 }
             }
 
-            // Enable or disable submit button
-            document.getElementById('submit-btn').disabled = !allSelected;
+            // Reset pilihan
+            function resetSelection() {
+                // Reset variabel
+                selectedWeekStart = null;
+                selectedWeekEnd = null;
+                selectedSlots.clear();
+                availableDays.length = 0;
+                availableSlotsByDay = {};
 
-            // Activate step 3 if all selected
-            if (allSelected) {
-                document.getElementById('step-2').classList.add('completed');
-                document.getElementById('step-3').classList.add('active');
-            } else {
-                document.getElementById('step-2').classList.remove('completed');
-                document.getElementById('step-3').classList.remove('active');
+                // Reset UI
+                document.getElementById('selected-week-display').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>Belum ada minggu yang dipilih</p>
+                    </div>
+                `;
+
+                document.getElementById('dayTabs').innerHTML = '';
+                document.getElementById('dayTabsContent').innerHTML = '';
+
+                // Reset step dan tombol
+                goToStep(1);
+
+                // Show calendar
+                weekPicker._input.style.display = 'block';
             }
-        }
 
-        // Tambahkan hidden field untuk tanggal saat ini
-        function addHiddenTodayField() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const date = String(today.getDate()).padStart(2, '0');
-            const todayDate = `${year}-${month}-${date}`;
+            // Event Listeners
+            document.getElementById('next-btn').addEventListener('click', function() {
+                goToStep(currentStep + 1);
+            });
 
-            const hiddenField = document.createElement('input');
-            hiddenField.type = 'hidden';
-            hiddenField.name = 'today_date';
-            hiddenField.value = todayDate;
+            document.getElementById('prev-btn').addEventListener('click', function() {
+                goToStep(currentStep - 1);
+            });
 
-            document.getElementById('scheduleForm').appendChild(hiddenField);
-        }
+            document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+                // Validasi sebelum submit
+                if (selectedSlots.size !== requiredHours) {
+                    e.preventDefault();
+                    alert(`Anda harus memilih tepat ${requiredHours} jam slot waktu.`);
+                    return false;
+                }
 
-        // Panggil fungsi untuk menambahkan tanggal hari ini
-        addHiddenTodayField();
+                // Disable tombol untuk mencegah double submission
+                document.getElementById('submit-btn').disabled = true;
+                document.getElementById('submit-btn').innerHTML = `
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span class="ms-2">Memproses...</span>
+                `;
 
-        // Form submission
-        document.getElementById('scheduleForm').addEventListener('submit', function(event) {
-            // Disable submit button to prevent double submission
-            document.getElementById('submit-btn').disabled = true;
+                return true;
+            });
 
-            // Show loading state
-            const originalButtonText = document.getElementById('submit-btn').innerHTML;
-            document.getElementById('submit-btn').innerHTML = `
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span class="ms-2">Memproses...</span>
-            `;
-
-            // Tambahkan debug info
-            console.log('Submitting form with selected schedules:', selectedSchedules);
-
-            // Form will be submitted normally
-            return true;
+            // Inisialisasi
+            goToStep(1);
         });
-    });
     </script>
     <!-- Include Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
-
-
 
     <style>
         /* Modern Design System */
@@ -672,7 +783,7 @@
         }
 
         .hero-section {
-    background: linear-gradient(to right, #9e0620, #bb2d3b);
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
             height: 220px;
             position: relative;
             display: flex;
@@ -857,21 +968,17 @@
 
         /* Week Picker */
         .week-picker-wrapper {
-            background-color: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 1.5rem;
-        }
+  width: 100%;
+  max-width: 500px;  /* misal batas maksimal di desktop */
+  margin: 0 auto 1rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+.flatpickr-calendar {
+  width: 100% !important;
+  font-size: 0.9rem;
+}
 
-        .flatpickr-calendar {
-            width: 100% !important;
-            max-width: 100%;
-            box-shadow: none !important;
-            border: none;
-            padding: 1rem;
-            border-radius: 12px;
-        }
 
         .flatpickr-day {
             border-radius: 8px;
@@ -957,135 +1064,200 @@
             color: #212529;
         }
 
-        /* Session Cards */
-        .session-cards {
+        /* Day Tabs */
+        .day-tabs-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .day-tabs {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 1rem;
+}
+.day-tabs .nav-link {
+  flex: 0 0 auto;
+}
+
+
+        .day-tabs .nav-item {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+
+        .day-tabs .nav-link {
+            border: none;
+            padding: 0.75rem 1.25rem;
+            color: #6c757d;
+            border-radius: 0;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .day-tabs .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: transparent;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .day-tabs .nav-link.active {
+            color: #d00f25;
+            background-color: transparent;
+            font-weight: 600;
+        }
+
+        .day-tabs .nav-link.active::after {
+            background-color: #d00f25;
+            transform: scaleX(1);
+        }
+
+        .day-tab-content {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-        }
-
-        .session-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .session-card:hover {
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .session-card-header {
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
             align-items: center;
         }
 
-        .session-number {
-            width: 28px;
-            height: 28px;
-            background-color: #d00f25;
-            color: white;
-            border-radius: 50%;
+        .day-name {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .day-date {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        /* Time Slots Grid */
+        .time-slots-grid {
+  display: grid;
+  /* auto-fit akan menyesuaikan jumlah kolom sesuai lebar tersedia */
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 0.5rem; /* beri padding agar tidak mepet tepi layar */
+}
+
+
+        .time-slot {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+
+        .time-slot:hover {
+            border-color: #d00f25;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .time-slot.selected {
+            border-color: #d00f25;
+            background-color: rgba(208, 15, 37, 0.05);
+        }
+
+        .slot-time {
+            padding: 0.75rem;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-right: 0.8rem;
+            text-align: center;
         }
 
-        .session-card-header h6 {
-            margin-bottom: 0;
-            font-weight: 600;
-            color: #212529;
-        }
-
-        .session-card-body {
-            padding: 1rem;
-        }
-
-        /* Form Controls */
-        .form-label {
-            font-weight: 500;
-            font-size: 0.9rem;
+        .slot-time i {
+            font-size: 1.2rem;
             margin-bottom: 0.5rem;
-            color: #495057;
+            color: #6c757d;
         }
 
-        .form-select,
-        .form-control {
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
-            border: 1px solid #ced4da;
+        .slot-time span {
+            font-weight: 500;
+        }
+
+        .time-slot.selected .slot-time i {
+            color: #d00f25;
+        }
+
+        .slot-price {
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        /* Loading State */
+        .time-slots-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+            color: #6c757d;
+        }
+
+        .time-slots-loading p {
+            margin-top: 1rem;
             font-size: 0.95rem;
         }
 
-        .form-select:focus,
-        .form-control:focus {
-            border-color: #d00f25;
-            box-shadow: 0 0 0 0.2rem rgba(208, 15, 37, 0.25);
+        /* Selected Slots Summary */
+        .selected-slots-list {
+            margin-top: 1rem;
         }
 
-        .input-group-text {
-            border-radius: 8px 0 0 8px;
-            background-color: #f8f9fa;
-            border: 1px solid #ced4da;
-            border-right: none;
+        .list-group-item {
+            border-radius: 8px !important;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e9ecef;
         }
 
-        /* Summary Section */
-        .selected-schedule-summary {
-            background-color: white;
-            border-radius: 12px;
-            padding: 1.2rem;
-            margin-top: 1.5rem;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .selected-schedule-summary h6 {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #212529;
-            font-size: 1rem;
-        }
-
-        .summary-item {
+        .slot-date-header {
             display: flex;
             align-items: center;
-            margin-bottom: 0.8rem;
-            padding-bottom: 0.8rem;
-            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.75rem;
+            color: #495057;
         }
 
-        .summary-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .summary-item i {
+        .slot-date-header i {
+            margin-right: 0.5rem;
             color: #d00f25;
-            margin-right: 0.8rem;
-            font-size: 1.1rem;
+        }
+
+        .slot-time-list {
+            padding-left: 1.5rem;
+        }
+
+        .slot-summary-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .slot-summary-item i {
+            margin-right: 0.5rem;
             width: 20px;
             text-align: center;
         }
 
-        .summary-item span {
-            color: #495057;
-        }
-
-        .summary-empty {
-            padding: 1rem;
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
+        /* Time Slot Counter */
+        .time-slot-counter {
+            background-color: white;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
         }
 
         /* Buttons */
@@ -1093,177 +1265,138 @@
             display: flex;
             gap: 1rem;
             margin-top: 2rem;
+            justify-content: space-between;
         }
 
         .btn {
             padding: 0.6rem 1.5rem;
             font-weight: 500;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
             transition: all 0.3s ease;
         }
 
         .btn-primary {
             background-color: #d00f25;
             border-color: #d00f25;
-            flex-grow: 1;
         }
 
         .btn-primary:hover,
         .btn-primary:focus {
             background-color: #b00d1f;
             border-color: #b00d1f;
+            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(208, 15, 37, 0.25);
         }
 
-        .btn-outline-primary {
-            color: #d00f25;
-            border-color: #d00f25;
-        }
-
-        .btn-outline-primary:hover {
-            background-color: #d00f25;
-            border-color: #d00f25;
-        }
-
-        .btn-outline-secondary {
-            color: #6c757d;
-            border-color: #6c757d;
-            flex-grow: 1;
-        }
-
         .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            color: white;
+            transform: translateY(-2px);
         }
 
-        /* Alerts */
-        .alert {
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
+        .btn:disabled {
+            opacity: 0.7;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Payment Options */
+        .payment-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
             margin-bottom: 1.5rem;
-            border: none;
         }
 
-        .alert-success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
+        .payment-option-card {
+            flex: 1;
+            min-width: 220px;
+            margin: 0;
         }
 
-        .alert-danger {
-            background-color: #ffebee;
-            color: #c62828;
+        .payment-label {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .alert-icon {
-            margin-right: 0.8rem;
-            font-size: 1.25rem;
+        .form-check-input:checked+.payment-label {
+            border-color: #d00f25;
+            background-color: rgba(208, 15, 37, 0.05);
+            box-shadow: 0 0 0 3px rgba(208, 15, 37, 0.1);
+        }
+
+        .payment-label:hover {
+            border-color: #d00f25;
+        }
+
+        .payment-label img {
+            max-height: 28px;
+            margin-right: 10px;
+        }
+
+        .payment-label span {
+            font-weight: 500;
+            color: #212529;
+        }
+
+        .payment-option-content {
             display: flex;
             align-items: center;
+            gap: 0.75rem;
         }
 
-        .alert-message {
-            flex-grow: 1;
+        /* Confirmation Section */
+        .confirmation-message {
+            text-align: center;
+            padding: 2rem 1rem;
         }
 
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .hero-section {
-                height: 180px;
-            }
+        .confirmation-message h4 {
+            color: #212529;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
 
-            .hero-title {
-                font-size: 1.8rem;
-            }
+        .confirmation-message p {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
 
-            .breadcrumb {
-                padding: 0.6rem 1rem;
-            }
+        .confirmation-icon {
+            font-size: 2.5rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
 
-            .breadcrumb-item {
-                font-size: 0.8rem;
-            }
+        /* Responsive Tweaks */
+        @media (max-width: 576px) {
+  .time-slots-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  .time-slot {
+    font-size: 0.85rem;
+  }
+}
+
 
             .form-actions {
                 flex-direction: column;
+                gap: 0.75rem;
             }
 
-            .selected-week-content {
-                flex-direction: column;
-                gap: 0.8rem;
-                align-items: flex-start;
-            }
-
-            .card-body {
-                padding: 1.2rem;
+            .time-slots-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
 
-        @media (max-width: 576px) {
-            .hero-title {
-                font-size: 1.5rem;
-            }
-
-            .step-number {
-                width: 32px;
-                height: 32px;
-                font-size: 0.9rem;
-            }
-
-            .card-header {
-                padding: 1.2rem;
-            }
-
-            .card-header h4 {
-                font-size: 1.2rem;
-            }
-        }
     </style>
-    <!-- Tambahkan style untuk payment options -->
-<style>
-    .payment-options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .payment-option-card {
-        flex: 1;
-        min-width: 220px;
-        margin: 0;
-    }
-
-    .payment-label {
-        display: block;
-        width: 100%;
-        padding: 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .form-check-input:checked + .payment-label {
-        border-color: #4CAF50;
-        background-color: rgba(76, 175, 80, 0.1);
-    }
-
-    .payment-option-content {
-        display: flex;
-        align-items: center;
-    }
-
-    .payment-option-icon {
-        font-size: 24px;
-        margin-right: 15px;
-        color: #4CAF50;
-    }
-
-    .payment-option-details h6 {
-        margin-bottom: 5px;
-    }
-</style>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
 @endsection

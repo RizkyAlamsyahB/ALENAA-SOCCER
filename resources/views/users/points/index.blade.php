@@ -60,7 +60,8 @@
                     <a href="{{ route('user.points.history') }}" class="btn btn-outline-secondary rounded-pill">
                         <i class="fas fa-history me-2"></i> Riwayat Poin
                     </a>
-                    <a href="{{ route('user.payment.history') }}" class="btn btn-primary rounded-pill" style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
+                    <a href="{{ route('user.payment.history') }}" class="btn btn-primary rounded-pill"
+                        style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
                         <i class="fas fa-shopping-cart me-2"></i> Belanja Lagi
                     </a>
                 </div>
@@ -68,82 +69,86 @@
         </div>
 
         <!-- Active Vouchers Section -->
-        @if($activeRedemptions->count() > 0)
-        <div class="mb-5">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold mb-0">Voucher Aktif Anda</h4>
-            </div>
-
-            <div class="row g-4">
-                @foreach($activeRedemptions as $redemption)
-                <div class="col-md-6 col-lg-4">
-                    <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100">
-                        <!-- Status Badge -->
-                        <div class="position-absolute" style="top: 15px; right: 15px; z-index: 10;">
-                            @if($redemption->status === 'used')
-                                <div class="badge bg-success bg-opacity-10 text-success p-2">
-                                    <i class="fas fa-check-circle me-1"></i>Digunakan
-                                </div>
-                            @elseif($redemption->expires_at && \Carbon\Carbon::parse($redemption->expires_at)->isPast())
-                                <div class="badge bg-danger bg-opacity-10 text-danger p-2">
-                                    <i class="fas fa-times-circle me-1"></i>Kadaluarsa
-                                </div>
-                            @else
-                                <div class="badge bg-primary bg-opacity-10 text-white p-2">
-                                    <i class="fas fa-check-circle me-1"></i>Aktif
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="rounded-circle p-3 me-3" style="background-color: rgba(158, 6, 32, 0.1);">
-                                    <i class="fas fa-ticket-alt" style="color: #9E0620;"></i>
-                                </div>
-                                <h5 class="card-title mb-0 fw-bold">{{ $redemption->pointVoucher->name }}</h5>
-                            </div>
-
-                            <div class="mb-3">
-                                <span class="d-block fw-bold fs-5 text-danger">
-                                    @if($redemption->pointVoucher->discount_type === 'percentage')
-                                    {{ $redemption->pointVoucher->discount_value }}% OFF
-                                    @else
-                                    Rp {{ number_format($redemption->pointVoucher->discount_value) }} OFF
-                                    @endif
-                                </span>
-
-                                <span class="text-muted small">
-                                    @if($redemption->pointVoucher->min_order > 0)
-                                    Min. order Rp {{ number_format($redemption->pointVoucher->min_order) }}
-                                    @endif
-                                </span>
-                            </div>
-
-                            <div class="py-3 px-3 bg-light rounded-3 mb-3">
-                                <span class="d-block text-muted small">Kode Voucher:</span>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <code class="fs-6 fw-bold">{{ $redemption->discount_code }}</code>
-                                    <button class="btn btn-sm copy-btn" data-clipboard-text="{{ $redemption->discount_code }}" title="Salin kode">
-                                        <i class="far fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            @if($redemption->expires_at)
-                            <div class="small text-muted mb-3">
-                                <i class="far fa-clock me-1"></i> Berlaku hingga: {{ \Carbon\Carbon::parse($redemption->expires_at)->format('d M Y') }}
-                            </div>
-                            @endif
-
-                            <a href="{{ route('user.points.redemption-detail', $redemption->id) }}" class="btn btn-outline-secondary btn-sm rounded-pill w-100 mt-2">
-                                Lihat Detail <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
-                        </div>
-                    </div>
+        @if ($activeRedemptions->count() > 0)
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0">Voucher Aktif Anda</h4>
                 </div>
-                @endforeach
+
+                <div class="row g-4">
+                    @foreach ($activeRedemptions as $redemption)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100">
+                                <!-- Status Badge -->
+                                <div class="position-absolute" style="top: 15px; right: 15px; z-index: 10;">
+                                    @if ($redemption->status === 'used')
+                                        <div class="badge bg-success bg-opacity-10 text-success p-2">
+                                            <i class="fas fa-check-circle me-1"></i>Digunakan
+                                        </div>
+                                    @elseif($redemption->expires_at && \Carbon\Carbon::parse($redemption->expires_at)->isPast())
+                                        <div class="badge bg-danger bg-opacity-10 text-danger p-2">
+                                            <i class="fas fa-times-circle me-1"></i>Kadaluarsa
+                                        </div>
+                                    @else
+                                        <div class="badge bg-primary bg-opacity-10 text-white p-2">
+                                            <i class="fas fa-check-circle me-1"></i>Aktif
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-circle p-3 me-3"
+                                            style="background-color: rgba(158, 6, 32, 0.1);">
+                                            <i class="fas fa-ticket-alt" style="color: #9E0620;"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0 fw-bold">{{ $redemption->pointVoucher->name }}</h5>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <span class="d-block fw-bold fs-5 text-danger">
+                                            @if ($redemption->pointVoucher->discount_type === 'percentage')
+                                                {{ $redemption->pointVoucher->discount_value }}% OFF
+                                            @else
+                                                Rp {{ number_format($redemption->pointVoucher->discount_value) }} OFF
+                                            @endif
+                                        </span>
+
+                                        <span class="text-muted small">
+                                            @if ($redemption->pointVoucher->min_order > 0)
+                                                Min. order Rp {{ number_format($redemption->pointVoucher->min_order) }}
+                                            @endif
+                                        </span>
+                                    </div>
+
+                                    <div class="py-3 px-3 bg-light rounded-3 mb-3">
+                                        <span class="d-block text-muted small">Kode Voucher:</span>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <code class="fs-6 fw-bold">{{ $redemption->discount_code }}</code>
+                                            <button class="btn btn-sm copy-btn"
+                                                data-clipboard-text="{{ $redemption->discount_code }}" title="Salin kode">
+                                                <i class="far fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    @if ($redemption->expires_at)
+                                        <div class="small text-muted mb-3">
+                                            <i class="far fa-clock me-1"></i> Berlaku hingga:
+                                            {{ \Carbon\Carbon::parse($redemption->expires_at)->format('d M Y') }}
+                                        </div>
+                                    @endif
+
+                                    <a href="{{ route('user.points.redemption-detail', $redemption->id) }}"
+                                        class="btn btn-outline-secondary btn-sm rounded-pill w-100 mt-2">
+                                        Lihat Detail <i class="fas fa-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
         @endif
 
         <!-- Available Vouchers Section -->
@@ -152,83 +157,94 @@
                 <h4 class="fw-bold mb-0">Voucher Tersedia</h4>
             </div>
 
-            @if($vouchers->count() > 0)
-            <div class="row g-4">
-                @foreach($vouchers as $voucher)
-                <div class="col-md-6 col-lg-4">
-                    <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="rounded-circle p-3 me-3" style="background-color: rgba(158, 6, 32, 0.1);">
-                                    <i class="fas fa-tag" style="color: #9E0620;"></i>
-                                </div>
-                                <div>
-                                    <h5 class="card-title mb-0 fw-bold">{{ $voucher->name }}</h5>
-                                    <span class="badge {{ $user->points >= $voucher->points_required ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary' }} p-2 mt-1">
-                                        <i class="fas fa-coins me-1"></i>{{ number_format($voucher->points_required) }} Poin
-                                    </span>
-                                </div>
-                            </div>
+            @if ($vouchers->count() > 0)
+                <div class="row g-4">
+                    @foreach ($vouchers as $voucher)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-circle p-3 me-3"
+                                            style="background-color: rgba(158, 6, 32, 0.1);">
+                                            <i class="fas fa-tag" style="color: #9E0620;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="card-title mb-0 fw-bold">{{ $voucher->name }}</h5>
+                                            <span
+                                                class="badge {{ $user->points >= $voucher->points_required ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary' }} p-2 mt-1">
+                                                <i
+                                                    class="fas fa-coins me-1"></i>{{ number_format($voucher->points_required) }}
+                                                Poin
+                                            </span>
+                                        </div>
+                                    </div>
 
-                            <p class="card-text small">{{ $voucher->description }}</p>
+                                    <p class="card-text small">{{ $voucher->description }}</p>
 
-                            <div class="mb-3">
-                                <span class="d-block fw-bold fs-5 text-danger">
-                                    @if($voucher->discount_type === 'percentage')
-                                    {{ $voucher->discount_value }}% OFF
-                                    @else
-                                    Rp {{ number_format($voucher->discount_value) }} OFF
+                                    <div class="mb-3">
+                                        <span class="d-block fw-bold fs-5 text-danger">
+                                            @if ($voucher->discount_type === 'percentage')
+                                                {{ $voucher->discount_value }}% OFF
+                                            @else
+                                                Rp {{ number_format($voucher->discount_value) }} OFF
+                                            @endif
+                                        </span>
+
+                                        @if ($voucher->min_order > 0)
+                                            <span class="text-muted small d-block">
+                                                <i class="fas fa-info-circle me-1"></i>Min. order Rp
+                                                {{ number_format($voucher->min_order) }}
+                                            </span>
+                                        @endif
+
+                                        @if ($voucher->max_discount)
+                                            <span class="text-muted small d-block">
+                                                <i class="fas fa-info-circle me-1"></i>Maks. diskon Rp
+                                                {{ number_format($voucher->max_discount) }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    @if ($voucher->end_date)
+                                        <div class="small text-muted mb-3">
+                                            <i class="far fa-clock me-1"></i> Berakhir:
+                                            {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
+                                        </div>
                                     @endif
-                                </span>
 
-                                @if($voucher->min_order > 0)
-                                <span class="text-muted small d-block">
-                                    <i class="fas fa-info-circle me-1"></i>Min. order Rp {{ number_format($voucher->min_order) }}
-                                </span>
-                                @endif
-
-                                @if($voucher->max_discount)
-                                <span class="text-muted small d-block">
-                                    <i class="fas fa-info-circle me-1"></i>Maks. diskon Rp {{ number_format($voucher->max_discount) }}
-                                </span>
-                                @endif
-                            </div>
-
-                            @if($voucher->end_date)
-                            <div class="small text-muted mb-3">
-                                <i class="far fa-clock me-1"></i> Berakhir: {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
-                            </div>
-                            @endif
-
-                            <div class="mt-3">
-                                @if($user->points >= $voucher->points_required)
-                                <form action="{{ route('user.points.redeem', $voucher->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary rounded-pill w-100" style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
-                                        Tukarkan Sekarang <i class="fas fa-arrow-right ms-2"></i>
-                                    </button>
-                                </form>
-                                @else
-                                <button class="btn btn-secondary rounded-pill w-100 mb-2" disabled>
-                                    Poin Tidak Cukup <i class="fas fa-lock ms-2"></i>
-                                </button>
-                                @endif
+                                    <div class="mt-3">
+                                        @if ($user->points >= $voucher->points_required)
+                                            <form action="{{ route('user.points.redeem', $voucher->id) }}"
+                                                method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-primary rounded-pill w-100"
+                                                    style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
+                                                    Tukarkan Sekarang <i class="fas fa-arrow-right ms-2"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button class="btn btn-secondary rounded-pill w-100 mb-2" disabled>
+                                                Poin Tidak Cukup <i class="fas fa-lock ms-2"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
             @else
-            <div class="text-center py-5">
-                <div class="mb-4">
-                    <img src="{{ asset('assets/images/empty-state.svg') }}" alt="No vouchers" style="max-width: 200px;">
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <img src="{{ asset('assets/images/empty-state.svg') }}" alt="No vouchers"
+                            style="max-width: 200px;">
+                    </div>
+                    <p class="text-muted mb-4">Belum ada voucher yang tersedia saat ini.</p>
+                    <a href="{{ route('user.fields.index') }}" class="btn btn-primary rounded-pill"
+                        style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
+                        Mulai Booking <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
                 </div>
-                <p class="text-muted mb-4">Belum ada voucher yang tersedia saat ini.</p>
-                <a href="{{ route('user.fields.index') }}" class="btn btn-primary rounded-pill" style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
-                    Mulai Booking <i class="fas fa-arrow-right ms-2"></i>
-                </a>
-            </div>
             @endif
         </div>
     </div>
@@ -384,7 +400,12 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Poppins', sans-serif;
         }
 
@@ -404,53 +425,55 @@
             border-radius: 50rem !important;
         }
     </style>
-
-@push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Pastikan jQuery sudah dimuat sebelum menginisialisasi tooltip
-        if (typeof $ === 'undefined') {
-            console.error('jQuery is not loaded');
-            return;
-        }
-
-        // Inisialisasi tooltip pada semua tombol copy
-        $('.copy-btn').tooltip({
-            trigger: 'manual',
-            placement: 'top'
-        });
-
-        // Inisialisasi clipboard.js
-        var clipboard = new ClipboardJS('.copy-btn');
-
-        clipboard.on('success', function(e) {
-            // Mengubah teks tooltip menjadi 'Tersalin!'
-            $(e.trigger).attr('data-original-title', 'Tersalin!').tooltip('show');
-
-            // Menghilangkan tooltip setelah 1 detik
-            setTimeout(function() {
-                $(e.trigger).tooltip('hide');
-                // Reset tooltip title kembali
-                $(e.trigger).attr('data-original-title', 'Salin kode');
-            }, 1000);
-
-            e.clearSelection();
-        });
-
-        clipboard.on('error', function(e) {
-            console.error('Action:', e.action);
-            console.error('Trigger:', e.trigger);
-
-            // Menampilkan pesan error
-            $(e.trigger).attr('data-original-title', 'Gagal menyalin!').tooltip('show');
-
-            setTimeout(function() {
-                $(e.trigger).tooltip('hide');
-                $(e.trigger).attr('data-original-title', 'Salin kode');
-            }, 1000);
-        });
-    });
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
 </script>
-@endpush
+    @push('scripts')
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                // Pastikan jQuery sudah dimuat sebelum menginisialisasi tooltip
+                if (typeof $ === 'undefined') {
+                    console.error('jQuery is not loaded');
+                    return;
+                }
+
+                // Inisialisasi tooltip pada semua tombol copy
+                $('.copy-btn').tooltip({
+                    trigger: 'manual',
+                    placement: 'top'
+                });
+
+                // Inisialisasi clipboard.js
+                var clipboard = new ClipboardJS('.copy-btn');
+
+                clipboard.on('success', function(e) {
+                    // Mengubah teks tooltip menjadi 'Tersalin!'
+                    $(e.trigger).attr('data-original-title', 'Tersalin!').tooltip('show');
+
+                    // Menghilangkan tooltip setelah 1 detik
+                    setTimeout(function() {
+                        $(e.trigger).tooltip('hide');
+                        // Reset tooltip title kembali
+                        $(e.trigger).attr('data-original-title', 'Salin kode');
+                    }, 1000);
+
+                    e.clearSelection();
+                });
+
+                clipboard.on('error', function(e) {
+                    console.error('Action:', e.action);
+                    console.error('Trigger:', e.trigger);
+
+                    // Menampilkan pesan error
+                    $(e.trigger).attr('data-original-title', 'Gagal menyalin!').tooltip('show');
+
+                    setTimeout(function() {
+                        $(e.trigger).tooltip('hide');
+                        $(e.trigger).attr('data-original-title', 'Salin kode');
+                    }, 1000);
+                });
+            });
+        </script>
+    @endpush
 @endsection

@@ -62,9 +62,13 @@ class PaymentController extends Controller
 
         // Jika ada payment_id, maka ini adalah lanjutan pembayaran
         if ($paymentId) {
-            $payment = Payment::findOrFail($paymentId);
+            $payment = Payment::where('id', $paymentId)
+                              ->where('user_id', Auth::id()) // Tambahkan pengecekan kepemilikan
+                              ->firstOrFail();
         } else {
-            $payment = Payment::where('order_id', $orderId)->first();
+            $payment = Payment::where('order_id', $orderId)
+                              ->where('user_id', Auth::id()) // Tambahkan pengecekan kepemilikan
+                              ->first();
         }
 
         if (!$payment) {
@@ -1218,7 +1222,23 @@ if ($payment->discount_amount > 0) {
                     Log::info('Photographer Booking #' . $booking->id . ' status updated to: confirmed');
                 }
             }
+// Update fotografer bookings yang terkait dengan field booking dari membership
+if ($payment->transaction_status === 'success') {
+    // Update untuk field bookings yang sudah ada di kode Anda
+    // ...
 
+    // TAMBAHAN: Update photographer bookings yang terkait dengan membership
+    PhotographerBooking::where('payment_id', $payment->id)
+        ->where('is_membership', true)
+        ->update(['status' => 'confirmed']);
+
+    // TAMBAHAN: Update rental bookings yang terkait dengan membership
+    RentalBooking::where('payment_id', $payment->id)
+        ->where('is_membership', true)
+        ->update(['status' => 'confirmed']);
+
+    Log::info('Updated photographer and rental bookings for payment #' . $payment->id);
+}
             // Tambahkan penanganan untuk pembayaran perpanjangan membership
             if (strpos($orderId, 'RENEW-MEM-') === 0 && $payment->transaction_status === 'success') {
                 // Panggil metode createNewBookingsForRenewal di MembershipController
