@@ -2,6 +2,8 @@
 @section('content')
     <!-- Link untuk font dan stylesheet tambahan -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Hero Section -->
@@ -23,28 +25,131 @@
     </div>
 
 
+ <!-- Main Content -->
+ <div class="container content-wrapper">
+    <!-- Intro Section -->
+    <section class="intro-section">
+        <div class="intro-content">
+            <span class="section-tag">Benefits</span>
+            <h2>Keuntungan Menjadi Member</h2>
+            <p>Nikmati berbagai keuntungan eksklusif dengan bergabung sebagai member kami</p>
 
-    <!-- Main Content -->
-    <div class="container content-wrapper">
-
-
-        <!-- Membership Plans For Each Field -->
-        @foreach ($fields as $field)
-            <section class="membership-plans-section" id="membership-plans-{{ $field->id }}">
-                <div class="section-header">
-                    <h2>Paket Membership {{ $field->name }}</h2>
-                    <p>Pilih paket membership yang sesuai dengan kebutuhan Anda</p>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Jadwal Tetap</h3>
+                        <p>Dapatkan slot jadwal tetap setiap minggu sesuai dengan pilihan Anda</p>
+                    </div>
                 </div>
 
-                <div class="plans-grid">
-                    <!-- Bronze Plan -->
-                    <div class="plan-card bronze">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Harga Spesial</h3>
+                        <p>Nikmati potongan harga khusus dibandingkan dengan booking regular</p>
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Dokumentasi</h3>
+                        <p>Layanan fotografer profesional untuk mengabadikan momen bermain Anda</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Membership Plans For Each Field -->
+    @foreach ($fields as $field)
+        <section class="membership-plans-section" id="membership-plans-{{ $field->id }}">
+            <div class="section-header">
+                <span class="section-tag">Packages</span>
+                <h2>Paket Membership {{ $field->name }}</h2>
+                <p>Pilih paket membership yang sesuai dengan kebutuhan Anda</p>
+            </div>
+
+            <div class="plans-grid">
+                <!-- Bronze Plan -->
+                <div class="plan-card">
+                    <div class="plan-bg" style="background-image: url('/images/bg-card-bronze.jpg')">
+                        <div class="plan-overlay bronze-overlay"></div>
+                    </div>
+                    <div class="plan-content">
                         <div class="plan-header">
-                            <div class="plan-type">Bronze</div>
+                            <div class="plan-badge bronze">Bronze</div>
+                                            @php
+                                $bronzeMembership = $memberships
+                                    ->where('field_id', $field->id)
+                                    ->where('type', 'bronze')
+                                    ->first();
+                            @endphp
                             <div class="plan-price">
-                                <div class="price">Rp {{ number_format($field->price * 3 * 4 * 0.9, 0, ',', '.') }}</div>
-                                <div class="period">3x main/minggu</div>
+                                <div class="price">
+                                    @if ($bronzeMembership)
+                                        Rp {{ number_format($bronzeMembership->price, 0, ',', '.') }}
+                                    @else
+                                        Rp {{ number_format($field->price * 3 * 4 * 0.9, 0, ',', '.') }}
+                                    @endif
+                                </div>
+                                <div class="period">
+                                    @if ($bronzeMembership)
+                                        {{ $bronzeMembership->sessions_per_week }}x main/minggu
+                                    @else
+                                        3x main/minggu
+                                    @endif
+                                </div>
                             </div>
+                        </div>
+
+                        <div class="plan-features">
+                            @php
+                                $bronzeMembership = $memberships
+                                    ->where('field_id', $field->id)
+                                    ->where('type', 'bronze')
+                                    ->first();
+                            @endphp
+                            @if ($bronzeMembership)
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Jadwal tetap {{ $bronzeMembership->sessions_per_week }}x seminggu</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Durasi {{ $bronzeMembership->session_duration }} jam per sesi</span>
+                                </div>
+                                @if($bronzeMembership->description)
+                                    @foreach(explode("\n", $bronzeMembership->description) as $benefit)
+                                        @if(trim($benefit))
+                                            <div class="feature-item">
+                                                <i class="fas fa-check"></i>
+                                                <span>{{ trim($benefit) }}</span>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
+                            @else
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Jadwal tetap 3x seminggu</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Diskon 10% dari harga regular</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Durasi 1 jam per sesi</span>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="plan-action">
@@ -55,7 +160,7 @@
                                     ->first();
                             @endphp
                             @if ($bronzeMembership)
-                                <a href="{{ route('user.membership.show', $bronzeMembership->id) }}" class="btn-primary mt-4" >
+                                <a href="{{ route('user.membership.show', $bronzeMembership->id) }}" class="btn-primary">
                                     <span>Pilih Paket</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </a>
@@ -66,17 +171,74 @@
                             @endif
                         </div>
                     </div>
+                </div>
 
-                    <!-- Silver Plan -->
-                    <div class="plan-card silver">
-                        <div class="popular-badge">Populer</div>
+                <!-- Silver Plan -->
+                <div class="plan-card featured">
+                    <div class="popular-badge">Populer</div>
+                    <div class="plan-bg" style="background-image: url('/images/bg-card-silver.jpg')">
+                        <div class="plan-overlay silver-overlay"></div>
+                    </div>
+                    <div class="plan-content">
                         <div class="plan-header">
-                            <div class="plan-type">Silver</div>
+                            <div class="plan-badge silver">Silver</div>
                             <div class="plan-price">
                                 <div class="price">Rp {{ number_format($field->price * 3 * 4 * 2 * 0.85, 0, ',', '.') }}
                                 </div>
                                 <div class="period">3x main/minggu</div>
                             </div>
+                        </div>
+
+                        <div class="plan-features">
+                            @php
+                                $silverMembership = $memberships
+                                    ->where('field_id', $field->id)
+                                    ->where('type', 'silver')
+                                    ->first();
+                            @endphp
+                            @if ($silverMembership)
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Jadwal tetap {{ $silverMembership->sessions_per_week }}x seminggu</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Durasi {{ $silverMembership->session_duration }} jam per sesi</span>
+                                </div>
+                                @if($silverMembership->photographer_duration > 0)
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Fotografer {{ $silverMembership->photographer_duration }} jam per sesi</span>
+                                </div>
+                                @endif
+                                @if($silverMembership->description)
+                                    @foreach(explode("\n", $silverMembership->description) as $benefit)
+                                        @if(trim($benefit))
+                                            <div class="feature-item">
+                                                <i class="fas fa-check"></i>
+                                                <span>{{ trim($benefit) }}</span>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
+                            @else
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Jadwal tetap 3x seminggu</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Diskon 15% dari harga regular</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Durasi 1 jam per sesi</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Fotografer 1x dalam sebulan</span>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="plan-action">
@@ -87,7 +249,7 @@
                                     ->first();
                             @endphp
                             @if ($silverMembership)
-                                <a href="{{ route('user.membership.show', $silverMembership->id) }}" class="btn-primary mt-4">
+                                <a href="{{ route('user.membership.show', $silverMembership->id) }}" class="btn-primary">
                                     <span>Pilih Paket</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </a>
@@ -98,16 +260,94 @@
                             @endif
                         </div>
                     </div>
+                </div>
 
-                    <!-- Gold Plan -->
-                    <div class="plan-card gold">
+                <!-- Gold Plan -->
+                <div class="plan-card">
+                    <div class="plan-bg" style="background-image: url('/images/bg-card-gold.jpg')">
+                        <div class="plan-overlay gold-overlay"></div>
+                    </div>
+                    <div class="plan-content">
                         <div class="plan-header">
-                            <div class="plan-type">Gold</div>
+                            <div class="plan-badge gold">Gold</div>
+                                            @php
+                                $goldMembership = $memberships
+                                    ->where('field_id', $field->id)
+                                    ->where('type', 'gold')
+                                    ->first();
+                            @endphp
                             <div class="plan-price">
-                                <div class="price">Rp {{ number_format($field->price * 3 * 4 * 3 * 0.8, 0, ',', '.') }}
+                                <div class="price">
+                                    @if ($goldMembership)
+                                        Rp {{ number_format($goldMembership->price, 0, ',', '.') }}
+                                    @else
+                                        Rp {{ number_format($field->price * 3 * 4 * 3 * 0.8, 0, ',', '.') }}
+                                    @endif
                                 </div>
-                                <div class="period">3x main/minggu</div>
+                                <div class="period">
+                                    @if ($goldMembership)
+                                        {{ $goldMembership->sessions_per_week }}x main/minggu
+                                    @else
+                                        3x main/minggu
+                                    @endif
+                                </div>
                             </div>
+                        </div>
+
+                        <div class="plan-features">
+                            @php
+                                $goldMembership = $memberships
+                                    ->where('field_id', $field->id)
+                                    ->where('type', 'gold')
+                                    ->first();
+                            @endphp
+                            @if ($goldMembership)
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Jadwal tetap {{ $goldMembership->sessions_per_week }}x seminggu</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Durasi {{ $goldMembership->session_duration }} jam per sesi</span>
+                                </div>
+                                @if($goldMembership->photographer_duration > 0)
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Fotografer {{ $goldMembership->photographer_duration }} jam per sesi</span>
+                                </div>
+                                @endif
+                                @if($goldMembership->description)
+                                    @foreach(explode("\n", $goldMembership->description) as $benefit)
+                                        @if(trim($benefit))
+                                            <div class="feature-item">
+                                                <i class="fas fa-check"></i>
+                                                <span>{{ trim($benefit) }}</span>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
+                            @else
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Jadwal tetap 3x seminggu</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Diskon 20% dari harga regular</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Durasi 1 jam per sesi</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Fotografer 2x dalam sebulan</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Minuman gratis setiap sesi</span>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="plan-action">
@@ -118,7 +358,7 @@
                                     ->first();
                             @endphp
                             @if ($goldMembership)
-                                <a href="{{ route('user.membership.show', $goldMembership->id) }}" class="btn-primary mt-4">
+                                <a href="{{ route('user.membership.show', $goldMembership->id) }}" class="btn-primary">
                                     <span>Pilih Paket</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </a>
@@ -130,77 +370,102 @@
                         </div>
                     </div>
                 </div>
-            </section>
-        @endforeach
-
-
-
-        <!-- FAQ Section -->
-        <section class="faq-section">
-            <div class="section-header">
-                <h2>Pertanyaan Umum</h2>
-                <p>Temukan jawaban dari pertanyaan yang sering diajukan</p>
-            </div>
-
-            <div class="faq-accordion" id="membershipFAQ">
-                <div class="faq-item">
-                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#collapseOne" aria-expanded="false">
-                        <span>Bagaimana cara mendaftar membership?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div id="collapseOne" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                        <div class="faq-content">
-                            Pilih lapangan dan paket membership yang diinginkan, lalu pilih 3 jadwal permainan tetap dalam
-                            satu minggu. Setelah itu, lakukan pembayaran dan nikmati fasilitas member.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#collapseTwo" aria-expanded="false">
-                        <span>Bagaimana sistem pembayaran membership?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div id="collapseTwo" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                        <div class="faq-content">
-                            Pembayaran membership dilakukan setiap minggu. Invoice akan dikirimkan pada jadwal main kedua
-                            dan harus dibayar sebelum jadwal main ketiga.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#collapseThree" aria-expanded="false">
-                        <span>Apakah jadwal bisa diubah setelah terdaftar?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div id="collapseThree" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                        <div class="faq-content">
-                            Jadwal yang sudah dipilih tidak dapat diubah selama periode membership berjalan. Pastikan untuk
-                            memilih jadwal yang sesuai dengan ketersediaan Anda.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#collapseFour" aria-expanded="false">
-                        <span>Apa yang terjadi jika saya tidak hadir pada jadwal yang ditentukan?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div id="collapseFour" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                        <div class="faq-content">
-                            Jadwal yang terlewat tidak dapat diganti atau dikompensasi. Pembayaran tetap harus dilakukan
-                            sesuai jadwal yang telah disepakati.
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
-    </div>
+    @endforeach
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="section-header">
+            <span class="section-tag">Information</span>
+            <h2>Pertanyaan Umum</h2>
+            <p>Temukan jawaban dari pertanyaan yang sering diajukan</p>
+        </div>
+
+        <div class="faq-accordion" id="membershipFAQ">
+            <div class="faq-item">
+                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOne" aria-expanded="false">
+                    <span>Bagaimana cara mendaftar membership?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div id="collapseOne" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                    <div class="faq-content">
+                        Pilih lapangan dan paket membership yang diinginkan, lalu pilih 3 jadwal permainan tetap dalam
+                        satu minggu. Setelah itu, lakukan pembayaran dan nikmati fasilitas member.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseTwo" aria-expanded="false">
+                    <span>Bagaimana sistem pembayaran membership?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div id="collapseTwo" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                    <div class="faq-content">
+                        Pembayaran membership dilakukan setiap minggu. Invoice akan dikirimkan pada jadwal main kedua
+                        dan harus dibayar sebelum jadwal main ketiga.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseThree" aria-expanded="false">
+                    <span>Apakah jadwal bisa diubah setelah terdaftar?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div id="collapseThree" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                    <div class="faq-content">
+                        Jadwal yang sudah dipilih tidak dapat diubah selama periode membership berjalan. Pastikan untuk
+                        memilih jadwal yang sesuai dengan ketersediaan Anda.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseFour" aria-expanded="false">
+                    <span>Apa yang terjadi jika saya tidak hadir pada jadwal yang ditentukan?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div id="collapseFour" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                    <div class="faq-content">
+                        Jadwal yang terlewat tidak dapat diganti atau dikompensasi. Pembayaran tetap harus dilakukan
+                        sesuai jadwal yang telah disepakati.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseFive" aria-expanded="false">
+                    <span>Berapa lama durasi membership yang harus diambil?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div id="collapseFive" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                    <div class="faq-content">
+                        Durasi minimum membership adalah 1 bulan (4 minggu). Setelah periode tersebut, Anda dapat memperpanjang atau mengakhiri membership.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Siap untuk bergabung?</h2>
+            <p>Pilih paket membership sekarang dan nikmati berbagai keuntungannya</p>
+            <a href="#" class="btn-primary large">
+                <span>Mulai Sekarang</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+</div>
 
     <style>
         /* Base Styles */
@@ -210,8 +475,14 @@
             color: #212529;
         }
 
-        /* Hero Section */
-        .hero-section {
+        .container {
+            max-width: 1200px;
+            padding: 0 1.5rem;
+            margin: 0 auto;
+        }
+
+      /* Hero Section */
+      .hero-section {
             background: linear-gradient(to right, #9e0620, #bb2d3b);
 
             height: 220px;
@@ -272,51 +543,41 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        /* Intro Section */
-        .intro-section {
-            background: white;
-            padding: 3rem 0;
-            text-align: center;
-        }
-
-        .intro-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .intro-content h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #212529;
-            margin-bottom: 1rem;
-        }
-
-        .intro-content p {
-            font-size: 1.1rem;
-            color: #6c757d;
-            line-height: 1.6;
-        }
-
         /* Content Wrapper */
         .content-wrapper {
-            padding: 3rem 0;
+            padding: 4rem 0;
         }
 
         /* Section Styling */
         section {
-            margin-bottom: 4rem;
+            margin-bottom: 5rem;
+        }
+
+        .section-tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #d00f25;
+            background: rgba(208, 15, 37, 0.1);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            margin-bottom: 1rem;
         }
 
         .section-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 3rem;
         }
 
         .section-header h2 {
-            font-size: 1.8rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
             font-weight: 700;
             color: #212529;
             margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
         }
 
         .section-header p {
@@ -326,228 +587,45 @@
             margin: 0 auto;
         }
 
-        /* Field Cards */
-        .fields-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
+        /* Intro Section */
+        .intro-section {
+            margin-bottom: 5rem;
         }
 
-        .field-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .field-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-
-        .field-image {
-            position: relative;
-            height: 200px;
-            overflow: hidden;
-        }
-
-        .field-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .field-card:hover .field-image img {
-            transform: scale(1.05);
-        }
-
-        .field-badges {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .badge-item {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border-radius: 50px;
-            padding: 0.35rem 0.75rem;
-            font-size: 0.8rem;
-        }
-
-        .field-content {
-            padding: 1.5rem;
-        }
-
-        .field-content h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #212529;
-        }
-
-        .field-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.25rem;
-        }
-
-        .field-location {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .field-location i {
-            color: #d00f25;
-        }
-
-        .field-price {
-            text-align: right;
-        }
-
-        .field-price .price {
-            font-weight: 700;
-            color: #d00f25;
-            font-size: 1.1rem;
-        }
-
-        .field-price .period {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
-
-        .empty-state {
-            grid-column: 1 / -1;
+        .intro-content {
             text-align: center;
-            background: white;
-            padding: 3rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 3rem;
         }
 
-        .empty-icon {
-            font-size: 3rem;
-            color: #d00f25;
-            opacity: 0.5;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state h3 {
-            font-weight: 600;
+        .intro-content h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
             margin-bottom: 0.75rem;
-            color: #212529;
+            letter-spacing: -0.02em;
         }
 
-        .empty-state p {
+        .intro-content p {
+            font-size: 1rem;
             color: #6c757d;
-            max-width: 400px;
-            margin: 0 auto;
+            max-width: 600px;
+            margin: 0 auto 2rem;
         }
 
-        /* Membership Plans */
-        .plans-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .plan-card {
-            position: relative;
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .plan-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-
-        .plan-card.bronze .plan-header {
-            background: linear-gradient(135deg, #A77044, #CD7F32);
-        }
-
-        .plan-card.silver .plan-header {
-            background: linear-gradient(135deg, #7B8A8B, #C0C0C0);
-        }
-
-        .plan-card.gold .plan-header {
-            background: linear-gradient(135deg, #B5903C, #FFD700);
-        }
-
-        .popular-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: #d00f25;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 0.35rem 0.75rem;
-            border-radius: 50px;
-            z-index: 1;
-        }
-
-        .plan-header {
-            padding: 2rem;
-            color: white;
-            text-align: center;
-        }
-
-        .plan-type {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .plan-price .price {
-            font-size: 1.8rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .plan-price .period {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-
-
-        .plan-action {
-            padding: 0 2rem 2rem;
-            text-align: center;
-        }
-
-        /* Benefits Section */
+        /* Benefits Grid */
         .benefits-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
+            margin-top: 3rem;
         }
 
         .benefit-card {
             background: white;
-            border-radius: 16px;
-            overflow: hidden;
+            padding: 2rem;
+            border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2.5rem 2rem;
             text-align: center;
         }
 
@@ -561,46 +639,219 @@
             height: 80px;
             background: rgba(208, 15, 37, 0.1);
             color: #d00f25;
-            border-radius: 50%;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2rem;
-            margin-bottom: 1.5rem;
+            margin: 0 auto 1.5rem;
         }
 
         .benefit-content h3 {
+            font-family: 'Montserrat', sans-serif;
             font-size: 1.25rem;
             font-weight: 600;
-            color: #212529;
             margin-bottom: 0.75rem;
         }
 
         .benefit-content p {
-            font-size: 0.95rem;
             color: #6c757d;
-            margin-bottom: 0;
+            font-size: 0.95rem;
+        }
+
+        /* Membership Plans */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .plan-card {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .plan-card.featured {
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .plan-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .plan-card.featured:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .plan-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-position: center;
+            background-size: cover;
+            z-index: 1;
+        }
+
+        .plan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .bronze-overlay {
+            background: linear-gradient(135deg, rgba(167, 112, 68, 0.9), rgba(205, 127, 50, 0.8));
+        }
+
+        .silver-overlay {
+            background: linear-gradient(135deg, rgba(123, 138, 139, 0.9), rgba(192, 192, 192, 0.8));
+        }
+
+        .gold-overlay {
+            background: linear-gradient(135deg, rgba(181, 144, 60, 0.9), rgba(255, 215, 0, 0.8));
+        }
+
+        .plan-content {
+            position: relative;
+            z-index: 3;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: #d00f25;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            z-index: 5;
+            box-shadow: 0 4px 15px rgba(208, 15, 37, 0.5);
+        }
+
+        .plan-header {
+            margin-bottom: 2rem;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .plan-badge.bronze {
+            background: rgba(205, 127, 50, 0.2);
+            color: white;
+        }
+
+        .plan-badge.silver {
+            background: rgba(192, 192, 192, 0.2);
+            color: white;
+        }
+
+        .plan-badge.gold {
+            background: rgba(255, 215, 0, 0.2);
+            color: white;
+        }
+
+        .plan-price .price {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .plan-price .period {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .plan-features {
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .feature-item i {
+            color: white;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .feature-item span {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .plan-action {
+            margin-top: auto;
         }
 
         /* FAQ Section */
         .faq-item {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
         }
 
         .faq-question {
             width: 100%;
             text-align: left;
-            padding: 1.5rem;
+            padding: 1.75rem;
             background: white;
             border: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
             font-weight: 600;
             color: #212529;
             cursor: pointer;
@@ -619,11 +870,19 @@
         .faq-question i {
             font-size: 0.8rem;
             transition: all 0.3s ease;
+            background: #f0f0f0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
 
         .faq-question:not(.collapsed) i {
             transform: rotate(180deg);
-            color: #d00f25;
+            color: white;
+            background: #d00f25;
         }
 
         .faq-answer {
@@ -631,9 +890,53 @@
         }
 
         .faq-content {
-            padding: 1.5rem;
+            padding: 1.5rem 1.75rem;
             color: #6c757d;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #9e0620, #bb2d3b);
+            padding: 4rem;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-top: 4rem;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('/images/pattern.svg');
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
         }
 
         /* Buttons */
@@ -643,8 +946,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
+            gap: 0.75rem;
+            padding: 0.85rem 1.75rem;
             border-radius: 50px;
             font-weight: 600;
             text-decoration: none;
@@ -658,22 +961,29 @@
         .btn-primary {
             background: #d00f25;
             color: white;
+            box-shadow: 0 8px 15px rgba(208, 15, 37, 0.3);
         }
 
         .btn-primary:hover {
             background: #b00d1f;
             transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(208, 15, 37, 0.3);
+            box-shadow: 0 12px 20px rgba(208, 15, 37, 0.4);
+        }
+
+        .btn-primary.large {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            max-width: 250px;
         }
 
         .btn-secondary {
-            background: #f8f9fa;
-            color: #212529;
-            border: 1px solid #dee2e6;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .btn-secondary:hover {
-            background: #dee2e6;
+            background: rgba(255, 255, 255, 0.25);
             transform: translateY(-3px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
@@ -690,51 +1000,71 @@
         }
 
         /* Responsive Adjustments */
-        @media (max-width: 992px) {
+        @media (max-width: 1200px) {
+            .plans-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
 
-            .plans-grid,
+            .plan-card.featured {
+                transform: none;
+            }
+
+            .plan-card.featured:hover {
+                transform: translateY(-10px);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .section-header h2,
+            .intro-content h2,
+            .cta-section h2 {
+                font-size: 2rem;
+            }
+
             .benefits-grid {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            .plan-content {
+                padding: 2rem;
             }
         }
 
         @media (max-width: 768px) {
             .hero-section {
-                height: 180px;
+                height: 280px;
             }
 
             .hero-title {
+                font-size: 2rem;
+            }
+
+            .section-header h2,
+            .intro-content h2,
+            .cta-section h2 {
                 font-size: 1.8rem;
             }
 
-            .intro-content h2 {
+            .plan-price .price {
                 font-size: 1.8rem;
             }
 
-            .intro-content p {
-                font-size: 1rem;
-            }
-
-            .section-header h2 {
-                font-size: 1.5rem;
-            }
-
-            .fields-grid,
-            .plans-grid,
-            .benefits-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .plan-header,
-            .plan-features,
-            .plan-action {
-                padding: 1.5rem;
+            .cta-section {
+                padding: 3rem 2rem;
             }
         }
 
         @media (max-width: 576px) {
+            .hero-section {
+                height: 250px;
+            }
+
             .hero-title {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
             }
 
             .breadcrumb {
@@ -745,24 +1075,34 @@
                 font-size: 0.8rem;
             }
 
-            .field-meta {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
+            .section-header h2,
+            .intro-content h2,
+            .cta-section h2 {
+                font-size: 1.6rem;
             }
 
-            .field-price {
-                text-align: left;
+            .faq-question {
+                font-size: 1rem;
+                padding: 1.5rem;
             }
 
             .benefit-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5rem;
+                width: 70px;
+                height: 70px;
+                font-size: 1.75rem;
+                border-radius: 16px;
+            }
+
+            .plan-content {
+                padding: 1.75rem;
+            }
+
+            .cta-section {
+                padding: 2.5rem 1.5rem;
             }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-</script>
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection

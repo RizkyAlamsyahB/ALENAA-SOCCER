@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\MembershipRenewalInvoice;
 use App\Mail\MembershipRenewalSuccess;
 use App\Models\MembershipSubscription;
+use App\Mail\MembershipRenewalFailedNotification;
 
 class MembershipController extends Controller
 {

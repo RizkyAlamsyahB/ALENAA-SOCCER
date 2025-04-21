@@ -177,27 +177,33 @@
             <div class="container py-4">
                 <div class="row">
                     <div class="col">
-                        <!-- Basic Information Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3 flex-column flex-md-row">
-                                    <div>
-                                        <h1 class="h4 mb-2 text-center text-md-start fw-bold">{{ $photographer->name }}</h1>
-                                        <div class="d-flex flex-column flex-md-row align-items-center gap-3 text-center text-md-start">
-                                            <div class="d-flex align-items-center package-badge">
-                                                <i class="fas fa-camera text-danger me-2"></i>
-                                                <span class="text-secondary">{{ ucfirst($photographer->package_type) }} Package</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-md-end text-center price-tag">
-                                        <div class="h3 text-danger fw-bold mb-0">Rp {{ number_format($photographer->price, 0, ',', '.') }}</div>
-                                        <small class="text-muted">/sesi</small>
-                                    </div>
-                                </div>
-                                <p class="mt-3">{{ $photographer->description }}</p>
-                            </div>
-                        </div>
+<!-- Basic Information Card -->
+<div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3 flex-column flex-md-row">
+            <div>
+                <div class="d-flex align-items-center mb-2">
+                    <h1 class="h4 mb-0 text-md-start fw-bold me-3">{{ $photographer->name }}</h1>
+                    <div class="rating-badge">
+                        <i class="fas fa-star text-warning me-1"></i>
+                        <span class="text-secondary">{{ number_format($photographer->rating ?? 0, 1) }}</span>
+                    </div>
+                </div>
+                <div class="d-flex flex-column flex-md-row align-items-center gap-3 text-md-start">
+                    <div class="d-flex align-items-center package-badge">
+                        <i class="fas fa-camera text-danger me-2"></i>
+                        <span class="text-secondary">{{ ucfirst($photographer->package_type) }} Package</span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-md-end text-center price-tag">
+                <div class="h3 text-danger fw-bold mb-0">Rp {{ number_format($photographer->price, 0, ',', '.') }}</div>
+                <small class="text-muted">/sesi</small>
+            </div>
+        </div>
+        <p class="mt-3">{{ $photographer->description }}</p>
+    </div>
+</div>
 
 
 
@@ -1071,123 +1077,136 @@
             transform: none !important;
         }
 
-       /* Time slots styling */
+        /* Calendar and Time Slot Specific Styling */
+
+   /* Time Slots */
 .time-slots-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    margin-top: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    width: 100%;
 }
 
 .time-slot {
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid #e9ecef;
 }
 
-.time-slot:hover {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.25);
-}
-
-.time-slot.slot-selected {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-.time-slot.slot-selected .slot-time i {
-    color: white;
-}
-
-.time-slot.slot-in-cart {
-    border-color: #17a2b8;
-    background-color: rgba(23, 162, 184, 0.1);
+.time-slot:not(.disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-color: #9e0620;
 }
 
 .slot-time {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    justify-content: center;
+    min-height: 50px;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.9rem;
 }
 
 .slot-time i {
-    margin-right: 8px;
-    color: #dc3545;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-right: 5px;
 }
 
-.slot-duration {
+.slot-price {
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    text-align: center;
     font-size: 0.8rem;
     color: #6c757d;
+    border-top: 1px solid #e9ecef;
 }
 
-.time-slot.slot-selected .slot-duration {
-    color: rgba(255, 255, 255, 0.8);
+/* Time Slot States */
+.time-slot.slot-available:hover {
+    border-color: #28a745;
 }
 
-/* Selected slots in confirmation panel */
-.selected-slots {
-    margin-bottom: 15px;
+.time-slot.slot-selected {
+    border-color: #9e0620;
+    background-color: #fff8f8;
 }
 
-.selected-slot-item {
-    padding: 10px;
-    border-radius: 6px;
-    border-left: 3px solid #dc3545;
+.time-slot.slot-selected .slot-time {
+    color: #9e0620;
+}
+
+.time-slot.slot-selected .slot-time i {
+    color: #9e0620;
+}
+
+.time-slot.slot-booked {
+    border-color: #6c757d;
     background-color: #f8f9fa;
-    margin-bottom: 8px;
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
-.confirmation-details {
+.time-slot.slot-in-cart {
+    border-color: #fd7e14;
+    background-color: #fff8f1;
+}
+
+.time-slot.slot-in-cart .slot-time i {
+    color: #fd7e14;
+}
+
+/* Selected Slots List */
+.selected-slots-list {
     background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    width: 100%;
+}
+
+.selected-slots-list .list-group-item {
+    background-color: transparent;
+    border-color: #e9ecef;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
     border-radius: 8px;
-    padding: 15px;
+    transition: all 0.3s ease;
 }
 
-.confirmation-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #e9ecef;
+.selected-slots-list .list-group-item:hover {
+    background-color: #fff;
+    transform: translateX(5px);
 }
-
-.confirmation-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-        /* Feature Badges */
-        .feature-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0.75rem 1rem;
+        /* Confirmation Details */
+        .confirmation-details {
             background-color: #f8f9fa;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            padding: 1rem;
         }
 
-        .feature-badge:hover {
-            transform: translateX(5px);
-            background-color: #f0f0f0;
+        .confirmation-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
-        /* Testimonial Cards */
-        .testimonial-card {
-            transition: all 0.3s ease;
+        .confirmation-item:last-child {
+            border-bottom: none;
         }
 
-        .testimonial-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        .confirmation-item .label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .confirmation-item .value {
+            color: #212529;
         }
 
         /* Responsive adjustments */
@@ -1239,12 +1258,16 @@
         }
 
     /* Custom Flatpickr Theme - brand color #9e0620 */
-/* Fix for calendar display issues */
+/* Flatpickr Calendar Styling - Improved for Mobile */
 .flatpickr-calendar {
-    width: 100% !important; /* Make calendar responsive to container */
-    max-width: 350px; /* Prevent it from getting too wide on larger screens */
-    padding: 0 !important; /* Remove any padding that might cause overflow */
+    width: 100% !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    touch-action: manipulation;
 }
+
 
 .flatpickr-days {
     width: 100% !important; /* Ensure days container is full width */
@@ -1364,6 +1387,15 @@ span.flatpickr-weekday {
     fill: #e9ecef;
 }
 
+        .slot-membership {
+    background-color: #ffeeba; /* Warna kuning lembut */
+    border-color: #ffdf7e;
+    cursor: not-allowed;
+}
+
+.slot-membership .slot-time {
+    color: #856404; /* Warna text kuning gelap */
+}
     </style>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">

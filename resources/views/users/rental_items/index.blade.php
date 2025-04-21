@@ -1,27 +1,27 @@
 @extends('layouts.app')
 @section('content')
- <!-- Hero Section -->
-<div class="hero-section" style="margin-top: 50px;">
-    <div class="container">
-        <div class="hero-content">
-            <h1 class="hero-title">Rental Equipment</h1>
-            <div class="breadcrumb-wrapper">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="/">
-                                <i class="fas fa-home"></i> Home
-                            </a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                            <i class="fas fa-shopping-bag"></i> Rental Equipment
-                        </li>
-                    </ol>
-                </nav>
+    <!-- Hero Section -->
+    <div class="hero-section" style="margin-top: 50px;">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Rental Equipment</h1>
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/">
+                                    <i class="fas fa-home"></i> Home
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <i class="fas fa-shopping-bag"></i> Rental Equipment
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -83,23 +83,6 @@
                 </div>
             </div>
 
-            <!-- Results Info -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="result-badge">
-                    <span class="badge bg-danger-subtle text-danger rounded-pill">
-                        {{ $rentalItems->total() }} item ditemukan
-                    </span>
-                </div>
-                <div class="view-toggle">
-                    <button class="btn btn-light rounded-pill active me-2">
-                        <i class="fas fa-th-large"></i>
-                    </button>
-                    <button class="btn btn-light rounded-pill">
-                        <i class="fas fa-list"></i>
-                    </button>
-                </div>
-            </div>
-
             <!-- Category Navigation -->
             <div class="category-nav mb-4">
                 <div class="d-flex flex-wrap gap-2">
@@ -132,45 +115,36 @@
             </div>
 
             <!-- Equipment Grid -->
-            <div class="row g-4">
+            <div class="row g-2">
                 @forelse($rentalItems as $item)
                     <!-- Equipment Card -->
-                    <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="col-lg-4 col-md-4 col-sm-6">
                         <div class="card equipment-card border-0 shadow-sm rounded-4 h-100">
-                            <div class="card-img-wrapper position-relative">
-                                @if ($item->stock_available <= 3 && $item->stock_available > 0)
-                                    <span class="badge bg-warning position-absolute top-0 end-0 m-2">Stok Terbatas</span>
-                                @elseif($item->created_at->diffInDays(now()) < 7)
-                                    <span class="badge bg-secondary position-absolute top-0 end-0 m-2">Baru</span>
-                                @endif
+                            <!-- Bagian awal card tetap sama -->
 
-                                @if ($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top rounded-top-4"
-                                        alt="{{ $item->name }}">
-                                @else
-                                    <img src="/api/placeholder/300/300" class="card-img-top rounded-top-4"
-                                        alt="{{ $item->name }}">
-                                @endif
-                            </div>
                             <div class="card-body p-3">
                                 <!-- Header -->
-                                <div class="mb-2">
-                                    <div class="category-badge mb-2">
-                                        <span class="badge bg-danger-subtle text-danger rounded-pill">
-                                            @if ($item->category == 'ball')
-                                                <i class="fas fa-futbol me-1"></i> Bola
-                                            @elseif($item->category == 'jersey')
-                                                <i class="fas fa-tshirt me-1"></i> Jersey
-                                            @elseif($item->category == 'shoes')
-                                                <i class="fas fa-shoe-prints me-1"></i> Sepatu
-                                            @else
-                                                <i class="fas fa-mitten me-1"></i> Aksesoris
-                                            @endif
-                                        </span>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0 fw-bold">{{ $item->name }}</h5>
+                                    <div class="rating-badge">
+                                        <i class="fas fa-star text-warning me-1"></i>
+                                        <span class="text-secondary">{{ number_format($item->rating ?? 0, 1) }}</span>
                                     </div>
-                                    <h5 class="card-title mb-1">{{ $item->name }}</h5>
                                 </div>
 
+                                <div class="category-badge mb-2">
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill">
+                                        @if ($item->category == 'ball')
+                                            <i class="fas fa-futbol me-1"></i> Bola
+                                        @elseif($item->category == 'jersey')
+                                            <i class="fas fa-tshirt me-1"></i> Jersey
+                                        @elseif($item->category == 'shoes')
+                                            <i class="fas fa-shoe-prints me-1"></i> Sepatu
+                                        @else
+                                            <i class="fas fa-mitten me-1"></i> Aksesoris
+                                        @endif
+                                    </span>
+                                </div>
                                 <!-- Availability -->
                                 <div class="availability mb-3">
                                     <div
@@ -191,6 +165,8 @@
                                     @endif
                                 </div>
 
+
+
                                 <hr class="border-1 border-dashed opacity-50 my-2">
 
                                 <!-- Footer -->
@@ -198,7 +174,7 @@
                                     <div class="price-info">
                                         <span
                                             class="h5 mb-0 text-danger">Rp{{ number_format($item->rental_price, 0, ',', '.') }}</span>
-                                        <small class="text-muted">/hari</small>
+                                        <small class="text-muted">/Jam</small>
                                     </div>
                                     <a href="{{ route('user.rental_items.show', $item->id) }}"
                                         class="btn btn-sm btn-outline-danger rounded-pill">
@@ -214,7 +190,8 @@
                             <i class="fas fa-search fa-3x text-muted mb-3"></i>
                             <h4>Tidak Ada Item Ditemukan</h4>
                             <p class="text-muted">Maaf, tidak ada item yang sesuai dengan kriteria pencarian Anda.</p>
-                            <a href="{{ route('user.rental_items.index') }}" class="btn btn-outline-danger rounded-pill mt-3">
+                            <a href="{{ route('user.rental_items.index') }}"
+                                class="btn btn-outline-danger rounded-pill mt-3">
                                 <i class="fas fa-sync-alt me-2"></i> Reset Filter
                             </a>
                         </div>
@@ -282,9 +259,9 @@
     </div>
 
     <style>
-   /* Hero Section */
-   .hero-section {
-    background: linear-gradient(to right, #9e0620, #bb2d3b);
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
             height: 220px;
             position: relative;
             display: flex;
@@ -452,7 +429,7 @@
             padding: 0.75
         }
     </style>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
 @endsection

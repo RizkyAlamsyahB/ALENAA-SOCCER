@@ -16,24 +16,36 @@ use Illuminate\Support\Facades\Auth;
 
 class FieldsController extends Controller
 {
-    /**
-     * Menampilkan daftar lapangan untuk user
-     */
-    public function index()
-    {
-        $fields = Field::all();
-        return view('users.fields.index', compact('fields'));
+/**
+ * Menampilkan daftar lapangan untuk user
+ */
+public function index()
+{
+    $fields = Field::all();
+
+    // Tambahkan rating dan review count untuk setiap field
+    foreach ($fields as $field) {
+        $field->rating = $field->getRatingAttribute();
+        $field->reviews_count = $field->getReviewsCountAttribute();
     }
 
-    /**
-     * Menampilkan detail lapangan
-     */
-    public function show($id)
-    {
-        $field = Field::findOrFail($id);
-        $memberships = Membership::where('field_id', $id)->get();
-        return view('users.fields.show', compact('field', 'memberships'));
-    }
+    return view('users.fields.index', compact('fields'));
+}
+
+/**
+ * Menampilkan detail lapangan
+ */
+public function show($id)
+{
+    $field = Field::findOrFail($id);
+
+    // Tambahkan rating dan review count
+    $field->rating = $field->getRatingAttribute();
+    $field->reviews_count = $field->getReviewsCountAttribute();
+
+    $memberships = Membership::where('field_id', $id)->get();
+    return view('users.fields.show', compact('field', 'memberships'));
+}
 
 /**
  * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu

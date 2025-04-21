@@ -93,16 +93,24 @@
                                 @endif
                             </div>
                             <div class="card-body p-3">
-                                <!-- Header -->
-                                <div class="mb-3">
-                                    <div class="category-badge mb-2">
-                                        <span class="badge bg-danger-subtle text-danger rounded-pill">
-                                            <i class="fas fa-camera me-1"></i> {{ ucfirst($photographer->package_type) }}
-                                        </span>
-                                    </div>
-                                    <h5 class="card-title mb-1">{{ $photographer->name }}</h5>
-                                    <p class="card-text text-muted small">{{ $photographer->description }}</p>
-                                </div>
+<!-- Header -->
+<div class="mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="card-title mb-0 fw-bold">{{ $photographer->name }}</h5>
+        <div class="rating-badge">
+            <i class="fas fa-star text-warning me-1"></i>
+            <span class="text-secondary">{{ number_format($photographer->rating ?? 0, 1) }}</span>
+        </div>
+    </div>
+
+    <div class="category-badge mb-2">
+        <span class="badge bg-danger-subtle text-danger rounded-pill">
+            <i class="fas fa-camera me-1"></i> {{ ucfirst($photographer->package_type) }}
+        </span>
+    </div>
+
+    <p class="card-text text-muted small">{{ $photographer->description }}</p>
+</div>
 
                                 <!-- Features -->
                                 <div class="features-list mb-3">
@@ -200,7 +208,7 @@
                         </ol>
                     </div>
                     <div class="col-md-6 text-center">
-                        <img src="{{ asset('assets/photographer.jpg') }}" alt="Photographer Service" class="img-fluid rounded-4 shadow">
+                        <img src="{{ asset('assets/fotografer.png') }}" alt="Photographer Service" class="img-fluid rounded-4 shadow">
                     </div>
                 </div>
             </div>

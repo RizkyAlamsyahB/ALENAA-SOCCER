@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-    <!-- Modern styling with custom fonts and better UI -->
+    <!-- CSS Styles -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -8,20 +8,17 @@
     <!-- CSRF Token untuk AJAX Requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Hero Section with Gradient Overlay -->
-    <div class="hero-section" style="margin-top: 50px;">
+    <!-- Hero Section -->
+    <div class="hero-section">
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title">Atur Jadwal Membership</h1>
                 <div class="breadcrumb-wrapper">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('users.dashboard') }}"><i class="fas fa-home"></i>
-                                    Home</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('users.dashboard') }}"><i class="fas fa-home"></i> Home</a></li>
                             <li class="breadcrumb-item"><a href="{{ route('user.membership.index') }}">Membership</a></li>
-                            <li class="breadcrumb-item"><a
-                                    href="{{ route('user.membership.show', $membership->id) }}">{{ $membership->name }}</a>
-                            </li>
+                            <li class="breadcrumb-item"><a href="{{ route('user.membership.show', $membership->id) }}">{{ $membership->name }}</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Pilih Jadwal</li>
                         </ol>
                     </nav>
@@ -31,243 +28,249 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container mt-5 mb-5">
+    <div class="container main-container">
         <!-- Alerts -->
-        <div class="row">
-            <div class="col-lg-10 mx-auto">
-                @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-                        <div class="d-flex align-items-center">
-                            <div class="alert-icon"><i class="fas fa-check-circle"></i></div>
-                            <div class="alert-message">{{ session('success') }}</div>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                @endif
+        <div class="alerts-container">
+            @if (session('success'))
+                <div class="alert-card success">
+                    <div class="alert-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="alert-message">{{ session('success') }}</div>
+                    <button type="button" class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+                </div>
+            @endif
 
-                @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-                        <div class="d-flex align-items-center">
-                            <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
-                            <div class="alert-message">{{ session('error') }}</div>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                @endif
-            </div>
+            @if (session('error'))
+                <div class="alert-card error">
+                    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="alert-message">{{ session('error') }}</div>
+                    <button type="button" class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+                </div>
+            @endif
         </div>
 
-        <div class="row">
-            <div class="col-lg-10 mx-auto">
-                <!-- Schedule Card -->
-                <div class="card card-schedule">
-                    <div class="card-header">
-                        <h4 class="mb-0">Pilih Jadwal Membership</h4>
-                    </div>
-                    <div class="card-body">
-                        <!-- Information Card -->
-<!-- Di file view membership/schedule.blade.php -->
-<div class="info-card mb-4">
-    <div class="info-card-icon">
-        <i class="fas fa-info-circle"></i>
-    </div>
-    <div class="info-card-content">
-        <h5>Paket {{ ucfirst($membership->type) }}</h5>
-        <p>Untuk paket {{ ucfirst($membership->type) }}, Anda perlu memilih
-            <strong>{{ $requiredHours }} jam</strong> slot waktu dalam seminggu. Anda bebas memilih
-            kapan saja dalam rentang 7 hari ke depan.</p>
-
-        @if($membership->includes_photographer || $membership->includes_rental_item)
-            <div class="package-includes mt-2">
-                <h6>Paket ini sudah termasuk:</h6>
-                <ul>
-                    @if($membership->includes_photographer)
-                        @php $photographer = App\Models\Photographer::find($membership->photographer_id); @endphp
-                        @if($photographer)
-                            <li>
-                                <i class="fas fa-camera text-success"></i>
-                                Fotografer {{ $photographer->name }} ({{ $membership->photographer_duration }} jam)
-                            </li>
-                        @endif
-                    @endif
-
-                    @if($membership->includes_rental_item)
-                        @php $rentalItem = App\Models\RentalItem::find($membership->rental_item_id); @endphp
-                        @if($rentalItem)
-                            <li>
-                                <i class="fas fa-futbol text-success"></i>
-                                {{ $rentalItem->name }} ({{ $membership->rental_item_quantity }} pcs)
-                            </li>
-                        @endif
-                    @endif
-                </ul>
-                <p class="text-muted small">Fotografer dan perlengkapan akan tersedia sesuai dengan jadwal yang Anda pilih.</p>
+        <!-- Schedule Card -->
+        <div class="card schedule-card">
+            <div class="card-header">
+                <h4>Pilih Jadwal Membership</h4>
             </div>
-        @endif
-    </div>
-</div>
+            <div class="card-body">
+                <!-- Information Card -->
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <h5>Paket {{ ucfirst($membership->type) }}</h5>
+                        <p>Untuk paket {{ ucfirst($membership->type) }}, Anda perlu memilih <strong>{{ $requiredHours }} jam</strong> slot waktu dalam seminggu. Anda bebas memilih kapan saja dalam rentang 7 hari ke depan.</p>
 
-                        <form action="{{ route('user.membership.save.schedule', $membership->id) }}" method="POST"
-                            id="scheduleForm">
-                            @csrf
-                            <!-- Tambahkan bagian ini sebelum form di Schedule.blade.php -->
-                            <div class="info-card mb-4">
-                                <div class="info-card-icon">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                </div>
-                                <div class="info-card-content">
-                                    <h5>Pilih Periode Pembayaran</h5>
-                                    <p>Anda dapat memilih untuk membayar keanggotaan secara mingguan atau langsung bayar
-                                        bulanan.</p>
-                                </div>
+                        @if($membership->includes_photographer || $membership->includes_rental_item)
+                            <div class="package-includes">
+                                <h6>Paket ini sudah termasuk:</h6>
+                                <ul>
+                                    @if($membership->includes_photographer)
+                                        @php $photographer = App\Models\Photographer::find($membership->photographer_id); @endphp
+                                        @if($photographer)
+                                            <li>
+                                                <i class="fas fa-camera text-success"></i>
+                                                Fotografer {{ $photographer->name }} ({{ $membership->photographer_duration }} jam)
+                                            </li>
+                                        @endif
+                                    @endif
+
+                                    @if($membership->includes_rental_item)
+                                        @php $rentalItem = App\Models\RentalItem::find($membership->rental_item_id); @endphp
+                                        @if($rentalItem)
+                                            <li>
+                                                <i class="fas fa-futbol text-success"></i>
+                                                {{ $rentalItem->name }} ({{ $membership->rental_item_quantity }} pcs)
+                                            </li>
+                                        @endif
+                                    @endif
+                                </ul>
+                                <p class="text-muted small">Fotografer dan perlengkapan akan tersedia sesuai dengan jadwal yang Anda pilih.</p>
                             </div>
-
-                            <div class="payment-options mb-4">
-                                <div class="form-check form-check-inline payment-option-card">
-                                    <input class="form-check-input" type="radio" name="payment_period" id="weekly-payment"
-                                        value="weekly" checked>
-                                    <label class="form-check-label payment-label" for="weekly-payment">
-                                        <div class="payment-option-content">
-                                            <div class="payment-option-icon">
-                                                <i class="fas fa-calendar-week"></i>
-                                            </div>
-                                            <div class="payment-option-details">
-                                                <h6>Pembayaran Mingguan</h6>
-                                                <p class="mb-0">Rp {{ number_format($membership->price, 0, ',', '.') }}
-                                                </p>
-                                                <small class="text-muted">Perpanjangan otomatis setiap minggu</small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div class="form-check form-check-inline payment-option-card">
-                                    <input class="form-check-input" type="radio" name="payment_period"
-                                        id="monthly-payment" value="monthly">
-                                    <label class="form-check-label payment-label" for="monthly-payment">
-                                        <div class="payment-option-content">
-                                            <div class="payment-option-icon">
-                                                <i class="fas fa-calendar-alt"></i>
-                                            </div>
-                                            <div class="payment-option-details">
-                                                <h6>Pembayaran Bulanan</h6>
-                                                <p class="mb-0">Rp
-                                                    {{ number_format($membership->price * 4, 0, ',', '.') }}</p>
-                                                <small class="text-muted">Hemat waktu dengan pembayaran bulanan</small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="schedule-steps">
-                                <!-- Step 1: Pick Week -->
-                                <div class="schedule-step active" id="step-1">
-                                    <div class="step-number">1</div>
-                                    <div class="step-content">
-                                        <h5>Pilih Minggu</h5>4
-                                        <div class="week-picker-wrapper">
-                                            <div id="week-picker" class="mb-3"></div>
-                                            <div class="selected-week-display" id="selected-week-display">
-                                                <div class="empty-state">
-                                                    <i class="fas fa-calendar-alt"></i>
-                                                    <p>Belum ada minggu yang dipilih</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Step 2: Pick Time Slots -->
-                                <div class="schedule-step" id="step-2">
-                                    <div class="step-number">2</div>
-                                    <div class="step-content">
-                                        <h5>Pilih Slot Waktu ({{ $requiredHours }} jam)</h5>
-                                        <div class="day-tabs-container mb-4">
-                                            <ul class="nav nav-tabs day-tabs" id="dayTabs" role="tablist"></ul>
-                                        </div>
-
-                                        <div class="tab-content" id="dayTabsContent">
-                                            <!-- Tab panes akan dibuat dinamis dengan JavaScript -->
-                                        </div>
-
-                                        <div class="time-slot-counter mt-3">
-                                            <div
-                                                class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
-                                                <span>Slot Dipilih: <span id="selected-slots-count">0</span> dari
-                                                    {{ $requiredHours }} jam</span>
-                                                <div class="progress flex-grow-1 mx-3" style="height: 10px;">
-                                                    <div id="slots-progress-bar" class="progress-bar bg-success"
-                                                        role="progressbar" style="width: 0%"></div>
-                                                </div>
-                                                <span id="slots-percentage">0%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Confirmation -->
-                                <div class="schedule-step" id="step-3">
-                                    <div class="step-number">3</div>
-                                    <div class="step-content">
-                                        <h5>Konfirmasi Jadwal</h5>
-                                        <div class="warning-card">
-                                            <div class="warning-card-icon">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                            </div>
-                                            <div class="warning-card-content">
-                                                <h5>Perhatian</h5>
-                                                <p>Jadwal yang dipilih tidak dapat diubah selama masa membership. Pastikan
-                                                    Anda memilih jadwal yang sesuai dengan ketersediaan Anda.</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="selected-schedule-summary" id="schedule-summary">
-                                            <h6>Ringkasan Jadwal Pilihan Anda</h6>
-                                            <div class="summary-empty" id="summary-empty">
-                                                <p>Silahkan pilih jadwal terlebih dahulu</p>
-                                            </div>
-                                            <div class="summary-content" id="summary-content" style="display:none;">
-                                                <div class="summary-item" id="summary-week">
-                                                    <i class="fas fa-calendar-week"></i>
-                                                    <span>Minggu: <span id="selected-week-summary">-</span></span>
-                                                </div>
-                                                <div class="selected-slots-list mt-3">
-                                                    <h6>Slot Waktu Terpilih:</h6>
-                                                    <ul id="selected-slots-summary" class="list-group"></ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Hidden field to store selected slots -->
-                            <div id="selected-slots-container"></div>
-                            <input type="hidden" name="today_date" id="today-date" value="{{ date('Y-m-d') }}">
-
-                            <div class="form-actions mt-4">
-                                <a href="{{ route('user.membership.show', $membership->id) }}"
-                                    class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-left me-2"></i>Kembali
-                                </a>
-                                <button type="button" class="btn btn-outline-secondary" id="prev-btn"
-                                    style="display: none;">
-                                    <i class="fas fa-arrow-left me-2"></i>Sebelumnya
-                                </button>
-                                <button type="button" class="btn btn-primary" id="next-btn" disabled>
-                                    Selanjutnya<i class="fas fa-arrow-right ms-2"></i>
-                                </button>
-                                <button type="submit" class="btn btn-primary" id="submit-btn" style="display: none;">
-                                    <i class="fas fa-cart-plus me-2"></i>Tambahkan ke Keranjang
-                                </button>
-                            </div>
-                        </form>
+                        @endif
                     </div>
                 </div>
+
+                <form action="{{ route('user.membership.save.schedule', $membership->id) }}" method="POST" id="scheduleForm">
+                    @csrf
+
+                    <!-- Payment Options -->
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <h5>Pilih Periode Pembayaran</h5>
+                            <p>Anda dapat memilih untuk membayar keanggotaan secara mingguan atau langsung bayar bulanan.</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-options">
+                        <div class="payment-option">
+                            <input class="form-check-input" type="radio" name="payment_period" id="weekly-payment" value="weekly" checked>
+                            <label class="payment-label" for="weekly-payment">
+                                <div class="payment-content">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-calendar-week"></i>
+                                    </div>
+                                    <div class="payment-details">
+                                        <h6>Pembayaran Mingguan</h6>
+                                        <p>Rp {{ number_format($membership->price, 0, ',', '.') }}</p>
+                                        <small>Perpanjangan otomatis setiap minggu</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="payment-option">
+                            <input class="form-check-input" type="radio" name="payment_period" id="monthly-payment" value="monthly">
+                            <label class="payment-label" for="monthly-payment">
+                                <div class="payment-content">
+                                    <div class="payment-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div class="payment-details">
+                                        <h6>Pembayaran Bulanan</h6>
+                                        <p>Rp {{ number_format($membership->price * 4, 0, ',', '.') }}</p>
+                                        <small>Hemat waktu dengan pembayaran bulanan</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Booking Process Steps -->
+                    <div class="booking-wizard">
+                        <!-- Progress Bar -->
+                        <div class="wizard-progress">
+                            <div class="wizard-progress-bar" id="wizard-progress-bar"></div>
+
+                            <!-- Step 1 -->
+                            <div class="wizard-step active" id="wizard-step-1">
+                                <div class="step-circle"><span>1</span><i class="fas fa-check"></i></div>
+                                <div class="step-label">Pilih Minggu</div>
+                                <div class="step-desc">Tentukan minggu untuk jadwal Anda</div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="wizard-step" id="wizard-step-2">
+                                <div class="step-circle"><span>2</span><i class="fas fa-check"></i></div>
+                                <div class="step-label">Pilih Waktu</div>
+                                <div class="step-desc">Pilih {{ $requiredHours }} jam waktu bermain</div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="wizard-step" id="wizard-step-3">
+                                <div class="step-circle"><span>3</span><i class="fas fa-check"></i></div>
+                                <div class="step-label">Konfirmasi</div>
+                                <div class="step-desc">Konfirmasi jadwal Anda</div>
+                            </div>
+                        </div>
+
+                        <!-- Wizard Content -->
+                        <div class="wizard-content">
+                            <!-- Step 1 Panel: Pick Week -->
+                            <div class="wizard-panel active" id="step-panel-1">
+                                <h5 class="panel-title">Pilih Minggu</h5>
+
+                                <div class="week-picker-wrapper">
+                                    <div id="week-picker" class="calendar-picker"></div>
+                                    <div class="selected-week-display" id="selected-week-display">
+                                        <div class="empty-state">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <p>Belum ada minggu yang dipilih</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 Panel: Pick Time Slots -->
+                            <div class="wizard-panel" id="step-panel-2">
+                                <h5 class="panel-title">Pilih Slot Waktu ({{ $requiredHours }} jam)</h5>
+
+                                <div class="day-tabs-container">
+                                    <div class="day-tabs" id="dayTabs"></div>
+                                </div>
+
+                                <div class="tab-content mt-4" id="dayTabsContent">
+                                    <!-- Tab panes akan dibuat dinamis dengan JavaScript -->
+                                </div>
+
+                                <div class="time-slot-counter">
+                                    <div class="counter-content">
+                                        <span>Slot Dipilih: <span id="selected-slots-count">0</span> dari {{ $requiredHours }} jam</span>
+                                        <div class="progress-container">
+                                            <div id="slots-progress-bar" class="progress-bar"></div>
+                                        </div>
+                                        <span id="slots-percentage">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 Panel: Confirmation -->
+                            <div class="wizard-panel" id="step-panel-3">
+                                <h5 class="panel-title">Konfirmasi Jadwal</h5>
+
+                                <div class="warning-card">
+                                    <div class="warning-card-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="warning-card-content">
+                                        <h5>Perhatian</h5>
+                                        <p>Jadwal yang dipilih tidak dapat diubah selama masa membership. Pastikan Anda memilih jadwal yang sesuai dengan ketersediaan Anda.</p>
+                                    </div>
+                                </div>
+
+                                <div class="selected-schedule-summary" id="schedule-summary">
+                                    <h6>Ringkasan Jadwal Pilihan Anda</h6>
+                                    <div class="summary-empty" id="summary-empty">
+                                        <p>Silahkan pilih jadwal terlebih dahulu</p>
+                                    </div>
+                                    <div class="summary-content" id="summary-content" style="display:none;">
+                                        <div class="summary-item" id="summary-week">
+                                            <i class="fas fa-calendar-week"></i>
+                                            <span>Minggu: <span id="selected-week-summary">-</span></span>
+                                        </div>
+                                        <div class="selected-slots-list">
+                                            <h6>Slot Waktu Terpilih:</h6>
+                                            <ul id="selected-slots-summary" class="list-group"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden field to store selected slots -->
+                        <div id="selected-slots-container"></div>
+                        <input type="hidden" name="today_date" id="today-date" value="{{ date('Y-m-d') }}">
+
+                        <!-- Navigation Buttons -->
+                        <div class="wizard-buttons">
+                            <a href="{{ route('user.membership.show', $membership->id) }}" class="wizard-btn wizard-btn-prev">
+                                <i class="fas fa-arrow-left"></i> Kembali
+                            </a>
+                            <button type="button" class="wizard-btn wizard-btn-prev" id="prev-btn" style="display: none;">
+                                <i class="fas fa-arrow-left"></i> Sebelumnya
+                            </button>
+                            <button type="button" class="wizard-btn wizard-btn-next" id="next-btn" disabled>
+                                Selanjutnya <i class="fas fa-arrow-right"></i>
+                            </button>
+                            <button type="submit" class="wizard-btn wizard-btn-submit" id="submit-btn" style="display: none;">
+                                <i class="fas fa-cart-plus"></i> Tambahkan ke Keranjang
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+
+    <!-- Include Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Inisialisasi variabel
@@ -280,6 +283,13 @@
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const availableDays = [];
             let availableSlotsByDay = {};
+
+            // Memperbarui lebar progress bar
+            function updateProgressBar() {
+                const progressBar = document.getElementById('wizard-progress-bar');
+                const progressWidth = ((currentStep - 1) / 2) * 100;
+                progressBar.style.width = progressWidth + '%';
+            }
 
             // Initialize Flatpickr for week selection
             const weekPicker = flatpickr("#week-picker", {
@@ -306,8 +316,8 @@
                                     <span class="week-label">Minggu Terpilih:</span>
                                     <span class="week-value">${formattedStart} - ${formattedEnd}</span>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" id="change-week-btn">
-                                    <i class="fas fa-exchange-alt me-1"></i> Ubah
+                                <button type="button" class="btn-change-week" id="change-week-btn">
+                                    <i class="fas fa-exchange-alt"></i> Ubah
                                 </button>
                             </div>
                         `;
@@ -363,31 +373,50 @@
                     const contentId = `day-content-${index}`;
 
                     // Buat tab
-                    const tabItem = document.createElement('li');
-                    tabItem.className = 'nav-item';
+                    const tabItem = document.createElement('div');
+                    tabItem.className = `day-tab ${isActive ? 'active' : ''}`;
+                    tabItem.id = tabId;
+                    tabItem.setAttribute('data-tab', contentId);
+                    tabItem.setAttribute('data-date', day.dateStr);
                     tabItem.innerHTML = `
-                        <a class="nav-link ${isActive ? 'active' : ''}" id="${tabId}" data-bs-toggle="tab"
-                           href="#${contentId}" role="tab" aria-controls="${contentId}"
-                           aria-selected="${isActive ? 'true' : 'false'}" data-date="${day.dateStr}">
-                            <div class="day-tab-content">
-                                <div class="day-name">${dayName}</div>
-                                <div class="day-date">${dateStr}</div>
-                            </div>
-                        </a>
+                        <div class="day-name">${dayName}</div>
+                        <div class="day-date">${dateStr}</div>
                     `;
                     dayTabsContainer.appendChild(tabItem);
 
+                    // Tambahkan event listener untuk tab
+                    tabItem.addEventListener('click', function() {
+                        // Hapus kelas active dari semua tab
+                        document.querySelectorAll('.day-tab').forEach(tab => {
+                            tab.classList.remove('active');
+                        });
+                        // Tambahkan kelas active ke tab yang diklik
+                        this.classList.add('active');
+
+                        // Sembunyikan semua konten tab
+                        document.querySelectorAll('.day-content').forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        // Tampilkan konten tab yang sesuai
+                        document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+
+                        // Load available slots jika belum ada data
+                        const date = this.getAttribute('data-date');
+                        const contentId = this.getAttribute('data-tab');
+                        if (!availableSlotsByDay[date]) {
+                            loadAvailableSlots(date, contentId);
+                        }
+                    });
+
                     // Buat konten tab
                     const tabContent = document.createElement('div');
-                    tabContent.className = `tab-pane fade ${isActive ? 'show active' : ''}`;
+                    tabContent.className = `day-content ${isActive ? 'active' : ''}`;
                     tabContent.id = contentId;
-                    tabContent.setAttribute('role', 'tabpanel');
-                    tabContent.setAttribute('aria-labelledby', tabId);
 
                     // Tambahkan placeholder loading
                     tabContent.innerHTML = `
                         <div class="time-slots-loading">
-                            <div class="spinner-border text-primary" role="status">
+                            <div class="spinner-border">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                             <p>Memuat slot tersedia...</p>
@@ -398,19 +427,6 @@
 
                     // Load available slots for this date
                     loadAvailableSlots(day.dateStr, contentId);
-                });
-
-                // Tambahkan event listener untuk tab switch
-                document.querySelectorAll('#dayTabs .nav-link').forEach(tabLink => {
-                    tabLink.addEventListener('click', function(e) {
-                        const date = this.getAttribute('data-date');
-                        const tabId = this.getAttribute('aria-controls');
-
-                        // Jika belum ada data untuk hari ini, muat slot yang tersedia
-                        if (!availableSlotsByDay[date]) {
-                            loadAvailableSlots(date, tabId);
-                        }
-                    });
                 });
             }
 
@@ -427,7 +443,7 @@
                 // Tampilkan loader
                 tabContent.innerHTML = `
                     <div class="time-slots-loading">
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p>Memuat slot tersedia...</p>
@@ -488,7 +504,7 @@
                     const slotValue = `${slot.date}|${slot.display}|${fieldId}`;
                     const isSelected = selectedSlots.has(slotValue);
 
-                    slotElement.className = `time-slot ${isSelected ? 'selected' : ''}`;
+                    slotElement.className = `time-slot ${isSelected ? 'slot-selected' : 'slot-available'}`;
                     slotElement.dataset.value = slotValue;
                     slotElement.innerHTML = `
                         <div class="slot-time">
@@ -520,13 +536,15 @@
                 if (selectedSlots.has(slotValue)) {
                     // Hapus dari pilihan
                     selectedSlots.delete(slotValue);
-                    slotElement.classList.remove('selected');
+                    slotElement.classList.remove('slot-selected');
+                    slotElement.classList.add('slot-available');
                     slotElement.querySelector('i').className = 'fas fa-clock';
                 } else {
                     // Tambahkan ke pilihan jika belum cukup
                     if (selectedSlots.size < requiredHours) {
                         selectedSlots.add(slotValue);
-                        slotElement.classList.add('selected');
+                        slotElement.classList.remove('slot-available');
+                        slotElement.classList.add('slot-selected');
                         slotElement.querySelector('i').className = 'fas fa-check';
                     } else {
                         // Tampilkan pesan batas maksimum
@@ -655,66 +673,72 @@
 
             // Pindah ke langkah berikutnya
             function goToStep(step) {
-                // Sembunyikan semua langkah
-                document.querySelectorAll('.schedule-step').forEach(el => {
+                currentStep = step;
+
+                // Update progress bar
+                updateProgressBar();
+
+                // Update wizard steps
+                document.querySelectorAll('.wizard-step').forEach((el, index) => {
+                    const stepNum = index + 1;
                     el.classList.remove('active', 'completed');
+
+                    if (stepNum < step) {
+                        el.classList.add('completed');
+                    } else if (stepNum === step) {
+                        el.classList.add('active');
+                    }
                 });
 
-                // Tandai langkah sebelumnya sebagai selesai
-                for (let i = 1; i < step; i++) {
-                    document.getElementById(`step-${i}`).classList.add('completed');
-                }
+                // Update panels
+                document.querySelectorAll('.wizard-panel').forEach((panel, index) => {
+                    const panelNum = index + 1;
+                    panel.classList.remove('active');
 
-                // Aktifkan langkah saat ini
-                document.getElementById(`step-${step}`).classList.add('active');
+                    if (panelNum === step) {
+                        panel.classList.add('active');
+                    }
+                });
 
-                // Update tombol navigasi
-                updateNavigationButtons(step);
-
-                // Tindakan khusus berdasarkan langkah
-                if (step === 2 && selectedWeekStart) {
-                    // Generate tab hari dan muat slot
-                    generateDayTabs();
-                } else if (step === 3) {
-                    // Update ringkasan
-                    updateSelectedSlotsSummary();
-                    document.getElementById('summary-empty').style.display = 'none';
-                    document.getElementById('summary-content').style.display = 'block';
-                }
-
-                currentStep = step;
-            }
-
-            // Update tombol navigasi
-            function updateNavigationButtons(step) {
+                // Update navigation buttons
                 const prevBtn = document.getElementById('prev-btn');
                 const nextBtn = document.getElementById('next-btn');
                 const submitBtn = document.getElementById('submit-btn');
 
-                // Reset tampilan
+                // Reset visibility
                 prevBtn.style.display = 'none';
                 nextBtn.style.display = 'none';
                 submitBtn.style.display = 'none';
 
                 if (step === 1) {
-                    // Langkah pertama: hanya tampilkan next
-                    nextBtn.style.display = 'inline-block';
+                    // Step 1: Show next button only
+                    nextBtn.style.display = 'flex';
                     nextBtn.disabled = !selectedWeekStart;
                 } else if (step === 2) {
-                    // Langkah kedua: tampilkan prev dan next
-                    prevBtn.style.display = 'inline-block';
-                    nextBtn.style.display = 'inline-block';
+                    // Step 2: Show prev and next
+                    prevBtn.style.display = 'flex';
+                    nextBtn.style.display = 'flex';
                     nextBtn.disabled = selectedSlots.size !== requiredHours;
+
+                    // Generate day tabs if coming from step 1
+                    if (selectedWeekStart) {
+                        generateDayTabs();
+                    }
                 } else if (step === 3) {
-                    // Langkah terakhir: tampilkan prev dan submit
-                    prevBtn.style.display = 'inline-block';
-                    submitBtn.style.display = 'inline-block';
+                    // Step 3: Show prev and submit
+                    prevBtn.style.display = 'flex';
+                    submitBtn.style.display = 'flex';
+
+                    // Update summary
+                    updateSelectedSlotsSummary();
+                    document.getElementById('summary-empty').style.display = 'none';
+                    document.getElementById('summary-content').style.display = 'block';
                 }
             }
 
-            // Reset pilihan
+            // Reset selection for week picker
             function resetSelection() {
-                // Reset variabel
+                // Reset variables
                 selectedWeekStart = null;
                 selectedWeekEnd = null;
                 selectedSlots.clear();
@@ -732,11 +756,8 @@
                 document.getElementById('dayTabs').innerHTML = '';
                 document.getElementById('dayTabsContent').innerHTML = '';
 
-                // Reset step dan tombol
+                // Reset progress and steps
                 goToStep(1);
-
-                // Show calendar
-                weekPicker._input.style.display = 'block';
             }
 
             // Event Listeners
@@ -749,654 +770,1414 @@
             });
 
             document.getElementById('scheduleForm').addEventListener('submit', function(e) {
-                // Validasi sebelum submit
+                // Validate before submit
                 if (selectedSlots.size !== requiredHours) {
                     e.preventDefault();
                     alert(`Anda harus memilih tepat ${requiredHours} jam slot waktu.`);
                     return false;
                 }
 
-                // Disable tombol untuk mencegah double submission
+                // Disable submit button to prevent double submissions
                 document.getElementById('submit-btn').disabled = true;
                 document.getElementById('submit-btn').innerHTML = `
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    <span class="ms-2">Memproses...</span>
+                    <span class="spinner-border spinner-border-sm"></span>
+                    <span>Memproses...</span>
                 `;
 
                 return true;
             });
 
-            // Inisialisasi
+            // Initialize wizard
+            updateProgressBar();
             goToStep(1);
         });
     </script>
-    <!-- Include Flatpickr JS -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.css"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin/rangePlugin.js"></script>
 
-    <style>
-        /* Modern Design System */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
-        }
 
-        .hero-section {
-            background: linear-gradient(to right, #9e0620, #bb2d3b);
-            height: 220px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
 
-        .hero-content {
-            color: white;
-            text-align: center;
-            width: 100%;
-        }
-
-        .hero-title {
-            font-weight: 700;
-            margin-bottom: 1rem;
-            font-size: 2.2rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .breadcrumb-wrapper {
-            display: flex;
-            justify-content: center;
-        }
-
-        .breadcrumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 50px;
-            padding: 0.8rem 1.5rem;
-            display: inline-flex;
-            margin-bottom: 0;
-        }
-
-        .breadcrumb-item {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-        }
-
-        .breadcrumb-item.active {
-            color: white;
-            font-weight: 500;
-        }
-
-        .breadcrumb-item a {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        .breadcrumb-item a:hover {
-            color: white;
-        }
-
-        .breadcrumb-item+.breadcrumb-item::before {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        /* Card Design */
-        .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .card-schedule {
-            margin-bottom: 2rem;
-        }
-
-        .card-header {
-            background-color: white;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 1.5rem 1.5rem;
-        }
-
-        .card-header h4 {
-            font-weight: 600;
-            color: #212529;
-            margin: 0;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        /* Information Card */
-        .info-card,
-        .warning-card {
-            display: flex;
-            background-color: #e8f4ff;
-            border-radius: 12px;
-            padding: 1.2rem;
-            margin-bottom: 2rem;
-            border-left: 4px solid #2196f3;
-        }
-
-        .warning-card {
-            background-color: #fff8e1;
-            border-left-color: #ffc107;
-        }
-
-        .info-card-icon,
-        .warning-card-icon {
-            font-size: 1.5rem;
-            color: #2196f3;
-            margin-right: 1rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .warning-card-icon {
-            color: #ffc107;
-        }
-
-        .info-card-content h5,
-        .warning-card-content h5 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .info-card-content p,
-        .warning-card-content p {
-            font-size: 0.95rem;
-            margin-bottom: 0;
-            color: #495057;
-        }
-
-        /* Step system */
-        .schedule-steps {
-            margin-bottom: 2rem;
-        }
-
-        .schedule-step {
-            display: flex;
-            margin-bottom: 2rem;
-            opacity: 0.5;
-            transition: all 0.3s ease;
-        }
-
-        .schedule-step.active {
-            opacity: 1;
-        }
-
-        .schedule-step.completed .step-number {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .step-number {
-            background-color: #e9ecef;
-            color: #495057;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-right: 1rem;
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-
-        .active .step-number {
-            background-color: #d00f25;
-            color: white;
-        }
-
-        .step-content {
-            flex-grow: 1;
-        }
-
-        .step-content h5 {
-            font-weight: 600;
-            margin-bottom: 1.2rem;
-            color: #212529;
-        }
-
-        /* Week Picker */
-        .week-picker-wrapper {
-  width: 100%;
-  max-width: 500px;  /* misal batas maksimal di desktop */
-  margin: 0 auto 1rem;
-  padding: 0 1rem;
-  box-sizing: border-box;
-}
-.flatpickr-calendar {
-  width: 100% !important;
-  font-size: 0.9rem;
+<style>
+/* Base styling */
+:root {
+    --primary-color: #9e0620;
+    --primary-hover: #bb2d3b;
+    --light-bg: #f8f9fa;
+    --border-color: #e9ecef;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #2196f3;
 }
 
-
-        .flatpickr-day {
-            border-radius: 8px;
-            margin: 2px;
-            height: 38px;
-            line-height: 38px;
-        }
-
-        .flatpickr-day.selected,
-        .flatpickr-day.startRange,
-        .flatpickr-day.endRange,
-        .flatpickr-day.selected.inRange,
-        .flatpickr-day.startRange.inRange,
-        .flatpickr-day.endRange.inRange,
-        .flatpickr-day.selected:focus,
-        .flatpickr-day.startRange:focus,
-        .flatpickr-day.endRange:focus,
-        .flatpickr-day.selected:hover,
-        .flatpickr-day.startRange:hover,
-        .flatpickr-day.endRange:hover,
-        .flatpickr-day.selected.prevMonthDay,
-        .flatpickr-day.startRange.prevMonthDay,
-        .flatpickr-day.endRange.prevMonthDay,
-        .flatpickr-day.selected.nextMonthDay,
-        .flatpickr-day.startRange.nextMonthDay,
-        .flatpickr-day.endRange.nextMonthDay {
-            background: #d00f25;
-            border-color: #d00f25;
-            color: #fff;
-        }
-
-        .flatpickr-current-month .flatpickr-monthDropdown-months {
-            font-weight: 600;
-        }
-
-        .selected-week-display {
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-top: 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            color: #6c757d;
-        }
-
-        .empty-state i {
-            font-size: 2rem;
-            margin-bottom: 0.8rem;
-            opacity: 0.5;
-        }
-
-        .empty-state p {
-            margin-bottom: 0;
-            font-size: 0.95rem;
-        }
-
-        .selected-week-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .selected-week-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .week-label {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-bottom: 0.3rem;
-        }
-
-        .week-value {
-            font-weight: 600;
-            color: #212529;
-        }
-
-        /* Day Tabs */
-        .day-tabs-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .day-tabs {
-  display: flex;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 1rem;
-}
-.day-tabs .nav-link {
-  flex: 0 0 auto;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-
-        .day-tabs .nav-item {
-            flex: 0 0 auto;
-            white-space: nowrap;
-        }
-
-        .day-tabs .nav-link {
-            border: none;
-            padding: 0.75rem 1.25rem;
-            color: #6c757d;
-            border-radius: 0;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .day-tabs .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background-color: transparent;
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .day-tabs .nav-link.active {
-            color: #d00f25;
-            background-color: transparent;
-            font-weight: 600;
-        }
-
-        .day-tabs .nav-link.active::after {
-            background-color: #d00f25;
-            transform: scaleX(1);
-        }
-
-        .day-tab-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .day-name {
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-        }
-
-        .day-date {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
-
-        /* Time Slots Grid */
-        .time-slots-grid {
-  display: grid;
-  /* auto-fit akan menyesuaikan jumlah kolom sesuai lebar tersedia */
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
-  margin-top: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 0.5rem; /* beri padding agar tidak mepet tepi layar */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    line-height: 1.5;
 }
 
+.container {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
 
-        .time-slot {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: white;
-        }
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(to right, var(--primary-color), var(--primary-hover));
+    padding: 3rem 0;
+    margin-top: 50px;
+    margin-bottom: 2rem;
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
 
-        .time-slot:hover {
-            border-color: #d00f25;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
+.hero-content {
+    text-align: center;
+}
 
-        .time-slot.selected {
-            border-color: #d00f25;
-            background-color: rgba(208, 15, 37, 0.05);
-        }
+.hero-title {
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
-        .slot-time {
-            padding: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
+.breadcrumb-wrapper {
+    display: flex;
+    justify-content: center;
+}
 
-        .slot-time i {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            color: #6c757d;
-        }
+.breadcrumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    padding: 0.8rem 1.5rem;
+    display: inline-flex;
+    margin-bottom: 0;
+    list-style: none;
+}
 
-        .slot-time span {
-            font-weight: 500;
-        }
+.breadcrumb-item {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
 
-        .time-slot.selected .slot-time i {
-            color: #d00f25;
-        }
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    margin: 0 0.5rem;
+    color: rgba(255, 255, 255, 0.6);
+}
 
-        .slot-price {
-            padding: 0.5rem;
-            background-color: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
+.breadcrumb-item.active {
+    color: white;
+    font-weight: 500;
+}
 
-        /* Loading State */
-        .time-slots-loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 0;
-            color: #6c757d;
-        }
+.breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
 
-        .time-slots-loading p {
-            margin-top: 1rem;
-            font-size: 0.95rem;
-        }
+.breadcrumb-item a:hover {
+    color: white;
+}
 
-        /* Selected Slots Summary */
-        .selected-slots-list {
-            margin-top: 1rem;
-        }
+.breadcrumb-item i {
+    margin-right: 5px;
+}
 
-        .list-group-item {
-            border-radius: 8px !important;
-            margin-bottom: 0.5rem;
-            border: 1px solid #e9ecef;
-        }
+/* Main Container */
+.main-container {
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+}
 
-        .slot-date-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.75rem;
-            color: #495057;
-        }
+/* Alert Cards */
+.alerts-container {
+    margin-bottom: 1.5rem;
+}
 
-        .slot-date-header i {
-            margin-right: 0.5rem;
-            color: #d00f25;
-        }
+.alert-card {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
 
-        .slot-time-list {
-            padding-left: 1.5rem;
-        }
+.alert-card.success {
+    background-color: #e8f5e9;
+    border-left: 4px solid var(--success-color);
+}
 
-        .slot-summary-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
+.alert-card.error {
+    background-color: #ffebee;
+    border-left: 4px solid var(--danger-color);
+}
 
-        .slot-summary-item i {
-            margin-right: 0.5rem;
-            width: 20px;
-            text-align: center;
-        }
+.alert-icon {
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+}
 
-        /* Time Slot Counter */
-        .time-slot-counter {
-            background-color: white;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-        }
+.alert-card.success .alert-icon {
+    color: var(--success-color);
+}
 
-        /* Buttons */
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            justify-content: space-between;
-        }
+.alert-card.error .alert-icon {
+    color: var(--danger-color);
+}
 
-        .btn {
-            padding: 0.6rem 1.5rem;
-            font-weight: 500;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
+.alert-message {
+    flex: 1;
+}
 
-        .btn-primary {
-            background-color: #d00f25;
-            border-color: #d00f25;
-        }
+.alert-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
 
-        .btn-primary:hover,
-        .btn-primary:focus {
-            background-color: #b00d1f;
-            border-color: #b00d1f;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(208, 15, 37, 0.25);
-        }
+.alert-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
 
-        .btn-outline-secondary:hover {
-            transform: translateY(-2px);
-        }
+/* Card Design */
+.card {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
 
-        .btn:disabled {
-            opacity: 0.7;
-            transform: none !important;
-            box-shadow: none !important;
-        }
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
 
-        /* Payment Options */
-        .payment-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 1.5rem;
-        }
+.card-header h4 {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}
 
-        .payment-option-card {
-            flex: 1;
-            min-width: 220px;
-            margin: 0;
-        }
+.card-body {
+    padding: 1.5rem;
+}
 
-        .payment-label {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+/* Info and Warning Cards */
+.info-card,
+.warning-card {
+    display: flex;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+}
 
-        .form-check-input:checked+.payment-label {
-            border-color: #d00f25;
-            background-color: rgba(208, 15, 37, 0.05);
-            box-shadow: 0 0 0 3px rgba(208, 15, 37, 0.1);
-        }
+.info-card {
+    background-color: #e8f4ff;
+    border-left: 4px solid var(--info-color);
+}
 
-        .payment-label:hover {
-            border-color: #d00f25;
-        }
+.warning-card {
+    background-color: #fff8e1;
+    border-left: 4px solid var(--warning-color);
+}
 
-        .payment-label img {
-            max-height: 28px;
-            margin-right: 10px;
-        }
+.info-card-icon,
+.warning-card-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+}
 
-        .payment-label span {
-            font-weight: 500;
-            color: #212529;
-        }
+.info-card-icon {
+    color: var(--info-color);
+}
 
-        .payment-option-content {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+.warning-card-icon {
+    color: var(--warning-color);
+}
 
-        /* Confirmation Section */
-        .confirmation-message {
-            text-align: center;
-            padding: 2rem 1rem;
-        }
+.info-card-content h5,
+.warning-card-content h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
 
-        .confirmation-message h4 {
-            color: #212529;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
+.info-card-content p,
+.warning-card-content p {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+}
 
-        .confirmation-message p {
-            color: #6c757d;
-            font-size: 0.95rem;
-            margin-bottom: 0;
-        }
+.package-includes {
+    margin-top: 1rem;
+}
 
-        .confirmation-icon {
-            font-size: 2.5rem;
-            color: #28a745;
-            margin-bottom: 1rem;
-        }
+.package-includes h6 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
 
-        /* Responsive Tweaks */
-        @media (max-width: 576px) {
-  .time-slots-grid {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 8px;
-  }
-  .time-slot {
+.package-includes ul {
+    list-style: none;
+    padding-left: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.package-includes li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.package-includes li i {
+    margin-right: 0.5rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Payment Options */
+.payment-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-option {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+}
+
+.form-check-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.payment-label {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked + .payment-label {
+    border-color: var(--primary-color);
+    background-color: rgba(158, 6, 32, 0.05);
+    box-shadow: 0 0 0 3px rgba(158, 6, 32, 0.1);
+}
+
+.payment-label:hover {
+    border-color: var(--primary-color);
+}
+
+.payment-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.payment-icon {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(158, 6, 32, 0.1);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.payment-details h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.payment-details p {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+}
+
+.payment-details small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Wizard Booking Process */
+.booking-wizard {
+    position: relative;
+    margin-bottom: 2.5rem;
+}
+
+/* Progress Bar */
+.wizard-progress {
+    display: flex;
+    position: relative;
+    margin-bottom: 2rem;
+    padding: 0 10px;
+}
+
+.wizard-progress::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: var(--border-color);
+    z-index: 1;
+}
+
+.wizard-progress-bar {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    height: 4px;
+    background-color: var(--primary-color);
+    transition: width 0.5s ease;
+    z-index: 2;
+}
+
+/* Step Items */
+.wizard-step {
+    flex: 1;
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid var(--border-color);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.step-circle i {
+    font-size: 1rem;
+    display: none;
+}
+
+.wizard-step.active .step-circle {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+}
+
+.wizard-step.completed .step-circle {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.wizard-step.completed .step-circle span {
+    display: none;
+}
+
+.wizard-step.completed .step-circle i {
+    display: inline;
+}
+
+.step-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    transition: color 0.3s ease;
+}
+
+.wizard-step.active .step-label,
+.wizard-step.completed .step-label {
+    color: var(--text-dark);
+}
+
+.step-desc {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    display: none;
+}
+
+.wizard-step.active .step-desc {
+    color: var(--primary-color);
+    display: block;
+}
+
+/* Wizard Content */
+.wizard-content {
+    position: relative;
+    overflow: hidden;
+    min-height: 300px;
+}
+
+.wizard-panel {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.wizard-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-title {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+}
+
+/* Week Picker */
+.week-picker-wrapper {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 1.5rem;
+    position: relative;
+}
+
+.calendar-picker {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.selected-week-display {
+    background-color: var(--light-bg);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    color: var(--text-muted);
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+.selected-week-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selected-week-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.week-label {
     font-size: 0.85rem;
-  }
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+}
+
+.week-value {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.btn-change-week {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-change-week:hover {
+    background-color: var(--light-bg);
+}
+/* Perbaikan styling untuk tab hari */
+.day-tabs-container {
+    margin-top: 30px; /* Tambahkan margin top yang lebih besar */
+    margin-bottom: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px; /* Tambahkan padding bawah */
+}
+
+.day-tabs {
+    display: flex;
+    gap: 10px; /* Memperbesar jarak antar tab */
+    padding-bottom: 10px;
+}
+
+.day-tab {
+    flex: 0 0 auto;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef; /* Perbesar ketebalan border */
+    background-color: #ffffff;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Tambahkan shadow untuk lebih menonjol */
+}
+
+.day-tab.active {
+    border-color: #9e0620;
+    background-color: #9e0620;
+    color: white;
+    box-shadow: 0 4px 8px rgba(158, 6, 32, 0.25);
+}
+
+.day-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 6px; /* Tambahkan margin bawah */
+}
+
+.day-date {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.day-tab.active .day-date {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Time Slots Section - Tambahkan margin top */
+.time-slots-section {
+    margin-top: 30px;
+}
+
+/* Time-slots grid */
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Time slot style */
+.time-slot {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.time-slot:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #9e0620;
+}
+
+/* Slot Counter */
+.slot-counter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+/* Navigation Buttons */
+.nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #9e0620;
+    color: white;
+    border: none;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid #e9ecef;
+    color: #495057;
+}
+
+.btn-primary:hover {
+    background-color: #8a051c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(158, 6, 32, 0.2);
+}
+
+.btn-outline:hover {
+    background-color: #f8f9fa;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .day-tabs-container {
+        margin-top: 25px;
+    }
+
+    .day-tab {
+        padding: 10px 16px;
+    }
+
+    .day-name {
+        font-size: 0.9rem;
+    }
+
+    .day-date {
+        font-size: 0.8rem;
+    }
+
+    .time-slots-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .nav-buttons {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .day-tabs {
+        gap: 8px;
+    }
+
+    .day-tab {
+        padding: 8px 12px;
+        min-width: 80px;
+    }
+
+    .day-name {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .day-date {
+        font-size: 0.75rem;
+    }
+}
+/* Time Slots */
+.day-content {
+    display: none;
+}
+
+.day-content.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
+.time-slots-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    color: var(--text-muted);
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border: 0.25rem solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner 0.75s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+.time-slots-loading p {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.time-slot {
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.time-slot:not(.slot-booked):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+.slot-available:hover {
+    border-color: var(--success-color);
+}
+
+.slot-time {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.slot-time i {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+}
+
+.slot-time span {
+    font-weight: 500;
+}
+
+.slot-price {
+    padding: 0.5rem;
+    background-color: var(--light-bg);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.slot-selected {
+    border-color: var(--primary-color);
+    background-color: rgba(158, 6, 32, 0.05);
+}
+
+.slot-selected .slot-time i {
+    color: var(--primary-color);
+}
+
+.slot-booked {
+    border-color: var(--text-muted);
+    background-color: var(--light-bg);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.slot-in-cart {
+    border-color: #fd7e14;
+    background-color: #fff8f1;
+}
+
+.slot-in-cart .slot-time i {
+    color: #fd7e14;
+}
+
+/* Time Slot Counter */
+.time-slot-counter {
+    background-color: var(--light-bg);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+}
+
+.counter-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+}
+
+.progress-container {
+    flex: 1;
+    height: 8px;
+    background-color: white;
+    border-radius: 50px;
+    margin: 0 1rem;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 50px;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Selected Slots Summary */
+.selected-schedule-summary {
+    margin-top: 1.5rem;
+    background-color: var(--light-bg);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.selected-schedule-summary h6 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.selected-slots-list {
+    margin-top: 1.5rem;
+}
+
+.list-group {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-group-item {
+    background-color: white;
+    border-radius: 8px !important;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.slot-date-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: var(--text-dark);
+}
+
+.slot-date-header i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+.slot-time-list {
+    padding-left: 1.5rem;
+}
+
+.slot-summary-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.slot-summary-item i {
+    margin-right: 0.5rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Navigation Buttons */
+.wizard-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.wizard-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.wizard-btn-prev {
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    text-decoration: none;
+}
+
+.wizard-btn-prev:hover {
+    background-color: var(--border-color);
+    transform: translateX(-5px);
+}
+
+.wizard-btn-next {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.wizard-btn-next:hover {
+    background-color: var(--primary-hover);
+    transform: translateX(5px);
+}
+
+.wizard-btn-submit {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.wizard-btn-submit:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+.wizard-btn i {
+    transition: transform 0.3s ease;
+}
+
+.wizard-btn-prev:hover i {
+    transform: translateX(-3px);
+}
+
+.wizard-btn-next:hover i {
+    transform: translateX(3px);
+}
+
+.wizard-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+ /* Custom Flatpickr Theme - brand color #9e0620 */
+/* Flatpickr Calendar Styling - Improved for Mobile */
+.flatpickr-calendar {
+    width: 100% !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    touch-action: manipulation;
 }
 
 
-            .form-actions {
-                flex-direction: column;
-                gap: 0.75rem;
-            }
+.flatpickr-days {
+    width: 100% !important; /* Ensure days container is full width */
+}
 
-            .time-slots-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-        }
+.dayContainer {
+    width: 100% !important; /* Ensure day container is full width */
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: flex;
+    flex-wrap: wrap;
+}
 
-    </style>
+.flatpickr-day {
+    width: 14.2857% !important; /* Equal width for all 7 days (100% ÷ 7) */
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+    height: 40px !important; /* Consistent height */
+    line-height: 40px !important;
+    margin: 0 !important;
+    border-radius: 24 !important;
+}
+
+/* Make sure headers align with days */
+span.flatpickr-weekday {
+    width: 14.2857% !important;
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .flatpickr-calendar {
+        max-width: 100%;
+    }
+
+    .flatpickr-day {
+        height: 35px !important;
+        line-height: 35px !important;
+    }
+}
+
+.flatpickr-months {
+    background-color: #ffffff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.flatpickr-month {
+    color: #fff;
+}
+
+.flatpickr-current-month {
+    font-weight: 600;
+}
+
+.flatpickr-monthDropdown-months,
+.numInputWrapper span.arrowUp,
+.numInputWrapper span.arrowDown {
+    color: #fff;
+}
+
+span.flatpickr-weekday {
+    color: #9e0620;
+    font-weight: 600;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected.prevMonthDay,
+.flatpickr-day.startRange.prevMonthDay,
+.flatpickr-day.endRange.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay,
+.flatpickr-day.startRange.nextMonthDay,
+.flatpickr-day.endRange.nextMonthDay {
+    background: #9e0620;
+    border-color: #9e0620;
+}
+
+.flatpickr-day.today {
+    border-color: #9e0620;
+}
+
+.flatpickr-day.today:hover {
+    background: #fff8f8;
+    color: #9e0620;
+}
+
+.flatpickr-day:hover {
+    background: #fff8f8;
+    border-color: #fff8f8;
+}
+
+.flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n+1)),
+.flatpickr-day.endRange.startRange + .endRange:not(:nth-child(7n+1)) {
+    box-shadow: -10px 0 0 #9e0620;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    fill: #fff;
+}
+
+.flatpickr-prev-month:hover svg,
+.flatpickr-next-month:hover svg {
+    fill: #e9ecef;
+}
+
+
+
+/* Responsive Media Queries */
+@media (max-width: 992px) {
+    .payment-options {
+        flex-direction: column;
+    }
+
+    .payment-option {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .selected-week-content {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .btn-change-week {
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+
+    .hero-title {
+        font-size: 1.6rem;
+    }
+
+    .breadcrumb {
+        padding: 0.6rem 1rem;
+    }
+
+    .card-header,
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .info-card,
+    .warning-card {
+        flex-direction: column;
+    }
+
+    .info-card-icon,
+    .warning-card-icon {
+        margin-right: 0;
+        margin-bottom: 1rem;
+        align-self: center;
+    }
+
+    .step-desc {
+        display: none !important;
+    }
+
+    .wizard-progress::before {
+        top: 15px;
+    }
+
+    .wizard-progress-bar {
+        top: 15px;
+    }
+
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+    }
+
+    .time-slots-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .wizard-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .wizard-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .wizard-btn-prev {
+        order: 2;
+    }
+
+    .wizard-btn-next,
+    .wizard-btn-submit {
+        order: 1;
+    }
+
+    .counter-content {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .progress-container {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 1.5rem 0;
+    }
+
+    .hero-title {
+        font-size: 1.3rem;
+    }
+
+    .breadcrumb {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+
+    .info-card-content h5,
+    .warning-card-content h5 {
+        font-size: 0.95rem;
+    }
+
+    .info-card-content p,
+    .warning-card-content p {
+        font-size: 0.85rem;
+    }
+
+    .time-slots-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .slot-time {
+        padding: 0.6rem;
+    }
+
+    .slot-time i {
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .slot-time span {
+        font-size: 0.85rem;
+    }
+
+    .slot-price {
+        padding: 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .day-tab {
+        padding: 0.6rem 1rem;
+        min-width: 90px;
+    }
+
+    .day-name {
+        font-size: 0.85rem;
+    }
+
+    .day-date {
+        font-size: 0.75rem;
+    }
+
+    .flatpickr-calendar {
+        max-width: 100% !important;
+    }
+
+    .flatpickr-day {
+        height: 32px !important;
+        line-height: 32px !important;
+        font-size: 0.8rem !important;
+    }
+}
+
+@media (max-width: 375px) {
+    .time-slots-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .day-tab {
+        min-width: 80px;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .wizard-step {
+        padding: 0 2px;
+    }
+
+    .step-circle {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .step-label {
+        font-size: 0.7rem;
+    }
+}
+</style>
 @endsection

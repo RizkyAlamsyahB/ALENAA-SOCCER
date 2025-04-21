@@ -14,23 +14,35 @@ use App\Models\CartItem;
 
 class PhotographerController extends Controller
 {
-    /**
-     * Menampilkan daftar fotografer untuk user
-     */
-    public function index()
-    {
-        $photographers = Photographer::where('status', 'active')->get();
-        return view('users.photographers.index', compact('photographers'));
+/**
+ * Menampilkan daftar fotografer untuk user
+ */
+public function index()
+{
+    $photographers = Photographer::where('status', 'active')->get();
+
+    // Tambahkan rating dan review count untuk setiap fotografer
+    foreach ($photographers as $photographer) {
+        $photographer->rating = $photographer->getRatingAttribute();
+        $photographer->reviews_count = $photographer->getReviewsCountAttribute();
     }
 
-    /**
-     * Menampilkan detail fotografer
-     */
-    public function show($id)
-    {
-        $photographer = Photographer::findOrFail($id);
-        return view('users.photographers.show', compact('photographer'));
-    }
+    return view('users.photographers.index', compact('photographers'));
+}
+
+/**
+ * Menampilkan detail fotografer
+ */
+public function show($id)
+{
+    $photographer = Photographer::findOrFail($id);
+
+    // Tambahkan rating dan review count
+    $photographer->rating = $photographer->getRatingAttribute();
+    $photographer->reviews_count = $photographer->getReviewsCountAttribute();
+
+    return view('users.photographers.show', compact('photographer'));
+}
 
     /**
      * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu

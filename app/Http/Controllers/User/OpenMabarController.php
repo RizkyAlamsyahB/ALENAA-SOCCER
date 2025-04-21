@@ -6,14 +6,17 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Field;
 use App\Models\OpenMabar;
+use App\Mail\MabarBroadcast;
 use App\Models\FieldBooking;
+use App\Models\MabarMessage;
 use Illuminate\Http\Request;
 use App\Models\MabarParticipant;
 use App\Models\MembershipSession;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class OpenMabarController extends Controller
 {
@@ -30,10 +33,9 @@ class OpenMabarController extends Controller
         // Filter berdasarkan pencarian
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where('title', 'like', "%{$search}%")
-                ->orWhereHas('fieldBooking.field', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
+            $query->where('title', 'like', "%{$search}%")->orWhereHas('fieldBooking.field', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
         }
 
         // Filter berdasarkan level
@@ -78,22 +80,14 @@ class OpenMabarController extends Controller
      */
     public function show($id)
     {
-        $openMabar = OpenMabar::with([
-            'fieldBooking',
-            'fieldBooking.field',
-            'user',
-            'participants',
-            'participants.user'
-        ])->findOrFail($id);
+        $openMabar = OpenMabar::with(['fieldBooking', 'fieldBooking.field', 'user', 'participants', 'participants.user'])->findOrFail($id);
 
         // Cek apakah user saat ini sudah bergabung ke mabar ini
         $isJoined = false;
         $userParticipant = null;
 
         if (Auth::check()) {
-            $userParticipant = MabarParticipant::where('open_mabar_id', $id)
-                ->where('user_id', Auth::id())
-                ->first();
+            $userParticipant = MabarParticipant::where('open_mabar_id', $id)->where('user_id', Auth::id())->first();
 
             $isJoined = !is_null($userParticipant);
         }
@@ -115,9 +109,7 @@ class OpenMabarController extends Controller
             ->get();
 
         // Cek apakah booking ini sudah digunakan untuk open mabar
-        $usedBookingIds = OpenMabar::whereIn('field_booking_id', $fieldBookings->pluck('id'))
-            ->pluck('field_booking_id')
-            ->toArray();
+        $usedBookingIds = OpenMabar::whereIn('field_booking_id', $fieldBookings->pluck('id'))->pluck('field_booking_id')->toArray();
 
         // Filter booking yang belum digunakan untuk open mabar
         $availableBookings = $fieldBookings->filter(function ($booking) use ($usedBookingIds) {
@@ -126,8 +118,7 @@ class OpenMabarController extends Controller
 
         // Jika tidak ada booking yang tersedia
         if ($availableBookings->isEmpty()) {
-            return redirect()->route('user.mabar.index')
-                ->with('error', 'Anda tidak memiliki booking lapangan yang aktif dan tersedia untuk membuat Open Mabar. Silakan booking lapangan terlebih dahulu.');
+            return redirect()->route('user.mabar.index')->with('error', 'Anda tidak memiliki booking lapangan yang aktif dan tersedia untuk membuat Open Mabar. Silakan booking lapangan terlebih dahulu.');
         }
 
         // Pilihan level untuk form
@@ -152,11 +143,7 @@ class OpenMabarController extends Controller
         ]);
 
         // Cek apakah booking ini milik user yang login
-        $fieldBooking = FieldBooking::where('id', $request->field_booking_id)
-            ->where('user_id', Auth::id())
-            ->where('status', 'confirmed')
-            ->where('end_time', '>', now())
-            ->firstOrFail();
+        $fieldBooking = FieldBooking::where('id', $request->field_booking_id)->where('user_id', Auth::id())->where('status', 'confirmed')->where('end_time', '>', now())->firstOrFail();
 
         // Cek apakah booking ini sudah digunakan untuk open mabar
         $existingMabar = OpenMabar::where('field_booking_id', $fieldBooking->id)->first();
@@ -184,9 +171,7 @@ class OpenMabarController extends Controller
 
             DB::commit();
 
-            return redirect()->route('user.mabar.show', $openMabar->id)
-                ->with('success', 'Open Mabar berhasil dibuat! Sekarang Anda dapat mengundang pemain lain untuk bergabung.');
-
+            return redirect()->route('user.mabar.show', $openMabar->id)->with('success', 'Open Mabar berhasil dibuat! Sekarang Anda dapat mengundang pemain lain untuk bergabung.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating Open Mabar: ' . $e->getMessage());
@@ -195,130 +180,120 @@ class OpenMabarController extends Controller
         }
     }
 
-/**
- * Bergabung dengan open mabar
- */
-public function join(Request $request, $id)
-{
-    $openMabar = OpenMabar::findOrFail($id);
+    /**
+     * Bergabung dengan open mabar
+     */
+    public function join(Request $request, $id)
+    {
+        $openMabar = OpenMabar::findOrFail($id);
 
-    // Cek status mabar
-    if ($openMabar->status != 'open') {
-        return back()->with('error', 'Open Mabar ini sudah tidak tersedia untuk diikuti.');
-    }
-
-    // Cek apakah masih ada slot yang tersedia
-    if ($openMabar->filled_slots >= $openMabar->total_slots) {
-        return back()->with('error', 'Maaf, semua slot pada Open Mabar ini sudah terisi.');
-    }
-
-    // Cek apakah user sudah bergabung sebelumnya
-    $existingActiveParticipant = MabarParticipant::where('open_mabar_id', $id)
-        ->where('user_id', Auth::id())
-        ->where('status', '!=', 'cancelled')
-        ->first();
-
-    if ($existingActiveParticipant) {
-        return back()->with('info', 'Anda sudah terdaftar sebagai peserta Open Mabar ini.');
-    }
-
-    // Cek apakah user pernah bergabung sebelumnya dan membatalkan
-    $previouslyCancelled = MabarParticipant::where('open_mabar_id', $id)
-        ->where('user_id', Auth::id())
-        ->where('status', 'cancelled')
-        ->first();
-
-    try {
-        DB::beginTransaction();
-
-        if ($previouslyCancelled) {
-            // Update status participant yang sebelumnya
-            $previouslyCancelled->status = 'joined';
-            $previouslyCancelled->payment_status = 'pending';
-            $previouslyCancelled->save();
-        } else {
-            // Buat entri participant baru
-            $participant = new MabarParticipant();
-            $participant->open_mabar_id = $openMabar->id;
-            $participant->user_id = Auth::id();
-            $participant->status = 'joined';
-            $participant->payment_status = 'pending';
-            $participant->payment_method = 'cash';
-            $participant->amount_paid = $openMabar->price_per_slot;
-            $participant->save();
+        // Cek status mabar
+        if ($openMabar->status != 'open') {
+            return back()->with('error', 'Open Mabar ini sudah tidak tersedia untuk diikuti.');
         }
 
-        // Update jumlah filled_slots
-        $openMabar->filled_slots += 1;
-
-        // Periksa apakah sudah penuh
+        // Cek apakah masih ada slot yang tersedia
         if ($openMabar->filled_slots >= $openMabar->total_slots) {
-            $openMabar->status = 'full';
+            return back()->with('error', 'Maaf, semua slot pada Open Mabar ini sudah terisi.');
         }
 
-        $openMabar->save();
+        // Cek apakah user sudah bergabung sebelumnya
+        $existingActiveParticipant = MabarParticipant::where('open_mabar_id', $id)->where('user_id', Auth::id())->where('status', '!=', 'cancelled')->first();
 
-        DB::commit();
-
-        return redirect()->route('user.mabar.show', $id)
-            ->with('success', 'Anda berhasil bergabung dengan Open Mabar ini! Silakan lakukan pembayaran secara langsung saat tiba di lapangan.');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Error joining Open Mabar: ' . $e->getMessage());
-
-        return back()->with('error', 'Terjadi kesalahan saat bergabung dengan Open Mabar. Silakan coba lagi.');
-    }
-}
-
-/**
- * Batalkan keikutsertaan dalam open mabar
- */
-public function cancel($id)
-{
-    $openMabar = OpenMabar::findOrFail($id);
-
-    // Cek apakah user memang terdaftar sebagai peserta
-    $participant = MabarParticipant::where('open_mabar_id', $id)
-        ->where('user_id', Auth::id())
-        ->where('status', '!=', 'cancelled') // Tambahkan kondisi ini
-        ->first();
-
-    if (!$participant) {
-        return back()->with('error', 'Anda tidak terdaftar sebagai peserta di Open Mabar ini atau sudah membatalkan keikutsertaan sebelumnya.');
-    }
-
-    try {
-        DB::beginTransaction();
-
-        // Update status participant
-        $participant->status = 'cancelled';
-        $participant->save();
-
-        // Update jumlah filled_slots, pastikan tidak negatif
-        if ($openMabar->filled_slots > 0) {
-            $openMabar->filled_slots -= 1;
+        if ($existingActiveParticipant) {
+            return back()->with('info', 'Anda sudah terdaftar sebagai peserta Open Mabar ini.');
         }
 
-        // Jika sebelumnya full, kembalikan ke open
-        if ($openMabar->status == 'full') {
-            $openMabar->status = 'open';
+        // Cek apakah user pernah bergabung sebelumnya dan membatalkan
+        $previouslyCancelled = MabarParticipant::where('open_mabar_id', $id)->where('user_id', Auth::id())->where('status', 'cancelled')->first();
+
+        try {
+            DB::beginTransaction();
+
+            if ($previouslyCancelled) {
+                // Update status participant yang sebelumnya
+                $previouslyCancelled->status = 'joined';
+                $previouslyCancelled->payment_status = 'pending';
+                $previouslyCancelled->save();
+            } else {
+                // Buat entri participant baru
+                $participant = new MabarParticipant();
+                $participant->open_mabar_id = $openMabar->id;
+                $participant->user_id = Auth::id();
+                $participant->status = 'joined';
+                $participant->payment_status = 'pending';
+                $participant->payment_method = 'cash';
+                $participant->amount_paid = $openMabar->price_per_slot;
+                $participant->save();
+            }
+
+            // Update jumlah filled_slots
+            $openMabar->filled_slots += 1;
+
+            // Periksa apakah sudah penuh
+            if ($openMabar->filled_slots >= $openMabar->total_slots) {
+                $openMabar->status = 'full';
+            }
+
+            $openMabar->save();
+
+            DB::commit();
+
+            return redirect()->route('user.mabar.show', $id)->with('success', 'Anda berhasil bergabung dengan Open Mabar ini! Silakan lakukan pembayaran secara langsung saat tiba di lapangan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error joining Open Mabar: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat bergabung dengan Open Mabar. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Batalkan keikutsertaan dalam open mabar
+     */
+    public function cancel($id)
+    {
+        $openMabar = OpenMabar::findOrFail($id);
+
+        // Cek apakah user memang terdaftar sebagai peserta
+        $participant = MabarParticipant::where('open_mabar_id', $id)
+            ->where('user_id', Auth::id())
+            ->where('status', '!=', 'cancelled') // Tambahkan kondisi ini
+            ->first();
+
+        if (!$participant) {
+            return back()->with('error', 'Anda tidak terdaftar sebagai peserta di Open Mabar ini atau sudah membatalkan keikutsertaan sebelumnya.');
         }
 
-        $openMabar->save();
+        try {
+            DB::beginTransaction();
 
-        DB::commit();
+            // Update status participant
+            $participant->status = 'cancelled';
+            $participant->save();
 
-        return redirect()->route('user.mabar.show', $id)
-            ->with('success', 'Anda telah membatalkan keikutsertaan dari Open Mabar ini.');
+            // Update jumlah filled_slots, pastikan tidak negatif
+            if ($openMabar->filled_slots > 0) {
+                $openMabar->filled_slots -= 1;
+            }
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Error cancelling Open Mabar participation: ' . $e->getMessage());
+            // Jika sebelumnya full, kembalikan ke open
+            if ($openMabar->status == 'full') {
+                $openMabar->status = 'open';
+            }
 
-        return back()->with('error', 'Terjadi kesalahan saat membatalkan keikutsertaan. Silakan coba lagi.');
+            $openMabar->save();
+
+            DB::commit();
+
+            return redirect()->route('user.mabar.show', $id)->with('success', 'Anda telah membatalkan keikutsertaan dari Open Mabar ini.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error cancelling Open Mabar participation: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat membatalkan keikutsertaan. Silakan coba lagi.');
+        }
     }
-}
 
     /**
      * Tandai peserta sebagai hadir (untuk pembuat mabar)
@@ -326,14 +301,10 @@ public function cancel($id)
     public function markAttended(Request $request, $mabarId, $participantId)
     {
         // Cek apakah user adalah pembuat mabar
-        $openMabar = OpenMabar::where('id', $mabarId)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        $openMabar = OpenMabar::where('id', $mabarId)->where('user_id', Auth::id())->firstOrFail();
 
         // Cek peserta
-        $participant = MabarParticipant::where('id', $participantId)
-            ->where('open_mabar_id', $mabarId)
-            ->firstOrFail();
+        $participant = MabarParticipant::where('id', $participantId)->where('open_mabar_id', $mabarId)->firstOrFail();
 
         try {
             // Update status peserta
@@ -342,7 +313,6 @@ public function cancel($id)
             $participant->save();
 
             return back()->with('success', 'Status kehadiran dan pembayaran peserta berhasil diperbarui.');
-
         } catch (\Exception $e) {
             Log::error('Error marking attendance: ' . $e->getMessage());
 
@@ -370,5 +340,168 @@ public function cancel($id)
             ->pluck('openMabar');
 
         return view('users.mabar.my-mabars', compact('createdMabars', 'joinedMabars'));
+    }
+
+    /**
+     * Menampilkan obrolan grup mabar
+     */
+    public function showChat($id)
+    {
+        $openMabar = OpenMabar::with([
+            'fieldBooking',
+            'fieldBooking.field',
+            'user',
+            'participants' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            },
+            'participants.user',
+            'messages',
+            'messages.user',
+        ])->findOrFail($id);
+
+        // Cek apakah user adalah pembuat atau peserta dari mabar ini
+        $isParticipant = $openMabar->participants->where('user_id', Auth::id())->where('status', '!=', 'cancelled')->count() > 0;
+        $isCreator = $openMabar->user_id === Auth::id();
+
+        if (!$isParticipant && !$isCreator) {
+            return redirect()->route('user.mabar.show', $id)->with('error', 'Anda tidak memiliki akses ke obrolan grup ini.');
+        }
+
+        return view('users.mabar.chat', compact('openMabar'));
+    }
+
+    /**
+     * Menyimpan pesan baru
+     */
+    public function sendMessage(Request $request, $id)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $openMabar = OpenMabar::findOrFail($id);
+
+        // Cek apakah user adalah pembuat atau peserta dari mabar ini
+        $isParticipant = MabarParticipant::where('open_mabar_id', $id)->where('user_id', Auth::id())->where('status', '!=', 'cancelled')->exists();
+        $isCreator = $openMabar->user_id === Auth::id();
+
+        if (!$isParticipant && !$isCreator) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses ke obrolan grup ini.',
+                ],
+                403,
+            );
+        }
+
+        $message = new MabarMessage();
+        $message->open_mabar_id = $id;
+        $message->user_id = Auth::id();
+        $message->message = $request->message;
+        $message->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pesan berhasil dikirim.',
+            'data' => [
+                'id' => $message->id,
+                'user_name' => Auth::user()->name,
+                'message' => $message->message,
+                'created_at' => $message->created_at->format('d M Y H:i'),
+            ],
+        ]);
+    }
+    public function showBroadcastForm($id)
+    {
+        $openMabar = OpenMabar::with([
+            'fieldBooking',
+            'participants' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            },
+            'participants.user'
+        ])->findOrFail($id);
+
+        // Pastikan hanya pembuat yang bisa mengakses
+        if ($openMabar->user_id !== Auth::id()) {
+            return redirect()->route('user.mabar.show', $id)
+                ->with('error', 'Anda tidak memiliki akses ke fitur ini.');
+        }
+
+        // Cek apakah ada peserta yang aktif
+        $activeParticipants = $openMabar->participants->where('status', '!=', 'cancelled');
+        if ($activeParticipants->isEmpty()) {
+            return redirect()->route('user.mabar.show', $id)
+                ->with('info', 'Belum ada peserta yang terdaftar pada Open Mabar ini. Tidak dapat mengirim broadcast.');
+        }
+
+        return view('users.mabar.broadcast', compact('openMabar'));
+    }
+
+    /**
+     * Kirim pesan broadcast ke semua peserta
+     */
+    public function sendBroadcast(Request $request, $id)
+    {
+        $request->validate([
+            'subject' => 'required|string|max:100',
+            'message' => 'required|string',
+        ]);
+
+        $openMabar = OpenMabar::with([
+            'fieldBooking',
+            'fieldBooking.field',
+            'participants' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            },
+            'participants.user',
+        ])->findOrFail($id);
+
+        // Pastikan hanya pembuat yang bisa mengakses
+        if ($openMabar->user_id !== Auth::id()) {
+            return redirect()->route('user.mabar.show', $id)->with('error', 'Anda tidak memiliki akses ke fitur ini.');
+        }
+
+        // Jika tidak ada peserta, kembalikan dengan pesan
+        if ($openMabar->participants->isEmpty()) {
+            return redirect()->route('user.mabar.show', $id)->with('info', 'Tidak ada peserta yang terdaftar untuk menerima pesan broadcast.');
+        }
+
+        // Kirim email ke semua peserta
+        $subject = $request->subject;
+        $message = $request->message;
+        $eventDetails = 'Tanggal: ' . Carbon::parse($openMabar->start_time)->format('d M Y') . "\nWaktu: " . Carbon::parse($openMabar->start_time)->format('H:i') . ' - ' . Carbon::parse($openMabar->end_time)->format('H:i') . "\nLokasi: " . $openMabar->fieldBooking->field->name;
+
+        $participantCount = 0;
+
+        try {
+            foreach ($openMabar->participants as $participant) {
+                // Gunakan Mail facade untuk mengirim email
+                Mail::to($participant->user->email)->send(new MabarBroadcast($openMabar, Auth::user(), $subject, $message, $eventDetails));
+
+                $participantCount++;
+            }
+
+            // Log aktivitas broadcast
+            Log::info('Broadcast message sent', [
+                'mabar_id' => $openMabar->id,
+                'sender_id' => Auth::id(),
+                'recipient_count' => $participantCount,
+                'subject' => $subject,
+            ]);
+
+            return redirect()
+                ->route('user.mabar.show', $id)
+                ->with('success', 'Pesan broadcast berhasil dikirim ke ' . $participantCount . ' peserta.');
+        } catch (\Exception $e) {
+            Log::error('Error sending broadcast message: ' . $e->getMessage(), [
+                'mabar_id' => $openMabar->id,
+                'sender_id' => Auth::id(),
+            ]);
+
+            return redirect()
+                ->route('user.mabar.show', $id)
+                ->with('error', 'Terjadi kesalahan saat mengirim pesan: ' . $e->getMessage());
+        }
     }
 }

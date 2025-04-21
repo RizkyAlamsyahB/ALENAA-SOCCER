@@ -36,4 +36,21 @@ public function reviews()
 {
     return $this->morphMany(Review::class, 'reviewable', 'item_type', 'item_id');
 }
+
+
+/**
+ * Mendapatkan rata-rata rating lapangan
+ */
+public function getRatingAttribute()
+{
+    return $this->reviews()->where('status', 'active')->avg('rating') ?: 0;
+}
+
+/**
+ * Mendapatkan jumlah review lapangan
+ */
+public function getReviewsCountAttribute()
+{
+    return $this->reviews()->where('status', 'active')->count();
+}
 }

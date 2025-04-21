@@ -100,8 +100,29 @@ class RentalItem extends Model
     }
 
     // Di model Field.php
+// Tambahkan di Model RentalItem.php
+
+/**
+ * Relasi dengan review
+ */
 public function reviews()
 {
     return $this->morphMany(Review::class, 'reviewable', 'item_type', 'item_id');
+}
+
+/**
+ * Mendapatkan rata-rata rating item rental
+ */
+public function getRatingAttribute()
+{
+    return $this->reviews()->where('status', 'active')->avg('rating') ?: 0;
+}
+
+/**
+ * Mendapatkan jumlah review item rental
+ */
+public function getReviewsCountAttribute()
+{
+    return $this->reviews()->where('status', 'active')->count();
 }
 }

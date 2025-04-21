@@ -47,6 +47,11 @@ Route::get('/', function () {
     return view('welcome', compact('testimonials'));
 })->name('welcome');
 
+
+Route::get('/test/renewal-failed-email', [App\Http\Controllers\User\MembershipController::class, 'testRenewalFailedEmail'])
+    ->middleware(['auth']) // Cukup auth saja untuk testing
+    ->name('test.renewal-failed-email');e('test.renewal-failed-email');
+
 // User Routes
 Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
     // Dashboard
@@ -217,7 +222,15 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
 
             // Daftar mabar yang diikuti user
             Route::get('/my/mabars', [OpenMabarController::class, 'myMabars'])->name('my');
-        });
+
+        // Chat grup mabar
+Route::get('/{id}/chat', [OpenMabarController::class, 'showChat'])->name('chat');
+Route::post('/{id}/send-message', [OpenMabarController::class, 'sendMessage'])->name('send.message');
+
+Route::get('/{id}/broadcast', [OpenMabarController::class, 'showBroadcastForm'])->name('broadcast.form');
+        Route::post('/{id}/broadcast', [OpenMabarController::class, 'sendBroadcast'])->name('broadcast.send');
+
+});
 
     // Other Features
     // Route::get('/mabar', function () {

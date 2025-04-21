@@ -210,8 +210,8 @@
                                             </div>
                                             <div class="d-flex align-items-center rating-badge">
                                                 <i class="fas fa-star text-warning me-2"></i>
-                                                <span class="text-secondary">{{ $field->rating ?? '4.8' }}
-                                                    ({{ $field->reviews_count ?? '128' }} reviews)</span>
+                                                <span class="text-secondary">{{ number_format($field->rating, 1) }}
+                                                    ({{ $field->reviews_count }} reviews)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1217,106 +1217,109 @@
 
         /* Calendar and Time Slot Specific Styling */
 
-        /* Time Slots */
-        .time-slots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-        }
+   /* Time Slots */
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    width: 100%;
+}
 
-        .time-slot {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid #e9ecef;
-        }
+.time-slot {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid #e9ecef;
+}
 
-        .time-slot:not(.disabled):hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-color: #9e0620;
-        }
-        .slot-time {
+.time-slot:not(.disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-color: #9e0620;
+}
+
+.slot-time {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 50px; /* Adjust as needed */
+    min-height: 50px;
     text-align: center;
-        }
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
 
+.slot-time i {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-right: 5px;
+}
 
-        .slot-time i {
-            font-size: 0.9rem;
-            color: #6c757d;
+.slot-price {
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+    border-top: 1px solid #e9ecef;
+}
 
-        }
+/* Time Slot States */
+.time-slot.slot-available:hover {
+    border-color: #28a745;
+}
 
-        .slot-price {
-            background-color: #f8f9fa;
-            padding: 0.5rem;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
-        }
+.time-slot.slot-selected {
+    border-color: #9e0620;
+    background-color: #fff8f8;
+}
 
-        /* Time Slot States */
-        .time-slot.slot-available:hover {
-            border-color: #28a745;
-        }
+.time-slot.slot-selected .slot-time {
+    color: #9e0620;
+}
 
-        .time-slot.slot-selected {
-            border-color: #9e0620;
-            background-color: #fff8f8;
-        }
+.time-slot.slot-selected .slot-time i {
+    color: #9e0620;
+}
 
-        .time-slot.slot-selected .slot-time {
-            color: #9e0620;
-        }
+.time-slot.slot-booked {
+    border-color: #6c757d;
+    background-color: #f8f9fa;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
 
-        .time-slot.slot-selected .slot-time i {
-            color: #9e0620;
-        }
+.time-slot.slot-in-cart {
+    border-color: #fd7e14;
+    background-color: #fff8f1;
+}
 
-        .time-slot.slot-booked {
-            border-color: #6c757d;
-            background-color: #f8f9fa;
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
+.time-slot.slot-in-cart .slot-time i {
+    color: #fd7e14;
+}
 
-        .time-slot.slot-in-cart {
-            border-color: #fd7e14;
-            background-color: #fff8f1;
-        }
+/* Selected Slots List */
+.selected-slots-list {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    width: 100%;
+}
 
-        .time-slot.slot-in-cart .slot-time i {
-            color: #fd7e14;
-        }
+.selected-slots-list .list-group-item {
+    background-color: transparent;
+    border-color: #e9ecef;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
 
-        /* Selected Slots List */
-        .selected-slots-list {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-        }
-
-        .selected-slots-list .list-group-item {
-            background-color: transparent;
-            border-color: #e9ecef;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .selected-slots-list .list-group-item:hover {
-            background-color: #fff;
-            transform: translateX(5px);
-        }
-
+.selected-slots-list .list-group-item:hover {
+    background-color: #fff;
+    transform: translateX(5px);
+}
         /* Confirmation Details */
         .confirmation-details {
             background-color: #f8f9fa;
@@ -1393,12 +1396,16 @@
         }
 
     /* Custom Flatpickr Theme - brand color #9e0620 */
-/* Fix for calendar display issues */
+/* Flatpickr Calendar Styling - Improved for Mobile */
 .flatpickr-calendar {
-    width: 100% !important; /* Make calendar responsive to container */
-    max-width: 350px; /* Prevent it from getting too wide on larger screens */
-    padding: 0 !important; /* Remove any padding that might cause overflow */
+    width: 100% !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    touch-action: manipulation;
 }
+
 
 .flatpickr-days {
     width: 100% !important; /* Ensure days container is full width */

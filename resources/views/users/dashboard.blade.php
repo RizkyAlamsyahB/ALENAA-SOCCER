@@ -101,7 +101,7 @@
 
                     <!-- CTA Buttons -->
                     <div class="button-group fade-in-up delay-4">
-                        <a href="#booking" class="btn btn-danger me-3 mb-3 mb-sm-0">
+                        <a href="/fields" class="btn btn-danger me-3 mb-3 mb-sm-0">
                             Booking Sekarang
                             <i class="fas fa-arrow-right ms-2"></i>
                         </a>
@@ -183,7 +183,7 @@
                                 Jaminan jadwal pasti
                             </div>
                         </div>
-                        <a href="/booking" class="btn btn-danger mt-4">
+                        <a href="/fields" class="btn btn-danger mt-4">
                             Booking Sekarang <i class="fas fa-arrow-right ms-2"></i>
                         </a>
                     </div>
@@ -230,7 +230,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="/community" class="btn btn-danger">
+                        <a href="/mabar" class="btn btn-danger">
                             Gabung Komunitas <i class="fas fa-users ms-2"></i>
                         </a>
                     </div>

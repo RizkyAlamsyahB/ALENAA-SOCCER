@@ -47,10 +47,10 @@ class UserSeeder extends Seeder
             ],
             [
                 'name'              => 'User Customer',
-                'email'             => 'user@example.com',
+                'email'             => 'r.alamsyah.8e@gmail.com',
                 'email_verified_at' => now(),
                 'password'          => Hash::make('password'),
-                'role'              => 'user',
+                'role'              => 'admin',
                 'phone_number'      => '081212341234',
                 'address'           => 'Jl. Kebangsaan No. 3, Surabaya',
                 'birthdate'         => '1995-07-10',

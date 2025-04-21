@@ -36,67 +36,71 @@
                                 <i class="fas fa-check-circle"></i>
                             </div>
                             <h2 class="fw-bold mb-3">Pembayaran Berhasil</h2>
-                            <p class="lead text-muted">Terima kasih! Pembayaran Anda telah berhasil diproses dan booking Anda telah dikonfirmasi.</p>
+                            <p class="lead text-muted">Terima kasih! Pembayaran Anda telah berhasil diproses dan booking
+                                Anda telah dikonfirmasi.</p>
                         </div>
 
-                        @if(isset($payment))
-                        <div class="payment-details p-4 rounded-3 mb-4">
-                            <h5 class="detail-title fw-bold mb-3">Detail Pembayaran</h5>
-                            <div class="detail-item">
-                                <div class="row align-items-center mb-3">
-                                    <div class="col-sm-6">
-                                        <div class="detail-label">
-                                            <i class="fas fa-receipt  me-2"></i>
-                                            <span>Order ID</span>
+                        @if (isset($payment))
+                            <div class="payment-details p-4 rounded-3 mb-4">
+                                <h5 class="detail-title fw-bold mb-3">Detail Pembayaran</h5>
+                                <div class="detail-item">
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-sm-6">
+                                            <div class="detail-label">
+                                                <i class="fas fa-receipt  me-2"></i>
+                                                <span>Order ID</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="detail-value">
+                                                <span class="order-id">{{ $payment->order_id }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <div class="detail-value">
-                                            <span class="order-id">{{ $payment->order_id }}</span>
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-sm-6">
+                                            <div class="detail-label">
+                                                <i class="fas fa-money-bill-wave  me-2"></i>
+                                                <span>Total Pembayaran</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="detail-value">
+                                                <span class="payment-amount">Rp
+                                                    {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row align-items-center mb-3">
-                                    <div class="col-sm-6">
-                                        <div class="detail-label">
-                                            <i class="fas fa-money-bill-wave  me-2"></i>
-                                            <span>Total Pembayaran</span>
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-sm-6">
+                                            <div class="detail-label">
+                                                <i class="fas fa-credit-card  me-2"></i>
+                                                <span>Metode Pembayaran</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="detail-value">
+                                                <span
+                                                    class="payment-method">{{ $payment->payment_type ?? 'Midtrans' }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <div class="detail-value">
-                                            <span class="payment-amount">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                                    <div class="row align-items-center">
+                                        <div class="col-sm-6">
+                                            <div class="detail-label">
+                                                <i class="fas fa-calendar-check  me-2"></i>
+                                                <span>Tanggal Pembayaran</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="row align-items-center mb-3">
-                                    <div class="col-sm-6">
-                                        <div class="detail-label">
-                                            <i class="fas fa-credit-card  me-2"></i>
-                                            <span>Metode Pembayaran</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div class="detail-value">
-                                            <span class="payment-method">{{ $payment->payment_type ?? 'Midtrans' }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row align-items-center">
-                                    <div class="col-sm-6">
-                                        <div class="detail-label">
-                                            <i class="fas fa-calendar-check  me-2"></i>
-                                            <span>Tanggal Pembayaran</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div class="detail-value">
-                                            <span class="payment-date">{{ \Carbon\Carbon::parse($payment->created_at)->format('d M Y, H:i') }}</span>
+                                        <div class="col-sm-6">
+                                            <div class="detail-value">
+                                                <span
+                                                    class="payment-date">{{ \Carbon\Carbon::parse($payment->created_at)->format('d M Y, H:i') }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         @endif
 
                         <div class="action-buttons text-center">
@@ -254,7 +258,8 @@
             color: #28a745;
         }
 
-        .payment-method, .payment-date {
+        .payment-method,
+        .payment-date {
             color: #495057;
         }
 
@@ -314,6 +319,7 @@
 
         /* Responsive Adjustments */
         @media (max-width: 768px) {
+
             .breadcrumb-link,
             .breadcrumb-item.active {
                 padding: 6px;
@@ -339,13 +345,13 @@
                 flex-direction: column;
             }
 
-            .btn-outline, .btn-primary {
+            .btn-outline,
+            .btn-primary {
                 width: 100%;
             }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-</script>
-
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection

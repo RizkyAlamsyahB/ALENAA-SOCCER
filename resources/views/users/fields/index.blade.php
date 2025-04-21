@@ -62,7 +62,8 @@
                                 <h5 class="card-title mb-0 fw-bold">{{ $field->name }}</h5>
                                 <div class="rating-badge">
                                     <i class="fas fa-star text-warning me-1"></i>
-                                    <span>{{ $field->rating ?? '4.5' }}</span>
+                                    <span class="text-secondary">{{ number_format($field->rating, 1) }}
+                                    </span>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">

@@ -34,7 +34,13 @@
                                     <i class="fas fa-camera"></i>
                                 </label>
                             </form>
-
+                            <!-- Profile picture upload success message -->
+                            @if (session('status') === 'profile-picture-updated')
+                                <div class="alert alert-success mt-2"
+                                    style="position: absolute; width: 200px; font-size: 0.8rem;">
+                                    Profile picture updated successfully!
+                                </div>
+                            @endif
                             <!-- Profile picture upload error message -->
                             @error('profile_picture')
                                 <div class="alert alert-danger mt-2"
@@ -43,36 +49,31 @@
                                 </div>
                             @enderror
 
-                            <!-- Profile picture upload success message -->
-                            @if (session('status') === 'profile-picture-updated')
-                                <div class="alert alert-success mt-2"
-                                    style="position: absolute; width: 200px; font-size: 0.8rem;">
-                                    Profile picture updated successfully!
-                                </div>
-                            @endif
+
                         </div>
 
-<!-- User Info Section -->
-<div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
-    style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
-    <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
-    <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
-    <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
-        <span class="badge text-white" style="background-color: #9E0620;">
-            <i class="fas fa-crown me-1"></i> Premium Member
-        </span>
+                        <!-- User Info Section -->
+                        <div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
+                            style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
+                            <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
+                            <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
+                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
 
-        @if(Auth::user()->email_verified_at)
-            <span class="badge bg-success">
-                <i class="fas fa-check-circle me-1"></i> Verified
-            </span>
-        @else
-            <span class="badge bg-danger">
-                <i class="fas fa-times-circle me-1"></i> Unverified
-            </span>
-        @endif
-    </div>
-</div>
+                                <span class="badge text-white" style="background-color: #9E0620;">
+                                    <i class="fas fa-crown me-1"></i> Premium Member
+                                </span>
+
+                                @if (Auth::user()->email_verified_at)
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i> Verified
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i> Unverified
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
 
 
                         <!-- Points Card (Positioned to the right) -->
@@ -90,7 +91,8 @@
                                     aria-valuenow="{{ $user->points ?? 0 }}" aria-valuemin="0" aria-valuemax="1000">
                                 </div>
                             </div>
-                            <a href="{{ route('user.points.index') }}" class="btn btn-sm w-100 mt-2 text-white" style="background-color: #9E0620;">
+                            <a href="{{ route('user.points.index') }}" class="btn btn-sm w-100 mt-2 text-white"
+                                style="background-color: #9E0620;">
                                 <i class="fas fa-gift me-1"></i> Redeem Rewards
                             </a>
                         </div>
@@ -106,9 +108,7 @@
                         <button class="nav-link active flex-shrink-0" style="color: #9E0620;" id="tab-personal-info">
                             <i class="fas fa-user-circle me-2"></i>Personal Info
                         </button>
-                        <button class="nav-link text-secondary flex-shrink-0" id="tab-open-mabar">
-                            <i class="fas fa-gamepad  me-2"></i>Open Mabar
-                        </button>
+
 
                         <button class="nav-link text-secondary flex-shrink-0" id="tab-security">
                             <i class="fas fa-lock me-2"></i>Security
@@ -118,24 +118,24 @@
                 </div>
             </div>
 
-<!-- Sidebar Components (Membership & Recent Activity) -->
-<div class="sidebar-components">
-    <!-- Membership Status -->
-    @if ($membershipType && $membershipName)
-    <div class="card-membership mb-4 text-black"
-        style="background: url('assets/bg-card-{{ $membershipType }}.jpg') no-repeat center/cover; border-radius: 12px; overflow: hidden;">
-        <div class="card-body">
-            <div class="mb-3">
-                <h3 class="h5 mb-1 text-uppercase font-weight-bold">{{ strtoupper($membershipType) }}</h3>
-                <p class="mb-0 text-black">{{ $membershipName }}</p>
-                <p class="mb-0 text-black small">{{ $user->email }}</p>
+            <!-- Sidebar Components (Membership & Recent Activity) -->
+            <div class="sidebar-components">
+                <!-- Membership Status -->
+                @if ($membershipType && $membershipName)
+                    <div class="card-membership mb-4 text-black"
+                        style="background: url('assets/bg-card-{{ $membershipType }}.jpg') no-repeat center/cover; border-radius: 12px; overflow: hidden;">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h3 class="h5 mb-1 text-uppercase font-weight-bold">{{ strtoupper($membershipType) }}</h3>
+                                <p class="mb-0 text-black">{{ $membershipName }}</p>
+                                <p class="mb-0 text-black small">{{ $user->email }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+
             </div>
-        </div>
-    </div>
-@endif
-
-
-</div>
 
             <!-- Tab Content -->
             <div class="row">
@@ -259,169 +259,6 @@
                                         Delete Account
                                     </button>
                                 </form>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <!-- Open Mabar Tab -->
-                    <div id="content-open-mabar" class="tab-pane" style="display: none;">
-                        <!-- Create Mabar Card -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">🎮 Buat Open Mabar</h5>
-                                    <span class="badge bg-success">Creator Mode</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                {{-- <form action="{{ route('mabar.store') }}" method="POST">
-                                 @csrf --}}
-                                <div class="row">
-                                    <!-- Game Selection -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="game_type" class="form-label">🎯 Pilih Game</label>
-                                        <select class="form-select" id="game_type" name="game_type" required>
-                                            <option value="">Pilih game...</option>
-                                            <option value="mobile_legends">Mobile Legends</option>
-                                            <option value="pubg_mobile">PUBG Mobile</option>
-                                            <option value="free_fire">Free Fire</option>
-                                            <option value="valorant">Valorant</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Game Mode -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="game_mode" class="form-label">🎲 Mode Permainan</label>
-                                        <select class="form-select" id="game_mode" name="game_mode" required>
-                                            <option value="">Pilih mode...</option>
-                                            <option value="ranked">Ranked</option>
-                                            <option value="classic">Classic</option>
-                                            <option value="custom">Custom Room</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Pricing Section -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="harga_slot" class="form-label">💰 Harga per Slot (Rp)</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">Rp</span>
-                                            <input type="number" class="form-control" id="harga_slot" name="harga_slot"
-                                                placeholder="10000" required min="1000">
-                                        </div>
-                                    </div>
-
-                                    <!-- Slot Management -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="jumlah_slot" class="form-label">👥 Jumlah Slot</label>
-                                        <div class="input-group">
-                                            <input type="number" class="form-control" id="jumlah_slot"
-                                                name="jumlah_slot" placeholder="4" required min="1"
-                                                max="10">
-                                            <span class="input-group-text">slots</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Schedule -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="jadwal" class="form-label">📅 Jadwal Mabar</label>
-                                        <input type="datetime-local" class="form-control" id="jadwal" name="jadwal"
-                                            required>
-                                    </div>
-
-                                    <!-- Duration -->
-                                    <div class="col-md-6 mb-3">
-                                        <label for="durasi" class="form-label">⏱️ Durasi (Jam)</label>
-                                        <select class="form-select" id="durasi" name="durasi" required>
-                                            <option value="1">1 Jam</option>
-                                            <option value="2">2 Jam</option>
-                                            <option value="3">3 Jam</option>
-                                            <option value="4">4 Jam</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Description -->
-                                    <div class="col-12 mb-3">
-                                        <label for="deskripsi" class="form-label">📌 Deskripsi & Aturan</label>
-                                        <textarea class="form-control" id="deskripsi" name="deskripsi" rows="4"
-                                            placeholder="Jelaskan detail sesi mabar, peraturan, dan persyaratan khusus..." required></textarea>
-                                    </div>
-
-                                    <!-- Additional Features -->
-                                    <div class="col-12 mb-4">
-                                        <div class="card bg-light border">
-                                            <div class="card-body">
-                                                <h6 class="card-title">✨ Fitur Tambahan</h6>
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="voice_chat" name="features[]" value="voice_chat">
-                                                            <label class="form-check-label" for="voice_chat">🎤 Voice Chat
-                                                                Required</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="livestream" name="features[]" value="livestream">
-                                                            <label class="form-check-label" for="livestream">📺 Will
-                                                                Livestream</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="beginners" name="features[]" value="beginners">
-                                                            <label class="form-check-label" for="beginners">🌱 Pemula
-                                                                Welcome</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="competitive" name="features[]" value="competitive">
-                                                            <label class="form-check-label" for="competitive">🏆
-                                                                Competitive Play</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Preview Section -->
-                                <div class="mb-4">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">💫 Preview Pendapatan</h6>
-                                        <span class="text-success" id="estimated_earnings">Rp 0</span>
-                                    </div>
-                                    <div class="progress mt-2" style="height: 10px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn text-white" style="background-color: #9E0620;">
-                                        🚀 Buat Open Mabar
-                                    </button>
-                                </div>
-                                {{-- </form> --}}
-                            </div>
-                        </div>
-
-                        <!-- Quick Tips Card -->
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">💡 Tips Membuat Mabar</h6>
-                                <ul class="list-unstyled mb-0">
-                                    <li class="mb-2">✓ Tetapkan harga yang kompetitif</li>
-                                    <li class="mb-2">✓ Berikan deskripsi yang jelas</li>
-                                    <li class="mb-2">✓ Tentukan aturan dengan detail</li>
-                                    <li>✓ Pastikan jadwal yang flexibel</li>
-                                </ul>
                             </div>
                         </div>
                     </div>

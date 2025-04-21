@@ -162,6 +162,24 @@
                                     @enderror
                                 </div>
 
+                                <!-- Phone Number -->
+                                <div class="mb-4">
+                                    <label for="phone" class="form-label fw-semibold">Nomor Telepon</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text border-0 bg-light">
+                                            <i class="fas fa-phone text-muted"></i>
+                                        </span>
+                                        <input id="phone" type="text" class="form-control @error('phone') is-invalid @enderror"
+                                            name="phone" value="{{ old('phone') }}" placeholder="Masukkan nomor telepon Anda" required autocomplete="phone">
+                                    </div>
+                                    @error('phone')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+
+
                                 <!-- Email -->
                                 <div class="mb-4">
                                     <label for="email" class="form-label fw-semibold">Alamat Email</label>
@@ -190,15 +208,17 @@
                                             name="password" placeholder="Buat kata sandi" required autocomplete="new-password">
                                     </div>
                                     <div class="password-requirements mt-2">
-                                        <div><i class="fas fa-check-circle text-success me-1"></i> Minimal 8 karakter</div>
-                                        <div><i class="fas fa-check-circle text-success me-1"></i> Sertakan angka & simbol</div>
+                                        <div><i id="min-char-check" class="fas fa-times-circle text-danger me-1"></i> Minimal 8 karakter</div>
+                                        <div><i id="symbol-check" class="fas fa-times-circle text-danger me-1"></i> Sertakan angka & simbol</div>
                                     </div>
+
                                     @error('password')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>
                                     @enderror
                                 </div>
+                                
 
                                 <!-- Confirm Password -->
                                 <div class="mb-4">
@@ -211,6 +231,38 @@
                                             name="password_confirmation" placeholder="Konfirmasi kata sandi Anda" required autocomplete="new-password">
                                     </div>
                                 </div>
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", function () {
+                                        const passwordInput = document.getElementById("password");
+                                        const minCharCheck = document.getElementById("min-char-check");
+                                        const symbolCheck = document.getElementById("symbol-check");
+
+                                        passwordInput.addEventListener("input", function () {
+                                            const value = passwordInput.value;
+
+                                            // Cek panjang minimal 8 karakter
+                                            if (value.length >= 8) {
+                                                minCharCheck.classList.remove("text-danger", "fa-times-circle");
+                                                minCharCheck.classList.add("text-success", "fa-check-circle");
+                                            } else {
+                                                minCharCheck.classList.remove("text-success", "fa-check-circle");
+                                                minCharCheck.classList.add("text-danger", "fa-times-circle");
+                                            }
+
+                                            // Cek apakah ada angka dan simbol
+                                            const hasNumber = /\d/.test(value);
+                                            const hasSymbol = /[^A-Za-z0-9]/.test(value); // Ini akan cek semua karakter non-alfanumerik
+                                            if (hasNumber && hasSymbol) {
+                                                symbolCheck.classList.remove("text-danger", "fa-times-circle");
+                                                symbolCheck.classList.add("text-success", "fa-check-circle");
+                                            } else {
+                                                symbolCheck.classList.remove("text-success", "fa-check-circle");
+                                                symbolCheck.classList.add("text-danger", "fa-times-circle");
+                                            }
+                                        });
+                                    });
+                                </script>
+
 
                                 <!-- Submit Button -->
                                 <button type="submit" class="btn btn-danger w-100 mb-4">
