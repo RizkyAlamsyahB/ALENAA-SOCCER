@@ -1316,4 +1316,71 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
 
         return $position;
     }
+
+    // Tambahkan method baru di MembershipController
+public function manualRenewal($id)
+{
+    try {
+        Log::info('Memulai perpanjangan manual', ['subscription_id' => $id, 'user_id' => Auth::id()]);
+
+        // Cari subscription yang akan diperpanjang
+        $subscription = MembershipSubscription::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->where('status', 'active')
+            ->first();
+
+        if (!$subscription) {
+            Log::error('Subscription tidak ditemukan', ['id' => $id, 'user_id' => Auth::id()]);
+            return redirect()->back()->with('error', 'Membership tidak ditemukan');
+        }
+
+        // Cek jika sudah ada invoice pending
+        $existingPayment = Payment::where('user_id', Auth::id())
+            ->where('order_id', 'like', 'RENEW-MEM-' . $id . '%')
+            ->where('transaction_status', 'pending')
+            ->first();
+
+        // Jika sudah ada invoice, redirect ke halaman pembayaran
+        if ($existingPayment) {
+            Log::info('Menggunakan invoice yang sudah ada', ['payment_id' => $existingPayment->id]);
+            return redirect()->route('user.membership.renewal.pay', ['id' => $existingPayment->id]);
+        }
+
+        // Buat order ID baru
+        $orderId = 'RENEW-MEM-' . $id . '-' . substr(md5(uniqid()), 0, 8) . '-' . time();
+        $expiresAt = now()->addDays(3);
+
+        // Buat payment baru
+        $payment = new Payment();
+        $payment->order_id = $orderId;
+        $payment->user_id = Auth::id();
+        $payment->amount = $subscription->membership->price;
+        $payment->original_amount = $subscription->membership->price;
+        $payment->transaction_status = 'pending';
+        $payment->expires_at = $expiresAt;
+        $payment->payment_type = 'membership_renewal';
+        $payment->save();
+
+        // Update status subscription
+        $subscription->renewal_status = 'renewal_pending';
+        $subscription->next_invoice_date = now();
+        $subscription->save();
+
+        Log::info('Berhasil membuat invoice perpanjangan', [
+            'payment_id' => $payment->id,
+            'subscription_id' => $id
+        ]);
+
+        // Redirect ke halaman pembayaran
+        return redirect()->route('user.membership.renewal.pay', ['id' => $payment->id]);
+
+    } catch (\Exception $e) {
+        Log::error('Error saat perpanjangan manual: ' . $e->getMessage(), [
+            'subscription_id' => $id,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+    }
+}
 }

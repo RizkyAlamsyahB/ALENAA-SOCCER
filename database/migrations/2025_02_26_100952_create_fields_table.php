@@ -16,7 +16,9 @@ return new class extends Migration {
             $table->string('name');
             $table->enum('type', ['Matras Standar', 'Rumput Sintetis', 'Matras Premium']);
             $table->integer('price');
+            $table->text('description')->nullable();
             $table->string('image')->nullable();
+            $table->foreignId('photographer_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -20,20 +20,24 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\User\PhotographerController;
 use App\Http\Controllers\Admin\PhotoPackageController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Photographer\ScheduleController;
 
 // Public Routes
 Route::get('/', function () {
     // Jika sudah login, redirect berdasarkan role
-    if (auth()->check()) {
-        $user = auth()->user();
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        } elseif ($user->role === 'owner') {
-            return redirect()->route('owner.dashboard');
-        } elseif ($user->role === 'user') {
-            return redirect()->route('users.dashboard');
-        }
+// Di route utama
+if (auth()->check()) {
+    $user = auth()->user();
+    if ($user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    } elseif ($user->role === 'owner') {
+        return redirect()->route('owner.dashboard');
+    } elseif ($user->role === 'user') {
+        return redirect()->route('users.dashboard');
+    } elseif ($user->role === 'photographer') {
+        return redirect()->route('photographer.dashboard');
     }
+}
 
     // Jika tidak login, tampilkan landing page dengan testimonial
     $testimonials = \App\Models\Review::with(['user', 'reviewable'])
@@ -51,9 +55,6 @@ Route::get('/test/renewal-failed-email', [App\Http\Controllers\User\MembershipCo
     ->middleware(['auth']) // Cukup auth saja untuk testing
     ->name('test.renewal-failed-email');
 e('test.renewal-failed-email');
-
-
-
 
 // User Routes
 Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
@@ -152,6 +153,8 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
 
             // Cek membership yang kedaluwarsa - MOVED dari PaymentController
             Route::get('/check-expired-renewals', [MembershipController::class, 'checkExpiredMembershipRenewals'])->name('check.expired.renewals');
+
+            Route::get('/manual-renewal/{id}', [MembershipController::class, 'manualRenewal'])->name('manual.renewal');
         });
 
     // Payment Management
@@ -301,5 +304,11 @@ Route::middleware(['auth', 'checkRole:admin'])
 //         Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
 //     });
 
+
+// Photographer Routes
+Route::middleware(['auth', 'role:photographer'])->prefix('photographer')->name('photographer.')->group(function () {
+    Route::get('/dashboard', [ScheduleController::class, 'dashboard'])->name('dashboard');
+    Route::get('/schedule', [ScheduleController::class, 'schedule'])->name('schedule');
+});
 // Auth Routes
 require __DIR__ . '/auth.php';

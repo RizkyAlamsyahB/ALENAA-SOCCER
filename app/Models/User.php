@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Field;
+use App\Models\Photographer;
 use App\Models\PointsTransaction;
 use App\Models\PhotographerBooking;
 use App\Models\MembershipSubscription;
@@ -18,23 +20,9 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-        'phone_number',
-        'address',
-        'birthdate',
-        'points',
-        'profile_picture',
-       ' email_verified_at'
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role', 'phone_number', 'address', 'birthdate', 'points', 'profile_picture', ' email_verified_at'];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
@@ -72,30 +60,38 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function reviews()
-{
-    return $this->hasMany(Review::class);
-}
-public function pointsTransactions()
-{
-    return $this->hasMany(PointsTransaction::class);
-}
+    {
+        return $this->hasMany(Review::class);
+    }
+    public function pointsTransactions()
+    {
+        return $this->hasMany(PointsTransaction::class);
+    }
 
-/**
- * Get the photographer bookings for the user.
- */
-public function photographerBookings(): HasMany
-{
-    return $this->hasMany(PhotographerBooking::class);
-}
-// Di file app/Models/User.php tambahkan method berikut
+    /**
+     * Get the photographer bookings for the user.
+     */
+    public function photographerBookings(): HasMany
+    {
+        return $this->hasMany(PhotographerBooking::class);
+    }
+    // Di file app/Models/User.php tambahkan method berikut
 
-public function membershipSubscriptions()
-{
-    return $this->hasMany(MembershipSubscription::class);
-}
+    public function membershipSubscriptions()
+    {
+        return $this->hasMany(MembershipSubscription::class);
+    }
 
-public function sendEmailVerificationNotification()
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new CustomVerifyEmail());
+    }
+    public function assignedField()
+    {
+        return $this->hasOne(Field::class, 'photographer_id')->where('role', 'photographer');
+    }
+    public function photographer()
 {
-    $this->notify(new CustomVerifyEmail);
+    return $this->hasOne(Photographer::class);
 }
 }
