@@ -20,9 +20,39 @@
     </div>
     <!-- Main Content -->
     <div class="main-content">
+
         <div class="container py-4">
             <!-- Header Section -->
             <div class="text-center mb-5">
+                <!-- Bootstrap Alert for Session Messages -->
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if (session('info'))
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        {{ session('info') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if (session('warning'))
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ session('warning') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 <p class="section-desc mx-auto" style="max-width: 700px;">
                     Komunitas Bola Tanpa Batas
                     Ingin bermain tapi tidak memiliki tim lengkap? Bergabunglah dengan program Main Bareng Alena Soccer!
@@ -58,11 +88,14 @@
                                 <select class="form-select" name="level">
                                     <option value="all" {{ request('level') == 'all' ? 'selected' : '' }}>Semua Level
                                     </option>
-                                    <option value="beginner" {{ request('level') == 'beginner' ? 'selected' : '' }}>Beginner
+                                    <option value="beginner" {{ request('level') == 'beginner' ? 'selected' : '' }}>
+                                        Beginner
                                     </option>
-                                    <option value="intermediate" {{ request('level') == 'intermediate' ? 'selected' : '' }}>
+                                    <option value="intermediate"
+                                        {{ request('level') == 'intermediate' ? 'selected' : '' }}>
                                         Intermediate</option>
-                                    <option value="advanced" {{ request('level') == 'advanced' ? 'selected' : '' }}>Advanced
+                                    <option value="advanced" {{ request('level') == 'advanced' ? 'selected' : '' }}>
+                                        Advanced
                                     </option>
                                 </select>
                             </div>

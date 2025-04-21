@@ -174,6 +174,7 @@
                             @endphp
 
                             <h4 class="mb-4">Daftar Peserta ({{ $participantCount }}/{{ $openMabar->total_slots }})</h4>
+
                             @if (Auth::id() == $openMabar->user_id)
                                 <div class="mt-3">
                                     <a href="{{ route('user.mabar.broadcast.form', $openMabar->id) }}"

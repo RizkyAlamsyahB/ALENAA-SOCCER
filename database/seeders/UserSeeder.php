@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
                 'email'             => 'r.alamsyah.8e@gmail.com',
                 'email_verified_at' => now(),
                 'password'          => Hash::make('password'),
-                'role'              => 'admin',
+                'role'              => 'user',
                 'phone_number'      => '081212341234',
                 'address'           => 'Jl. Kebangsaan No. 3, Surabaya',
                 'birthdate'         => '1995-07-10',

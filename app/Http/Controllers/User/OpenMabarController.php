@@ -6,7 +6,9 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Field;
 use App\Models\OpenMabar;
+use App\Helpers\EmailHelper;
 use App\Mail\MabarBroadcast;
+use App\Mail\MabarCancelled;
 use App\Models\FieldBooking;
 use App\Models\MabarMessage;
 use Illuminate\Http\Request;
@@ -502,6 +504,194 @@ class OpenMabarController extends Controller
             return redirect()
                 ->route('user.mabar.show', $id)
                 ->with('error', 'Terjadi kesalahan saat mengirim pesan: ' . $e->getMessage());
+        }
+    }
+/**
+ * Hapus open mabar yang sudah dibuat dan kirim notifikasi ke peserta
+ */
+public function destroy(Request $request, $id)
+{
+    // Cek apakah open mabar ada dan milik user yang login
+    $openMabar = OpenMabar::with([
+            'fieldBooking',
+            'fieldBooking.field',
+            'participants' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            },
+            'participants.user'
+        ])
+        ->where('id', $id)
+        ->where('user_id', Auth::id())
+        ->firstOrFail();
+
+    // Cek apakah ada peserta yang sudah bergabung dan membayar
+    $paidParticipants = $openMabar->participants
+        ->where('payment_status', 'paid')
+        ->count();
+
+    if ($paidParticipants > 0 && !$request->has('force_delete')) {
+        return back()->with('error', 'Open Mabar tidak dapat dihapus karena sudah ada peserta yang membayar. Jika tetap ingin menghapus, silakan berikan informasi refund kepada peserta.')
+            ->with('show_force_delete_modal', true)
+            ->with('mabar_id', $id);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        // Dapatkan alasan pembatalan dan informasi refund jika ada
+        $cancellationReason = $request->cancellation_reason ?? null;
+        $refundInfo = $request->refund_info ?? null;
+
+        // Jika ada peserta, kirim email notifikasi pembatalan
+        $participantsCount = $openMabar->participants->count();
+        Log::info('Starting to send cancellation emails', [
+            'mabar_id' => $openMabar->id,
+            'participants_count' => $participantsCount,
+            'mabar_title' => $openMabar->title
+        ]);
+
+        $emailsSent = 0;
+        $emailsFailed = 0;
+
+        if ($participantsCount > 0) {
+            foreach ($openMabar->participants as $participant) {
+                try {
+                    // Validasi email peserta terlebih dahulu
+                    if (!filter_var($participant->user->email, FILTER_VALIDATE_EMAIL)) {
+                        Log::warning('Invalid email format for participant', [
+                            'mabar_id' => $openMabar->id,
+                            'participant_id' => $participant->id,
+                            'email' => $participant->user->email
+                        ]);
+                        $emailsFailed++;
+                        continue;
+                    }
+
+                    // Log sebelum pengiriman email
+                    Log::info('Attempting to send cancellation email', [
+                        'mabar_id' => $openMabar->id,
+                        'participant_id' => $participant->id,
+                        'email' => $participant->user->email,
+                        'user_name' => $participant->user->name
+                    ]);
+
+                    // Buat konten teks fallback
+                    $textContent = "PEMBERITAHUAN: Open Mabar \"{$openMabar->title}\" telah dibatalkan.\n" .
+                                   "Silakan cek email Anda untuk detail lebih lanjut atau hubungi " . Auth::user()->email;
+
+                    // Coba metode 1: Menggunakan MabarCancelled Mail class
+                    try {
+                        Mail::to($participant->user->email)->send(
+                            new MabarCancelled(
+                                $openMabar,
+                                Auth::user(),
+                                $participant,
+                                $cancellationReason,
+                                $refundInfo
+                            )
+                        );
+
+                        Log::info('Cancellation email sent successfully using Mail class', [
+                            'mabar_id' => $openMabar->id,
+                            'participant_id' => $participant->id,
+                            'email' => $participant->user->email
+                        ]);
+
+                        $emailsSent++;
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to send email using Mail class, trying alternative method: ' . $e->getMessage(), [
+                            'mabar_id' => $openMabar->id,
+                            'participant_id' => $participant->id,
+                        ]);
+
+                        // Metode 2: Menggunakan helper dengan retry
+                        $subject = 'Open Mabar "' . $openMabar->title . '" Telah Dibatalkan';
+                        $viewData = [
+                            'openMabar' => $openMabar,
+                            'organizer' => Auth::user(),
+                            'participant' => $participant,
+                            'cancellationReason' => $cancellationReason,
+                            'refundInfo' => $refundInfo,
+                        ];
+
+                        $success = EmailHelper::sendWithFallback(
+                            $participant->user->email,
+                            $subject,
+                            $textContent,
+                            'emails.mabar-cancelled',
+                            $viewData
+                        );
+
+                        if ($success) {
+                            Log::info('Cancellation email sent successfully with fallback method', [
+                                'mabar_id' => $openMabar->id,
+                                'participant_id' => $participant->id,
+                                'email' => $participant->user->email
+                            ]);
+                            $emailsSent++;
+                        } else {
+                            throw new \Exception('Both email methods failed');
+                        }
+                    }
+
+                } catch (\Exception $e) {
+                    // Log detail error saat mengirim email
+                    Log::error('Error sending cancellation email: ' . $e->getMessage(), [
+                        'mabar_id' => $openMabar->id,
+                        'participant_id' => $participant->id,
+                        'email' => $participant->user->email,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    $emailsFailed++;
+                    // Lanjutkan proses meskipun ada error email
+                }
+            }
+        }
+
+        // Ringkasan pengiriman email
+        Log::info('Cancellation email summary', [
+            'mabar_id' => $openMabar->id,
+            'total_participants' => $participantsCount,
+            'emails_sent' => $emailsSent,
+            'emails_failed' => $emailsFailed
+        ]);
+
+        // Hapus semua pesan di mabar (jika ada)
+        MabarMessage::where('open_mabar_id', $id)->delete();
+
+        // Hapus semua peserta mabar (jika ada)
+        MabarParticipant::where('open_mabar_id', $id)->delete();
+
+        // Hapus open mabar
+        $openMabar->delete();
+
+        DB::commit();
+
+        $message = 'Open Mabar berhasil dihapus';
+        if ($participantsCount > 0) {
+            if ($emailsSent > 0) {
+                $message .= ' dan notifikasi telah dikirim ke ' . $emailsSent . ' dari ' . $participantsCount . ' peserta.';
+                if ($emailsFailed > 0) {
+                    $message .= ' ' . $emailsFailed . ' email gagal dikirim.';
+                }
+            } else {
+                $message .= ' namun terjadi masalah saat mengirim email ke peserta.';
+            }
+        }
+
+        return redirect()->route('user.mabar.index')
+            ->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting Open Mabar: ' . $e->getMessage(), [
+                'mabar_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Terjadi kesalahan saat menghapus Open Mabar: ' . $e->getMessage());
         }
     }
 }

@@ -25,6 +25,35 @@
     <!-- Main Content -->
     <div class="main-content bg-light">
         <div class="container py-5">
+            <!-- Bootstrap Alert for Session Messages -->
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('info'))
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ session('info') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('warning'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ session('warning') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             <!-- Action Buttons -->
             <div class="d-flex justify-content-end mb-4">
                 <a href="{{ route('user.mabar.create') }}" class="btn btn-danger rounded-pill">
@@ -127,10 +156,57 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('user.mabar.show', $mabar->id) }}"
-                                                    class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i> Detail
-                                                </a>
+                                                <div class="btn-group">
+                                                    <a href="{{ route('user.mabar.show', $mabar->id) }}"
+                                                        class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i> Detail
+                                                    </a>
+
+                                                    @if ($mabar->end_time > now())
+                                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteModal{{ $mabar->id }}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+
+                                                        <!-- Modal Konfirmasi Hapus -->
+                                                        <div class="modal fade" id="deleteModal{{ $mabar->id }}"
+                                                            tabindex="-1"
+                                                            aria-labelledby="deleteModalLabel{{ $mabar->id }}"
+                                                            aria-hidden="true">
+                                                            <div class="modal-dialog">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title"
+                                                                            id="deleteModalLabel{{ $mabar->id }}">
+                                                                            Konfirmasi Hapus</h5>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p>Apakah Anda yakin ingin menghapus Open Mabar
+                                                                            "{{ $mabar->title }}"?</p>
+                                                                        <p class="text-danger">Peringatan: Tindakan ini
+                                                                            tidak dapat dibatalkan!</p>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            data-bs-dismiss="modal">Batal</button>
+                                                                        <form
+                                                                            action="{{ route('user.mabar.delete', $mabar->id) }}"
+                                                                            method="POST">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="submit"
+                                                                                class="btn btn-danger">Hapus</button>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -221,7 +297,69 @@
                     @endif
                 </div>
             </div>
+                    <!-- Modal Force Delete untuk Open Mabar yang Sudah Ada Peserta yang Bayar -->
+        @if (session('show_force_delete_modal'))
+        <div class="modal fade" id="forceDeleteModal" tabindex="-1" aria-labelledby="forceDeleteModalLabel"
+            aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="forceDeleteModalLabel">Konfirmasi Hapus dengan Peserta Berbayar
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('user.mabar.delete', session('mabar_id')) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="force_delete" value="1">
+
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Peringatan:</strong> Open Mabar ini memiliki peserta yang sudah membayar. Anda
+                                harus memberikan informasi untuk refund kepada peserta.
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="cancellation_reason" class="form-label">Alasan Pembatalan <span
+                                        class="text-danger">*</span></label>
+                                <textarea class="form-control" id="cancellation_reason" name="cancellation_reason" rows="3" required></textarea>
+                                <div class="form-text">Jelaskan alasan mengapa Open Mabar dibatalkan</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="refund_info" class="form-label">Informasi Refund <span
+                                        class="text-danger">*</span></label>
+                                <textarea class="form-control" id="refund_info" name="refund_info" rows="4" required></textarea>
+                                <div class="form-text">Berikan informasi detail bagaimana peserta akan mendapatkan
+                                    refund (metode pembayaran, jadwal, proses, dll)</div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Hapus dengan Refund
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
+
+        <!-- Script untuk membuka modal force delete otomatis -->
+        @if (session('show_force_delete_modal'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var forceDeleteModal = new bootstrap.Modal(document.getElementById('forceDeleteModal'));
+                    forceDeleteModal.show();
+                });
+            </script>
+        @endif
+    @endif
+        </div>
+
     </div>
 
     <style>
