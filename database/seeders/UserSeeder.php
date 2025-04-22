@@ -78,7 +78,7 @@ class UserSeeder extends Seeder
             // Tambahkan di UserSeeder
             [
                 'name' => 'photographer Lapangan 1',
-                'email' => 'photographer1@example.com',
+                'email' => 'rizkyalamsyah703@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'role' => 'photographer',

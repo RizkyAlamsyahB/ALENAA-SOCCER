@@ -13,6 +13,8 @@ use App\Models\PhotographerBooking;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PhotographerBookingNotification;
 
 class PhotographerController extends Controller
 {
@@ -218,4 +220,42 @@ class PhotographerController extends Controller
 
         return back()->with('error', 'Maaf, booking fotografer tidak dapat dibatalkan');
     }
+
+/**
+ * Send booking notification to photographer
+ */
+public function sendBookingNotification(PhotographerBooking $booking)
+{
+    try {
+        // Get the photographer record
+        $photographer = Photographer::findOrFail($booking->photographer_id);
+
+        // Get the photographer's user record
+        $photographerUser = \App\Models\User::find($photographer->user_id);
+
+        // Get the booking user
+        $user = $booking->user;
+
+        if ($photographerUser && $photographerUser->email) {
+            // Pass both photographer user and booking user to the notification
+            Mail::to($photographerUser->email)
+                ->send(new PhotographerBookingNotification($booking, $photographerUser, $user));
+
+            $booking->notification_sent_at = now();
+            $booking->save();
+
+            Log::info('Photographer booking notification sent to: ' . $photographerUser->email);
+            return true;
+        } else {
+            Log::warning('Photographer user or email not found for booking: ' . $booking->id);
+        }
+    } catch (\Exception $e) {
+        Log::error('Failed to send photographer notification: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+        return false;
+    }
+
+    return false;
+}
 }

@@ -180,6 +180,14 @@
                     {{-- Owner Section --}}
                     <li class="sidebar-title">Manajemen (Owner)</li>
 
+                    {{-- Dashboard --}}
+                    <li class="sidebar-item {{ request()->routeIs('owner.dashboard') ? 'active' : '' }}">
+                        <a href="{{ route('owner.dashboard') }}" class="sidebar-link">
+                            <i class="bi bi-grid-fill"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
                     {{-- Customer & Reward --}}
                     <li class="sidebar-item has-sub {{ request()->routeIs('admin.customer.*') ? 'active' : '' }}">
                         <a href="#" class="sidebar-link">
@@ -220,25 +228,24 @@
                             </li>
                         </ul>
                     </li>
-                                    {{-- Settings --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-gear"></i>
-                        <span>Pengaturan</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Kelola Diskon</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Manajemen Pengguna</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Pengaturan Sistem</a>
-                        </li>
-                    </ul>
-                </li>
-
+                    {{-- Settings --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-gear"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Kelola Diskon</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Manajemen Pengguna</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Pengaturan Sistem</a>
+                            </li>
+                        </ul>
+                    </li>
                 @endif
 
                 @if (auth()->user()->hasRole('photographer'))

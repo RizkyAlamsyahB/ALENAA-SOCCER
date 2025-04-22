@@ -19,6 +19,7 @@ class Payment extends Model
         'amount',
         'original_amount',
         'discount_id',
+        'point_redemption_id',  // Tambahkan ini
         'discount_amount',
         'transaction_id',
         'transaction_status',

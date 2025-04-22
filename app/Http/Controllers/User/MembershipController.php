@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\MembershipRenewalInvoice;
 use App\Mail\MembershipRenewalSuccess;
 use App\Models\MembershipSubscription;
+use App\Mail\PhotographerBookingNotification;
 use App\Mail\MembershipRenewalFailedNotification;
 
 class MembershipController extends Controller
@@ -1224,23 +1225,60 @@ public function createNewBookingsForRenewal(MembershipSubscription $subscription
             $newBooking->membership_session_id = $newSession->id;
             $newBooking->save();
 
-            // 4. Buat fotografer booking jika include fotografer
-            if ($photographer) {
-                $photographerBooking = new PhotographerBooking();
-                $photographerBooking->user_id = $subscription->user_id;
-                $photographerBooking->photographer_id = $photographer->id;
-                $photographerBooking->payment_id = $paymentId;
-                $photographerBooking->field_booking_id = $newBooking->id;
-                $photographerBooking->membership_session_id = $newSession->id;
-                $photographerBooking->start_time = $newStartTime;
-                $photographerBooking->end_time = $newEndTime;
-                $photographerBooking->price = 0; // Gratis karena sudah termasuk dalam membership
-                $photographerBooking->status = 'confirmed';
-                $photographerBooking->is_membership = true;
-                $photographerBooking->save();
+// 4. Buat fotografer booking jika include fotografer
+if ($photographer) {
+    $photographerBooking = new PhotographerBooking();
+    $photographerBooking->user_id = $subscription->user_id;
+    $photographerBooking->photographer_id = $photographer->id;
+    $photographerBooking->payment_id = $paymentId;
+    $photographerBooking->field_booking_id = $newBooking->id;
+    $photographerBooking->membership_session_id = $newSession->id;
+    $photographerBooking->start_time = $newStartTime;
+    $photographerBooking->end_time = $newEndTime;
+    $photographerBooking->price = 0; // Gratis karena sudah termasuk dalam membership
+    $photographerBooking->status = 'confirmed';
+    $photographerBooking->is_membership = true;
+    $photographerBooking->save();
 
-                Log::info('Membuat booking fotografer untuk perpanjangan membership #' . $subscription->id . ' session #' . $sessionNumber);
-            }
+    // TAMBAHAN KODE: Kirim notifikasi email ke fotografer
+    try {
+        // Ambil data user fotografer
+        $photographerUser = User::find($photographer->user_id);
+
+        // Ambil data user yang melakukan booking
+        $user = User::find($subscription->user_id);
+
+        if ($photographerUser && $photographerUser->email) {
+            // Kirim email notifikasi
+            Mail::to($photographerUser->email)
+                ->send(new PhotographerBookingNotification($photographerBooking, $photographerUser, $user));
+
+            // Catat waktu pengiriman notifikasi
+            $photographerBooking->notification_sent_at = now();
+            $photographerBooking->save();
+
+            Log::info('Photographer booking notification sent for renewal to: ' . $photographerUser->email, [
+                'subscription_id' => $subscription->id,
+                'photographer_id' => $photographer->id,
+                'booking_id' => $photographerBooking->id,
+                'session_number' => $sessionNumber
+            ]);
+        } else {
+            Log::warning('Photographer user or email not found for renewal booking', [
+                'booking_id' => $photographerBooking->id,
+                'photographer_id' => $photographer->id
+            ]);
+        }
+    } catch (\Exception $e) {
+        Log::error('Failed to send photographer notification for renewal: ' . $e->getMessage(), [
+            'booking_id' => $photographerBooking->id,
+            'photographer_id' => $photographer->id,
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+
+    Log::info('Membuat booking fotografer untuk perpanjangan membership #' . $subscription->id . ' session #' . $sessionNumber);
+}
 
             // 5. Buat rental item booking jika include rental item
             if ($rentalItem) {

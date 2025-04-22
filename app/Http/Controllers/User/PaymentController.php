@@ -16,6 +16,7 @@ use App\Models\Membership;
 use Midtrans\Notification;
 use Illuminate\Support\Str;
 use App\Models\FieldBooking;
+use App\Models\Photographer;
 use Illuminate\Http\Request;
 use App\Models\DiscountUsage;
 use App\Models\RentalBooking;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\MembershipRenewalInvoice;
 use App\Mail\MembershipRenewalSuccess;
 use App\Models\MembershipSubscription;
+use App\Mail\PhotographerBookingNotification;
 use Midtrans\Exceptions\MidtransApiException;
 
 class PaymentController extends Controller
@@ -1214,14 +1216,38 @@ if ($payment->discount_amount > 0) {
                 }
             }
 
-            // Update photographer bookings
-            if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
-                foreach ($payment->photographerBookings as $booking) {
-                    $booking->status = 'confirmed';
-                    $booking->save();
-                    Log::info('Photographer Booking #' . $booking->id . ' status updated to: confirmed');
-                }
+// Update photographer bookings
+if (method_exists($payment, 'photographerBookings') && $payment->photographerBookings && $payment->photographerBookings->count() > 0) {
+    foreach ($payment->photographerBookings as $booking) {
+        $booking->status = 'confirmed';
+        $booking->save();
+        Log::info('Photographer Booking #' . $booking->id . ' status updated to: confirmed');
+
+        // Send email notification to photographer
+        try {
+            // Get the photographer record
+            $photographer = Photographer::findOrFail($booking->photographer_id);
+
+            // Get the photographer's user record
+            $photographerUser = User::find($photographer->user_id);
+
+            // Get the booking user
+            $user = $booking->user;
+
+            if ($photographerUser && $photographerUser->email) {
+                Mail::to($photographerUser->email)
+                    ->send(new PhotographerBookingNotification($booking, $photographerUser, $user));
+                Log::info('Photographer booking notification sent to: ' . $photographerUser->email);
+            } else {
+                Log::warning('Photographer user or email not found for booking: ' . $booking->id);
             }
+        } catch (\Exception $e) {
+            Log::error('Failed to send photographer notification email: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+}
 // Update fotografer bookings yang terkait dengan field booking dari membership
 if ($payment->transaction_status === 'success') {
     // Update untuk field bookings yang sudah ada di kode Anda
