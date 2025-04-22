@@ -21,6 +21,7 @@ use App\Http\Controllers\User\PhotographerController;
 use App\Http\Controllers\Admin\PhotoPackageController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Photographer\ScheduleController;
+use App\Http\Controllers\Photographer\PhotographerDashboardController;
 
 // Public Routes
 Route::get('/', function () {
@@ -35,7 +36,7 @@ if (auth()->check()) {
     } elseif ($user->role === 'user') {
         return redirect()->route('users.dashboard');
     } elseif ($user->role === 'photographer') {
-        return redirect()->route('photographer.dashboard');
+        return redirect()->route('photographers.dashboard');
     }
 }
 
@@ -290,25 +291,31 @@ Route::middleware(['auth', 'checkRole:admin'])
     });
 
 // Owner Routes
-// Route::middleware(['auth', 'checkRole:owner'])
-//     ->prefix('owner')
-//     ->name('owner.')
-//     ->group(function () {
-//         // Dashboard Owner
-//         Route::get('/dashboard', function () {
-//             return view('owner.dashboard');
-//         })->name('dashboard');
+Route::middleware(['auth', 'checkRole:owner'])
+    ->prefix('owner')
+    ->name('owner.')
+    ->group(function () {
+        // Dashboard Owner
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
 
-//         // Rute khusus owner
-//         Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])->name('financial-report');
-//         Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
-//     });
+        // Rute khusus owner
+        // Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])->name('financial-report');
+        // Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
+    });
 
 
-// Photographer Routes
-Route::middleware(['auth', 'role:photographer'])->prefix('photographer')->name('photographer.')->group(function () {
-    Route::get('/dashboard', [ScheduleController::class, 'dashboard'])->name('dashboard');
-    Route::get('/schedule', [ScheduleController::class, 'schedule'])->name('schedule');
-});
+// Owner Routes
+Route::middleware(['auth', 'checkRole:photographer'])
+    ->prefix('photographers')
+    ->name('photographers.')
+    ->group(function () {
+        // Dashboard photographer
+        Route::get('/dashboard', [ScheduleController::class, 'dashboard'])->name('dashboard');
+
+        // Rute khusus photographer
+        Route::get('/schedule', [ScheduleController::class, 'schedule'])->name('schedule');
+    });
 // Auth Routes
 require __DIR__ . '/auth.php';

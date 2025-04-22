@@ -44,176 +44,183 @@
 
         <div class="sidebar-menu">
             <ul class="menu">
-                <li class="sidebar-title">Main Menu</li>
-
-                {{-- Dashboard --}}
-                <li class="sidebar-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
-                        <i class="bi bi-grid-fill"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-
-                {{-- Lapangan (Field Management) --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-geo-alt"></i>
-                        <span>Lapangan</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
-                        <li class="submenu-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
-                            <a href="{{ route('admin.fields.index') }}" class="submenu-link">Data Lapangan</a>
-                        </li>
-                        <li class="submenu-item {{ request()->routeIs('admin.fields.schedule') ? 'active' : '' }}">
-                            <a href="" class="submenu-link">Jadwal Lapangan</a>
-                        </li>
-                        <li class="submenu-item {{ request()->routeIs('admin.fields.booking') ? 'active' : '' }}">
-                            <a href="" class="submenu-link">Pemesanan Lapangan</a>
-                        </li>
-                    </ul>
-                </li>
-
-                {{-- Membership Management --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.membership.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-person-badge"></i>
-                        <span>Membership</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.membership.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Data Member</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Pembayaran Member</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Jadwal Member</a>
-                        </li>
-                    </ul>
-                </li>
-
-                {{-- Product Management --}}
-                <li
-                    class="sidebar-item has-sub {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-cart"></i>
-                        <span>Produk</span>
-                    </a>
-                    <ul
-                        class="submenu {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
-                        <li class="submenu-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.products.index') }}" class="submenu-link">Produk Jualan</a>
-                        </li>
-                        <li class="submenu-item {{ request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.rental-items.index') }}" class="submenu-link">Produk Sewa</a>
-                        </li>
-
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Manajemen Stok</a>
-                        </li>
-                    </ul>
-
-                </li>
-
-                {{-- Photographer Management --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-camera"></i>
-                        <span>Fotografer</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
-                        <li
-                            class="submenu-item {{ request()->routeIs('admin.photo-packages.index') ? 'active' : '' }}">
-                            <a href="{{ route('admin.photo-packages.index') }}" class="submenu-link">Data
-                                Fotografer</a>
-                        </li>
-                        <li
-                            class="submenu-item {{ request()->routeIs('admin.photo-packages.schedule') ? 'active' : '' }}">
-                            <a href="" class="submenu-link">Jadwal Fotografer</a>
-                        </li>
-                        <li
-                            class="submenu-item {{ request()->routeIs('admin.photo-packages.booking') ? 'active' : '' }}">
-                            <a href="" class="submenu-link">Pemesanan Fotografer</a>
-                        </li>
-                    </ul>
-                </li>
 
 
-                {{-- Transaction Management --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-receipt"></i>
-                        <span>Transaksi</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Point of Sale (POS)</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Data Pesanan</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Pembayaran</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Keranjang Belanja</a>
-                        </li>
-                    </ul>
-                </li>
+                @if (auth()->user()->hasRole('admin'))
+                    <li class="sidebar-title">Main Menu</li>
 
-                {{-- Open Mabar --}}
-                <li class="sidebar-item {{ request()->routeIs('admin.open-mabar') ? 'active' : '' }}">
-                    <a href="" class="sidebar-link">
-                        <i class="bi bi-people"></i>
-                        <span>Open Mabar</span>
-                    </a>
-                </li>
+                    {{-- Dashboard --}}
+                    <li class="sidebar-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
+                            <i class="bi bi-grid-fill"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    {{-- Lapangan (Field Management) --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Lapangan</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.fields.*') ? 'active' : '' }}">
+                            <li class="submenu-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
+                                <a href="{{ route('admin.fields.index') }}" class="submenu-link">Data Lapangan</a>
+                            </li>
+                            <li class="submenu-item {{ request()->routeIs('admin.fields.schedule') ? 'active' : '' }}">
+                                <a href="" class="submenu-link">Jadwal Lapangan</a>
+                            </li>
+                            <li class="submenu-item {{ request()->routeIs('admin.fields.booking') ? 'active' : '' }}">
+                                <a href="" class="submenu-link">Pemesanan Lapangan</a>
+                            </li>
+                        </ul>
+                    </li>
 
-                {{-- Customer & Reward --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.customer.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-star"></i>
-                        <span>Customer & Reward</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.customer.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Data Customer</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Sistem Poin Reward</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Review & Rating</a>
-                        </li>
-                    </ul>
-                </li>
+                    {{-- Membership Management --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.membership.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Membership</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.membership.*') ? 'active' : '' }}">
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Data Member</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Pembayaran Member</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Jadwal Member</a>
+                            </li>
+                        </ul>
+                    </li>
 
-                {{-- Owner Section --}}
-                <li class="sidebar-title">Manajemen (Owner)</li>
+                    {{-- Product Management --}}
+                    <li
+                        class="sidebar-item has-sub {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-cart"></i>
+                            <span>Produk</span>
+                        </a>
+                        <ul
+                            class="submenu {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
+                            <li class="submenu-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.products.index') }}" class="submenu-link">Produk Jualan</a>
+                            </li>
+                            <li class="submenu-item {{ request()->routeIs('admin.rental-items.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.rental-items.index') }}" class="submenu-link">Produk Sewa</a>
+                            </li>
 
-                {{-- Reporting --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-bar-chart"></i>
-                        <span>Laporan</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Laporan Booking</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Laporan Penjualan</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Laporan Keuangan</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Statistik Penggunaan</a>
-                        </li>
-                    </ul>
-                </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Manajemen Stok</a>
+                            </li>
+                        </ul>
 
-                {{-- Settings --}}
+                    </li>
+
+                    {{-- photographers Management --}}
+                    <li
+                        class="sidebar-item has-sub {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-camera"></i>
+                            <span>Fotografer</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.photo-packages.index') ? 'active' : '' }}">
+                                <a href="{{ route('admin.photo-packages.index') }}" class="submenu-link">Data
+                                    Fotografer</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.photo-packages.schedule') ? 'active' : '' }}">
+                                <a href="" class="submenu-link">Jadwal Fotografer</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.photo-packages.booking') ? 'active' : '' }}">
+                                <a href="" class="submenu-link">Pemesanan Fotografer</a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                    {{-- Transaction Management --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-receipt"></i>
+                            <span>Transaksi</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Point of Sale (POS)</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Data Pesanan</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Pembayaran</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Keranjang Belanja</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    {{-- Open Mabar --}}
+                    <li class="sidebar-item {{ request()->routeIs('admin.open-mabar') ? 'active' : '' }}">
+                        <a href="" class="sidebar-link">
+                            <i class="bi bi-people"></i>
+                            <span>Open Mabar</span>
+                        </a>
+                    </li>
+                @endif
+
+
+
+
+                @if (auth()->user()->hasRole('owner'))
+                    {{-- Owner Section --}}
+                    <li class="sidebar-title">Manajemen (Owner)</li>
+
+                    {{-- Customer & Reward --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.customer.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-star"></i>
+                            <span>Customer & Reward</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.customer.*') ? 'active' : '' }}">
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Data Customer</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Sistem Poin Reward</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Review & Rating</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    {{-- Reporting --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Laporan</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Laporan Booking</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Laporan Penjualan</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Laporan Keuangan</a>
+                            </li>
+                            <li class="submenu-item">
+                                <a href="" class="submenu-link">Statistik Penggunaan</a>
+                            </li>
+                        </ul>
+                    </li>
+                                    {{-- Settings --}}
                 <li class="sidebar-item has-sub {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
                         <i class="bi bi-gear"></i>
@@ -229,13 +236,51 @@
                         <li class="submenu-item">
                             <a href="" class="submenu-link">Pengaturan Sistem</a>
                         </li>
+                    </ul>
+                </li>
+
+                @endif
+
+                @if (auth()->user()->hasRole('photographer'))
+                    {{-- photographers Section --}}
+                    <li class="sidebar-title">Panel Fotografer</li>
+
+                    {{-- photographers Dashboard --}}
+                    <li class="sidebar-item {{ request()->routeIs('photographers.dashboard') ? 'active' : '' }}">
+                        <a href="{{ route('photographers.dashboard') }}" class="sidebar-link">
+                            <i class="bi bi-grid-fill"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    {{-- photographers Schedule --}}
+                    <li class="sidebar-item {{ request()->routeIs('photographers.schedule') ? 'active' : '' }}">
+                        <a href="{{ route('photographers.schedule') }}" class="sidebar-link">
+                            <i class="bi bi-calendar-week"></i>
+                            <span>Jadwal Saya</span>
+                        </a>
+                    </li>
+                @endif
+
+
+
+                {{-- Account Menu --}}
+                <li class="sidebar-item has-sub">
+                    <a href="#" class="sidebar-link">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Akun</span>
+                    </a>
+                    <ul class="submenu">
                         <li class="submenu-item">
-                            <a href="" class="submenu-link">Akun</a>
+                            <a href="" class="submenu-link">Profil Saya</a>
                         </li>
                         <li class="submenu-item">
-                            <a href="{{ route('logout') }}" class="submenu-link"
+                            <a href="" class="submenu-link">Pengaturan Akun</a>
+                        </li>
+                        <li class="submenu-item">
+                            <a href="{{ route('logout') }}" class="submenu-link text-danger"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                Logout
+                                <i class="bi bi-box-arrow-right"></i> Logout
                             </a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                 @csrf

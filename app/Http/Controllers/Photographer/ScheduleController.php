@@ -33,7 +33,7 @@ class ScheduleController extends Controller
                 ->get();
         }
 
-        return view('photographer.dashboard', compact('photographer', 'upcomingPhotographerBookings', 'field', 'upcomingFieldBookings'));
+        return view('photographers.dashboard', compact('photographer', 'upcomingPhotographerBookings', 'field', 'upcomingFieldBookings'));
     }
 
     public function schedule()
@@ -89,6 +89,76 @@ class ScheduleController extends Controller
             return $a['start_time'] <=> $b['start_time'];
         });
 
-        return view('photographer.schedule', compact('photographer', 'allBookings'));
+        return view('photographers.schedule', compact('photographer', 'allBookings'));
     }
+/**
+ * Mendapatkan detail booking berdasarkan ID dan tipe
+ */
+public function getBookingDetails($bookingId, $bookingType)
+{
+    try {
+        $photographer = Auth::user()->photographer;
+        $booking = null;
+
+        if ($bookingType === 'photographer') {
+            $booking = PhotographerBooking::where('id', $bookingId)
+                ->where('photographer_id', $photographer->id)
+                ->firstOrFail();
+
+            $bookingData = [
+                'id' => $booking->id,
+                'type' => 'photographer',
+                'date' => Carbon::parse($booking->start_time)->format('d M Y'),
+                'time_range' => Carbon::parse($booking->start_time)->format('H:i') . ' - ' . Carbon::parse($booking->end_time)->format('H:i'),
+                'user_name' => $booking->user->name,
+                'status' => $booking->status,
+                'notes' => $booking->notes,
+                'cancellation_reason' => $booking->cancellation_reason
+            ];
+        } elseif ($bookingType === 'field') {
+            // Pastikan fotografer memiliki akses ke lapangan ini
+            $field = $photographer->assignedField;
+
+            if (!$field) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak ditugaskan ke lapangan manapun'
+                ], 403);
+            }
+
+            $booking = FieldBooking::where('id', $bookingId)
+                ->where('field_id', $field->id)
+                ->firstOrFail();
+
+            $bookingData = [
+                'id' => $booking->id,
+                'type' => 'field',
+                'date' => Carbon::parse($booking->start_time)->format('d M Y'),
+                'time_range' => Carbon::parse($booking->start_time)->format('H:i') . ' - ' . Carbon::parse($booking->end_time)->format('H:i'),
+                'user_name' => $booking->user->name,
+                'status' => $booking->status,
+                'notes' => $booking->notes,
+                'cancellation_reason' => $booking->cancellation_reason
+            ];
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tipe booking tidak valid'
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookingData
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Booking tidak ditemukan atau Anda tidak memiliki akses'
+        ], 404);
+    }
+}
+
+
+
 }

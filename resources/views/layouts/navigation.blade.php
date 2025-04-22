@@ -104,6 +104,9 @@
             <div class="dropdown-header px-4 py-3 border-bottom">
                 <div class="fw-bold">{{ Auth::user()->name }}</div>
                 <div class="text-muted small">{{ Auth::user()->email }}</div>
+                <div class="text-muted small">
+                    Role: {{ ucfirst(Auth::user()->role ?? 'user') }}
+                </div>
             </div>
         </li>
         <li><a class="dropdown-item px-4 py-2" href="{{ route('profile.edit') }}">

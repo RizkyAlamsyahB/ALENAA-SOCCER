@@ -23,7 +23,6 @@ class PhotographerBooking extends Model
         'price',
         'status', // pending, confirmed, cancelled
         'notes',
-        'field_booking_id',
         'membership_session_id',
         'is_membership',
     ];
@@ -58,15 +57,42 @@ class PhotographerBooking extends Model
         return $this->belongsTo(Payment::class);
     }
 
+    /**
+     * Relasi dengan sesi membership
+     */
+    public function membershipSession()
+    {
+        return $this->belongsTo(MembershipSession::class);
+    }
 
-// Tambahkan metode ini di class PhotographerBooking
-public function fieldBooking()
-{
-    return $this->belongsTo(FieldBooking::class);
-}
+    /**
+     * Mendapatkan field yang terkait melalui fotografer
+     */
+    public function getField()
+    {
+        if ($this->photographer) {
+            return Field::where('photographer_id', $this->photographer->id)->first();
+        }
 
-public function membershipSession()
-{
-    return $this->belongsTo(MembershipSession::class);
-}
+        return null;
+    }
+
+    /**
+     * Mendapatkan booking lapangan yang terkait berdasarkan waktu dan lapangan
+     */
+    public function getRelatedFieldBooking()
+    {
+        $field = $this->getField();
+
+        if (!$field) {
+            return null;
+        }
+
+        return FieldBooking::where('field_id', $field->id)
+            ->where('user_id', $this->user_id)
+            ->where('start_time', '<=', $this->start_time)
+            ->where('end_time', '>=', $this->end_time)
+            ->where('status', '!=', 'cancelled')
+            ->first();
+    }
 }

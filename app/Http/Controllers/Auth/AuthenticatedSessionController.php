@@ -25,21 +25,22 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        // Get authenticated user
         $user = Auth::user();
-
-        // Store user role in session
         session(['user_role' => $user->role]);
 
-        // Redirect based on user role
-        if ($user->role === 'admin' || $user->role === 'owner') {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        } else {
-            return redirect()->intended(route('welcome', absolute: false));
-        }
+        // Define a role-to-dashboard mapping
+        $dashboards = [
+            'admin' => 'admin.dashboard',
+            'owner' => 'owner.dashboard',
+            'photographer' => 'photographers.dashboard',
+            'user' => 'users.dashboard',
+        ];
+
+        // Redirect to appropriate dashboard or default
+        $route = $dashboards[$user->role] ?? 'home';
+        return redirect()->intended(route($route));
     }
 
     /**

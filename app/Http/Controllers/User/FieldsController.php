@@ -16,36 +16,36 @@ use Illuminate\Support\Facades\Auth;
 
 class FieldsController extends Controller
 {
-/**
- * Menampilkan daftar lapangan untuk user
- */
-public function index()
-{
-    $fields = Field::all();
+    /**
+     * Menampilkan daftar lapangan untuk user
+     */
+    public function index()
+    {
+        $fields = Field::all();
 
-    // Tambahkan rating dan review count untuk setiap field
-    foreach ($fields as $field) {
-        $field->rating = $field->getRatingAttribute();
-        $field->reviews_count = $field->getReviewsCountAttribute();
+        // Tambahkan rating dan review count untuk setiap field
+        foreach ($fields as $field) {
+            $field->rating = $field->getRatingAttribute();
+            $field->reviews_count = $field->getReviewsCountAttribute();
+        }
+
+        return view('users.fields.index', compact('fields'));
     }
 
-    return view('users.fields.index', compact('fields'));
-}
+    /**
+     * Menampilkan detail lapangan
+     */
+    public function show($id)
+    {
+        $field = Field::findOrFail($id);
 
-/**
- * Menampilkan detail lapangan
- */
-public function show($id)
-{
-    $field = Field::findOrFail($id);
+        // Tambahkan rating dan review count
+        $field->rating = $field->getRatingAttribute();
+        $field->reviews_count = $field->getReviewsCountAttribute();
 
-    // Tambahkan rating dan review count
-    $field->rating = $field->getRatingAttribute();
-    $field->reviews_count = $field->getReviewsCountAttribute();
-
-    $memberships = Membership::where('field_id', $id)->get();
-    return view('users.fields.show', compact('field', 'memberships'));
-}
+        $memberships = Membership::where('field_id', $id)->get();
+        return view('users.fields.show', compact('field', 'memberships'));
+    }
 
 /**
  * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu
@@ -148,6 +148,25 @@ public function getAvailableSlots(Request $request, $fieldId)
             }
         }
 
+        // Cek apakah lapangan ini memiliki fotografer
+        $hasPhotographer = false;
+        $photographerInfo = null;
+
+        if ($field->photographer_id) {
+            $photographer = DB::table('photographers')
+                ->where('id', $field->photographer_id)
+                ->first();
+
+            if ($photographer) {
+                $hasPhotographer = true;
+                $photographerInfo = [
+                    'id' => $photographer->id,
+                    'name' => $photographer->name,
+                    'price' => $photographer->price
+                ];
+            }
+        }
+
         // Filter slot yang tersedia
         $availableSlots = [];
         foreach ($allSlots as $slot) {
@@ -218,12 +237,16 @@ public function getAvailableSlots(Request $request, $fieldId)
                 'in_cart' => $isInCart,
                 'price' => $slotPrice,
                 'status' => $status,
-                'is_membership' => $isMembershipSlot
+                'is_membership' => $isMembershipSlot,
+                'has_photographer' => $hasPhotographer,
+                'photographer' => $hasPhotographer ? $photographerInfo : null
             ];
         }
+
         Log::debug('Membership slots found:', $membershipSlots);
         Log::debug('Final available slots:', $availableSlots);
 
+        // Frontend hanya mengharapkan array slot langsung, bukan objek dengan property 'available_slots'
         return response()->json($availableSlots);
     } catch (\Exception $e) {
         // Log full error
@@ -245,9 +268,7 @@ public function getAvailableSlots(Request $request, $fieldId)
      */
     public function cancelBooking($bookingId)
     {
-        $booking = FieldBooking::where('id', $bookingId)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        $booking = FieldBooking::where('id', $bookingId)->where('user_id', Auth::id())->firstOrFail();
 
         if ($booking->status === 'pending' || $booking->status === 'confirmed') {
             $booking->status = 'cancelled';
@@ -266,7 +287,7 @@ public function getAvailableSlots(Request $request, $fieldId)
     {
         $request->validate([
             'date' => 'required|date',
-            'field_id' => 'required|exists:fields,id'
+            'field_id' => 'required|exists:fields,id',
         ]);
 
         $fieldId = $request->field_id;
@@ -278,11 +299,7 @@ public function getAvailableSlots(Request $request, $fieldId)
             $userCart = Cart::where('user_id', Auth::id())->first();
 
             if ($userCart) {
-                $cartItems = CartItem::where('cart_id', $userCart->id)
-                    ->where('type', 'field_booking')
-                    ->where('item_id', $fieldId)
-                    ->whereDate('start_time', $date)
-                    ->get();
+                $cartItems = CartItem::where('cart_id', $userCart->id)->where('type', 'field_booking')->where('item_id', $fieldId)->whereDate('start_time', $date)->get();
 
                 foreach ($cartItems as $item) {
                     $startFormatted = Carbon::parse($item->start_time)->format('H:i');
@@ -293,10 +310,7 @@ public function getAvailableSlots(Request $request, $fieldId)
         }
 
         // Also get booked slots from FieldBooking table
-        $bookedSlots = FieldBooking::where('field_id', $fieldId)
-            ->whereDate('start_time', $date)
-            ->where('status', '!=', 'cancelled')
-            ->get();
+        $bookedSlots = FieldBooking::where('field_id', $fieldId)->whereDate('start_time', $date)->where('status', '!=', 'cancelled')->get();
 
         foreach ($bookedSlots as $booking) {
             $startFormatted = Carbon::parse($booking->start_time)->format('H:i');

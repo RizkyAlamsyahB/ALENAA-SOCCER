@@ -77,7 +77,7 @@ class UserSeeder extends Seeder
             ],
             // Tambahkan di UserSeeder
             [
-                'name' => 'Photographer Lapangan 1',
+                'name' => 'photographer Lapangan 1',
                 'email' => 'photographer1@example.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
@@ -92,7 +92,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Photographer Lapangan 2',
+                'name' => 'photographer Lapangan 2',
                 'email' => 'photographer2@example.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
@@ -107,7 +107,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Photographer Lapangan 3',
+                'name' => 'photographer Lapangan 3',
                 'email' => 'photographer3@example.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
