@@ -205,27 +205,33 @@
                 {{-- Owner Section --}}
                 <li class="sidebar-title">Manajemen (Owner)</li>
 
-                {{-- Laporan --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('owner.reports.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-bar-chart"></i>
-                        <span>Laporan</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('owner.reports.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="#" class="submenu-link">Laporan Booking</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="#" class="submenu-link">Laporan Penjualan</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="#" class="submenu-link">Laporan Keuangan</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="#" class="submenu-link">Statistik Penggunaan</a>
-                        </li>
-                    </ul>
-                </li>
+<!-- Add this to your sidebar file -->
+<li class="sidebar-item has-sub">
+    <a href="#" class="sidebar-link">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>Laporan & Statistik</span>
+    </a>
+    <ul class="submenu">
+        <li class="submenu-item">
+            <a href="{{ route('owner.reports.index') }}">Dashboard Laporan</a>
+        </li>
+        <li class="submenu-item">
+            <a href="{{ route('owner.reports.revenue') }}">Ringkasan Pendapatan</a>
+        </li>
+        <li class="submenu-item">
+            <a href="{{ route('owner.reports.field-revenue') }}">Pendapatan Lapangan</a>
+        </li>
+        <li class="submenu-item">
+            <a href="{{ route('owner.reports.rental-revenue') }}">Pendapatan Rental</a>
+        </li>
+        <li class="submenu-item">
+            <a href="{{ route('owner.reports.photographer-revenue') }}">Pendapatan Fotografer</a>
+        </li>
+        <li class="submenu-item">
+            <a href="{{ route('owner.reviews.summary') }}">Ringkasan Review</a>
+        </li>
+    </ul>
+</li>
 
                 {{-- Kelola Diskon --}}
                 <li class="sidebar-item {{ request()->routeIs('owner.discounts.*') ? 'active' : '' }}">

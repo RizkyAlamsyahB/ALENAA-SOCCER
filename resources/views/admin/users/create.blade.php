@@ -115,30 +115,7 @@
                         </div>
                     </div>
                     <!-- Field Assignment Section (only shown for photographers) -->
-<div class="col-md-12" id="fieldAssignmentSection" style="display: none;">
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Assign Fotografer ke Lapangan</h5>
-        </div>
-        <div class="card-body">
-            <div class="form-group mb-3">
-                <label>Pilih Lapangan <span class="text-danger">*</span></label>
-                <select name="field_id" class="form-control @error('field_id') is-invalid @enderror" id="fieldSelect">
-                    <option value="">-- Pilih Lapangan --</option>
-                    @foreach($fields as $field)
-                        <option value="{{ $field->id }}" {{ old('field_id') == $field->id ? 'selected' : '' }}>
-                            {{ $field->name }} ({{ $field->type }})
-                        </option>
-                    @endforeach
-                </select>
-                <small class="form-text text-muted">Pilih lapangan untuk fotografer ini (1 fotografer hanya bisa diassign ke 1 lapangan)</small>
-                @error('field_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-        </div>
-    </div>
-</div>
+
 
                     <div class="form-group mb-3 mt-3">
                         <button type="submit" class="btn btn-primary">

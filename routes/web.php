@@ -10,6 +10,7 @@ use App\Http\Controllers\User\FieldsController;
 use App\Http\Controllers\User\ReviewController;
 use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Owner\ReportsController;
 use App\Http\Controllers\Owner\ReviewsController;
 use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\User\DashboardController;
@@ -313,9 +314,11 @@ Route::middleware(['auth', 'checkRole:owner'])
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('dashboard');
-        //Diskon
+
+        // Diskon
         Route::resource('discounts', DiscountsController::class);
-        //Reviews
+
+        // Reviews
         Route::get('reviews', [ReviewsController::class, 'index'])->name('reviews.index');
         Route::get('reviews/{review}', [ReviewsController::class, 'show'])->name('reviews.show');
         Route::delete('reviews/{review}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
@@ -326,16 +329,20 @@ Route::middleware(['auth', 'checkRole:owner'])
 
         // Get reviews for specific item
         Route::get('reviews-for-item', [ReviewsController::class, 'getItemReviews'])->name('reviews.item-reviews');
+
         // Voucher Poin
         Route::resource('point_vouchers', PointVoucherController::class);
         Route::patch('point-vouchers/{pointVoucher}/toggle-status', [PointVoucherController::class, 'toggleStatus'])->name('point_vouchers.toggle-status');
 
-
-        // Rute khusus owner
-        // Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])->name('financial-report');
-        // Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
+        // Reports & Analytics
+        Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
+        Route::get('reports/revenue', [ReportsController::class, 'revenueReport'])->name('reports.revenue');
+        Route::get('reports/field-revenue', [ReportsController::class, 'fieldRevenueReport'])->name('reports.field-revenue');
+        Route::get('reports/rental-revenue', [ReportsController::class, 'rentalRevenueReport'])->name('reports.rental-revenue');
+        Route::get('reports/photographer-revenue', [ReportsController::class, 'photographerRevenueReport'])->name('reports.photographer-revenue');
+        Route::get('reports/dashboard-stats', [ReportsController::class, 'dashboardStats'])->name('reports.dashboard-stats');
+        Route::get('reports/membership-revenue', [ReportsController::class, 'membershipRevenueReport'])->name('reports.membership-revenue');
     });
-
 // Owner Routes
 Route::middleware(['auth', 'checkRole:photographer'])
     ->prefix('photographers')

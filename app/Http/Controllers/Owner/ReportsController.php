@@ -6,51 +6,99 @@ use App\Models\FieldBooking;
 use App\Models\RentalBooking;
 use App\Models\PhotographerBooking;
 use App\Models\Payment;
-use App\Models\User;
 use App\Models\Field;
-use App\Models\OpenMabar;
-use App\Models\MembershipSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
-use Yajra\DataTables\Facades\DataTables;
 
 class ReportsController extends Controller
 {
-    /**
-     * Display the main reports dashboard
-     */
-    public function index()
-    {
-        // Get summary statistics
-        $totalRevenue = Payment::where('transaction_status', 'settlement')->sum('amount');
-        $userCount = User::where('role', 'user')->count();
-        $bookingCount = FieldBooking::count();
-        $fieldCount = Field::count();
+/**
+ * Display the main reports dashboard
+ */
+public function index()
+{
+    // Pendapatan lapangan bersih (hanya non-membership)
+    $fieldNetRevenue = DB::table('field_bookings')
+        ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
+        ->where('field_bookings.status', 'confirmed')
+        ->where('field_bookings.is_membership', 0)
+        ->select(DB::raw('SUM(field_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+            (field_bookings.total_price / payments.original_amount)), 0) as net_revenue'))
+        ->value('net_revenue') ?? 0;
 
-        // Today's bookings
-        $todayBookings = FieldBooking::whereDate('start_time', Carbon::today())->count();
+    // Pendapatan sewa perlengkapan bersih (hanya non-membership)
+    $rentalNetRevenue = DB::table('rental_bookings')
+        ->leftJoin('payments', 'rental_bookings.payment_id', '=', 'payments.id')
+        ->where('rental_bookings.status', 'confirmed')
+        ->where('rental_bookings.is_membership', 0)
+        ->select(DB::raw('SUM(rental_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+            (rental_bookings.total_price / payments.original_amount)), 0) as net_revenue'))
+        ->value('net_revenue') ?? 0;
 
-        // This month's revenue
-        $monthlyRevenue = Payment::where('transaction_status', 'settlement')
-            ->whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
-            ->sum('amount');
+    // Pendapatan fotografer bersih (hanya non-membership)
+    $photographerNetRevenue = DB::table('photographer_bookings')
+        ->leftJoin('payments', 'photographer_bookings.payment_id', '=', 'payments.id')
+        ->where('photographer_bookings.status', 'confirmed')
+        ->where('photographer_bookings.is_membership', 0)
+        ->select(DB::raw('SUM(photographer_bookings.price) - COALESCE(SUM(payments.discount_amount *
+            (photographer_bookings.price / payments.original_amount)), 0) as net_revenue'))
+        ->value('net_revenue') ?? 0;
 
-        // Active memberships
-        $activeMemberships = MembershipSubscription::where('status', 'active')->count();
+    // Pendapatan membership bersih dari subscription
+    $membershipNetRevenue = DB::table('membership_subscriptions')
+        ->leftJoin('payments', 'membership_subscriptions.payment_id', '=', 'payments.id')
+        ->where('membership_subscriptions.status', 'active')
+        ->select(DB::raw('SUM(membership_subscriptions.price) - COALESCE(SUM(payments.discount_amount *
+            (membership_subscriptions.price / payments.original_amount)), 0) as net_revenue'))
+        ->value('net_revenue') ?? 0;
 
-        return view('owner.reports.index', compact(
-            'totalRevenue',
-            'userCount',
-            'bookingCount',
-            'fieldCount',
-            'todayBookings',
-            'monthlyRevenue',
-            'activeMemberships'
-        ));
-    }
+    // Hitung total pendapatan bersih termasuk membership
+    $totalNetRevenue = $fieldNetRevenue + $rentalNetRevenue + $photographerNetRevenue + $membershipNetRevenue;
+
+    // Get count of fields for display
+    $fieldCount = Field::count();
+
+    // This month's net revenue (all types including membership)
+    $monthlyNetRevenue = DB::table('payments')
+        ->where('transaction_status', 'settlement')
+        ->whereMonth('created_at', Carbon::now()->month)
+        ->whereYear('created_at', Carbon::now()->year)
+        ->selectRaw('SUM(amount - COALESCE(discount_amount, 0)) as net_revenue')
+        ->value('net_revenue') ?? 0;
+
+    // Get membership stats
+    $activeMemberships = DB::table('membership_subscriptions')
+        ->where('status', 'active')
+        ->where('end_date', '>', Carbon::now())
+        ->count();
+
+    $membershipUsageCount = DB::table('field_bookings')
+        ->where('is_membership', 1)
+        ->where('status', 'confirmed')
+        ->count() +
+        DB::table('rental_bookings')
+        ->where('is_membership', 1)
+        ->where('status', 'confirmed')
+        ->count() +
+        DB::table('photographer_bookings')
+        ->where('is_membership', 1)
+        ->where('status', 'confirmed')
+        ->count();
+
+    return view('owner.reports.index', compact(
+        'totalNetRevenue',
+        'fieldCount',
+        'monthlyNetRevenue',
+        'fieldNetRevenue',
+        'rentalNetRevenue',
+        'photographerNetRevenue',
+        'membershipNetRevenue',
+        'activeMemberships',
+        'membershipUsageCount'
+    ));
+}
 
     /**
      * Revenue reports
@@ -60,79 +108,129 @@ class ReportsController extends Controller
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
 
-        // Validate date range
-        $start = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
-
         // Convert to start and end of day
-        $startDateTime = $start->startOfDay();
-        $endDateTime = $end->endOfDay();
+        $startDateTime = Carbon::parse($startDate)->startOfDay();
+        $endDateTime = Carbon::parse($endDate)->endOfDay();
 
-        // Get revenue by payment type
-        $revenueByType = Payment::where('transaction_status', 'settlement')
+        // Pendapatan bersih booking lapangan (non-membership) - setelah diskon
+        $fieldBookingNetRevenue = DB::table('field_bookings')
+            ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
+            ->where('field_bookings.status', 'confirmed')
+            ->where('field_bookings.is_membership', 0)
+            ->whereBetween('field_bookings.created_at', [$startDateTime, $endDateTime])
+            ->select(DB::raw('SUM(field_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                (field_bookings.total_price / payments.original_amount)), 0) as net_revenue'))
+            ->value('net_revenue') ?? 0;
+
+        // Pendapatan bersih sewa perlengkapan (non-membership) - setelah diskon
+        $rentalNetRevenue = DB::table('rental_bookings')
+            ->leftJoin('payments', 'rental_bookings.payment_id', '=', 'payments.id')
+            ->where('rental_bookings.status', 'confirmed')
+            ->where('rental_bookings.is_membership', 0)
+            ->whereBetween('rental_bookings.created_at', [$startDateTime, $endDateTime])
+            ->select(DB::raw('SUM(rental_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                (rental_bookings.total_price / payments.original_amount)), 0) as net_revenue'))
+            ->value('net_revenue') ?? 0;
+
+        // Pendapatan bersih fotografer (non-membership) - setelah diskon
+        $photographerNetRevenue = DB::table('photographer_bookings')
+            ->leftJoin('payments', 'photographer_bookings.payment_id', '=', 'payments.id')
+            ->where('photographer_bookings.status', 'confirmed')
+            ->where('photographer_bookings.is_membership', 0)
+            ->whereBetween('photographer_bookings.created_at', [$startDateTime, $endDateTime])
+            ->select(DB::raw('SUM(photographer_bookings.price) - COALESCE(SUM(payments.discount_amount *
+                (photographer_bookings.price / payments.original_amount)), 0) as net_revenue'))
+            ->value('net_revenue') ?? 0;
+
+        // Total pendapatan bersih
+        $totalNetRevenue = $fieldBookingNetRevenue + $rentalNetRevenue + $photographerNetRevenue;
+
+        // Pendapatan berdasarkan hari
+        $revenueByDay = collect();
+        $currentDate = clone $startDateTime;
+
+        while ($currentDate <= $endDateTime) {
+            $dayStart = clone $currentDate->startOfDay();
+            $dayEnd = clone $currentDate->endOfDay();
+
+            // Pendapatan dan diskon per kategori per hari
+            $dayFieldRevenue = DB::table('field_bookings')
+                ->where('status', 'confirmed')
+                ->where('is_membership', 0)
+                ->whereBetween('created_at', [$dayStart, $dayEnd])
+                ->sum('total_price');
+
+            $dayRentalRevenue = DB::table('rental_bookings')
+                ->where('status', 'confirmed')
+                ->where('is_membership', 0)
+                ->whereBetween('created_at', [$dayStart, $dayEnd])
+                ->sum('total_price');
+
+            $dayPhotographerRevenue = DB::table('photographer_bookings')
+                ->where('status', 'confirmed')
+                ->where('is_membership', 0)
+                ->whereBetween('created_at', [$dayStart, $dayEnd])
+                ->sum('price');
+
+            // Diskon per hari
+            $dayDiscountAmount = DB::table('payments')
+                ->where('transaction_status', 'settlement')
+                ->whereBetween('created_at', [$dayStart, $dayEnd])
+                ->sum('discount_amount');
+
+            $dayGrossTotal = $dayFieldRevenue + $dayRentalRevenue + $dayPhotographerRevenue;
+            $dayNetTotal = $dayGrossTotal - $dayDiscountAmount;
+
+            $revenueByDay->push((object)[
+                'date' => $currentDate->format('Y-m-d'),
+                'total_gross' => $dayGrossTotal,
+                'total_net' => $dayNetTotal,
+                'discount_amount' => $dayDiscountAmount,
+                'field_revenue' => $dayFieldRevenue,
+                'rental_revenue' => $dayRentalRevenue,
+                'photographer_revenue' => $dayPhotographerRevenue
+            ]);
+
+            $currentDate->addDay();
+        }
+
+        // We'll still calculate these for the chart
+        $fieldBookingRevenue = DB::table('field_bookings')
+            ->where('status', 'confirmed')
+            ->where('is_membership', 0)
             ->whereBetween('created_at', [$startDateTime, $endDateTime])
-            ->select('payment_type', DB::raw('SUM(amount) as total'))
-            ->groupBy('payment_type')
-            ->get();
+            ->sum('total_price');
 
-        // Get revenue by day
-        $revenueByDay = Payment::where('transaction_status', 'settlement')
+        $rentalRevenue = DB::table('rental_bookings')
+            ->where('status', 'confirmed')
+            ->where('is_membership', 0)
             ->whereBetween('created_at', [$startDateTime, $endDateTime])
-            ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(amount) as total')
-            )
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+            ->sum('total_price');
 
-        // Calculate totals
-        $totalRevenue = $revenueByType->sum('total');
-        $avgDailyRevenue = $revenueByDay->avg('total');
-
-        // Get revenue by service type (derived from examining relationships)
-        $fieldBookingRevenue = DB::table('payments')
-            ->join('field_bookings', 'payments.id', '=', 'field_bookings.payment_id')
-            ->where('payments.transaction_status', 'settlement')
-            ->whereBetween('payments.created_at', [$startDateTime, $endDateTime])
-            ->sum('payments.amount');
-
-        $rentalRevenue = DB::table('payments')
-            ->join('rental_bookings', 'payments.id', '=', 'rental_bookings.payment_id')
-            ->where('payments.transaction_status', 'settlement')
-            ->whereBetween('payments.created_at', [$startDateTime, $endDateTime])
-            ->sum('payments.amount');
-
-        $photographerRevenue = DB::table('payments')
-            ->join('photographer_bookings', 'payments.id', '=', 'photographer_bookings.payment_id')
-            ->where('payments.transaction_status', 'settlement')
-            ->whereBetween('payments.created_at', [$startDateTime, $endDateTime])
-            ->sum('payments.amount');
-
-        $membershipRevenue = DB::table('payments')
-            ->join('membership_subscriptions', 'payments.id', '=', 'membership_subscriptions.payment_id')
-            ->where('payments.transaction_status', 'settlement')
-            ->whereBetween('payments.created_at', [$startDateTime, $endDateTime])
-            ->sum('payments.amount');
+        $photographerRevenue = DB::table('photographer_bookings')
+            ->where('status', 'confirmed')
+            ->where('is_membership', 0)
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->sum('price');
 
         return view('owner.reports.revenue', compact(
-            'revenueByType',
             'revenueByDay',
-            'totalRevenue',
-            'avgDailyRevenue',
-            'fieldBookingRevenue',
-            'rentalRevenue',
-            'photographerRevenue',
-            'membershipRevenue',
+            'totalNetRevenue',
+            'fieldBookingRevenue', // Still needed for pie chart
+            'fieldBookingNetRevenue',
+            'rentalRevenue', // Still needed for pie chart
+            'rentalNetRevenue',
+            'photographerRevenue', // Still needed for pie chart
+            'photographerNetRevenue',
             'startDate',
             'endDate'
         ));
     }
 
     /**
-     * Field utilization report
+     * Field revenue report
      */
-    public function fieldUtilizationReport(Request $request)
+    public function fieldRevenueReport(Request $request)
     {
         $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
@@ -141,43 +239,57 @@ class ReportsController extends Controller
         $startDateTime = Carbon::parse($startDate)->startOfDay();
         $endDateTime = Carbon::parse($endDate)->endOfDay();
 
-        // Get fields with booking counts
-        $fields = Field::withCount([
-            'bookings' => function ($query) use ($startDateTime, $endDateTime) {
-                $query->whereBetween('start_time', [$startDateTime, $endDateTime]);
-            }
-        ])->get();
+        // Get fields with revenue
+        $fields = Field::all();
 
-        // Calculate total hours booked per field
+        // Calculate net revenue per field (hanya non-membership)
         foreach ($fields as $field) {
-            $totalHours = FieldBooking::where('field_id', $field->id)
-                ->whereBetween('start_time', [$startDateTime, $endDateTime])
-                ->selectRaw('SUM(TIMESTAMPDIFF(HOUR, start_time, end_time)) as total_hours')
-                ->first();
-
-            $field->total_hours = $totalHours->total_hours ?? 0;
-
-            // Calculate revenue per field
-            $fieldRevenue = DB::table('field_bookings')
-                ->join('payments', 'field_bookings.payment_id', '=', 'payments.id')
+            // Get net revenue for this field after discounts
+            $fieldNetRevenue = DB::table('field_bookings')
+                ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
                 ->where('field_bookings.field_id', $field->id)
-                ->where('payments.transaction_status', 'settlement')
-                ->whereBetween('field_bookings.start_time', [$startDateTime, $endDateTime])
-                ->sum('payments.amount');
+                ->where('field_bookings.status', 'confirmed')
+                ->where('field_bookings.is_membership', 0)
+                ->whereBetween('field_bookings.created_at', [$startDateTime, $endDateTime])
+                ->select(DB::raw('SUM(field_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                    (field_bookings.total_price / payments.original_amount)), 0) as net_revenue'))
+                ->value('net_revenue') ?? 0;
 
-            $field->revenue = $fieldRevenue;
+            $field->revenue = $fieldNetRevenue;
+
+            // Get booking count for this field (semua booking, termasuk membership)
+            $bookingCount = FieldBooking::where('field_id', $field->id)
+                ->where('status', 'confirmed')
+                ->whereBetween('created_at', [$startDateTime, $endDateTime])
+                ->count();
+
+            $field->booking_count = $bookingCount;
+
+            // Get membership usage count for this field
+            $membershipCount = FieldBooking::where('field_id', $field->id)
+                ->where('status', 'confirmed')
+                ->where('is_membership', 1)
+                ->whereBetween('created_at', [$startDateTime, $endDateTime])
+                ->count();
+
+            $field->membership_count = $membershipCount;
         }
 
-        // Get bookings by hour of day
-        $bookingsByHour = FieldBooking::whereBetween('start_time', [$startDateTime, $endDateTime])
-            ->select(DB::raw('HOUR(start_time) as hour'), DB::raw('COUNT(*) as count'))
-            ->groupBy('hour')
-            ->orderBy('hour')
-            ->get();
+        // Get total field net revenue
+        $totalFieldNetRevenue = $fields->sum('revenue');
 
-        // Get bookings by day of week
-        $bookingsByDayOfWeek = FieldBooking::whereBetween('start_time', [$startDateTime, $endDateTime])
-            ->select(DB::raw('DAYOFWEEK(start_time) as day'), DB::raw('COUNT(*) as count'))
+        // Get bookings by day of week with net revenue
+        $bookingsByDayOfWeek = DB::table('field_bookings')
+            ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
+            ->whereBetween('field_bookings.start_time', [$startDateTime, $endDateTime])
+            ->where('field_bookings.status', 'confirmed')
+            ->where('field_bookings.is_membership', 0)
+            ->select(
+                DB::raw('DAYOFWEEK(field_bookings.start_time) as day'),
+                DB::raw('COUNT(*) as count'),
+                DB::raw('SUM(field_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                    (field_bookings.total_price / payments.original_amount)), 0) as revenue')
+            )
             ->groupBy('day')
             ->orderBy('day')
             ->get();
@@ -188,9 +300,9 @@ class ReportsController extends Controller
             $booking->day_name = $daysOfWeek[$booking->day - 1];
         }
 
-        return view('owner.reports.field-utilization', compact(
+        return view('owner.reports.field-revenue', compact(
             'fields',
-            'bookingsByHour',
+            'totalFieldNetRevenue',
             'bookingsByDayOfWeek',
             'startDate',
             'endDate'
@@ -198,283 +310,138 @@ class ReportsController extends Controller
     }
 
     /**
-     * Membership statistics report
+     * Rental revenue report
      */
-    public function membershipReport(Request $request)
+    public function rentalRevenueReport(Request $request)
     {
-        // Active memberships by type
-        $membershipsByType = MembershipSubscription::where('status', 'active')
-            ->join('memberships', 'membership_subscriptions.membership_id', '=', 'memberships.id')
-            ->select('memberships.type', DB::raw('count(*) as count'))
-            ->groupBy('memberships.type')
-            ->get();
-
-        // New memberships by month
-        $newMembershipsByMonth = MembershipSubscription::select(
-                DB::raw('YEAR(created_at) as year'),
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as count')
-            )
-            ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
-
-        // Format month names
-        foreach ($newMembershipsByMonth as $item) {
-            $date = Carbon::createFromDate($item->year, $item->month, 1);
-            $item->month_name = $date->format('F Y');
-        }
-
-        // Membership retention rate
-        $totalSubscriptions = MembershipSubscription::count();
-        $expiredSubscriptions = MembershipSubscription::where('status', 'expired')->count();
-        $renewedSubscriptions = MembershipSubscription::where('renewal_status', 'renewed')->count();
-
-        $retentionRate = $totalSubscriptions > 0
-            ? round(($renewedSubscriptions / ($expiredSubscriptions + $renewedSubscriptions)) * 100, 2)
-            : 0;
-
-        // Membership usage statistics
-        $sessionUtilization = DB::table('membership_sessions')
-            ->join('membership_subscriptions', 'membership_sessions.membership_subscription_id', '=', 'membership_subscriptions.id')
-            ->select(
-                'membership_subscriptions.id',
-                DB::raw('COUNT(*) as total_sessions'),
-                DB::raw('SUM(CASE WHEN membership_sessions.status = "completed" THEN 1 ELSE 0 END) as completed_sessions')
-            )
-            ->groupBy('membership_subscriptions.id')
-            ->get();
-
-        $avgUtilizationRate = $sessionUtilization->avg(function($item) {
-            return $item->total_sessions > 0
-                ? ($item->completed_sessions / $item->total_sessions) * 100
-                : 0;
-        });
-
-        return view('owner.reports.membership', compact(
-            'membershipsByType',
-            'newMembershipsByMonth',
-            'retentionRate',
-            'avgUtilizationRate'
-        ));
-    }
-
-    /**
-     * Open Mabar (pickup games) statistics
-     */
-    public function mabarReport(Request $request)
-    {
-        // Total Mabars and popularity
-        $totalMabars = OpenMabar::count();
-        $avgParticipants = DB::table('mabar_participants')
-            ->select('open_mabar_id', DB::raw('COUNT(*) as participant_count'))
-            ->groupBy('open_mabar_id')
-            ->avg('participant_count');
-
-        // Mabars by completion status
-        $mabarsByStatus = OpenMabar::select('status', DB::raw('COUNT(*) as count'))
-            ->groupBy('status')
-            ->get();
-
-        // Popular skill levels
-        $popularLevels = OpenMabar::select('level', DB::raw('COUNT(*) as count'))
-            ->groupBy('level')
-            ->orderBy('count', 'desc')
-            ->get();
-
-        // Create Mabar organizer leaderboard
-        $topOrganizers = OpenMabar::select('user_id', DB::raw('COUNT(*) as mabars_organized'))
-            ->groupBy('user_id')
-            ->orderBy('mabars_organized', 'desc')
-            ->limit(10)
-            ->with('user:id,name')
-            ->get();
-
-        // Most active participants
-        $activeParticipants = DB::table('mabar_participants')
-            ->select('user_id', DB::raw('COUNT(DISTINCT open_mabar_id) as mabars_joined'))
-            ->groupBy('user_id')
-            ->orderBy('mabars_joined', 'desc')
-            ->limit(10)
-            ->get();
-
-        // Fetch user details for active participants
-        $userIds = $activeParticipants->pluck('user_id');
-        $users = User::whereIn('id', $userIds)->get(['id', 'name'])->keyBy('id');
-
-        foreach ($activeParticipants as $participant) {
-            $participant->user_name = $users[$participant->user_id]->name ?? 'Unknown User';
-        }
-
-        // Revenue generated from Mabars
-        $mabarRevenue = DB::table('mabar_participants')
-            ->where('payment_status', 'paid')
-            ->sum('amount_paid');
-
-        return view('owner.reports.mabar', compact(
-            'totalMabars',
-            'avgParticipants',
-            'mabarsByStatus',
-            'popularLevels',
-            'topOrganizers',
-            'activeParticipants',
-            'mabarRevenue'
-        ));
-    }
-
-    /**
-     * User activity and engagement report
-     */
-    public function userReport(Request $request)
-    {
-        // User registration over time
-        $usersByMonth = User::where('role', 'user')
-            ->select(
-                DB::raw('YEAR(created_at) as year'),
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as count')
-            )
-            ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
-
-        // Format month names
-        foreach ($usersByMonth as $item) {
-            $date = Carbon::createFromDate($item->year, $item->month, 1);
-            $item->month_name = $date->format('F Y');
-        }
-
-        // Top users by bookings
-        $topUsersByBookings = User::withCount('fieldBookings')
-            ->orderBy('field_bookings_count', 'desc')
-            ->limit(10)
-            ->get(['id', 'name', 'field_bookings_count']);
-
-        // Top users by spending
-        $topUsersBySpending = Payment::where('transaction_status', 'settlement')
-            ->select('user_id', DB::raw('SUM(amount) as total_spent'))
-            ->groupBy('user_id')
-            ->orderBy('total_spent', 'desc')
-            ->limit(10)
-            ->get();
-
-        // Fetch user details for top spenders
-        $userIds = $topUsersBySpending->pluck('user_id');
-        $users = User::whereIn('id', $userIds)->get(['id', 'name'])->keyBy('id');
-
-        foreach ($topUsersBySpending as $spender) {
-            $spender->user_name = $users[$spender->user_id]->name ?? 'Unknown User';
-        }
-
-        // User points utilization
-        $totalPointsIssued = DB::table('points_transactions')
-            ->where('amount', '>', 0)
-            ->sum('amount');
-
-        $totalPointsRedeemed = DB::table('points_transactions')
-            ->where('amount', '<', 0)
-            ->sum(DB::raw('ABS(amount)'));
-
-        $pointsUtilizationRate = $totalPointsIssued > 0
-            ? round(($totalPointsRedeemed / $totalPointsIssued) * 100, 2)
-            : 0;
-
-        // Average bookings per user
-        $totalUsers = User::where('role', 'user')->count();
-        $totalBookings = FieldBooking::count();
-        $avgBookingsPerUser = $totalUsers > 0 ? round($totalBookings / $totalUsers, 2) : 0;
-
-        return view('owner.reports.users', compact(
-            'usersByMonth',
-            'topUsersByBookings',
-            'topUsersBySpending',
-            'pointsUtilizationRate',
-            'avgBookingsPerUser',
-            'totalUsers'
-        ));
-    }
-
-    /**
-     * Generate excel export of data
-     */
-    public function exportReport(Request $request)
-    {
-        $reportType = $request->input('type');
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
 
         // Convert to start and end of day
         $startDateTime = Carbon::parse($startDate)->startOfDay();
         $endDateTime = Carbon::parse($endDate)->endOfDay();
 
-        switch ($reportType) {
-            case 'revenue':
-                return $this->exportRevenueReport($startDateTime, $endDateTime);
+        // Get rental net revenue by item (hanya non-membership)
+        $rentalRevenueByItem = DB::table('rental_bookings')
+            ->join('rental_items', 'rental_bookings.rental_item_id', '=', 'rental_items.id')
+            ->leftJoin('payments', 'rental_bookings.payment_id', '=', 'payments.id')
+            ->where('rental_bookings.status', 'confirmed')
+            ->where('rental_bookings.is_membership', 0)
+            ->whereBetween('rental_bookings.created_at', [$startDateTime, $endDateTime])
+            ->select(
+                'rental_items.id',
+                'rental_items.name',
+                'rental_items.category',
+                DB::raw('SUM(rental_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                    (rental_bookings.total_price / payments.original_amount)), 0) as revenue'),
+                DB::raw('COUNT(rental_bookings.id) as booking_count'),
+                DB::raw('SUM(rental_bookings.quantity) as total_quantity')
+            )
+            ->groupBy('rental_items.id', 'rental_items.name', 'rental_items.category')
+            ->orderBy('revenue', 'desc')
+            ->get();
 
-            case 'bookings':
-                return $this->exportBookingsReport($startDateTime, $endDateTime);
+        // Get total rental net revenue
+        $totalRentalNetRevenue = $rentalRevenueByItem->sum('revenue');
 
-            case 'memberships':
-                return $this->exportMembershipsReport();
+        // Get total membership usage for rental
+        $membershipRentalCount = DB::table('rental_bookings')
+            ->where('status', 'confirmed')
+            ->where('is_membership', 1)
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->count();
 
-            case 'users':
-                return $this->exportUsersReport();
+        // Get rental net revenue by day
+        $rentalRevenueByDay = DB::table('rental_bookings')
+            ->leftJoin('payments', 'rental_bookings.payment_id', '=', 'payments.id')
+            ->where('rental_bookings.status', 'confirmed')
+            ->where('rental_bookings.is_membership', 0)
+            ->whereBetween('rental_bookings.created_at', [$startDateTime, $endDateTime])
+            ->select(
+                DB::raw('DATE(rental_bookings.created_at) as date'),
+                DB::raw('SUM(rental_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                    (rental_bookings.total_price / payments.original_amount)), 0) as revenue'),
+                DB::raw('COUNT(*) as booking_count')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
 
-            default:
-                return redirect()->back()->with('error', 'Report type not recognized');
-        }
+        return view('owner.reports.rental-revenue', compact(
+            'rentalRevenueByItem',
+            'totalRentalNetRevenue',
+            'membershipRentalCount',
+            'rentalRevenueByDay',
+            'startDate',
+            'endDate'
+        ));
     }
 
     /**
-     * Export revenue data to Excel
+     * Photographer revenue report
      */
-    private function exportRevenueReport($startDate, $endDate)
+    public function photographerRevenueReport(Request $request)
     {
-        // Implementation would use a package like Laravel Excel
-        // This is a placeholder for the actual export logic
-        $fileName = 'revenue_report_' . Carbon::now()->format('Ymd') . '.xlsx';
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
 
-        // Example implementation using Laravel Excel would go here
+        // Convert to start and end of day
+        $startDateTime = Carbon::parse($startDate)->startOfDay();
+        $endDateTime = Carbon::parse($endDate)->endOfDay();
 
-        return redirect()->back()->with('success', 'Report exported successfully!');
-    }
+        // Get photographer net revenue (hanya non-membership)
+        $photographerRevenue = DB::table('photographer_bookings')
+            ->join('photographers', 'photographer_bookings.photographer_id', '=', 'photographers.id')
+            ->leftJoin('payments', 'photographer_bookings.payment_id', '=', 'payments.id')
+            ->where('photographer_bookings.status', 'confirmed')
+            ->where('photographer_bookings.is_membership', 0)
+            ->whereBetween('photographer_bookings.created_at', [$startDateTime, $endDateTime])
+            ->select(
+                'photographers.id',
+                'photographers.name',
+                'photographers.package_type',
+                DB::raw('SUM(photographer_bookings.price) - COALESCE(SUM(payments.discount_amount *
+                    (photographer_bookings.price / payments.original_amount)), 0) as revenue'),
+                DB::raw('COUNT(photographer_bookings.id) as booking_count')
+            )
+            ->groupBy('photographers.id', 'photographers.name', 'photographers.package_type')
+            ->orderBy('revenue', 'desc')
+            ->get();
 
-    /**
-     * Export bookings data to Excel
-     */
-    private function exportBookingsReport($startDate, $endDate)
-    {
-        $fileName = 'bookings_report_' . Carbon::now()->format('Ymd') . '.xlsx';
+        // Get total photographer net revenue
+        $totalPhotographerNetRevenue = $photographerRevenue->sum('revenue');
 
-        // Example implementation using Laravel Excel would go here
+        // Get total membership usage for photographers
+        $membershipPhotographerCount = DB::table('photographer_bookings')
+            ->where('status', 'confirmed')
+            ->where('is_membership', 1)
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->count();
 
-        return redirect()->back()->with('success', 'Report exported successfully!');
-    }
+        // Get photographer net revenue by day
+        $photographerRevenueByDay = DB::table('photographer_bookings')
+            ->leftJoin('payments', 'photographer_bookings.payment_id', '=', 'payments.id')
+            ->where('photographer_bookings.status', 'confirmed')
+            ->where('photographer_bookings.is_membership', 0)
+            ->whereBetween('photographer_bookings.created_at', [$startDateTime, $endDateTime])
+            ->select(
+                DB::raw('DATE(photographer_bookings.created_at) as date'),
+                DB::raw('SUM(photographer_bookings.price) - COALESCE(SUM(payments.discount_amount *
+                    (photographer_bookings.price / payments.original_amount)), 0) as revenue'),
+                DB::raw('COUNT(*) as booking_count')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
 
-    /**
-     * Export memberships data to Excel
-     */
-    private function exportMembershipsReport()
-    {
-        $fileName = 'memberships_report_' . Carbon::now()->format('Ymd') . '.xlsx';
-
-        // Example implementation using Laravel Excel would go here
-
-        return redirect()->back()->with('success', 'Report exported successfully!');
-    }
-
-    /**
-     * Export users data to Excel
-     */
-    private function exportUsersReport()
-    {
-        $fileName = 'users_report_' . Carbon::now()->format('Ymd') . '.xlsx';
-
-        // Example implementation using Laravel Excel would go here
-
-        return redirect()->back()->with('success', 'Report exported successfully!');
+        return view('owner.reports.photographer-revenue', compact(
+            'photographerRevenue',
+            'totalPhotographerNetRevenue',
+            'membershipPhotographerCount',
+            'photographerRevenueByDay',
+            'startDate',
+            'endDate'
+        ));
     }
 
     /**
@@ -484,48 +451,167 @@ class ReportsController extends Controller
     {
         // Revenue trend for the last 30 days
         $thirtyDaysAgo = Carbon::now()->subDays(30);
-        $revenueTrend = Payment::where('transaction_status', 'settlement')
-            ->where('created_at', '>=', $thirtyDaysAgo)
+
+        // Field net revenue trend (hanya non-membership)
+        $fieldRevenueTrend = DB::table('field_bookings')
+            ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
+            ->where('field_bookings.status', 'confirmed')
+            ->where('field_bookings.is_membership', 0)
+            ->where('field_bookings.created_at', '>=', $thirtyDaysAgo)
             ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(amount) as total')
+                DB::raw('DATE(field_bookings.created_at) as date'),
+                DB::raw('SUM(field_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                    (field_bookings.total_price / payments.original_amount)), 0) as total')
             )
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
-        // Bookings trend for the last 30 days
-        $bookingsTrend = FieldBooking::where('created_at', '>=', $thirtyDaysAgo)
+        // Rental net revenue trend (hanya non-membership)
+        $rentalRevenueTrend = DB::table('rental_bookings')
+            ->leftJoin('payments', 'rental_bookings.payment_id', '=', 'payments.id')
+            ->where('rental_bookings.status', 'confirmed')
+            ->where('rental_bookings.is_membership', 0)
+            ->where('rental_bookings.created_at', '>=', $thirtyDaysAgo)
             ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('COUNT(*) as count')
+                DB::raw('DATE(rental_bookings.created_at) as date'),
+                DB::raw('SUM(rental_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                    (rental_bookings.total_price / payments.original_amount)), 0) as total')
             )
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
-        // Calculate peak hours
-        $peakHours = FieldBooking::select(
-                DB::raw('HOUR(start_time) as hour'),
-                DB::raw('COUNT(*) as count')
+        // Photographer net revenue trend (hanya non-membership)
+        $photographerRevenueTrend = DB::table('photographer_bookings')
+            ->leftJoin('payments', 'photographer_bookings.payment_id', '=', 'payments.id')
+            ->where('photographer_bookings.status', 'confirmed')
+            ->where('photographer_bookings.is_membership', 0)
+            ->where('photographer_bookings.created_at', '>=', $thirtyDaysAgo)
+            ->select(
+                DB::raw('DATE(photographer_bookings.created_at) as date'),
+                DB::raw('SUM(photographer_bookings.price) - COALESCE(SUM(payments.discount_amount *
+                    (photographer_bookings.price / payments.original_amount)), 0) as total')
             )
-            ->groupBy('hour')
-            ->orderBy('count', 'desc')
-            ->limit(5)
+            ->groupBy('date')
+            ->orderBy('date')
             ->get();
 
-        // Field type popularity
+        // Field type popularity (semua booking termasuk membership)
         $fieldPopularity = FieldBooking::join('fields', 'field_bookings.field_id', '=', 'fields.id')
-            ->select('fields.type', DB::raw('COUNT(*) as bookings'))
+            ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
+            ->where('field_bookings.status', 'confirmed')
+            ->select(
+                'fields.type',
+                DB::raw('COUNT(*) as bookings'),
+                DB::raw('SUM(CASE WHEN field_bookings.is_membership = 0 THEN field_bookings.total_price - COALESCE(payments.discount_amount *
+                    (field_bookings.total_price / payments.original_amount), 0) ELSE 0 END) as revenue'),
+                DB::raw('SUM(CASE WHEN field_bookings.is_membership = 1 THEN 1 ELSE 0 END) as membership_bookings')
+            )
             ->groupBy('fields.type')
-            ->orderBy('bookings', 'desc')
+            ->orderBy('revenue', 'desc')
             ->get();
 
         return response()->json([
-            'revenue_trend' => $revenueTrend,
-            'bookings_trend' => $bookingsTrend,
-            'peak_hours' => $peakHours,
+            'field_revenue_trend' => $fieldRevenueTrend,
+            'rental_revenue_trend' => $rentalRevenueTrend,
+            'photographer_revenue_trend' => $photographerRevenueTrend,
             'field_popularity' => $fieldPopularity
         ]);
     }
+/**
+ * Membership revenue report
+ */
+public function membershipRevenueReport(Request $request)
+{
+    $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+    $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
+
+    // Convert to start and end of day
+    $startDateTime = Carbon::parse($startDate)->startOfDay();
+    $endDateTime = Carbon::parse($endDate)->endOfDay();
+
+    // Get membership revenue data (pendapatan bersih setelah diskon)
+    $membershipRevenueByType = DB::table('membership_subscriptions')
+        ->join('memberships', 'membership_subscriptions.membership_id', '=', 'memberships.id')
+        ->leftJoin('payments', 'membership_subscriptions.payment_id', '=', 'payments.id')
+        ->where('membership_subscriptions.status', 'active')
+        ->whereBetween('membership_subscriptions.created_at', [$startDateTime, $endDateTime])
+        ->select(
+            'memberships.id',
+            'memberships.name',
+            'memberships.type',
+            DB::raw('memberships.sessions_per_week * 4 as sessions_per_month'),
+            'memberships.session_duration as duration',
+            DB::raw('COUNT(membership_subscriptions.id) as purchase_count'),
+            DB::raw('SUM(membership_subscriptions.price) - COALESCE(SUM(payments.discount_amount *
+                (membership_subscriptions.price / payments.original_amount)), 0) as revenue'),
+            DB::raw('SUM(CASE WHEN membership_subscriptions.end_date > NOW() THEN 1 ELSE 0 END) as active_count')
+        )
+        ->groupBy('memberships.id', 'memberships.name', 'memberships.type', 'memberships.sessions_per_week', 'memberships.session_duration')
+        ->orderBy('revenue', 'desc')
+        ->get();
+
+    // Get total membership net revenue
+    $totalMembershipNetRevenue = $membershipRevenueByType->sum('revenue');
+
+    // Get total active memberships
+    $activeMemberships = DB::table('membership_subscriptions')
+        ->where('status', 'active')
+        ->where('end_date', '>', Carbon::now())
+        ->count();
+
+    // Get membership usage data by category (lapangan, rental, fotografer)
+    $membershipUsageByCategory = [
+        (object)[
+            'category' => 'Lapangan',
+            'usage_count' => DB::table('field_bookings')
+                ->where('is_membership', 1)
+                ->where('status', 'confirmed')
+                ->whereBetween('created_at', [$startDateTime, $endDateTime])
+                ->count()
+        ],
+        (object)[
+            'category' => 'Rental',
+            'usage_count' => DB::table('rental_bookings')
+                ->where('is_membership', 1)
+                ->where('status', 'confirmed')
+                ->whereBetween('created_at', [$startDateTime, $endDateTime])
+                ->count()
+        ],
+        (object)[
+            'category' => 'Fotografer',
+            'usage_count' => DB::table('photographer_bookings')
+                ->where('is_membership', 1)
+                ->where('status', 'confirmed')
+                ->whereBetween('created_at', [$startDateTime, $endDateTime])
+                ->count()
+        ]
+    ];
+
+    // Get membership revenue by day
+    $membershipRevenueByDay = DB::table('membership_subscriptions')
+        ->leftJoin('payments', 'membership_subscriptions.payment_id', '=', 'payments.id')
+        ->where('membership_subscriptions.status', 'active')
+        ->whereBetween('membership_subscriptions.created_at', [$startDateTime, $endDateTime])
+        ->select(
+            DB::raw('DATE(membership_subscriptions.created_at) as date'),
+            DB::raw('SUM(membership_subscriptions.price) - COALESCE(SUM(payments.discount_amount *
+                (membership_subscriptions.price / payments.original_amount)), 0) as revenue'),
+            DB::raw('COUNT(*) as purchase_count')
+        )
+        ->groupBy('date')
+        ->orderBy('date')
+        ->get();
+
+    return view('owner.reports.membership-revenue', compact(
+        'membershipRevenueByType',
+        'totalMembershipNetRevenue',
+        'activeMemberships',
+        'membershipUsageByCategory',
+        'membershipRevenueByDay',
+        'startDate',
+        'endDate'
+    ));
+}
 }
