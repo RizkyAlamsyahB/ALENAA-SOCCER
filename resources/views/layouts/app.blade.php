@@ -23,36 +23,37 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Link untuk font dan stylesheet tambahan -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-  :root {
-    --primary-color: #9e0620;
-    --danger-color: #9e0620;
-}
+        :root {
+            --primary-color: #9e0620;
+            --danger-color: #9e0620;
+        }
 
-.btn-primary {
-    background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
-}
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
 
-.btn-primary:hover,
-.btn-primary:focus {
-    background-color: #8a051c !important;
-    border-color: #8a051c !important;
-}
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: #8a051c !important;
+            border-color: #8a051c !important;
+        }
 
-.btn-danger {
-    background-color: var(--danger-color) !important;
-    border-color: var(--danger-color) !important;
-}
+        .btn-danger {
+            background-color: var(--danger-color) !important;
+            border-color: var(--danger-color) !important;
+        }
 
-.btn-danger:hover,
-.btn-danger:focus {
-    background-color: #8a051c !important;
-    border-color: #8a051c !important;
-}
+        .btn-danger:hover,
+        .btn-danger:focus {
+            background-color: #8a051c !important;
+            border-color: #8a051c !important;
+        }
 
 
         .promo-banner {
@@ -150,8 +151,6 @@
         .hover-text-white:hover {
             color: white !important;
         }
-        
-
     </style>
 
 </head>
@@ -267,27 +266,52 @@
             </div>
         </div>
 
-        <!-- Footer Bottom -->
-        <div class="footer-bottom mt-5 pt-4 border-top">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <p class="copyright mb-md-0 text-muted">© 2024 Alena Soccer. All rights reserved.</p>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex justify-content-md-end align-items-center">
-                            <span class="partners-label me-3 text-muted">Partner Kami:</span>
-                            <div class="partners-icons">
-                                <i class="fas fa-futbol"></i>
-                                <i class="fas fa-trophy"></i>
-                                <i class="fas fa-medal"></i>
-                            </div>
-                        </div>
+<!-- Footer Bottom -->
+<div class="footer-bottom mt-5 pt-4 border-top">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <p class="copyright mb-md-0 text-muted">© 2024 Alena Soccer. All rights reserved.</p>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-md-end align-items-center flex-wrap">
+                    <span class="partners-label me-3 text-muted">Partner Kami:</span>
+                    <div class="partner-static-logos d-flex flex-wrap align-items-center">
+                        <img src="{{ asset('assets/midtrans.png') }}" alt="Midtrans Logo" class="partner-logo">
+                        <img src="{{ asset('assets/specs.svg') }}" alt="Specs Logo" class="partner-logo">
+                        <img src="{{ asset('assets/ortuseight-seeklogo.png') }}" alt="Ortuseight Logo" class="partner-logo">
+                        <img src="{{ asset('assets/nike.jpg') }}" alt="Nike Logo" class="partner-logo">
+                        <img src="{{ asset('assets/Adidas.png') }}" alt="Adidas Logo" class="partner-logo">
+                        <img src="{{ asset('assets/pocari-sweat-seeklogo.png') }}" alt="Pocari Sweat Logo" class="partner-logo">
+                        <img src="{{ asset('assets/aqua.png') }}" alt="Aqua Logo" class="partner-logo">
+                        <img src="{{ asset('assets/Le_Minerale.png') }}" alt="Le Minerale Logo" class="partner-logo">
+                        <img src="{{ asset('assets/ake-logo.png') }}" alt="AKE Logo" class="partner-logo">
                     </div>
                 </div>
             </div>
         </div>
-    </footer>
+    </div>
+</div>
+</footer>
+
+<style>
+    .partner-logo {
+        height: 40px;
+        width: auto;
+        margin: 0 10px 10px 0;
+    }
+
+    @media (max-width: 768px) {
+        .partner-logo {
+            height: 30px;
+            margin: 0 6px 10px 0;
+        }
+    }
+
+    .partner-static-logos {
+        gap: 10px;
+    }
+</style>
 
 
 </body>

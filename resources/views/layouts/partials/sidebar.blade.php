@@ -235,22 +235,6 @@
                     </a>
                 </li>
 
-                {{-- Poin & Reward --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('owner.rewards.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-gift"></i>
-                        <span>Poin & Reward</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('owner.rewards.*') ? 'active' : '' }}">
-                        <li class="submenu-item">
-                            <a href="#" class="submenu-link">Data Customer</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="#" class="submenu-link">Sistem Poin / Voucher</a>
-                        </li>
-                    </ul>
-                </li>
-
                 {{-- Review & Rating --}}
                 <li class="sidebar-item {{ request()->routeIs('owner.reviews.*') ? 'active' : '' }}">
                     <a href="{{ route('owner.reviews.index') }}" class="sidebar-link">

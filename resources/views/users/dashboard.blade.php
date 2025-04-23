@@ -115,19 +115,19 @@
                     <div class="stats-wrapper mt-5 fade-in-up delay-5">
                         <div class="stats-container">
                             <div class="stat-item">
-                                <h3 class="text-white mb-0">3</h3>
+                                <h3 class="text-white mb-0">{{ $fieldCount }}</h3>
                                 <p class="text-white-50 mb-0">Lapangan</p>
                             </div>
                             <div class="stat-divider"></div>
                             <div class="stat-item">
-                                <h3 class="text-white mb-0">20+</h3>
+                                <h3 class="text-white mb-0">{{ $activeMemberCount }}+</h3>
                                 <p class="text-white-50 mb-0">Member Aktif</p>
                             </div>
                             <div class="stat-divider"></div>
-                            <div class="stat-item">
-                                <h3 class="text-white mb-0">100+</h3>
+                            {{-- <div class="stat-item">
+                                <h3 class="text-white mb-0">{{ $eventCount }}+</h3>
                                 <p class="text-white-50 mb-0">Event</p>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -188,7 +188,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-6 mt-4 mt-lg-0">
                     <div class="booking-image">
                         <img src="assets/futsal-field.jpg" alt="Booking Lapangan" class="img-fluid rounded-3 shadow"
                             loading="lazy">
@@ -235,7 +235,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6 order-lg-1">
+                <div class="col-lg-6 order-lg-1 mt-4 mt-lg-0">
                     <div class="community-image">
                         <img src="assets/komunitas.jpg" alt="Komunitas Sepakbola" class="img-fluid rounded-3 shadow"
                             loading="lazy">

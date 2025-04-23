@@ -94,19 +94,22 @@ class ReviewSeeder extends Seeder
 
         $this->command->info('Mulai membuat review palsu...');
 
+        // Membuat array untuk melacak kombinasi yang sudah digunakan
+        $usedCombinations = [];
+
         // Membuat review untuk lapangan
         if ($fields->isNotEmpty()) {
-            $this->createReviews($fields, 'App\\Models\\Field', $users, $payments, $positiveComments, $neutralComments, $negativeComments);
+            $this->createReviews($fields, 'App\\Models\\Field', $users, $payments, $positiveComments, $neutralComments, $negativeComments, $usedCombinations);
         }
 
         // Membuat review untuk rental item
         if ($rentalItems->isNotEmpty()) {
-            $this->createReviews($rentalItems, 'App\\Models\\RentalItem', $users, $payments, $positiveComments, $neutralComments, $negativeComments);
+            $this->createReviews($rentalItems, 'App\\Models\\RentalItem', $users, $payments, $positiveComments, $neutralComments, $negativeComments, $usedCombinations);
         }
 
         // Membuat review untuk fotografer
         if ($photographers->isNotEmpty()) {
-            $this->createReviews($photographers, 'App\\Models\\Photographer', $users, $payments, $positiveComments, $neutralComments, $negativeComments);
+            $this->createReviews($photographers, 'App\\Models\\Photographer', $users, $payments, $positiveComments, $neutralComments, $negativeComments, $usedCombinations);
         }
 
         $this->command->info('Review palsu berhasil dibuat!');
@@ -115,7 +118,7 @@ class ReviewSeeder extends Seeder
     /**
      * Create reviews for a specific item type
      */
-    private function createReviews($items, $itemType, $users, $payments, $positiveComments, $neutralComments, $negativeComments)
+    private function createReviews($items, $itemType, $users, $payments, $positiveComments, $neutralComments, $negativeComments, &$usedCombinations)
     {
         $itemTypeName = explode('\\', $itemType);
         $itemTypeName = end($itemTypeName);
@@ -124,15 +127,31 @@ class ReviewSeeder extends Seeder
 
         $statusOptions = ['active', 'inactive'];
         $now = Carbon::now();
+        $reviewCount = 0;
 
         foreach ($items as $item) {
-            // Jumlah review random antara 3-15 untuk setiap item
-            $reviewCount = rand(3, 15);
+            // Jumlah review target antara 3-15 untuk setiap item
+            $targetReviewCount = rand(3, 15);
+            $currentReviewCount = 0;
 
-            for ($i = 0; $i < $reviewCount; $i++) {
+            // Maksimal percobaan untuk mencegah infinite loop
+            $maxAttempts = $targetReviewCount * 3;
+            $attempts = 0;
+
+            while ($currentReviewCount < $targetReviewCount && $attempts < $maxAttempts) {
+                $attempts++;
+
                 // Pilih user dan payment secara random
                 $user = $users->random();
                 $payment = $payments->random();
+
+                // Buat kunci unik untuk kombinasi user-item-payment
+                $combinationKey = $user->id . '-' . $item->id . '-' . $itemType . '-' . $payment->id;
+
+                // Periksa apakah kombinasi sudah digunakan
+                if (isset($usedCombinations[$combinationKey])) {
+                    continue; // Skip ke iterasi berikutnya jika kombinasi sudah digunakan
+                }
 
                 // Rating random (dengan kemungkinan lebih tinggi untuk rating bagus)
                 $ratingDistribution = [1, 2, 3, 3, 4, 4, 4, 5, 5, 5, 5]; // Distribusi berbias ke rating yang lebih tinggi
@@ -153,21 +172,33 @@ class ReviewSeeder extends Seeder
                 // Tanggal pembuatan review (antara 3 bulan yang lalu hingga sekarang)
                 $createdAt = Carbon::now()->subDays(rand(0, 90));
 
-                // Buat review
-                Review::create([
-                    'user_id' => $user->id,
-                    'item_id' => $item->id,
-                    'item_type' => $itemType,
-                    'payment_id' => $payment->id,
-                    'rating' => $rating,
-                    'comment' => $comment,
-                    'status' => $status,
-                    'created_at' => $createdAt,
-                    'updated_at' => $createdAt,
-                ]);
+                try {
+                    // Buat review
+                    Review::create([
+                        'user_id' => $user->id,
+                        'item_id' => $item->id,
+                        'item_type' => $itemType,
+                        'payment_id' => $payment->id,
+                        'rating' => $rating,
+                        'comment' => $comment,
+                        'status' => $status,
+                        'created_at' => $createdAt,
+                        'updated_at' => $createdAt,
+                    ]);
+
+                    // Tandai kombinasi ini sebagai sudah digunakan
+                    $usedCombinations[$combinationKey] = true;
+
+                    $currentReviewCount++;
+                    $reviewCount++;
+                } catch (\Exception $e) {
+                    // Tampilkan informasi jika mau, atau abaikan saja
+                    // $this->command->info("Error creating review: " . $e->getMessage());
+                    continue;
+                }
             }
         }
 
-        $this->command->info("Selesai membuat review untuk {$itemTypeName}!");
+        $this->command->info("Selesai membuat {$reviewCount} review untuk {$itemTypeName}!");
     }
 }
