@@ -387,6 +387,8 @@ private function getRequiredHoursByType($type)
     }
 }
 
+// Bagian yang perlu diperbaiki dalam processMembershipCheckout:
+
 /**
  * Proses checkout untuk bagian membership (digunakan di dalam checkout())
  */
@@ -609,13 +611,18 @@ private function processMembershipCheckout($item, $payment, $cartItems)
                     'is_membership' => true, // Tandai ini sebagai booking dari membership
                 ]);
 
+                // PERBAIKAN: Simpan field_booking_id ke membership_session
+                $membershipSession->field_booking_id = $fieldBooking->id;
+                $membershipSession->save();
+
                 // Buat fotografer booking jika include fotografer
                 if ($photographer) {
-                    PhotographerBooking::create([
+                    // PERBAIKAN: Pastikan field_booking_id disimpan dengan benar
+                    $photographerBooking = PhotographerBooking::create([
                         'user_id' => Auth::id(),
                         'photographer_id' => $photographer->id,
                         'payment_id' => $payment->id,
-                        'field_booking_id' => $fieldBooking->id,
+                        'field_booking_id' => $fieldBooking->id, // Simpan dengan benar
                         'membership_session_id' => $membershipSession->id,
                         'start_time' => $startDateTime,
                         'end_time' => $endDateTime,
@@ -627,17 +634,20 @@ private function processMembershipCheckout($item, $payment, $cartItems)
                     Log::info('Created photographer booking for membership session', [
                         'membership_id' => $membership->id,
                         'photographer_id' => $photographer->id,
+                        'photographer_booking_id' => $photographerBooking->id,
+                        'field_booking_id' => $fieldBooking->id, // Log untuk debugging
                         'session_id' => $membershipSession->id
                     ]);
                 }
 
                 // Buat rental item booking jika include rental item
                 if ($rentalItem) {
-                    RentalBooking::create([
+                    // PERBAIKAN: Pastikan field_booking_id disimpan dengan benar
+                    $rentalBooking = RentalBooking::create([
                         'user_id' => Auth::id(),
                         'rental_item_id' => $rentalItem->id,
                         'payment_id' => $payment->id,
-                        'field_booking_id' => $fieldBooking->id,
+                        'field_booking_id' => $fieldBooking->id, // Simpan dengan benar
                         'membership_session_id' => $membershipSession->id,
                         'start_time' => $startDateTime,
                         'end_time' => $endDateTime,
@@ -650,6 +660,8 @@ private function processMembershipCheckout($item, $payment, $cartItems)
                     Log::info('Created rental item booking for membership session', [
                         'membership_id' => $membership->id,
                         'rental_item_id' => $rentalItem->id,
+                        'rental_booking_id' => $rentalBooking->id,
+                        'field_booking_id' => $fieldBooking->id, // Log untuk debugging
                         'session_id' => $membershipSession->id
                     ]);
                 }

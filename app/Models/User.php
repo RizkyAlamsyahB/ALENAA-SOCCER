@@ -94,4 +94,14 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     return $this->hasOne(Photographer::class);
 }
+
+// In User model
+public function field()
+{
+    return $this->belongsTo(Field::class, 'field_id');
+}
+public function photographerPackages()
+{
+    return $this->hasMany(Photographer::class, 'user_id');
+}
 }

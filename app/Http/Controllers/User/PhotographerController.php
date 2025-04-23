@@ -23,19 +23,23 @@ class PhotographerController extends Controller
      */
     public function index()
     {
+        // Ambil semua paket fotografer yang aktif
         $photographers = Photographer::where('status', 'active')->get();
 
-        // Tambahkan rating dan review count untuk setiap fotografer
+        // Kelompokkan fotografer berdasarkan package_type
+        $photographersByType = $photographers->groupBy('package_type');
+
+        // Untuk setiap fotografer, tambahkan informasi rating dan lapangan
         foreach ($photographers as $photographer) {
             $photographer->rating = $photographer->getRatingAttribute();
             $photographer->reviews_count = $photographer->getReviewsCountAttribute();
 
             // Tambahkan info lapangan
-            $field = Field::where('photographer_id', $photographer->user_id)->first();
+            $field = Field::find($photographer->field_id);
             $photographer->assigned_field = $field ? $field->name : 'Tidak terkait dengan lapangan';
         }
 
-        return view('users.photographers.index', compact('photographers'));
+        return view('users.photographers.index', compact('photographers', 'photographersByType'));
     }
 
     /**

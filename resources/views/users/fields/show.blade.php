@@ -380,7 +380,61 @@
                             </div>
                         </div>
 
+                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                           <!-- Photographer Packages Card -->
+@if($photographerPackages->count() > 0)
+<div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+    <div class="card-header bg-white py-3 border-0 px-4">
+        <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-4">
+            @foreach($photographerPackages as $photographer)
+            <div class="col-md-4">
+                <div class="photographer-card {{ $photographer->package_type }}">
+                    <div class="package-header">
+                        <div class="package-info">
+                            <div class="package-icon">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div>
+                                <h5 class="package-title">{{ $photographer->name }}</h5>
+                                <p class="package-subtitle">{{ $photographer->duration }} jam</p>
+                            </div>
+                        </div>
+                        <div class="badge {{ $photographer->package_type }}">
+                            {{ ucfirst($photographer->package_type) }}
+                        </div>
+                    </div>
 
+                    <div class="package-features">
+                        <ul class="list-unstyled">
+                            @if(is_array(json_decode($photographer->features)))
+                                @foreach(json_decode($photographer->features) as $feature)
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> {{ $feature }}</li>
+                                @endforeach
+                            @endif
+                        </ul>
+                    </div>
+
+                    <div class="package-footer">
+                        <div class="price-info">
+                            <span class="price">Rp {{ number_format($photographer->price, 0, ',', '.') }}</span>
+                            <span class="duration">/sesi</span>
+                        </div>
+                        <a href="{{ route('user.photographer.show', $photographer->id) }}" class="select-btn {{ $photographer->package_type }}">
+                            <span>Detail Paket</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+                        </div>
 
                         <!-- Booking Card -->
                         <!-- Booking Wizard Card -->
@@ -1547,5 +1601,168 @@
             color: #856404;
             /* Warna text kuning gelap */
         }
+        /* Photographer Card Styles */
+.photographer-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #e9ecef;
+}
+
+.photographer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.photographer-card .package-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.photographer-card .package-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.photographer-card .package-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.photographer-card.favorite .package-icon {
+    background-color: #fff8f1;
+    color: #fd7e14;
+}
+
+.photographer-card.plus .package-icon {
+    background-color: #f1f9fe;
+    color: #0d6efd;
+}
+
+.photographer-card.exclusive .package-icon {
+    background-color: #fff1f1;
+    color: #9e0620;
+}
+
+.photographer-card .package-title {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.photographer-card .package-subtitle {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.photographer-card .badge {
+    border-radius: 20px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.photographer-card .badge.favorite {
+    background-color: #fff8f1;
+    color: #fd7e14;
+}
+
+.photographer-card .badge.plus {
+    background-color: #f1f9fe;
+    color: #0d6efd;
+}
+
+.photographer-card .badge.exclusive {
+    background-color: #fff1f1;
+    color: #9e0620;
+}
+
+.photographer-card .package-features {
+    padding: 1.25rem;
+    flex-grow: 1;
+}
+
+.photographer-card .package-features li {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.photographer-card .package-features i {
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.photographer-card .package-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.photographer-card .price-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.photographer-card .price {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #212529;
+}
+
+.photographer-card .duration {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.photographer-card .select-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.photographer-card .select-btn.favorite {
+    background-color: #fff8f1;
+    color: #fd7e14;
+}
+
+.photographer-card .select-btn.plus {
+    background-color: #f1f9fe;
+    color: #0d6efd;
+}
+
+.photographer-card .select-btn.exclusive {
+    background-color: #fff1f1;
+    color: #9e0620;
+}
+
+.photographer-card .select-btn:hover {
+    transform: translateX(5px);
+}
     </style>
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use App\Models\Field;
 use App\Models\Review;
 use App\Models\PhotographerBooking;
@@ -13,6 +14,7 @@ class Photographer extends Model
     use HasFactory;
 
     protected $fillable = [
+       'user_id',     // ID pengguna yang membuat fotografer
         'name',
         'description',
         'price',
@@ -68,6 +70,14 @@ public function getRatingAttribute()
 public function getReviewsCountAttribute()
 {
     return $this->reviews()->where('status', 'active')->count();
+}
+
+/**
+ * Get the user who created this photographer
+ */
+public function user()
+{
+    return $this->belongsTo(User::class);
 }
 
 

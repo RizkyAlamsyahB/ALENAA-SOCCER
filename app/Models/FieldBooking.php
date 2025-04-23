@@ -15,17 +15,7 @@ class FieldBooking extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'field_id',
-        'start_time',
-        'end_time',
-        'total_price',
-        'status',
-        'payment_id',
-        'is_membership',
-        'membership_session_id',
-    ];
+    protected $fillable = ['user_id', 'field_id', 'start_time', 'end_time', 'total_price', 'status', 'payment_id', 'is_membership', 'membership_session_id'];
 
     protected $casts = [
         'start_time' => 'datetime',
@@ -61,20 +51,20 @@ class FieldBooking extends Model
     /**
      * Get the membership session associated with this booking (if any).
      */
-    public function membershipSession(): BelongsTo
+    public function membershipSession()
     {
-        return $this->belongsTo(MembershipSession::class);
+        return $this->belongsTo(MembershipSession::class, 'membership_session_id');
     }
-    // Tambahkan metode ini di class FieldBooking
-public function photographerBookings()
-{
-    return $this->hasMany(PhotographerBooking::class);
-}
 
-public function rentalBookings()
-{
-    return $this->hasMany(RentalBooking::class);
-}
+    public function photographerBookings()
+    {
+        return $this->hasMany(PhotographerBooking::class, 'field_booking_id');
+    }
+
+    public function rentalBookings()
+    {
+        return $this->hasMany(RentalBooking::class, 'field_booking_id');
+    }
 
     /**
      * Check if booking is pending.

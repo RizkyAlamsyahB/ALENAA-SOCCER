@@ -10,15 +10,20 @@ use App\Http\Controllers\User\FieldsController;
 use App\Http\Controllers\User\ReviewController;
 use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Owner\ReviewsController;
 use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\OpenMabarController;
+use App\Http\Controllers\Admin\SchedulesController;
+use App\Http\Controllers\Owner\DiscountsController;
 use App\Http\Controllers\User\MembershipController;
 use App\Http\Controllers\Admin\RentalItemController;
 use App\Http\Controllers\User\RentalItemsController;
+use App\Http\Controllers\Admin\MembershipsController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\User\PhotographerController;
 use App\Http\Controllers\Admin\PhotoPackageController;
+use App\Http\Controllers\Owner\PointVoucherController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Photographer\ScheduleController;
 use App\Http\Controllers\Photographer\PhotographerDashboardController;
@@ -26,19 +31,19 @@ use App\Http\Controllers\Photographer\PhotographerDashboardController;
 // Public Routes
 Route::get('/', function () {
     // Jika sudah login, redirect berdasarkan role
-// Di route utama
-if (auth()->check()) {
-    $user = auth()->user();
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    } elseif ($user->role === 'owner') {
-        return redirect()->route('owner.dashboard');
-    } elseif ($user->role === 'user') {
-        return redirect()->route('users.dashboard');
-    } elseif ($user->role === 'photographer') {
-        return redirect()->route('photographers.dashboard');
+    // Di route utama
+    if (auth()->check()) {
+        $user = auth()->user();
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($user->role === 'owner') {
+            return redirect()->route('owner.dashboard');
+        } elseif ($user->role === 'user') {
+            return redirect()->route('users.dashboard');
+        } elseif ($user->role === 'photographer') {
+            return redirect()->route('photographers.dashboard');
+        }
     }
-}
 
     // Jika tidak login, tampilkan landing page dengan testimonial
     $testimonials = \App\Models\Review::with(['user', 'reviewable'])
@@ -282,12 +287,21 @@ Route::middleware(['auth', 'checkRole:admin'])
         Route::resources([
             'products' => ProductController::class,
             'rental-items' => RentalItemController::class,
-            'memberships' => MembershipController::class,
+            'memberships' => MembershipsController::class,
             'transactions' => TransactionController::class,
             'users' => UserManagementController::class,
-            'discounts' => DiscountController::class,
             'photo-packages' => PhotoPackageController::class,
+            'schedules' => SchedulesController::class,
         ]);
+        Route::get('schedule', [SchedulesController::class, 'index'])->name('schedule.index');
+        Route::get('schedule/events', [SchedulesController::class, 'getScheduleEvents'])->name('schedule.events');
+        Route::get('schedule/all-bookings', [SchedulesController::class, 'allBookingsTable'])->name('schedule.all-bookings');
+        Route::get('schedule/field/{id}', [SchedulesController::class, 'fieldSchedule'])->name('schedule.field');
+        Route::get('schedule/membership', [SchedulesController::class, 'membershipSchedule'])->name('schedule.membership');
+        Route::get('schedule/membership/{id}', [SchedulesController::class, 'membershipDetail'])->name('schedule.membership.detail');
+        Route::get('schedule/booking/{id}', [SchedulesController::class, 'getBookingDetail'])->name('schedule.booking');
+        Route::get('schedule/booking/{id}/edit', [SchedulesController::class, 'editBooking'])->name('schedule.booking.edit');
+        Route::put('schedule/booking/{id}', [SchedulesController::class, 'updateBooking'])->name('schedule.booking.update');
     });
 
 // Owner Routes
@@ -299,12 +313,28 @@ Route::middleware(['auth', 'checkRole:owner'])
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('dashboard');
+        //Diskon
+        Route::resource('discounts', DiscountsController::class);
+        //Reviews
+        Route::get('reviews', [ReviewsController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/{review}', [ReviewsController::class, 'show'])->name('reviews.show');
+        Route::delete('reviews/{review}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
+        Route::post('reviews/{review}/toggle-status', [ReviewsController::class, 'toggleStatus'])->name('reviews.toggle-status');
+
+        // Summary and analytics
+        Route::get('reviews-summary', [ReviewsController::class, 'reviewSummary'])->name('reviews.summary');
+
+        // Get reviews for specific item
+        Route::get('reviews-for-item', [ReviewsController::class, 'getItemReviews'])->name('reviews.item-reviews');
+        // Voucher Poin
+        Route::resource('point_vouchers', PointVoucherController::class);
+        Route::patch('point-vouchers/{pointVoucher}/toggle-status', [PointVoucherController::class, 'toggleStatus'])->name('point_vouchers.toggle-status');
+
 
         // Rute khusus owner
         // Route::get('/financial-report', [Owner\FinancialReportController::class, 'index'])->name('financial-report');
         // Route::get('/analytics', [Owner\AnalyticsController::class, 'index'])->name('analytics');
     });
-
 
 // Owner Routes
 Route::middleware(['auth', 'checkRole:photographer'])

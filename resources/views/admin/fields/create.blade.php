@@ -13,6 +13,23 @@
 
                 <form action="{{ route('admin.fields.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    
+                    <div class="form-group">
+                        <label>Fotografer Lapangan</label>
+                        <select name="photographer_id" class="form-control @error('photographer_id') is-invalid @enderror">
+                            <option value="">-- Pilih Fotografer --</option>
+                            @foreach($photographers as $photographer)
+                                <option value="{{ $photographer->id }}" {{ old('photographer_id') == $photographer->id ? 'selected' : '' }}>
+                                    {{ $photographer->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">Fotografer yang ditugaskan untuk lapangan ini</small>
+                        @error('photographer_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="form-group">
                         <label>Nama Lapangan</label>
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
@@ -20,14 +37,6 @@
                         @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label for="image">Gambar Lapangan</label>
-                        <input type="file" name="image" id="image" class="form-control-file" accept="image/*" onchange="previewImage(event)">
-                        <div class="mt-2">
-                            <img id="imagePreview" src="#" alt="Preview Gambar" style="display: none; max-width: 200px; height: auto;" class="img-thumbnail">
-                        </div>
                     </div>
 
                     <div class="form-group">
@@ -50,16 +59,37 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Harga </label>
+                        <label>Harga Per Jam</label>
                         <input type="number" name="price" class="form-control @error('price') is-invalid @enderror"
                                value="{{ old('price') }}" required>
+                        <small class="form-text text-muted">Harga sewa lapangan per jam</small>
                         @error('price')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    <div class="form-group">
+                        <label>Deskripsi</label>
+                        <textarea name="description" class="form-control @error('description') is-invalid @enderror" rows="4">{{ old('description') }}</textarea>
+                        <small class="form-text text-muted">Deskripsi detail tentang lapangan</small>
+                        @error('description')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
                     <div class="form-group">
+                        <label for="image">Gambar Lapangan</label>
+                        <input type="file" name="image" id="image" class="form-control-file" accept="image/*" onchange="previewImage(event)">
+                        <small class="form-text text-muted">Ukuran maksimal 2MB (JPG, PNG, GIF)</small>
+                        <div class="mt-2">
+                            <img id="imagePreview" src="#" alt="Preview Gambar" style="display: none; max-width: 200px; height: auto;" class="img-thumbnail">
+                        </div>
+                        @error('image')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="fa fa-save"></i> Simpan Lapangan
                         </button>

@@ -8,6 +8,7 @@ use App\Models\Field;
 use App\Models\CartItem;
 use App\Models\Membership;
 use App\Models\FieldBooking;
+use App\Models\Photographer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -43,10 +44,15 @@ class FieldsController extends Controller
         $field->rating = $field->getRatingAttribute();
         $field->reviews_count = $field->getReviewsCountAttribute();
 
-        $memberships = Membership::where('field_id', $id)->get();
-        return view('users.fields.show', compact('field', 'memberships'));
-    }
+        // Ambil paket fotografer untuk lapangan ini
+        $photographerPackages = Photographer::where('field_id', $id)
+            ->where('status', 'active')
+            ->get();
 
+        $memberships = Membership::where('field_id', $id)->get();
+
+        return view('users.fields.show', compact('field', 'memberships', 'photographerPackages'));
+    }
 /**
  * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu
  */

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\ReviewSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,6 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([UserSeeder::class, PhotographerSeeder::class, FieldSeeder::class, RentalItemSeeder::class, DiscountSeeder::class, MembershipSeeder::class, PointVoucherSeeder::class, OpenMabarSeeder::class]);
+        $this->call([UserSeeder::class, FieldSeeder::class, PhotographerSeeder::class, RentalItemSeeder::class, DiscountSeeder::class, MembershipSeeder::class, PointVoucherSeeder::class, OpenMabarSeeder::class,ReviewSeeder::class, PaymentSeeder::class, TransactionSeeder::class, NotificationSeeder::class, ChatSeeder]);
     }
 }

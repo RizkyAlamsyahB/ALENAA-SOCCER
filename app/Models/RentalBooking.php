@@ -60,7 +60,7 @@ class RentalBooking extends Model
      */
     public function rentalItem()
     {
-        return $this->belongsTo(RentalItem::class);
+        return $this->belongsTo(RentalItem::class, 'rental_item_id');
     }
 
     /**
@@ -165,13 +165,13 @@ class RentalBooking extends Model
         return $query->whereNotIn('status', ['cancelled', 'completed']);
     }
     // Tambahkan metode ini di class RentalBooking
-public function fieldBooking()
-{
-    return $this->belongsTo(FieldBooking::class);
-}
+    public function fieldBooking()
+    {
+        return $this->belongsTo(FieldBooking::class, 'field_booking_id');
+    }
 
 public function membershipSession()
 {
-    return $this->belongsTo(MembershipSession::class);
+    return $this->belongsTo(MembershipSession::class, 'membership_session_id');
 }
 }

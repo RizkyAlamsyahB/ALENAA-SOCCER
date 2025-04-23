@@ -25,6 +25,7 @@ class PhotographerBooking extends Model
         'notes',
         'membership_session_id',
         'is_membership',
+        'field_booking_id',
     ];
 
     protected $casts = [

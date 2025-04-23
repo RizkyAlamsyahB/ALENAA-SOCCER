@@ -21,6 +21,7 @@ class MembershipSession extends Model
         'end_time',
         'status', // scheduled, upcoming, ongoing, completed, cancelled
         'session_number',
+        'field_booking_id',
     ];
 
     protected $casts = [
@@ -39,7 +40,7 @@ class MembershipSession extends Model
 
     public function fieldBooking()
     {
-        return $this->hasOne(FieldBooking::class);
+        return $this->belongsTo(FieldBooking::class, 'field_booking_id');
     }
     // Tambahkan metode ini di class MembershipSession
 public function photographerBookings()
