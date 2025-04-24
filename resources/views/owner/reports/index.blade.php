@@ -21,101 +21,103 @@
 
 @section('content')
     <div class="container-fluid">
-<!-- Row 1: Total Pendapatan Bersih -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body px-4 py-4-5">
-                <div class="row">
-                    <div class="col-md-2 d-flex justify-content-center">
-                        <div class="stats-icon purple mb-2">
-                            <i class="iconly-boldWallet"></i>
+        <!-- Row 1: Total Pendapatan Bersih -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body px-4 py-4-5">
+                        <div class="row">
+                            <div class="col-md-2 d-flex justify-content-center">
+                                <div class="stats-icon purple mb-2">
+                                    <i class="iconly-boldWallet"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h6 class="text-muted font-semibold">Total Pendapatan Bersih</h6>
+                                <h6 class="font-extrabold mb-0">Rp {{ number_format($totalNetRevenue, 0, ',', '.') }}</h6>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-10">
-                        <h6 class="text-muted font-semibold">Total Pendapatan Bersih</h6>
-                        <h6 class="font-extrabold mb-0">Rp {{ number_format($totalNetRevenue, 0, ',', '.') }}</h6>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Row 2: Semua Pendapatan Lainnya -->
-<div class="row">
-    <div class="col-12 col-md-3">
-        <div class="card">
-            <div class="card-body px-4 py-4-5">
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-center">
-                        <div class="stats-icon blue mb-2">
-                            <i class="iconly-boldTicket"></i>
+        <!-- Row 2: Semua Pendapatan Lainnya -->
+        <div class="row">
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-body px-4 py-4-5">
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-center">
+                                <div class="stats-icon blue mb-2">
+                                    <i class="iconly-boldTicket"></i>
+                                </div>
+                            </div>
+                            <div class="col-12 text-center">
+                                <h6 class="text-muted font-semibold">Pendapatan Lapangan Bersih</h6>
+                                <h6 class="font-extrabold mb-0">Rp {{ number_format($fieldNetRevenue, 0, ',', '.') }}</h6>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-12 text-center">
-                        <h6 class="text-muted font-semibold">Pendapatan Lapangan Bersih</h6>
-                        <h6 class="font-extrabold mb-0">Rp {{ number_format($fieldNetRevenue, 0, ',', '.') }}</h6>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="col-12 col-md-3">
-        <div class="card">
-            <div class="card-body px-4 py-4-5">
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-center">
-                        <div class="stats-icon green mb-2">
-                            <i class="iconly-boldBag"></i>
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-body px-4 py-4-5">
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-center">
+                                <div class="stats-icon green mb-2">
+                                    <i class="iconly-boldBag"></i>
+                                </div>
+                            </div>
+                            <div class="col-12 text-center">
+                                <h6 class="text-muted font-semibold">Pendapatan Rental Bersih</h6>
+                                <h6 class="font-extrabold mb-0">Rp {{ number_format($rentalNetRevenue, 0, ',', '.') }}</h6>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-12 text-center">
-                        <h6 class="text-muted font-semibold">Pendapatan Rental Bersih</h6>
-                        <h6 class="font-extrabold mb-0">Rp {{ number_format($rentalNetRevenue, 0, ',', '.') }}</h6>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="col-12 col-md-3">
-        <div class="card">
-            <div class="card-body px-4 py-4-5">
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-center">
-                        <div class="stats-icon red mb-2">
-                            <i class="iconly-boldCamera"></i>
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-body px-4 py-4-5">
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-center">
+                                <div class="stats-icon red mb-2">
+                                    <i class="iconly-boldCamera"></i>
+                                </div>
+                            </div>
+                            <div class="col-12 text-center">
+                                <h6 class="text-muted font-semibold">Pendapatan Fotografer Bersih</h6>
+                                <h6 class="font-extrabold mb-0">Rp {{ number_format($photographerNetRevenue, 0, ',', '.') }}
+                                </h6>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-12 text-center">
-                        <h6 class="text-muted font-semibold">Pendapatan Fotografer Bersih</h6>
-                        <h6 class="font-extrabold mb-0">Rp {{ number_format($photographerNetRevenue, 0, ',', '.') }}</h6>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="col-12 col-md-3">
-        <div class="card">
-            <div class="card-body px-4 py-4-5">
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-center">
-                        <div class="stats-icon purple mb-2">
-                            <i class="iconly-boldProfile"></i>
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <div class="card-body px-4 py-4-5">
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-center">
+                                <div class="stats-icon purple mb-2">
+                                    <i class="iconly-boldProfile"></i>
+                                </div>
+                            </div>
+                            <div class="col-12 text-center">
+                                <h6 class="text-muted font-semibold">Pendapatan Membership Bersih</h6>
+                                <h6 class="font-extrabold mb-0">Rp {{ number_format($membershipNetRevenue, 0, ',', '.') }}
+                                </h6>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-12 text-center">
-                        <h6 class="text-muted font-semibold">Pendapatan Membership Bersih</h6>
-                        <h6 class="font-extrabold mb-0">Rp {{ number_format($membershipNetRevenue, 0, ',', '.') }}</h6>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
 
         <!-- Alternatif 1: Desain Card Modern dengan Shadow dan Hover Effect -->
@@ -129,10 +131,9 @@
                         <div class="row">
                             <div class="col-md-4 col-sm-6 mb-4">
                                 <a href="{{ route('owner.reports.revenue') }}" class="text-decoration-none">
-                                    <div class="card report-card shadow-sm h-100 transition-hover">
+                                    <div class="card report-card shadow-sm h-100 transition-hover border-shadow">
                                         <div class="card-body d-flex flex-column align-items-center py-4">
-                                            <div
-                                                class="report-icon  mb-3 d-flex align-items-center justify-content-center">
+                                            <div class="report-icon  mb-3 d-flex align-items-center justify-content-center">
                                                 <i class="bi bi-graph-up text-primary" style="font-size: 2rem;"></i>
                                             </div>
                                             <h5 class="fw-bold">Laporan Pendapatan</h5>
@@ -144,10 +145,9 @@
                             </div>
                             <div class="col-md-4 col-sm-6 mb-4">
                                 <a href="{{ route('owner.reports.field-revenue') }}" class="text-decoration-none">
-                                    <div class="card report-card shadow-sm h-100 transition-hover">
+                                    <div class="card report-card shadow-sm h-100 transition-hover border-shadow">
                                         <div class="card-body d-flex flex-column align-items-center py-4">
-                                            <div
-                                                class="report-icon  mb-3 d-flex align-items-center justify-content-center">
+                                            <div class="report-icon  mb-3 d-flex align-items-center justify-content-center">
                                                 <i class="bi bi-calendar-week text-success" style="font-size: 2rem;"></i>
                                             </div>
                                             <h5 class="fw-bold">Pendapatan Lapangan</h5>
@@ -159,10 +159,9 @@
                             </div>
                             <div class="col-md-4 col-sm-6 mb-4">
                                 <a href="{{ route('owner.reports.rental-revenue') }}" class="text-decoration-none">
-                                    <div class="card report-card shadow-sm h-100 transition-hover">
+                                    <div class="card report-card shadow-sm h-100 transition-hover border-shadow">
                                         <div class="card-body d-flex flex-column align-items-center py-4">
-                                            <div
-                                                class="report-icon  mb-3 d-flex align-items-center justify-content-center">
+                                            <div class="report-icon  mb-3 d-flex align-items-center justify-content-center">
                                                 <i class="bi bi-box-seam text-info" style="font-size: 2rem;"></i>
                                             </div>
                                             <h5 class="fw-bold">Pendapatan Rental</h5>
@@ -174,7 +173,7 @@
                             </div>
                             <div class="col-md-4 col-sm-6 mb-4">
                                 <a href="{{ route('owner.reports.photographer-revenue') }}" class="text-decoration-none">
-                                    <div class="card report-card shadow-sm h-100 transition-hover">
+                                    <div class="card report-card shadow-sm h-100 transition-hover border-shadow">
                                         <div class="card-body d-flex flex-column align-items-center py-4">
                                             <div
                                                 class="report-icon  mb-3 d-flex align-items-center justify-content-center">
@@ -189,7 +188,7 @@
                             </div>
                             <div class="col-md-4 col-sm-6 mb-4">
                                 <a href="{{ route('owner.reports.membership-revenue') }}" class="text-decoration-none">
-                                    <div class="card report-card shadow-sm h-100 transition-hover">
+                                    <div class="card report-card shadow-sm h-100 transition-hover border-shadow">
                                         <div class="card-body d-flex flex-column align-items-center py-4">
                                             <div
                                                 class="report-icon  mb-3 d-flex align-items-center justify-content-center">

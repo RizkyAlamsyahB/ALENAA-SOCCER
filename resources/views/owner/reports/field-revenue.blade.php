@@ -61,15 +61,15 @@
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-4">
-                            <div class="card bg-light">
+                            <div class="card  shadow border">
                                 <div class="card-body text-center py-4">
                                     <h5 class="mb-2">Total Pendapatan Bersih Lapangan</h5>
-                                    <h2 class="text-primary mb-0">Rp {{ number_format($totalFieldNetRevenue, 0, ',', '.') }}</h2>
+                                    <h2 class="text-success mb-0">Rp {{ number_format($totalFieldNetRevenue, 0, ',', '.') }}</h2>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-8">
-                            <div class="card bg-light">
+                            <div class="card  shadow border">
                                 <div class="card-body">
                                     <canvas id="fieldRevenueByDayChart"></canvas>
                                 </div>
@@ -120,21 +120,21 @@
                         </table>
 
                         <!-- Tambahkan bagian ringkasan membership -->
-                        <div class="col-md-4 mt-4">
-                            <div class="card bg-light">
-                                <div class="card-body text-center py-4">
+                        {{-- <div class="col-md-4 mt-4">
+                            <div class="card  shadow border">
+                                <div class="card-body text-center py-4 ">
                                     <h6 class="text-muted font-semibold">Total Booking Membership</h6>
                                     <h4 class="font-extrabold text-info mb-0">{{ $fields->sum('membership_count') }}</h4>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Grafik Tipe Lapangan -->
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <h4>Pendapatan Bersih per Tipe Lapangan</h4>
@@ -145,17 +145,7 @@
             </div>
         </div>
 
-        <!-- Grafik Hari dalam Seminggu -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Pendapatan Bersih per Hari</h4>
-                </div>
-                <div class="card-body">
-                    <canvas id="dayOfWeekChart"></canvas>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <!-- DataTables -->
@@ -190,13 +180,7 @@
                 'Pendapatan Bersih per Tipe Lapangan'
             );
 
-            // Day of Week Chart
-            const dayOfWeekData = @json($bookingsByDayOfWeek);
-            createBarChart('dayOfWeekChart',
-                dayOfWeekData.map(item => item.day_name),
-                dayOfWeekData.map(item => item.revenue),
-                'Pendapatan Bersih per Hari'
-            );
+
 
             // Field Revenue by Day Chart (Line Chart)
             const fieldsByDay = groupBookingsByDay(@json($fields));
@@ -310,58 +294,84 @@
                 }
             });
         }
+        const dailyRevenueData = {!! json_encode($dailyRevenue ?? []) !!};
 
         function createLineChart(canvasId, days) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
+    const ctx = document.getElementById(canvasId).getContext('2d');
 
-            // This would need actual data for each day
-            // For now we'll generate some random data
-            const data = days.map(() => Math.floor(Math.random() * 1000000) + 500000);
+    // Gunakan data dari controller
+    const dailyRevenueData = @json($dailyRevenue ?? []);
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: days.map(day => {
-                        const date = new Date(day);
-                        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    }),
-                    datasets: [{
-                        label: 'Pendapatan Bersih Harian',
-                        data: data,
-                        fill: false,
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                }
-                            }
+    // Buat array tanggal lengkap dari startDate hingga endDate
+    const startDate = new Date('{{ $startDate }}');
+    const endDate = new Date('{{ $endDate }}');
+    const dateRange = [];
+
+    // Isi semua tanggal dalam range
+    for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+        dateRange.push(new Date(dt).toISOString().split('T')[0]); // Format 'YYYY-MM-DD'
+    }
+
+    // Buat dataset dengan nilai 0 untuk tanggal yang tidak ada transaksi
+    const completeData = dateRange.map(dateString => {
+        const existingData = dailyRevenueData.find(item => item.date === dateString);
+        return {
+            date: dateString,
+            revenue: existingData ? parseFloat(existingData.revenue) : 0
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: completeData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+            }),
+            datasets: [{
+                label: 'Pendapatan Bersih Harian',
+                data: completeData.map(item => item.revenue),
+                fill: false,
+                borderColor: 'rgba(40, 167, 69, 1)', // Warna hijau
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
                         }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Tren Pendapatan Bersih Harian'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
-                                }
-                            }
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Tren Pendapatan Bersih Harian'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
                         }
                     }
                 }
-            });
+            }
         }
-    </script>
+    });
+}
+
+  </script>
     <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

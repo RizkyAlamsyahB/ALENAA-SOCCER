@@ -55,18 +55,18 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <div class="card bg-light">
+                            <div class="card shadow border">
                                 <div class="card-body text-center py-4">
                                     <h5 class="mb-2">Total Pendapatan Bersih Membership</h5>
-                                    <h2 class="text-primary mb-0">Rp {{ number_format($totalMembershipNetRevenue, 0, ',', '.') }}</h2>
+                                    <h2 class="text-success mb-0">Rp {{ number_format($totalMembershipNetRevenue, 0, ',', '.') }}</h2>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <div class="card bg-light">
+                            <div class="card shadow border">
                                 <div class="card-body text-center py-4">
                                     <h5 class="mb-2">Jumlah Membership Aktif</h5>
-                                    <h2 class="text-success mb-0">{{ number_format($activeMemberships, 0) }}</h2>
+                                    <h2 class="text-info mb-0">{{ number_format($activeMemberships, 0) }}</h2>
                                 </div>
                             </div>
                         </div>
@@ -156,12 +156,7 @@
         </div>
     </div>
 
-    <!-- DataTables -->
-    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -296,52 +291,162 @@
         }
 
         function createLineChart(canvasId, membershipData) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
+    const ctx = document.getElementById(canvasId).getContext('2d');
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: membershipData.map(item => {
-                        const date = new Date(item.date);
-                        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    }),
-                    datasets: [{
-                        label: 'Pendapatan Bersih Harian',
-                        data: membershipData.map(item => item.revenue),
-                        fill: false,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                }
-                            }
-                        }
+    // Create array of dates from startDate to endDate
+    const startDate = new Date('{{ $startDate }}');
+    const endDate = new Date('{{ $endDate }}');
+    const dateRange = [];
+
+    // Fill all dates in range
+    for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+        dateRange.push(new Date(dt).toISOString().split('T')[0]);
+    }
+
+    // Create dataset with zero values for dates with no transactions
+    const completeData = dateRange.map(dateString => {
+        const existingData = membershipData.find(item => item.date === dateString);
+        return {
+            date: dateString,
+            revenue: existingData ? parseFloat(existingData.revenue) : 0
+        };
+    });
+
+    // Create gradient fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(0, 123, 255, 0.6)');
+    gradient.addColorStop(1, 'rgba(0, 123, 255, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: completeData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+            }),
+            datasets: [{
+                label: 'Pendapatan Bersih Membership',
+                data: completeData.map(item => item.revenue),
+                borderColor: '#0366d6',
+                borderWidth: 2,
+                pointBackgroundColor: '#0366d6',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.5,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#0366d6',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                backgroundColor: gradient
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 20,
+                    right: 20,
+                    bottom: 20,
+                    left: 20
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(200, 200, 200, 0.15)',
+                        drawBorder: false
                     },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Tren Pendapatan Bersih Membership Harian'
+                    ticks: {
+                        font: {
+                            family: "'Poppins', sans-serif",
+                            size: 11
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
-                                }
-                            }
+                        color: '#666',
+                        padding: 10,
+                        callback: function(value) {
+                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Poppins', sans-serif",
+                            size: 11
+                        },
+                        color: '#666',
+                        padding: 10,
+                        maxRotation: 30,
+                        minRotation: 30
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Tren Pendapatan Bersih Membership Harian',
+                    font: {
+                        family: "'Poppins', sans-serif",
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    color: '#333',
+                    padding: {
+                        bottom: 20
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    titleFont: {
+                        family: "'Poppins', sans-serif",
+                        size: 12
+                    },
+                    bodyFont: {
+                        family: "'Poppins', sans-serif",
+                        size: 12
+                    },
+                    padding: 12,
+                    cornerRadius: 6,
+                    caretSize: 6,
+                    callbacks: {
+                        label: function(context) {
+                            return 'Pendapatan: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
                         }
                     }
                 }
-            });
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            elements: {
+                line: {
+                    borderJoinStyle: 'round'
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            }
         }
-    </script>
+    });
+}
+
+</script>
     <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

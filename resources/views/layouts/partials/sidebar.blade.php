@@ -59,24 +59,28 @@
                         </a>
                     </li>
 
-                                        {{-- Schedule Management --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-calendar3"></i>
-                        <span>Jadwal</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-                        <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
-                            <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Kalender Jadwal</a>
-                        </li>
-                        <li class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
-                            <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Semua Booking</a>
-                        </li>
-                        <li class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
-                            <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal Membership</a>
-                        </li>
-                    </ul>
-                </li>
+                    {{-- Schedule Management --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Jadwal</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+                            <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Kalender Jadwal</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Semua
+                                    Booking</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal
+                                    Membership</a>
+                            </li>
+                        </ul>
+                    </li>
 
                     {{-- Users Management --}}
                     <li class="sidebar-item has-sub {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
@@ -93,20 +97,24 @@
                     </li>
 
                     {{-- Lapangan (Field Management) --}}
-                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') || request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+                    <li
+                        class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') || request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
                         <a href="#" class="sidebar-link">
                             <i class="bi bi-geo-alt"></i>
                             <span>Lapangan</span>
                         </a>
-                        <ul class="submenu {{ request()->routeIs('admin.fields.*') || request()->routeIs('admin.schedule.field*') ? 'active' : '' }}">
+                        <ul
+                            class="submenu {{ request()->routeIs('admin.fields.*') || request()->routeIs('admin.schedule.field*') ? 'active' : '' }}">
                             <li class="submenu-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
                                 <a href="{{ route('admin.fields.index') }}" class="submenu-link">Data Lapangan</a>
                             </li>
                             <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
                                 <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Jadwal Lapangan</a>
                             </li>
-                            <li class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
-                                <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Pemesanan Lapangan</a>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Pemesanan
+                                    Lapangan</a>
                             </li>
                         </ul>
                     </li>
@@ -156,18 +164,23 @@
                     </li>
 
                     {{-- Membership Management --}}
-                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.memberships.*') || request()->routeIs('admin.schedule.membership*') ? 'active' : '' }}">
+                    <li
+                        class="sidebar-item has-sub {{ request()->routeIs('admin.memberships.*') || request()->routeIs('admin.schedule.membership*') ? 'active' : '' }}">
                         <a href="#" class="sidebar-link">
                             <i class="bi bi-person-badge"></i>
                             <span>Membership</span>
                         </a>
-                        <ul class="submenu {{ request()->routeIs('admin.memberships.*') || request()->routeIs('admin.schedule.membership*') ? 'active' : '' }}">
-                            <li class="submenu-item {{ request()->routeIs('admin.memberships.index') ? 'active' : '' }}">
+                        <ul
+                            class="submenu {{ request()->routeIs('admin.memberships.*') || request()->routeIs('admin.schedule.membership*') ? 'active' : '' }}">
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.memberships.index') ? 'active' : '' }}">
                                 <a href="{{ route('admin.memberships.index') }}" class="submenu-link">Member</a>
                             </li>
 
-                            <li class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
-                                <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal Member</a>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal
+                                    Member</a>
                             </li>
                         </ul>
                     </li>
@@ -193,8 +206,6 @@
                             </li>
                         </ul>
                     </li>
-
-
                 @endif
 
 
@@ -202,62 +213,67 @@
 
 
                 @if (auth()->user()->hasRole('owner'))
-                {{-- Owner Section --}}
-                <li class="sidebar-title">Manajemen (Owner)</li>
+                    {{-- Owner Section --}}
+                    <li class="sidebar-title">Manajemen (Owner)</li>
 
-<!-- Add this to your sidebar file -->
-<li class="sidebar-item has-sub">
-    <a href="#" class="sidebar-link">
-        <i class="bi bi-bar-chart-fill"></i>
-        <span>Laporan & Statistik</span>
-    </a>
-    <ul class="submenu">
-        <li class="submenu-item">
-            <a href="{{ route('owner.reports.index') }}">Dashboard Laporan</a>
-        </li>
-        <li class="submenu-item">
-            <a href="{{ route('owner.reports.revenue') }}">Ringkasan Pendapatan</a>
-        </li>
-        <li class="submenu-item">
-            <a href="{{ route('owner.reports.field-revenue') }}">Pendapatan Lapangan</a>
-        </li>
-        <li class="submenu-item">
-            <a href="{{ route('owner.reports.rental-revenue') }}">Pendapatan Rental</a>
-        </li>
-        <li class="submenu-item">
-            <a href="{{ route('owner.reports.photographer-revenue') }}">Pendapatan Fotografer</a>
-        </li>
-        <li class="submenu-item">
-            <a href="{{ route('owner.reviews.summary') }}">Ringkasan Review</a>
-        </li>
-    </ul>
-</li>
+                    <!-- Add this to your sidebar file -->
+                    <li class="sidebar-item has-sub {{ request()->routeIs('owner.reports.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-bar-chart-fill"></i>
+                            <span>Laporan & Statistik</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('owner.reports.*') ? 'active' : '' }}">
+                            <li class="submenu-item {{ request()->routeIs('owner.reports.index') ? 'active' : '' }}">
+                                <a href="{{ route('owner.reports.index') }}">Dashboard Laporan</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('owner.reports.revenue') ? 'active' : '' }}">
+                                <a href="{{ route('owner.reports.revenue') }}">Ringkasan Pendapatan</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('owner.reports.field-revenue') ? 'active' : '' }}">
+                                <a href="{{ route('owner.reports.field-revenue') }}">Pendapatan Lapangan</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('owner.reports.rental-revenue') ? 'active' : '' }}">
+                                <a href="{{ route('owner.reports.rental-revenue') }}">Pendapatan Rental</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('owner.reports.photographer-revenue') ? 'active' : '' }}">
+                                <a href="{{ route('owner.reports.photographer-revenue') }}">Pendapatan Fotografer</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('owner.reviews.summary') ? 'active' : '' }}">
+                                <a href="{{ route('owner.reviews.summary') }}">Ringkasan Review</a>
+                            </li>
+                        </ul>
+                    </li>
 
-                {{-- Kelola Diskon --}}
-                <li class="sidebar-item {{ request()->routeIs('owner.discounts.*') ? 'active' : '' }}">
-                    <a href="{{ route('owner.discounts.index') }}" class="sidebar-link">
-                        <i class="bi bi-tag-fill"></i>
-                        <span>Kelola Diskon</span>
-                    </a>
-                </li>
+                    {{-- Kelola Diskon --}}
+                    <li class="sidebar-item {{ request()->routeIs('owner.discounts.*') ? 'active' : '' }}">
+                        <a href="{{ route('owner.discounts.index') }}" class="sidebar-link">
+                            <i class="bi bi-tag-fill"></i>
+                            <span>Kelola Diskon</span>
+                        </a>
+                    </li>
 
-                {{-- Review & Rating --}}
-                <li class="sidebar-item {{ request()->routeIs('owner.reviews.*') ? 'active' : '' }}">
-                    <a href="{{ route('owner.reviews.index') }}" class="sidebar-link">
-                        <i class="bi bi-star-fill"></i>
-                        <span>Review & Rating</span>
-                    </a>
-                </li>
+                    {{-- Review & Rating --}}
+                    <li class="sidebar-item {{ request()->routeIs('owner.reviews.*') ? 'active' : '' }}">
+                        <a href="{{ route('owner.reviews.index') }}" class="sidebar-link">
+                            <i class="bi bi-star-fill"></i>
+                            <span>Review & Rating</span>
+                        </a>
+                    </li>
 
-                {{-- Poin Voucher --}}
-                <li class="sidebar-item {{ request()->routeIs('owner.point_vouchers.*') ? 'active' : '' }}">
-                    <a href="{{ route('owner.point_vouchers.index') }}" class="sidebar-link">
-                        <i class="bi bi-gift-fill"></i>
-                        <span>Poin Voucher</span>
-                    </a>
-                </li>
-                {{-- Pengaturan --}}
-            @endif
+                    {{-- Poin Voucher --}}
+                    <li class="sidebar-item {{ request()->routeIs('owner.point_vouchers.*') ? 'active' : '' }}">
+                        <a href="{{ route('owner.point_vouchers.index') }}" class="sidebar-link">
+                            <i class="bi bi-gift-fill"></i>
+                            <span>Poin Voucher</span>
+                        </a>
+                    </li>
+                    {{-- Pengaturan --}}
+                @endif
 
 
                 @if (auth()->user()->hasRole('photographer'))

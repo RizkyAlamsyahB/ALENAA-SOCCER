@@ -22,90 +22,95 @@
 
 @section('content')
     <div class="container-fluid">
-        <!-- Statistik Utama -->
-        <div class="row">
-            <div class="col-12 col-md-3">
-                <div class="card">
-                    <div class="card-body px-4 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start">
-                                <div class="stats-icon purple mb-2">
-                                    <i class="bi bi-chat-square-text"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                <h6 class="text-muted font-semibold">Total Review</h6>
-                                <h6 class="font-extrabold mb-0">{{ $totalReviews }}</h6>
-                            </div>
+<!-- Statistik Utama -->
+<div class="row">
+    <div class="col-12 col-md-3">
+        <div class="card">
+            <div class="card-body px-4 py-4-5">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="stats-icon purple mb-2">
+                            <i class="iconly-boldChat"></i>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card">
-                    <div class="card-body px-4 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start">
-                                <div class="stats-icon green mb-2">
-                                    <i class="bi bi-check-circle"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                <h6 class="text-muted font-semibold">Review Aktif</h6>
-                                <h6 class="font-extrabold mb-0">{{ $activeReviews }} ({{ $totalReviews > 0 ? round(($activeReviews / $totalReviews) * 100) : 0 }}%)</h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card">
-                    <div class="card-body px-4 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start">
-                                <div class="stats-icon blue mb-2">
-                                    <i class="bi bi-star"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                <h6 class="text-muted font-semibold">Rating Rata-rata</h6>
-                                <h6 class="font-extrabold mb-0">
-                                    {{ number_format($avgRating, 1) }}
-                                    <span class="text-warning">
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            @if ($i <= round($avgRating))
-                                                <i class="bi bi-star-fill"></i>
-                                            @else
-                                                <i class="bi bi-star"></i>
-                                            @endif
-                                        @endfor
-                                    </span>
-                                </h6>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card">
-                    <div class="card-body px-4 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start">
-                                <div class="stats-icon red mb-2">
-                                    <i class="bi bi-heart"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                <h6 class="text-muted font-semibold">Kepuasan Pelanggan</h6>
-                                <h6 class="font-extrabold mb-0">
-                                    {{ $totalReviews > 0 ? number_format(($ratingDistribution[4] + $ratingDistribution[5]) / $totalReviews * 100, 1) : 0 }}%
-                                </h6>
-                            </div>
-                        </div>
+                    <div class="col-12 text-center">
+                        <h6 class="text-muted font-semibold">Total Review</h6>
+                        <h6 class="font-extrabold mb-0">{{ $totalReviews }}</h6>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+        <div class="card">
+            <div class="card-body px-4 py-4-5">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="stats-icon green mb-2">
+                            <i class="iconly-boldTick-Square"></i>
+                        </div>
+                    </div>
+                    <div class="col-12 text-center">
+                        <h6 class="text-muted font-semibold">Review Aktif</h6>
+                        <h6 class="font-extrabold mb-0">{{ $activeReviews }}
+                            ({{ $totalReviews > 0 ? round(($activeReviews / $totalReviews) * 100) : 0 }}%)</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+        <div class="card">
+            <div class="card-body px-4 py-4-5">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="stats-icon blue mb-2">
+                            <i class="iconly-boldStar"></i>
+                        </div>
+                    </div>
+                    <div class="col-12 text-center">
+                        <h6 class="text-muted font-semibold">Rating Rata-rata</h6>
+                        <h6 class="font-extrabold mb-0">
+                            {{ number_format($avgRating, 1) }}
+                            <span class="text-warning">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    @if ($i <= round($avgRating))
+                                        <i class="bi bi-star-fill"></i>
+                                    @else
+                                        <i class="bi bi-star"></i>
+                                    @endif
+                                @endfor
+                            </span>
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+        <div class="card">
+            <div class="card-body px-4 py-4-5">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="stats-icon red mb-2">
+                            <i class="iconly-boldHeart"></i>
+                        </div>
+                    </div>
+                    <div class="col-12 text-center">
+                        <h6 class="text-muted font-semibold">Kepuasan Pelanggan</h6>
+                        <h6 class="font-extrabold mb-0">
+                            {{ $totalReviews > 0 ? number_format((($ratingDistribution[4] + $ratingDistribution[5]) / $totalReviews) * 100, 1) : 0 }}%
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
         <div class="row">
             <!-- Grafik Distribusi Rating -->
@@ -167,10 +172,12 @@
                                                     @endfor
                                                 </div>
                                             </td>
-                                            <td>{{ \Illuminate\Support\Str::limit($review->comment, 100) ?? 'Tidak ada komentar' }}</td>
+                                            <td>{{ \Illuminate\Support\Str::limit($review->comment, 100) ?? 'Tidak ada komentar' }}
+                                            </td>
                                             <td>{{ $review->created_at->format('d M Y H:i') }}</td>
                                             <td>
-                                                <a href="{{ route('owner.reviews.show', $review->id) }}" class="btn btn-sm btn-info">
+                                                <a href="{{ route('owner.reviews.show', $review->id) }}"
+                                                    class="btn btn-sm btn-info">
                                                     <i class="bi bi-eye"></i> Detail
                                                 </a>
                                             </td>

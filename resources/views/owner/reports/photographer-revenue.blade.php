@@ -62,15 +62,15 @@
 
                     <div class="row">
                         <div class="col-md-4 mb-4">
-                            <div class="card bg-light">
+                            <div class="card  shadow border">
                                 <div class="card-body text-center py-4">
                                     <h5 class="mb-2">Total Pendapatan Bersih Fotografer</h5>
-                                    <h2 class="text-primary mb-0">Rp {{ number_format($totalPhotographerNetRevenue, 0, ',', '.') }}</h2>
+                                    <h2 class="text-success mb-0">Rp {{ number_format($totalPhotographerNetRevenue, 0, ',', '.') }}</h2>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4 mb-4">
-                            <div class="card bg-light">
+                            <div class="card  shadow border">
                                 <div class="card-body text-center py-4">
                                     <h5 class="mb-2">Penggunaan Membership</h5>
                                     <h2 class="text-info mb-0">{{ number_format($membershipPhotographerCount, 0) }}</h2>
@@ -79,10 +79,10 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="card bg-light">
+                            <div class="card  shadow border">
                                 <div class="card-body text-center py-4">
                                     <h5 class="mb-2">Total Booking</h5>
-                                    <h2 class="text-success mb-0">{{ number_format($photographerRevenue->sum('booking_count') + $membershipPhotographerCount, 0) }}</h2>
+                                    <h2 class="text-info mb-0">{{ number_format($photographerRevenue->sum('booking_count') + $membershipPhotographerCount, 0) }}</h2>
                                 </div>
                             </div>
                         </div>
@@ -329,90 +329,141 @@
         }
 
         function createLineChart(canvasId, photographerData) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
+    const ctx = document.getElementById(canvasId).getContext('2d');
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: photographerData.map(item => {
-                        const date = new Date(item.date);
-                        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    }),
-                    datasets: [{
-                        label: 'Pendapatan Bersih Harian',
-                        data: photographerData.map(item => item.revenue),
-                        fill: false,
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                }
-                            }
+    // Buat array tanggal lengkap dari startDate hingga endDate
+    const startDate = new Date('{{ $startDate }}');
+    const endDate = new Date('{{ $endDate }}');
+    const dateRange = [];
+
+    // Isi semua tanggal dalam range
+    for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+        dateRange.push(new Date(dt).toISOString().split('T')[0]); // Format 'YYYY-MM-DD'
+    }
+
+    // Buat dataset dengan nilai 0 untuk tanggal yang tidak ada transaksi
+    const completeData = dateRange.map(dateString => {
+        const existingData = photographerData.find(item => item.date === dateString);
+        return {
+            date: dateString,
+            revenue: existingData ? parseFloat(existingData.revenue) : 0,
+            booking_count: existingData ? existingData.booking_count : 0
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: completeData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+            }),
+            datasets: [{
+                label: 'Pendapatan Bersih Harian',
+                data: completeData.map(item => item.revenue),
+                fill: false,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
                         }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Tren Pendapatan Bersih Fotografer Harian'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
-                                }
-                            }
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Tren Pendapatan Bersih Fotografer Harian'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
                         }
                     }
                 }
-            });
+            }
         }
+    });
+}
 
-        function createBookingCountChart(canvasId, photographerData) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
+function createBookingCountChart(canvasId, photographerData) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
 
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: photographerData.map(item => {
-                        const date = new Date(item.date);
-                        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    }),
-                    datasets: [{
-                        label: 'Jumlah Booking',
-                        data: photographerData.map(item => item.booking_count),
-                        backgroundColor: 'rgba(153, 102, 255, 0.7)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1
-                    }]
+    // Buat array tanggal lengkap dari startDate hingga endDate
+    const startDate = new Date('{{ $startDate }}');
+    const endDate = new Date('{{ $endDate }}');
+    const dateRange = [];
+
+    // Isi semua tanggal dalam range
+    for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+        dateRange.push(new Date(dt).toISOString().split('T')[0]); // Format 'YYYY-MM-DD'
+    }
+
+    // Buat dataset dengan nilai 0 untuk tanggal yang tidak ada transaksi
+    const completeData = dateRange.map(dateString => {
+        const existingData = photographerData.find(item => item.date === dateString);
+        return {
+            date: dateString,
+            booking_count: existingData ? existingData.booking_count : 0
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: completeData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+            }),
+            datasets: [{
+                label: 'Jumlah Booking',
+                data: completeData.map(item => item.booking_count),
+                backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Jumlah Booking Fotografer per Hari'
-                        }
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
                     }
                 }
-            });
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Jumlah Booking Fotografer per Hari'
+                }
+            }
         }
-    </script>
+    });
+}
+   </script>
     <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

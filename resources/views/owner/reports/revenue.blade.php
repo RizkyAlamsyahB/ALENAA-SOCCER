@@ -92,7 +92,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     </div>
 
 
@@ -100,7 +100,7 @@
                     <div class="row mt-4">
 
                         <div class="col-md-12">
-                            <div class="card bg-white">
+                            <div class="card ">
                                 <div class="card-body">
                                     <canvas id="revenuePieChart"></canvas>
                                 </div>

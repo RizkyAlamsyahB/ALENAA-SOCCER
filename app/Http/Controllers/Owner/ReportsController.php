@@ -294,6 +294,21 @@ public function index()
             ->orderBy('day')
             ->get();
 
+        // Get daily revenue data for chart
+        $dailyRevenue = DB::table('field_bookings')
+            ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
+            ->whereBetween('field_bookings.start_time', [$startDateTime, $endDateTime])
+            ->where('field_bookings.status', 'confirmed')
+            ->where('field_bookings.is_membership', 0)
+            ->select(
+                DB::raw('DATE(field_bookings.start_time) as date'),
+                DB::raw('SUM(field_bookings.total_price) - COALESCE(SUM(payments.discount_amount *
+                    (field_bookings.total_price / payments.original_amount)), 0) as revenue')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
         // Format day of week for better readability
         $daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         foreach ($bookingsByDayOfWeek as $booking) {
@@ -305,7 +320,8 @@ public function index()
             'totalFieldNetRevenue',
             'bookingsByDayOfWeek',
             'startDate',
-            'endDate'
+            'endDate',
+            'dailyRevenue' // Menambahkan dailyRevenue ke compact
         ));
     }
 
