@@ -186,14 +186,14 @@
                     </li>
 
                     {{-- Transaction Management --}}
-                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
                         <a href="#" class="sidebar-link">
                             <i class="bi bi-receipt"></i>
                             <span>Transaksi</span>
                         </a>
-                        <ul class="submenu {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                        <ul class="submenu {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
                             <li class="submenu-item">
-                                <a href="" class="submenu-link">Point of Sale (POS)</a>
+                                <a href="{{route('admin.pos.index')}}" class="submenu-link">Point of Sale (POS)</a>
                             </li>
                             <li class="submenu-item">
                                 <a href="" class="submenu-link">Data Pesanan</a>

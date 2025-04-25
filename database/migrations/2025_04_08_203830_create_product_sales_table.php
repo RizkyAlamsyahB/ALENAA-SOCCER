@@ -19,7 +19,6 @@ return new class extends Migration
             $table->enum('payment_method', ['cash', 'transfer', 'points', 'other']);
             $table->decimal('total_amount', 12, 2);
             $table->decimal('discount_amount', 10, 2)->default(0.00);
-            $table->integer('points_used')->default(0);
             $table->enum('status', ['completed', 'cancelled', 'refunded'])->default('completed');
             $table->text('note')->nullable();
             $table->timestamps();

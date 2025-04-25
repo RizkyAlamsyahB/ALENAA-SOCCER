@@ -2,11 +2,12 @@
 namespace App\Models;
 
 use App\Models\User;
-use App\Models\FieldBooking;
+use App\Models\Customer;
 use App\Models\Discount;
+use App\Models\FieldBooking;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Payment extends Model
@@ -27,6 +28,7 @@ class Payment extends Model
         'payment_type',
         'payment_details',
         'expires_at',
+        'customer_id',
     ];
 
     protected $casts = [
@@ -115,5 +117,12 @@ class Payment extends Model
     public function isRenewalPayment(): bool
     {
         return $this->payment_type === 'membership_renewal' || strpos($this->order_id, 'RENEW-MEM-') === 0;
+    }
+    /**
+     * Get the customer associated with this payment.
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 }

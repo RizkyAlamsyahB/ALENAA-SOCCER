@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\POSController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\PointController;
 use App\Http\Controllers\Admin\FieldController;
@@ -303,6 +304,39 @@ Route::middleware(['auth', 'checkRole:admin'])
         Route::get('schedule/booking/{id}', [SchedulesController::class, 'getBookingDetail'])->name('schedule.booking');
         Route::get('schedule/booking/{id}/edit', [SchedulesController::class, 'editBooking'])->name('schedule.booking.edit');
         Route::put('schedule/booking/{id}', [SchedulesController::class, 'updateBooking'])->name('schedule.booking.update');
+
+        // POS Routes
+        Route::prefix('pos')
+            ->name('pos.')
+            ->group(function () {
+                // Halaman utama POS
+                Route::get('/', [POSController::class, 'index'])->name('index');
+
+                // APIs untuk menambahkan item ke keranjang
+                Route::post('/add-field', [POSController::class, 'addFieldToCart'])->name('add.field');
+                Route::post('/add-rental', [POSController::class, 'addRentalItemToCart'])->name('add.rental');
+                Route::post('/add-photographer', [POSController::class, 'addPhotographerToCart'])->name('add.photographer');
+                Route::post('/add-product', [POSController::class, 'addProductToCart'])->name('add.product');
+
+                // API untuk mendapatkan slot waktu tersedia
+                Route::get('/field-timeslots', [POSController::class, 'getFieldTimeSlots'])->name('field.timeslots');
+                Route::get('/photographer-timeslots', [POSController::class, 'getPhotographerTimeSlots'])->name('photographer.timeslots');
+
+                // Menghapus item dari keranjang
+                Route::delete('/remove-item/{item_id}', [POSController::class, 'removeFromCart'])->name('remove.item');
+
+                // Checkout
+                Route::post('/checkout', [POSController::class, 'checkout'])->name('checkout');
+
+                // Struk pembayaran
+                Route::get('/receipt/{id}', [POSController::class, 'showReceipt'])->name('receipt');
+                Route::get('/receipt/{id}/download', [POSController::class, 'downloadReceipt'])->name('receipt.download');
+
+                // Riwayat transaksi
+                Route::get('/history', [POSController::class, 'transactionHistory'])->name('history');
+
+                Route::get('/admin/customers/search', [POSController::class, 'searchCustomers'])->name('customers.search');
+            });
     });
 
 // Owner Routes
