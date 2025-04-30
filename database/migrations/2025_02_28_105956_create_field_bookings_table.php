@@ -19,7 +19,6 @@ return new class extends Migration {
             $table->dateTime('end_time');
             $table->decimal('total_price', 10, 2);
             $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed', 'on_hold'])->default('pending');
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -11,7 +11,6 @@ use App\Models\Product;
 use App\Models\CartItem;
 use App\Models\Customer;
 use App\Models\RentalItem;
-use App\Models\ProductSale;
 use Illuminate\Support\Str;
 use App\Models\FieldBooking;
 use App\Models\Photographer;
@@ -24,6 +23,7 @@ use App\Models\PhotographerBooking;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\User\PhotographerController;
 
 class POSController extends Controller
 {
@@ -726,14 +726,13 @@ class POSController extends Controller
             );
         }
     }
-
     /**
      * Proses checkout untuk POS
      */
     public function checkout(Request $request)
     {
         $request->validate([
-            'payment_method' => 'required|in:cash,transfer,points,other',
+            'payment_method' => 'required|in:cash,transfer,other',
             'customer_id' => 'required|exists:customers,id',
             'cash_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:500',
@@ -803,7 +802,6 @@ class POSController extends Controller
                             'end_time' => $item->end_time,
                             'total_price' => $item->price,
                             'status' => 'confirmed', // Langsung confirmed karena sudah dibayar
-                            'created_by' => Auth::id(), // Admin yang membuat booking
                             'notes' => $item->notes,
                         ]);
 
@@ -822,7 +820,6 @@ class POSController extends Controller
                             'quantity' => $item->quantity,
                             'total_price' => $item->price,
                             'status' => 'confirmed', // Langsung confirmed karena sudah dibayar
-                            'created_by' => Auth::id(), // Admin yang membuat booking
                         ]);
 
                         // Update stok yang tersedia
@@ -846,60 +843,32 @@ class POSController extends Controller
                             'end_time' => $item->end_time,
                             'price' => $item->price,
                             'status' => 'confirmed', // Langsung confirmed karena sudah dibayar
-                            'created_by' => Auth::id(), // Admin yang membuat booking
                             'notes' => $item->notes,
                         ]);
+                        // Kirim notifikasi ke fotografer
+                        app(PhotographerController::class)->sendBookingNotification($photographerBooking);
 
                         $createdBookings['photographers'][] = $photographerBooking;
                         break;
 
                     case 'product':
-                        // Untuk produk, akan diproses nanti sebagai ProductSale
-                        $createdBookings['products'][] = [
-                            'product_id' => $item->item_id,
-                            'quantity' => $item->quantity,
-                            'price' => $item->price / $item->quantity, // Harga per unit
-                        ];
-
                         // Update stok produk
                         $product = Product::find($item->item_id);
                         if ($product) {
                             $product->stock -= $item->quantity;
                             $product->save();
                         }
+
+                        // Buat langsung product sale item yang terhubung ke payment
+                        ProductSaleItem::create([
+                            'payment_id' => $payment->id,
+                            'product_id' => $item->item_id,
+                            'quantity' => $item->quantity,
+                            'price' => $item->price / $item->quantity, // Harga per unit
+                        ]);
                         break;
                 }
             }
-
-            // Jika ada produk yang dibeli, buat record di ProductSale
-            if (!empty($createdBookings['products'])) {
-                // Buat product sale
-                $productSale = ProductSale::create([
-                    'order_id' => 'PROD-' . $orderId,
-                    'customer_id' => $request->customer_id,
-                    'user_id' => $adminId, // Gunakan user_id admin sebagai fallback
-                    'admin_id' => Auth::id(),
-                    'payment_method' => $request->payment_method,
-                    'total_amount' => collect($createdBookings['products'])->sum(function ($item) {
-                        return $item['price'] * $item['quantity'];
-                    }),
-                    'discount_amount' => 0,
-                    'status' => 'completed',
-                    'note' => $request->notes,
-                ]);
-
-                // Buat product sale items
-                foreach ($createdBookings['products'] as $product) {
-                    ProductSaleItem::create([
-                        'product_sale_id' => $productSale->id,
-                        'product_id' => $product['product_id'],
-                        'quantity' => $product['quantity'],
-                        'price' => $product['price'],
-                    ]);
-                }
-            }
-
-
 
             // Bersihkan cart POS
             CartItem::where('cart_id', $posCart->id)->delete();
@@ -919,30 +888,6 @@ class POSController extends Controller
                 ->with('error', 'Gagal memproses transaksi: ' . $e->getMessage());
         }
     }
-    /**
-     * Menampilkan struk pembayaran
-     */
-    public function showReceipt($id)
-    {
-        $payment = Payment::with('customer')->findOrFail($id);
-
-        // Cari product sale berdasarkan order_id payment
-        $productSale = ProductSale::where('order_id', 'PROD-' . $payment->order_id)->first();
-
-        // Ambil informasi cash dan kembalian jika pembayaran tunai
-        $cashAmount = null;
-        $change = null;
-
-        if ($payment->payment_type == 'cash') {
-            $paymentDetails = json_decode($payment->payment_details, true);
-            if (isset($paymentDetails['cash_amount'])) {
-                $cashAmount = $paymentDetails['cash_amount'];
-                $change = $cashAmount - $payment->amount;
-            }
-        }
-
-        return view('admin.pos.receipt', compact('payment', 'productSale', 'cashAmount', 'change'));
-    }
 
     /**
      * Download struk pembayaran
@@ -950,12 +895,13 @@ class POSController extends Controller
     public function downloadReceipt($id)
     {
         // Ambil data payment beserta relasinya
-        $payment = Payment::with(['customer', 'fieldBookings.field', 'rentalBookings.rentalItem', 'photographerBookings.photographer'])->findOrFail($id);
-
-        // Cari product sale terkait
-        $productSale = ProductSale::where('order_id', 'PROD-' . $payment->order_id)
-            ->with('productSaleItems.product')
-            ->first();
+        $payment = Payment::with([
+            'customer',
+            'fieldBookings.field',
+            'rentalBookings.rentalItem',
+            'photographerBookings.photographer',
+            'productItems.product', // Gunakan relasi baru untuk product items
+        ])->findOrFail($id);
 
         // Ambil informasi cash dan kembalian jika pembayaran tunai
         $cashAmount = null;
@@ -978,7 +924,7 @@ class POSController extends Controller
         ];
 
         // Load view dengan data
-        $pdf = Pdf::loadView('admin.pos.receipt_pdf', compact('payment', 'productSale', 'cashAmount', 'change'));
+        $pdf = Pdf::loadView('admin.pos.receipt_pdf', compact('payment', 'cashAmount', 'change'));
 
         // Atur options
         $dompdf = $pdf->getDomPDF();
@@ -999,6 +945,28 @@ class POSController extends Controller
 
         // Return the PDF for download
         return $pdf->download('Struk-Pembayaran-' . $payment->order_id . '.pdf');
+    }
+
+    /**
+     * Menampilkan struk pembayaran
+     */
+    public function showReceipt($id)
+    {
+        $payment = Payment::with(['customer', 'productItems.product'])->findOrFail($id);
+
+        // Ambil informasi cash dan kembalian jika pembayaran tunai
+        $cashAmount = null;
+        $change = null;
+
+        if ($payment->payment_type == 'cash') {
+            $paymentDetails = json_decode($payment->payment_details, true);
+            if (isset($paymentDetails['cash_amount'])) {
+                $cashAmount = $paymentDetails['cash_amount'];
+                $change = $cashAmount - $payment->amount;
+            }
+        }
+
+        return view('admin.pos.receipt', compact('payment', 'cashAmount', 'change'));
     }
 
     /**

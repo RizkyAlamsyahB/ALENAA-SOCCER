@@ -188,140 +188,345 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
+            // Initialize DataTable with improved styling
             $('#rentalItemsTable').DataTable({
-                order: [
-                    [4, 'desc']
-                ], // Sort by revenue descending by default
+                order: [[4, 'desc']], // Sort by revenue descending by default
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/id.json'
-                }
+                },
+                responsive: true,
+                pagingType: 'simple_numbers',
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]]
             });
 
-            // Item Category Chart
-            const categoryData = @json(
-                $rentalRevenueByItem->groupBy('category')->map(function ($group) {
-                        return [
-                            'category' => $group->first()->category,
-                            'revenue' => $group->sum('revenue'),
-                        ];
-                    })->values());
+            // Item Category Chart - Modern Doughnut
+            const categoryData = @json($rentalRevenueByItem->groupBy('category')->map(function ($group) {
+                    return [
+                        'category' => $group->first()->category,
+                        'revenue' => $group->sum('revenue'),
+                    ];
+                })->values());
 
-            createPieChart('itemCategoryChart',
+            createModernDoughnutChart('itemCategoryChart',
                 categoryData.map(item => item.category),
                 categoryData.map(item => item.revenue),
                 'Pendapatan Bersih per Kategori Item'
             );
 
-            // Top 5 Items Chart
+            // Top 5 Items Chart - Modern Bar Chart
             const topItems = @json($rentalRevenueByItem->sortByDesc('revenue')->take(5)->values());
-            createBarChart('topItemsChart',
+            createModernBarChart('topItemsChart',
                 topItems.map(item => item.name),
                 topItems.map(item => item.revenue),
                 'Top 5 Item Rental (Pendapatan Bersih)'
             );
 
-            // Rental Revenue by Day Chart (Line Chart)
-            createLineChart('rentalRevenueByDayChart', @json($rentalRevenueByDay));
+            // Rental Revenue by Day Chart - Modern Line Chart
+            createModernLineChart('rentalRevenueByDayChart', @json($rentalRevenueByDay));
         });
 
-        function createPieChart(canvasId, labels, data, title) {
+        function createModernDoughnutChart(canvasId, labels, data, title) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
+            }
+
             const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
+
+            // Modern color palette - lebih cerah dan beragam
+            const colors = {
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.85)',  // blue-500
+                    'rgba(16, 185, 129, 0.85)',  // emerald-500
+                    'rgba(245, 158, 11, 0.85)',  // amber-500
+                    'rgba(236, 72, 153, 0.85)',  // pink-500
+                    'rgba(139, 92, 246, 0.85)',  // purple-500
+                    'rgba(14, 165, 233, 0.85)',  // sky-500
+                    'rgba(249, 115, 22, 0.85)',  // orange-500
+                    'rgba(239, 68, 68, 0.85)'    // red-500
+                ],
+                borderColor: [
+                    'rgba(59, 130, 246, 1)',
+                    'rgba(16, 185, 129, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(236, 72, 153, 1)',
+                    'rgba(139, 92, 246, 1)',
+                    'rgba(14, 165, 233, 1)',
+                    'rgba(249, 115, 22, 1)',
+                    'rgba(239, 68, 68, 1)'
+                ]
+            };
+
+            // Calculate total revenue for center text
+            const totalRevenue = data.reduce((a, b) => a + b, 0);
+
+            // Custom center text plugin
+            const centerTextPlugin = {
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    if (chart.config.type !== 'doughnut') return;
+
+                    const width = chart.width;
+                    const height = chart.height;
+                    const ctx = chart.ctx;
+
+                    ctx.restore();
+
+                    // Text styles
+                    ctx.font = "14px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#6B7280'; // gray-500
+
+                    // Title text
+                    ctx.fillText('Total', width / 2, height / 2 - 15);
+
+                    // Amount text
+                    ctx.font = "bold 16px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+                    ctx.fillStyle = '#111827'; // gray-900
+                    const formattedTotal = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalRevenue);
+                    ctx.fillText(formattedTotal, width / 2, height / 2 + 10);
+
+                    ctx.save();
+                }
+            };
+
+            // Create chart instance
+            window[canvasId + 'Instance'] = new Chart(ctx, {
+                type: 'doughnut',
+                plugins: [centerTextPlugin],
                 data: {
                     labels: labels,
                     datasets: [{
                         data: data,
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(54, 162, 235, 0.7)',
-                            'rgba(255, 206, 86, 0.7)',
-                            'rgba(75, 192, 192, 0.7)',
-                            'rgba(153, 102, 255, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)'
-                        ],
-                        borderWidth: 1
+                        backgroundColor: colors.backgroundColor.slice(0, labels.length),
+                        borderColor: colors.borderColor.slice(0, labels.length),
+                        borderWidth: 2,
+                        hoverOffset: 10,
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '60%',
+                    layout: {
+                        padding: 20
+                    },
                     plugins: {
                         legend: {
                             position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 15,
+                                color: '#4B5563', // gray-600
+                                font: {
+                                    size: 12
+                                }
+                            }
                         },
                         title: {
                             display: true,
-                            text: title
+                            text: title,
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            usePointStyle: true,
                             callbacks: {
                                 label: function(context) {
                                     const value = context.raw;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = ((value / total) * 100).toFixed(1);
-                                    return context.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(
-                                            value) +
-                                        ' (' + percentage + '%)';
+                                    return context.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(value) +
+                                           ' (' + percentage + '%)';
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 800,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
         }
 
-        function createBarChart(canvasId, labels, data, title) {
+        function createModernBarChart(canvasId, labels, data, title) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
+            }
+
             const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
+
+            // Gradien untuk latar belakang bars
+            const gradients = [];
+
+            // Warna utama untuk bars - tealish color palette
+            const baseColors = [
+                {
+                    start: 'rgba(20, 184, 166, 0.9)', // teal-500
+                    end: 'rgba(20, 184, 166, 0.3)',   // teal-500 with lower opacity
+                    border: 'rgba(20, 184, 166, 1)'   // teal-500 solid
+                },
+                {
+                    start: 'rgba(6, 182, 212, 0.9)',  // cyan-500
+                    end: 'rgba(6, 182, 212, 0.3)',    // cyan-500 with lower opacity
+                    border: 'rgba(6, 182, 212, 1)'    // cyan-500 solid
+                },
+                {
+                    start: 'rgba(45, 212, 191, 0.9)', // teal-400
+                    end: 'rgba(45, 212, 191, 0.3)',   // teal-400 with lower opacity
+                    border: 'rgba(45, 212, 191, 1)'   // teal-400 solid
+                },
+                {
+                    start: 'rgba(94, 234, 212, 0.9)', // teal-300
+                    end: 'rgba(94, 234, 212, 0.3)',   // teal-300 with lower opacity
+                    border: 'rgba(94, 234, 212, 1)'   // teal-300 solid
+                },
+                {
+                    start: 'rgba(8, 145, 178, 0.9)',  // cyan-600
+                    end: 'rgba(8, 145, 178, 0.3)',    // cyan-600 with lower opacity
+                    border: 'rgba(8, 145, 178, 1)'    // cyan-600 solid
+                }
+            ];
+
+            // Create gradients for each bar
+            for (let i = 0; i < labels.length; i++) {
+                const colorSet = baseColors[i % baseColors.length];
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, colorSet.start);
+                gradient.addColorStop(1, colorSet.end);
+                gradients.push(gradient);
+            }
+
+            // Create border colors array
+            const borderColors = labels.map((_, i) => baseColors[i % baseColors.length].border);
+
+            window[canvasId + 'Instance'] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Pendapatan Bersih',
                         data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
+                        backgroundColor: gradients,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barThickness: 40,
+                        maxBarThickness: 60
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 20,
+                            bottom: 10,
+                            left: 20
+                        }
+                    },
+                    indexAxis: 'y', // Horizontal bar chart for better readability with long item names
                     scales: {
-                        y: {
+                        x: {
                             beginAtZero: true,
+                            grid: {
+                                borderDash: [3, 3],
+                                color: 'rgba(229, 231, 235, 0.8)' // gray-200
+                            },
                             ticks: {
+                                color: '#6B7280', // gray-500
                                 callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toLocaleString('id-ID') + ' rb';
+                                    }
+                                    return 'Rp ' + value.toLocaleString('id-ID');
                                 }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#4B5563' // gray-600
                             }
                         }
                     },
                     plugins: {
+                        legend: {
+                            display: false
+                        },
                         title: {
                             display: true,
-                            text: title
+                            text: title,
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(
-                                        context.raw);
+                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
         }
 
-        function createLineChart(canvasId, rentalData) {
+        function createModernLineChart(canvasId, rentalData) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
+            }
+
             const ctx = document.getElementById(canvasId).getContext('2d');
 
             // Buat array tanggal lengkap dari startDate hingga endDate
@@ -343,54 +548,135 @@
                 };
             });
 
-            new Chart(ctx, {
+            // Format labels (tanggal)
+            const labels = completeData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short'
+                });
+            });
+
+            // Data pendapatan
+            const revenueData = completeData.map(item => item.revenue);
+
+            // Membuat gradient untuk area di bawah line
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(5, 150, 105, 0.2)'); // emerald-600 dengan opacity rendah
+            gradient.addColorStop(1, 'rgba(5, 150, 105, 0.02)'); // emerald-600 dengan opacity sangat rendah
+
+            window[canvasId + 'Instance'] = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: completeData.map(item => {
-                        const date = new Date(item.date);
-                        return date.toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short'
-                        });
-                    }),
+                    labels: labels,
                     datasets: [{
                         label: 'Pendapatan Bersih Harian',
-                        data: completeData.map(item => item.revenue),
-                        fill: false,
-                        borderColor: 'rgba(40, 167, 69, 1)', // Warna hijau
-                        tension: 0.4
+                        data: revenueData,
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(5, 150, 105, 1)', // emerald-600
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(5, 150, 105, 1)', // emerald-600
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 0, // Hide points by default
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: 'rgba(5, 150, 105, 1)', // emerald-600
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 20,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                borderDash: [3, 3],
+                                color: 'rgba(229, 231, 235, 0.8)' // gray-200
+                            },
                             ticks: {
+                                color: '#6B7280', // gray-500
                                 callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toLocaleString('id-ID') + ' rb';
+                                    }
+                                    return 'Rp ' + value.toLocaleString('id-ID');
                                 }
                             }
                         },
                         x: {
+                            grid: {
+                                display: false
+                            },
                             ticks: {
+                                color: '#6B7280', // gray-500
                                 maxRotation: 45,
                                 minRotation: 45
                             }
                         }
                     },
                     plugins: {
+                        legend: {
+                            display: false
+                        },
                         title: {
                             display: true,
-                            text: 'Tren Pendapatan Bersih Rental Harian'
+                            text: 'Tren Pendapatan Bersih Rental Harian',
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(
-                                        context.raw);
+                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
                                 }
                             }
+                        }
+                    },
+                    animations: {
+                        tension: {
+                            duration: 1000,
+                            easing: 'easeOutQuart',
+                            from: 0.2,
+                            to: 0.4,
+                            loop: false
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.4
                         }
                     }
                 }

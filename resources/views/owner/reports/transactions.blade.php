@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.owner')
 
 @section('title', 'Riwayat Transaksi POS')
 
@@ -13,8 +13,8 @@
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.pos.index') }}">POS</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('owner.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('owner.reports.index') }}">Laporan</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Riwayat Transaksi</li>
                     </ol>
                 </nav>
@@ -29,7 +29,7 @@
                 <h4 class="card-title">Filter Transaksi</h4>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.pos.history') }}" method="GET">
+                <form action="{{ route('owner.reports.transactions') }}" method="GET">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
@@ -186,10 +186,9 @@
                                 <th>Order ID</th>
                                 <th>Tanggal</th>
                                 <th>Pelanggan</th>
-                                <th>Item</th>
                                 <th>Metode Pembayaran</th>
                                 <th>Total</th>
-                                <th>Aksi</th>
+                                {{-- <th>Aksi</th> --}}
                             </tr>
                         </thead>
                         <tbody>
@@ -197,41 +196,27 @@
                                 <tr>
                                     <td>{{ $transaction->order_id }}</td>
                                     <td>{{ $transaction->created_at->format('d M Y, H:i') }}</td>
-                                    <td>{{ $transaction->user->name ?? 'Guest' }}
-                                        @if($transaction->user && $transaction->user->phone_number)
-                                            <br><small>{{ $transaction->user->phone_number }}</small>
+                                    <td>
+                                        {{ $transaction->customer->name ?? 'Guest' }}
+                                        @if($transaction->customer && $transaction->customer->phone_number)
+                                            <br><small>{{ $transaction->customer->phone_number }}</small>
                                         @endif
                                     </td>
-                                   
                                     <td>
                                         <span class="badge bg-light-{{ getPaymentTypeColor($transaction->payment_type) }}">
                                             {{ getPaymentTypeName($transaction->payment_type) }}
                                         </span>
                                     </td>
                                     <td>Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton{{ $transaction->id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                                Aksi
-                                            </button>
-                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $transaction->id }}">
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('admin.pos.receipt', $transaction->id) }}">
-                                                        <i class="bi bi-eye"></i> Lihat Detail
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('admin.pos.receipt.download', $transaction->id) }}">
-                                                        <i class="bi bi-download"></i> Download Struk
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
+                                    {{-- <td>
+                                        <a href="{{ route('admin.pos.receipt', $transaction->id) }}" class="btn btn-sm btn-info" target="_blank">
+                                            <i class="bi bi-eye"></i> Lihat Detail
+                                        </a>
+                                    </td> --}}
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="6" class="text-center py-4">
                                         <div class="empty-state">
                                             <div class="empty-state-icon">
                                                 <i class="bi bi-receipt-cutoff"></i>
@@ -254,26 +239,35 @@
         </div>
     </section>
 </div>
-    <!-- JS Dependencies -->
-    <script src="{{ asset('assets/extensions/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/extensions/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
-    <script src="{{ asset('assets/static/js/pages/datatables.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert@2"></script>
-    <link rel="stylesheet" href="{{ asset('assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
 
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Data untuk grafik
         const chartData = @json($chartData);
 
-        // Buat grafik transaksi
+        // Hapus instance chart lama jika ada
+        if (window.transactionChartInstance) {
+            window.transactionChartInstance.destroy();
+        }
+
+        // Mendapatkan context untuk chart
         const ctx = document.getElementById('transaction-chart').getContext('2d');
-        const transactionChart = new Chart(ctx, {
+
+        // Membuat gradient untuk latar belakang bar
+        const barGradient = ctx.createLinearGradient(0, 0, 0, 400);
+        barGradient.addColorStop(0, 'rgba(59, 130, 246, 0.7)'); // blue-500
+        barGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)'); // blue-500 with lower opacity
+
+        // Membuat gradient untuk area di bawah line
+        const lineGradient = ctx.createLinearGradient(0, 0, 0, 400);
+        lineGradient.addColorStop(0, 'rgba(239, 68, 68, 0.2)'); // red-500 with low opacity
+        lineGradient.addColorStop(1, 'rgba(239, 68, 68, 0.02)'); // red-500 with very low opacity
+
+        // Buat grafik transaksi dengan tampilan modern
+        window.transactionChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: chartData.dates,
@@ -281,38 +275,191 @@
                     {
                         label: 'Jumlah Transaksi',
                         data: chartData.counts,
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: barGradient,
+                        borderColor: 'rgba(59, 130, 246, 1)', // blue-500
                         borderWidth: 1,
-                        yAxisID: 'y-axis-1',
+                        borderRadius: 6,
+                        yAxisID: 'y',
+                        order: 2 // Higher order means it's drawn first (behind)
                     },
                     {
-                        label: 'Total Pendapatan (Rp)',
+                        label: 'Total Pendapatan',
                         data: chartData.totals,
                         type: 'line',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 2,
-                        yAxisID: 'y-axis-2',
-                        fill: false,
+                        backgroundColor: lineGradient,
+                        borderColor: 'rgba(239, 68, 68, 1)', // red-500
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 0, // hide points by default
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: 'rgba(239, 68, 68, 1)',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2,
+                        yAxisID: 'y1',
+                        tension: 0.4,
+                        fill: true,
+                        order: 1 // Lower order means it's drawn last (in front)
                     }
                 ]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                layout: {
+                    padding: {
+                        top: 20,
+                        right: 25,
+                        bottom: 20,
+                        left: 20
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
                         position: 'left',
-                        id: 'y-axis-1',
+                        title: {
+                            display: true,
+                            text: 'Jumlah Transaksi',
+                            color: '#6B7280', // gray-500
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            }
+                        },
+                        grid: {
+                            borderDash: [3, 3],
+                            color: 'rgba(229, 231, 235, 0.8)' // gray-200
+                        },
+                        ticks: {
+                            color: '#6B7280', // gray-500
+                            precision: 0, // ensure whole numbers
+                            font: {
+                                size: 11
+                            }
+                        }
                     },
                     y1: {
                         beginAtZero: true,
                         position: 'right',
-                        id: 'y-axis-2',
+                        title: {
+                            display: true,
+                            text: 'Total Pendapatan (Rp)',
+                            color: '#6B7280', // gray-500
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            }
+                        },
                         grid: {
                             drawOnChartArea: false,
                         },
+                        ticks: {
+                            color: '#6B7280', // gray-500
+                            font: {
+                                size: 11
+                            },
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' jt';
+                                } else if (value >= 1000) {
+                                    return 'Rp ' + (value / 1000).toLocaleString('id-ID') + ' rb';
+                                }
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#6B7280', // gray-500
+                            maxRotation: 45,
+                            minRotation: 45,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            boxWidth: 12,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Transaksi dan Pendapatan',
+                        color: '#1F2937', // gray-800
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#1F2937', // gray-800
+                        bodyColor: '#4B5563', // gray-600
+                        borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.dataset.yAxisID === 'y') {
+                                    // For transaction count
+                                    label += context.raw;
+                                } else {
+                                    // For revenue, format as currency
+                                    label += 'Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                animations: {
+                    tension: {
+                        duration: 1000,
+                        easing: 'easeOutQuart',
+                        from: 0.2,
+                        to: 0.4,
+                        loop: false
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    },
+                    bar: {
+                        borderRadius: 4
                     }
                 }
             }

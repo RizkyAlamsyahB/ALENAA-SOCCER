@@ -304,16 +304,11 @@
                     <td class="info-box">
                         <h3>Pelanggan</h3>
                         <span class="info-label">Nama</span>
-                        <div class="info-value">{{ $payment->user->name ?? 'Umum' }}</div>
+                        <div class="info-value">{{ $payment->customer->name ?? 'Umum' }}</div>
 
-                        @if($payment->user && $payment->user->email)
-                        <span class="info-label">Email</span>
-                        <div class="info-value">{{ $payment->user->email }}</div>
-                        @endif
-
-                        @if($payment->user && $payment->user->phone_number)
+                        @if($payment->customer && $payment->customer->phone_number)
                         <span class="info-label">Telepon</span>
-                        <div class="info-value">{{ $payment->user->phone_number }}</div>
+                        <div class="info-value">{{ $payment->customer->phone_number }}</div>
                         @endif
                     </td>
 
@@ -430,19 +425,19 @@
                     @endif
 
                     <!-- Product Sales -->
-                    @if(isset($productSale) && $productSale && count($productSale->productSaleItems) > 0)
-                        <tr>
-                            <td colspan="4" class="item-type">Produk</td>
-                        </tr>
-                        @foreach($productSale->productSaleItems as $item)
-                        <tr>
-                            <td>{{ $item->product->name ?? 'Produk' }}</td>
-                            <td>{{ Carbon\Carbon::parse($payment->created_at)->format('d M Y') }}</td>
-                            <td class="text-center">{{ $item->quantity }} pcs</td>
-                            <td class="text-right">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>
-                        </tr>
-                        @endforeach
-                    @endif
+                    @if(count($payment->productItems) > 0)
+                    <tr>
+                        <td colspan="4" class="item-type">Produk</td>
+                    </tr>
+                    @foreach($payment->productItems as $item)
+                    <tr>
+                        <td>{{ $item->product->name ?? 'Produk' }}</td>
+                        <td>{{ Carbon\Carbon::parse($payment->created_at)->format('d M Y') }}</td>
+                        <td class="text-center">{{ $item->quantity }} pcs</td>
+                        <td class="text-right">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                @endif
                 </tbody>
             </table>
 
@@ -505,7 +500,6 @@
                 <tr>
                     <td class="footer-left">Terima Kasih!</td>
                     <td class="footer-right">
-                        <p>Poin diperoleh: {{ floor($payment->original_amount / 10000) }}</p>
                         <p>Dokumen ini diterbitkan secara elektronik dan tidak memerlukan tanda tangan.</p>
                         <p>&copy; {{ date('Y') }} Alena Soccer Center. Hak Cipta Dilindungi.</p>
                     </td>

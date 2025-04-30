@@ -160,72 +160,165 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
+            // Initialize DataTable with improved styling
             $('#membershipTable').DataTable({
                 order: [[4, 'desc']], // Sort by revenue descending by default
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/id.json'
-                }
+                },
+                responsive: true,
+                pagingType: 'simple_numbers',
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]]
             });
 
-            // Membership Type Revenue Chart
+            // Membership Type Revenue Chart - Modern Doughnut
             const membershipTypeData = @json($membershipRevenueByType);
 
-            createPieChart('membershipTypeChart',
+            createModernDoughnutChart('membershipTypeChart',
                 membershipTypeData.map(item => item.name),
                 membershipTypeData.map(item => item.revenue),
                 'Pendapatan Bersih per Tipe Membership'
             );
 
-            // Membership Usage Chart
+            // Membership Usage Chart - Modern Bar Chart
             const membershipUsageData = @json($membershipUsageByCategory);
-            createBarChart('membershipUsageChart',
+            createModernBarChart('membershipUsageChart',
                 membershipUsageData.map(item => item.category),
                 membershipUsageData.map(item => item.usage_count),
                 'Penggunaan Membership per Kategori',
                 'Jumlah Penggunaan'
             );
 
-            // Membership Revenue Trend Chart
-            createLineChart('membershipRevenueTrendChart', @json($membershipRevenueByDay));
+            // Membership Revenue Trend Chart - Modern Line Chart
+            createModernLineChart('membershipRevenueTrendChart', @json($membershipRevenueByDay));
         });
 
-        function createPieChart(canvasId, labels, data, title) {
+        function createModernDoughnutChart(canvasId, labels, data, title) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
+            }
+
             const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
+
+            // Modern color palette - blue-purple theme for membership
+            const colors = {
+                backgroundColor: [
+                    'rgba(79, 70, 229, 0.85)',   // indigo-600
+                    'rgba(59, 130, 246, 0.85)',  // blue-500
+                    'rgba(14, 165, 233, 0.85)',  // sky-500
+                    'rgba(6, 182, 212, 0.85)',   // cyan-500
+                    'rgba(124, 58, 237, 0.85)',  // purple-600
+                    'rgba(139, 92, 246, 0.85)',  // purple-500
+                    'rgba(147, 51, 234, 0.85)',  // violet-600
+                    'rgba(79, 70, 229, 0.85)'    // indigo-600
+                ],
+                borderColor: [
+                    'rgba(79, 70, 229, 1)',
+                    'rgba(59, 130, 246, 1)',
+                    'rgba(14, 165, 233, 1)',
+                    'rgba(6, 182, 212, 1)',
+                    'rgba(124, 58, 237, 1)',
+                    'rgba(139, 92, 246, 1)',
+                    'rgba(147, 51, 234, 1)',
+                    'rgba(79, 70, 229, 1)'
+                ]
+            };
+
+            // Calculate total revenue for center text
+            const totalRevenue = data.reduce((a, b) => a + b, 0);
+
+            // Custom center text plugin
+            const centerTextPlugin = {
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    if (chart.config.type !== 'doughnut') return;
+
+                    const width = chart.width;
+                    const height = chart.height;
+                    const ctx = chart.ctx;
+
+                    ctx.restore();
+
+                    // Text styles
+                    ctx.font = "14px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#6B7280'; // gray-500
+
+                    // Title text
+                    ctx.fillText('Total', width / 2, height / 2 - 15);
+
+                    // Amount text
+                    ctx.font = "bold 16px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+                    ctx.fillStyle = '#111827'; // gray-900
+                    const formattedTotal = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalRevenue);
+                    ctx.fillText(formattedTotal, width / 2, height / 2 + 10);
+
+                    ctx.save();
+                }
+            };
+
+            // Create chart instance
+            window[canvasId + 'Instance'] = new Chart(ctx, {
+                type: 'doughnut',
+                plugins: [centerTextPlugin],
                 data: {
                     labels: labels,
                     datasets: [{
                         data: data,
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.7)',
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(54, 162, 235, 0.7)',
-                            'rgba(255, 206, 86, 0.7)',
-                            'rgba(153, 102, 255, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(153, 102, 255, 1)'
-                        ],
-                        borderWidth: 1
+                        backgroundColor: colors.backgroundColor.slice(0, labels.length),
+                        borderColor: colors.borderColor.slice(0, labels.length),
+                        borderWidth: 2,
+                        hoverOffset: 10,
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '60%',
+                    layout: {
+                        padding: 20
+                    },
                     plugins: {
                         legend: {
                             position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 15,
+                                color: '#4B5563', // gray-600
+                                font: {
+                                    size: 12
+                                }
+                            }
                         },
                         title: {
                             display: true,
-                            text: title
+                            text: title,
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            usePointStyle: true,
                             callbacks: {
                                 label: function(context) {
                                     const value = context.raw;
@@ -236,46 +329,114 @@
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 800,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
         }
 
-        function createBarChart(canvasId, labels, data, title, labelText = 'Pendapatan Bersih') {
+        function createModernBarChart(canvasId, labels, data, title, labelText = 'Pendapatan Bersih') {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
+            }
+
             const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
+
+            // Create gradient for bars
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(124, 58, 237, 0.85)'); // purple-600
+            gradient.addColorStop(1, 'rgba(124, 58, 237, 0.3)');  // purple-600 with lower opacity
+
+            window[canvasId + 'Instance'] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: labelText,
                         data: data,
-                        backgroundColor: 'rgba(153, 102, 255, 0.7)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(124, 58, 237, 1)', // purple-600
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barThickness: 30,
+                        maxBarThickness: 50
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 20,
+                            bottom: 10,
+                            left: 20
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                borderDash: [3, 3],
+                                color: 'rgba(229, 231, 235, 0.8)' // gray-200
+                            },
                             ticks: {
+                                color: '#6B7280', // gray-500
                                 callback: function(value) {
                                     if (labelText.includes('Pendapatan')) {
-                                        return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                        if (value >= 1000000) {
+                                            return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' jt';
+                                        } else if (value >= 1000) {
+                                            return 'Rp ' + (value / 1000).toLocaleString('id-ID') + ' rb';
+                                        }
+                                        return 'Rp ' + value.toLocaleString('id-ID');
                                     }
                                     return value;
                                 }
                             }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6B7280' // gray-500
+                            }
                         }
                     },
                     plugins: {
+                        legend: {
+                            display: false
+                        },
                         title: {
                             display: true,
-                            text: title
+                            text: title,
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
                             callbacks: {
                                 label: function(context) {
                                     if (labelText.includes('Pendapatan')) {
@@ -285,168 +446,183 @@
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
         }
 
-        function createLineChart(canvasId, membershipData) {
-    const ctx = document.getElementById(canvasId).getContext('2d');
-
-    // Create array of dates from startDate to endDate
-    const startDate = new Date('{{ $startDate }}');
-    const endDate = new Date('{{ $endDate }}');
-    const dateRange = [];
-
-    // Fill all dates in range
-    for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
-        dateRange.push(new Date(dt).toISOString().split('T')[0]);
-    }
-
-    // Create dataset with zero values for dates with no transactions
-    const completeData = dateRange.map(dateString => {
-        const existingData = membershipData.find(item => item.date === dateString);
-        return {
-            date: dateString,
-            revenue: existingData ? parseFloat(existingData.revenue) : 0
-        };
-    });
-
-    // Create gradient fill
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(0, 123, 255, 0.6)');
-    gradient.addColorStop(1, 'rgba(0, 123, 255, 0.0)');
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: completeData.map(item => {
-                const date = new Date(item.date);
-                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-            }),
-            datasets: [{
-                label: 'Pendapatan Bersih Membership',
-                data: completeData.map(item => item.revenue),
-                borderColor: '#0366d6',
-                borderWidth: 2,
-                pointBackgroundColor: '#0366d6',
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 1.5,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                pointHoverBackgroundColor: '#0366d6',
-                pointHoverBorderColor: '#ffffff',
-                pointHoverBorderWidth: 2,
-                tension: 0.3,
-                fill: true,
-                backgroundColor: gradient
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    top: 20,
-                    right: 20,
-                    bottom: 20,
-                    left: 20
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(200, 200, 200, 0.15)',
-                        drawBorder: false
-                    },
-                    ticks: {
-                        font: {
-                            family: "'Poppins', sans-serif",
-                            size: 11
-                        },
-                        color: '#666',
-                        padding: 10,
-                        callback: function(value) {
-                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                        }
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    },
-                    ticks: {
-                        font: {
-                            family: "'Poppins', sans-serif",
-                            size: 11
-                        },
-                        color: '#666',
-                        padding: 10,
-                        maxRotation: 30,
-                        minRotation: 30
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                title: {
-                    display: true,
-                    text: 'Tren Pendapatan Bersih Membership Harian',
-                    font: {
-                        family: "'Poppins', sans-serif",
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    color: '#333',
-                    padding: {
-                        bottom: 20
-                    }
-                },
-                tooltip: {
-                    enabled: true,
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    titleFont: {
-                        family: "'Poppins', sans-serif",
-                        size: 12
-                    },
-                    bodyFont: {
-                        family: "'Poppins', sans-serif",
-                        size: 12
-                    },
-                    padding: 12,
-                    cornerRadius: 6,
-                    caretSize: 6,
-                    callbacks: {
-                        label: function(context) {
-                            return 'Pendapatan: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
-                        }
-                    }
-                }
-            },
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-            elements: {
-                line: {
-                    borderJoinStyle: 'round'
-                }
-            },
-            animation: {
-                duration: 1500,
-                easing: 'easeOutQuart'
+        function createModernLineChart(canvasId, membershipData) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
             }
-        }
-    });
-}
 
-</script>
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            // Create array of dates from startDate to endDate
+            const startDate = new Date('{{ $startDate }}');
+            const endDate = new Date('{{ $endDate }}');
+            const dateRange = [];
+
+            // Fill all dates in range
+            for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+                dateRange.push(new Date(dt).toISOString().split('T')[0]);
+            }
+
+            // Create dataset with zero values for dates with no transactions
+            const completeData = dateRange.map(dateString => {
+                const existingData = membershipData.find(item => item.date === dateString);
+                return {
+                    date: dateString,
+                    revenue: existingData ? parseFloat(existingData.revenue) : 0
+                };
+            });
+
+            // Format dates for display
+            const labels = completeData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short'
+                });
+            });
+
+            // Membership revenue data
+            const revenueData = completeData.map(item => item.revenue);
+
+            // Create gradient fill
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(79, 70, 229, 0.25)'); // indigo-600 with transparency
+            gradient.addColorStop(1, 'rgba(79, 70, 229, 0.02)'); // indigo-600 nearly transparent
+
+            window[canvasId + 'Instance'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pendapatan Bersih Membership',
+                        data: revenueData,
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(79, 70, 229, 1)',  // indigo-600
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 0, // Hide points by default
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: 'rgba(79, 70, 229, 1)',
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(229, 231, 235, 0.8)', // gray-200
+                                borderDash: [3, 3]
+                            },
+                            ticks: {
+                                color: '#6B7280', // gray-500
+                                padding: 10,
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toLocaleString('id-ID') + ' rb';
+                                    }
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6B7280', // gray-500
+                                padding: 10,
+                                maxRotation: 30,
+                                minRotation: 30
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Tren Pendapatan Bersih Membership Harian',
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                bottom: 20
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Pendapatan: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    elements: {
+                        line: {
+                            borderJoinStyle: 'round'
+                        }
+                    },
+                    animations: {
+                        tension: {
+                            duration: 1000,
+                            easing: 'easeOutQuart',
+                            from: 0.2,
+                            to: 0.4,
+                            loop: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+
     <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

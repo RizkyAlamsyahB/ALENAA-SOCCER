@@ -37,7 +37,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         $user = auth()->user();
         if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.pos.index');
         } elseif ($user->role === 'owner') {
             return redirect()->route('owner.dashboard');
         } elseif ($user->role === 'user') {
@@ -376,8 +376,13 @@ Route::middleware(['auth', 'checkRole:owner'])
         Route::get('reports/photographer-revenue', [ReportsController::class, 'photographerRevenueReport'])->name('reports.photographer-revenue');
         Route::get('reports/dashboard-stats', [ReportsController::class, 'dashboardStats'])->name('reports.dashboard-stats');
         Route::get('reports/membership-revenue', [ReportsController::class, 'membershipRevenueReport'])->name('reports.membership-revenue');
-    });
-// Owner Routes
+  // Riwayat transaksi POS
+Route::get('reports/transactions', [ReportsController::class, 'transactionHistory'])->name('reports.transactions');
+
+Route::get('/reports/product-sales', [ReportsController::class, 'productSalesRevenueReport'])->name('reports.product-sales-revenue');
+
+});
+// Photographers Routes
 Route::middleware(['auth', 'checkRole:photographer'])
     ->prefix('photographers')
     ->name('photographers.')
@@ -387,6 +392,21 @@ Route::middleware(['auth', 'checkRole:photographer'])
 
         // Rute khusus photographer
         Route::get('/schedule', [ScheduleController::class, 'schedule'])->name('schedule');
+
+        // Route untuk booking details
+        Route::get('/booking-details/{bookingId}/{bookingType}',
+            [ScheduleController::class, 'getBookingDetails'])
+            ->name('booking-details');
+
+        // Route untuk confirm booking
+        Route::post('/confirm-booking/{bookingId}/{bookingType}',
+            [ScheduleController::class, 'confirmBooking'])
+            ->name('confirm-booking');
+
+        // Route untuk cancel booking
+        Route::post('/cancel-booking/{bookingId}/{bookingType}',
+            [ScheduleController::class, 'cancelBooking'])
+            ->name('cancel-booking');
     });
 // Auth Routes
 require __DIR__ . '/auth.php';

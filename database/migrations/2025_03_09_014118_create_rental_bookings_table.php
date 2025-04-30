@@ -20,7 +20,6 @@ return new class extends Migration {
             $table->integer('quantity');
             $table->decimal('total_price', 10, 2);
             $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])->default('pending');
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -26,8 +26,7 @@
         <div class="row">
             <div class="col-md-8 mx-auto">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <h4 class="card-title">Struk Pembayaran #{{ $payment->order_id }}</h4>
+                    <div class="card-header d-flex justify-content-center">
                         <div>
                             <a href="{{ route('admin.pos.receipt.download', ['id' => $payment->id]) }}" class="btn btn-sm btn-primary">
                                 <i class="bi bi-download"></i> Download
@@ -41,8 +40,8 @@
                         <!-- Header Struk -->
                         <div class="text-center mb-4">
                             <h4>ALENA SOCCER CENTER</h4>
-                            <p class="mb-0">Jl. Raya Contoh No. 123, Jakarta</p>
-                            <p class="mb-0">Telp: 021-12345678</p>
+                            <p class="mb-0">Jalan Kolonel Sugiono No.25</p>
+                            <p class="mb-0">Telp: -</p>
                         </div>
 
                         <!-- Info Transaksi -->
@@ -53,14 +52,13 @@
                                 <p class="mb-1"><strong>Kasir:</strong> {{ auth()->user()->name }}</p>
                             </div>
                             <div class="col-6">
-                                <p class="mb-1"><strong>Pelanggan:</strong> {{ $payment->user->name ?? 'Umum' }}</p>
-                                <p class="mb-1"><strong>No. Telp:</strong> {{ $payment->user->phone_number ?? '-' }}</p>
+                                <p class="mb-1"><strong>Pelanggan:</strong> {{ $payment->customer->name ?? 'Umum' }}</p>
+                                <p class="mb-1"><strong>No. Telp:</strong> {{ $payment->customer->phone_number ?? '-' }}</p>
                                 <p class="mb-1"><strong>Metode Pembayaran:</strong>
                                     @php
                                         $paymentMethods = [
                                             'cash' => 'Tunai',
                                             'transfer' => 'Transfer Bank',
-                                            'points' => 'Poin',
                                             'other' => 'Lainnya'
                                         ];
                                     @endphp
@@ -117,17 +115,15 @@
                                         @endforeach
 
                                         <!-- Product Sales -->
-                                        @if(isset($productSale) && $productSale)
-                                            @foreach($productSale->productSaleItems as $item)
-                                            <tr>
-                                                <td>
-                                                    <strong>Produk: {{ $item->product->name }}</strong><br>
-                                                    <small>Jumlah: {{ $item->quantity }} &times; Rp {{ number_format($item->price, 0, ',', '.') }}</small>
-                                                </td>
-                                                <td class="text-end">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>
-                                            </tr>
-                                            @endforeach
-                                        @endif
+                                        @foreach($payment->productItems as $item)
+                                        <tr>
+                                            <td>
+                                                <strong>Produk: {{ $item->product->name }}</strong><br>
+                                                <small>Jumlah: {{ $item->quantity }} &times; Rp {{ number_format($item->price, 0, ',', '.') }}</small>
+                                            </td>
+                                            <td class="text-end">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endforeach
                                     </tbody>
 
                                     <tfoot>
@@ -178,7 +174,6 @@
 
                         <!-- Footer -->
                         <div class="text-center mt-4">
-                            <p class="mb-0">Poin diperoleh: {{ floor($payment->original_amount / 10000) }}</p>
                             <p class="mb-1">Terima kasih atas kunjungan Anda</p>
                             <p class="mb-0">Semoga harimu menyenangkan!</p>
                         </div>

@@ -24,7 +24,7 @@ class FieldSeeder extends Seeder
                 'name' => 'Lapangan 1',
                 'type' => 'Matras Standar',
                 'price' => 65000,
-                'image' => 'assets/futsal-field.png',
+                'image' => 'assets/de47c2f2de85138a5c907b60548ec6e0.jpg',
                 'photographer_id' => count($photographerUsers) > 0 ? $photographerUsers[0] : null,
                 'description' => 'Lapangan matras standar dengan ukuran 25m x 15m',
                 'created_at' => now(),
@@ -37,7 +37,7 @@ class FieldSeeder extends Seeder
                 'image' => 'assets/futsal-field.png',
                 'photographer_id' => count($photographerUsers) > 1 ? $photographerUsers[1] : null,
                 'description' => 'Lapangan rumput sintetis dengan ukuran 25m x 15m',
-                
+
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

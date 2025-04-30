@@ -50,7 +50,18 @@
                     <li class="sidebar-title">Main Menu</li>
 
 
-
+                    {{-- Transaction Management --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-receipt"></i>
+                            <span>Transaksi</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
+                            <li class="submenu-item">
+                                <a href="{{route('admin.pos.index')}}" class="submenu-link">Point of Sale (POS)</a>
+                            </li>
+                        </ul>
+                    </li>
                     {{-- Dashboard --}}
                     <li class="sidebar-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
@@ -111,11 +122,11 @@
                             <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
                                 <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Jadwal Lapangan</a>
                             </li>
-                            <li
+                            {{-- <li
                                 class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
                                 <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Pemesanan
                                     Lapangan</a>
-                            </li>
+                            </li> --}}
                         </ul>
                     </li>
 
@@ -132,14 +143,14 @@
                                 <a href="{{ route('admin.photo-packages.index') }}" class="submenu-link">Data
                                     Fotografer</a>
                             </li>
-                            <li
+                            {{-- <li
                                 class="submenu-item {{ request()->routeIs('admin.photo-packages.schedule') ? 'active' : '' }}">
                                 <a href="" class="submenu-link">Jadwal Fotografer</a>
-                            </li>
-                            <li
+                            </li> --}}
+                            {{-- <li
                                 class="submenu-item {{ request()->routeIs('admin.photo-packages.booking') ? 'active' : '' }}">
                                 <a href="" class="submenu-link">Pemesanan Fotografer</a>
-                            </li>
+                            </li> --}}
                         </ul>
                     </li>
 
@@ -185,27 +196,7 @@
                         </ul>
                     </li>
 
-                    {{-- Transaction Management --}}
-                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
-                        <a href="#" class="sidebar-link">
-                            <i class="bi bi-receipt"></i>
-                            <span>Transaksi</span>
-                        </a>
-                        <ul class="submenu {{ request()->routeIs('admin.pos.*') ? 'active' : '' }}">
-                            <li class="submenu-item">
-                                <a href="{{route('admin.pos.index')}}" class="submenu-link">Point of Sale (POS)</a>
-                            </li>
-                            <li class="submenu-item">
-                                <a href="" class="submenu-link">Data Pesanan</a>
-                            </li>
-                            <li class="submenu-item">
-                                <a href="" class="submenu-link">Pembayaran</a>
-                            </li>
-                            <li class="submenu-item">
-                                <a href="" class="submenu-link">Keranjang Belanja</a>
-                            </li>
-                        </ul>
-                    </li>
+
                 @endif
 
 
@@ -245,6 +236,11 @@
                             <li
                                 class="submenu-item {{ request()->routeIs('owner.reviews.summary') ? 'active' : '' }}">
                                 <a href="{{ route('owner.reviews.summary') }}">Ringkasan Review</a>
+                            </li>
+                            {{-- Riwayat Pendapatan POS --}}
+                            <li
+                                class="submenu-item {{ request()->routeIs('owner.reports.transactions') ? 'active' : '' }}">
+                                <a href="{{ route('owner.reports.transactions') }}">Riwayat Pendapatan POS</a>
                             </li>
                         </ul>
                     </li>
@@ -306,12 +302,10 @@
                         <span>Akun</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item">
+                        {{-- <li class="submenu-item">
                             <a href="" class="submenu-link">Profil Saya</a>
-                        </li>
-                        <li class="submenu-item">
-                            <a href="" class="submenu-link">Pengaturan Akun</a>
-                        </li>
+                        </li> --}}
+
                         <li class="submenu-item">
                             <a href="{{ route('logout') }}" class="submenu-link text-danger"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

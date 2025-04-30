@@ -136,13 +136,6 @@
                                                         <i class="bi bi-check-circle"></i>
                                                     </button>
                                                 @endif
-                                                @if ($booking['status'] == 'pending' || $booking['status'] == 'confirmed')
-                                                    <button type="button" class="btn btn-sm btn-danger cancel-booking"
-                                                        data-id="{{ $booking['id'] }}"
-                                                        data-type="{{ $booking['type'] }}">
-                                                        <i class="bi bi-x-circle"></i>
-                                                    </button>
-                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -194,29 +187,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-success" id="confirmBookingBtn">Ya, Konfirmasi</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cancel Booking Modal -->
-    <div class="modal fade" id="cancelBookingModal" tabindex="-1" aria-labelledby="cancelBookingModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cancelBookingModalLabel">Batalkan Booking</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Anda yakin ingin membatalkan booking ini?</p>
-                    <div class="form-group">
-                        <label for="cancellationReason">Alasan Pembatalan:</label>
-                        <textarea class="form-control" id="cancellationReason" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
-                    <button type="button" class="btn btn-danger" id="cancelBookingBtn">Ya, Batalkan</button>
                 </div>
             </div>
         </div>
@@ -348,12 +318,33 @@
 
             function initializeCalendar() {
                 var calendarEl = document.getElementById('bookingCalendar');
+
+                // Menambahkan CSS kustom untuk tombol
+                var customCSS = document.createElement('style');
+                customCSS.innerHTML = `
+                    .fc-button {
+                        margin: 0 5px !important;
+                        padding: 6px 12px !important;
+                    }
+                    .fc-toolbar-chunk {
+                        display: flex;
+                        gap: 8px;
+                    }
+                `;
+                document.head.appendChild(customCSS);
+
                 calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     headerToolbar: {
                         left: 'prev,next today',
                         center: 'title',
                         right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    buttonText: {
+                        today: 'Hari Ini',
+                        month: 'Bulan',
+                        week: 'Minggu',
+                        day: 'Hari'
                     },
                     events: function(info, successCallback, failureCallback) {
                         // Convert all bookings to calendar events
@@ -556,56 +547,6 @@
                     },
                     error: function(xhr) {
                         toastr.error('Terjadi kesalahan saat mengkonfirmasi booking.', 'Error');
-                    }
-                });
-            });
-
-            // Cancel Booking
-            $(document).on('click', '.cancel-booking', function() {
-                var bookingId = $(this).data('id');
-                var bookingType = $(this).data('type');
-
-                // Set cancel button data attributes
-                $('#cancelBookingBtn').data('id', bookingId);
-                $('#cancelBookingBtn').data('type', bookingType);
-
-                // Reset cancellation reason
-                $('#cancellationReason').val('');
-
-                // Show cancellation modal
-                $('#cancelBookingModal').modal('show');
-            });
-
-            $('#cancelBookingBtn').click(function() {
-                var bookingId = $(this).data('id');
-                var bookingType = $(this).data('type');
-                var reason = $('#cancellationReason').val();
-
-                // Cancel booking via AJAX
-                $.ajax({
-                    url: '{{ url("photographers/cancel-booking") }}/' + bookingId + '/' + bookingType,
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        cancellation_reason: reason
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            toastr.success(response.message, 'Berhasil');
-
-                            // Close modal
-                            $('#cancelBookingModal').modal('hide');
-
-                            // Reload page after short delay
-                            setTimeout(function() {
-                                location.reload();
-                            }, 1500);
-                        } else {
-                            toastr.error(response.message, 'Error');
-                        }
-                    },
-                    error: function(xhr) {
-                        toastr.error('Terjadi kesalahan saat membatalkan booking.', 'Error');
                     }
                 });
             });

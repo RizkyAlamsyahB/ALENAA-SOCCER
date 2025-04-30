@@ -28,7 +28,7 @@ public function handle(Request $request, Closure $next, ...$roles)
     // Redirect berdasarkan role jika tidak sesuai
     switch ($user->role) {
         case 'admin':
-            return redirect()->route('admin.dashboard')->with('error', 'Anda tidak memiliki akses');
+            return redirect()->route('admin.pos.index')->with('error', 'Anda tidak memiliki akses');
         case 'owner':
             return redirect()->route('owner.dashboard')->with('error', 'Anda tidak memiliki akses');
         case 'photographer':

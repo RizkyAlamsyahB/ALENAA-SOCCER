@@ -15,8 +15,8 @@ class ProductSaleItem extends Model
      * @var array
      */
     protected $fillable = [
-        'product_sale_id',
         'product_id',
+        'payment_id',
         'quantity',
         'price',
     ];
@@ -33,19 +33,19 @@ class ProductSaleItem extends Model
     ];
 
     /**
-     * Get the sale that owns the item.
-     */
-    public function productSale()
-    {
-        return $this->belongsTo(ProductSale::class);
-    }
-
-    /**
      * Get the product associated with this sale item.
      */
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Get the payment associated with this sale item.
+     */
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
     }
 
     /**

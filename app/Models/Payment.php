@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\FieldBooking;
+use App\Models\ProductSaleItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -125,4 +126,9 @@ class Payment extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+    // Di dalam model Payment, tambahkan method ini:
+public function productItems()
+{
+    return $this->hasMany(ProductSaleItem::class);
+}
 }

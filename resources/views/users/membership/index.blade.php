@@ -26,7 +26,7 @@
 
 
  <!-- Main Content -->
- <div class="container content-wrapper">
+ <div class="container">
     <!-- Intro Section -->
     <section class="intro-section">
         <div class="intro-content">

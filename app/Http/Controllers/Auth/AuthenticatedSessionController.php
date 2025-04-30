@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
 
         // Define a role-to-dashboard mapping
         $dashboards = [
-            'admin' => 'admin.dashboard',
+            'admin' => 'admin.pos.index',
             'owner' => 'owner.dashboard',
             'photographer' => 'photographers.dashboard',
             'user' => 'users.dashboard',

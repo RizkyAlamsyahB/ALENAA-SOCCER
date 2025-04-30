@@ -117,8 +117,6 @@ class PointVoucherController extends Controller
         // Set nilai default untuk is_active jika tidak ada
         $validatedData['is_active'] = $request->has('is_active') ? $request->is_active : true;
 
-        // Set created_by sebagai ID owner yang sedang login
-        $validatedData['created_by'] = Auth::id();
 
         PointVoucher::create($validatedData);
 

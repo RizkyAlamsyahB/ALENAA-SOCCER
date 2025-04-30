@@ -20,7 +20,6 @@ return new class extends Migration {
             $table->decimal('price', 12, 2);
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

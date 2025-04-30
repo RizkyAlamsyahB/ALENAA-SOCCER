@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\ProductSale;
 use App\Models\FieldBooking;
 use App\Models\RentalBooking;
 use App\Models\PhotographerBooking;
@@ -37,9 +36,5 @@ class Customer extends Model
         return $this->hasMany(PhotographerBooking::class);
     }
 
-    // Relasi ke pembelian produk
-    public function productSales()
-    {
-        return $this->hasMany(ProductSale::class);
-    }
+
 }

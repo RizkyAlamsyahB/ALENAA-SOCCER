@@ -240,11 +240,22 @@
                                                 @if (Auth::id() == $openMabar->user_id && $participant->user_id != $openMabar->user_id)
                                                     <td>
                                                         @if ($participant->user->phone_number)
-                                                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $participant->user->phone_number) }}"
-                                                                class="btn btn-sm btn-success" target="_blank">
-                                                                <i class="fab fa-whatsapp"></i> WhatsApp
-                                                            </a>
-                                                        @endif
+                                                        @php
+                                                            $phone = preg_replace('/[^0-9]/', '', $participant->user->phone_number);
+                                                            // Jika dimulai dengan 0, ganti dengan 62
+                                                            if (substr($phone, 0, 1) == '0') {
+                                                                $phone = '62' . substr($phone, 1);
+                                                            }
+                                                            // Jika belum ada kode negara, tambahkan 62
+                                                            elseif (substr($phone, 0, 2) != '62') {
+                                                                $phone = '62' . $phone;
+                                                            }
+                                                        @endphp
+                                                        <a href="https://wa.me/{{ $phone }}"
+                                                            class="btn btn-sm btn-success" target="_blank">
+                                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                                        </a>
+                                                    @endif
 
                                                     </td>
                                                     <td>

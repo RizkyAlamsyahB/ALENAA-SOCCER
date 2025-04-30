@@ -18,6 +18,26 @@
                         </ol>
                     </nav>
                 </div>
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if (session('info'))
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        {{ session('info') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -49,7 +69,8 @@
 
                         <div class="row mt-3" id="selected-customer-info">
                             <div class="col-md-6">
-                                <label for="global_customer_name" class="form-label">Nama Pelanggan</label>
+                                <label for="global_customer_name" class="form-label">Nama Pelanggan <span
+                                        class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="global_customer_name" required>
                             </div>
                             <div class="col-md-6">
@@ -82,8 +103,8 @@
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="products-tab" data-bs-toggle="tab"
-                                        data-bs-target="#products" type="button" role="tab" aria-controls="products"
-                                        aria-selected="false">Produk</button>
+                                        data-bs-target="#products" type="button" role="tab"
+                                        aria-controls="products" aria-selected="false">Produk</button>
                                 </li>
                             </ul>
                         </div>
@@ -97,7 +118,7 @@
                                         @csrf
                                         <div class="row mb-3">
                                             <div class="col-md-6">
-                                                <label for="field_id" class="form-label">Pilih Lapangan</label>
+                                                <label for="field_id" class="form-label mt-2">Pilih Lapangan</label>
                                                 <select class="form-select" id="field_id" name="field_id" required>
                                                     <option value="">-- Pilih Lapangan --</option>
                                                     @foreach ($fields as $field)
@@ -110,8 +131,8 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="field_date" class="form-label">Tanggal</label>
-                                                <input type="date" class="form-control" id="field_date"
-                                                    name="date" min="{{ date('Y-m-d') }}" required>
+                                                <input type="date" class="form-control" id="field_date" name="date" min="{{ date('Y-m-d') }}" required>
+                                                <small class="form-text text-muted">Anda dapat memilih tanggal hingga 7 hari ke depan</small>
                                             </div>
                                         </div>
 
@@ -201,7 +222,8 @@
                                         @csrf
                                         <div class="row mb-3">
                                             <div class="col-md-6">
-                                                <label for="photographer_id" class="form-label">Pilih Fotografer</label>
+                                                <label for="photographer_id" class="form-label mt-2">Pilih
+                                                    Fotografer</label>
                                                 <select class="form-select" id="photographer_id" name="photographer_id"
                                                     required>
                                                     <option value="">-- Pilih Fotografer --</option>
@@ -242,40 +264,41 @@
                                     </form>
                                 </div>
 
-<!-- Tab Produk -->
-<div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
-    <form id="productForm" method="POST" action="{{ route('admin.pos.add.product') }}">
-        @csrf
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="product_id" class="form-label">Pilih Produk</label>
-                <select class="form-select" id="product_id" name="product_id" required>
-                    <option value="">-- Pilih Produk --</option>
-                    @foreach ($products as $product)
-                        <option value="{{ $product->id }}"
-                            data-price="{{ $product->price }}"
-                            data-stock="{{ $product->stock }}">
-                            {{ $product->name }} - Rp
-                            {{ number_format($product->price, 0, ',', '.') }}
-                        </option>
-                    @endforeach
-                </select>
-                <small class="form-text text-muted" id="product_stock_info"></small>
-            </div>
-            <div class="col-md-6">
-                <label for="product_quantity" class="form-label">Jumlah</label>
-                <input type="number" class="form-control" id="product_quantity"
-                    name="quantity" min="1" value="1" required>
-            </div>
-        </div>
+                                <!-- Tab Produk -->
+                                <div class="tab-pane fade" id="products" role="tabpanel"
+                                    aria-labelledby="products-tab">
+                                    <form id="productForm" method="POST" action="{{ route('admin.pos.add.product') }}">
+                                        @csrf
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="product_id" class="form-label mt-2">Pilih Produk</label>
+                                                <select class="form-select" id="product_id" name="product_id" required>
+                                                    <option value="">-- Pilih Produk --</option>
+                                                    @foreach ($products as $product)
+                                                        <option value="{{ $product->id }}"
+                                                            data-price="{{ $product->price }}"
+                                                            data-stock="{{ $product->stock }}">
+                                                            {{ $product->name }} - Rp
+                                                            {{ number_format($product->price, 0, ',', '.') }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <small class="form-text text-muted" id="product_stock_info"></small>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="product_quantity" class="form-label">Jumlah</label>
+                                                <input type="number" class="form-control" id="product_quantity"
+                                                    name="quantity" min="1" value="1" required>
+                                            </div>
+                                        </div>
 
-        <!-- Input tersembunyi untuk data customer -->
-        <input type="hidden" name="customer_name" id="product_customer_name_hidden">
-        <input type="hidden" name="customer_phone" id="product_customer_phone_hidden">
+                                        <!-- Input tersembunyi untuk data customer -->
+                                        <input type="hidden" name="customer_name" id="product_customer_name_hidden">
+                                        <input type="hidden" name="customer_phone" id="product_customer_phone_hidden">
 
-        <button type="submit" class="btn btn-primary">Tambah ke Keranjang</button>
-    </form>
-</div>
+                                        <button type="submit" class="btn btn-primary">Tambah ke Keranjang</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -301,7 +324,6 @@
                                         <select class="form-select" id="payment_method" name="payment_method" required>
                                             <option value="cash">Tunai</option>
                                             <option value="transfer">Transfer</option>
-                                            <option value="points">Poin</option>
                                             <option value="other">Lainnya</option>
                                         </select>
                                     </div>
@@ -342,6 +364,79 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Fungsi untuk mendapatkan tanggal 7 hari dari sekarang dalam format YYYY-MM-DD
+            function getMaxDate() {
+                const today = new Date();
+                const maxDate = new Date();
+                maxDate.setDate(today.getDate() + 6); // 6 karena hari ini sudah terhitung 1 hari
+
+                const year = maxDate.getFullYear();
+                const month = String(maxDate.getMonth() + 1).padStart(2, '0');
+                const day = String(maxDate.getDate()).padStart(2, '0');
+
+                return `${year}-${month}-${day}`;
+            }
+
+            // Set max date untuk semua input tanggal
+            const dateInputs = [
+                document.getElementById('field_date'),
+                document.getElementById('rental_date'),
+                document.getElementById('photographer_date')
+            ];
+
+            const maxDate = getMaxDate();
+
+            dateInputs.forEach(input => {
+                if (input) {
+                    input.max = maxDate;
+                }
+            });
+
+            // Bisa juga menggunakan flatpickr jika sudah diimport
+            if (typeof flatpickr === 'function') {
+                const flatpickrConfig = {
+                    minDate: "today",
+                    maxDate: maxDate,
+                    locale: "id", // Gunakan bahasa Indonesia jika sudah diload
+                    dateFormat: "Y-m-d"
+                };
+
+                dateInputs.forEach(input => {
+                    if (input) {
+                        // Tambahkan atribut placeholder untuk menunjukkan batasan
+                        input.placeholder = "Pilih tanggal (maks 7 hari)";
+                        flatpickr(input, flatpickrConfig);
+                    }
+                });
+            }
+
+            // Fungsi untuk validasi data pelanggan
+            function validateCustomerData() {
+                const customerName = document.getElementById('global_customer_name').value.trim();
+
+                if (!customerName) {
+                    Toastify({
+                        text: "Nama pelanggan harus diisi terlebih dahulu",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#dc3545",
+                    }).showToast();
+
+                    // Fokus ke input nama pelanggan
+                    document.getElementById('global_customer_name').focus();
+                    return false;
+                }
+                return true;
+            }
+
+            // Tambahkan tanda * pada label nama pelanggan untuk menunjukkan wajib diisi
+            const customerNameLabel = document.querySelector('label[for="global_customer_name"]');
+            if (customerNameLabel) {
+                customerNameLabel.innerHTML = 'Nama Pelanggan <span class="text-danger">*</span>';
+            }
+
             // Lapangan Form Handling
             const fieldIdSelect = document.getElementById('field_id');
             const fieldDateInput = document.getElementById('field_date');
@@ -357,7 +452,7 @@
                     fieldTimeSlotSelect.innerHTML = '<option value="">Memuat slot waktu...</option>';
 
                     // Fetch available time slots dari server
-                    fetch(`{{ route('admin.pos.field.timeslots') }}?field_id=${fieldId}&date=${date}`)
+                    fetch(`${routeFieldTimeslots}?field_id=${fieldId}&date=${date}`)
                         .then(response => response.json())
                         .then(data => {
                             fieldTimeSlotSelect.innerHTML = '<option value="">-- Pilih Slot Waktu --</option>';
@@ -404,6 +499,11 @@
             const fieldBookingForm = document.getElementById('fieldBookingForm');
             fieldBookingForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                // Validasi data pelanggan
+                if (!validateCustomerData()) {
+                    return;
+                }
 
                 const formData = new FormData(this);
                 formData.append('customer_name', document.getElementById('global_customer_name').value);
@@ -484,7 +584,7 @@
                     photographerTimeSlot.innerHTML = '<option value="">Memuat slot waktu...</option>';
 
                     // Fetch available time slots dari server
-                    fetch(`{{ route('admin.pos.photographer.timeslots') }}?photographer_id=${pId}&date=${date}`)
+                    fetch(`${routePhotographerTimeslots}?photographer_id=${pId}&date=${date}`)
                         .then(response => response.json())
                         .then(data => {
                             photographerTimeSlot.innerHTML = '<option value="">-- Pilih Slot Waktu --</option>';
@@ -533,22 +633,14 @@
             photographerBookingForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // Validasi data pelanggan
+                if (!validateCustomerData()) {
+                    return;
+                }
+
                 // Ambil data customer dari form global
                 const customerName = document.getElementById('global_customer_name').value;
                 const customerPhone = document.getElementById('global_customer_phone').value;
-
-                // Validasi data customer
-                if (!customerName) {
-                    Toastify({
-                        text: "Nama pelanggan harus diisi",
-                        duration: 3000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#dc3545",
-                    }).showToast();
-                    return;
-                }
 
                 // Masukkan data customer ke hidden fields
                 document.getElementById('photographer_customer_name_hidden').value = customerName;
@@ -651,22 +743,14 @@
             rentalBookingForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // Validasi data pelanggan
+                if (!validateCustomerData()) {
+                    return;
+                }
+
                 // Ambil data customer dari form global
                 const customerName = document.getElementById('global_customer_name').value;
                 const customerPhone = document.getElementById('global_customer_phone').value;
-
-                // Validasi data customer
-                if (!customerName) {
-                    Toastify({
-                        text: "Nama pelanggan harus diisi",
-                        duration: 3000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#dc3545",
-                    }).showToast();
-                    return;
-                }
 
                 // Masukkan data customer ke hidden fields
                 document.getElementById('rental_customer_name_hidden').value = customerName;
@@ -767,22 +851,14 @@
             productForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // Validasi data pelanggan
+                if (!validateCustomerData()) {
+                    return;
+                }
+
                 // Ambil data customer dari form global
                 const customerName = document.getElementById('global_customer_name').value;
                 const customerPhone = document.getElementById('global_customer_phone').value;
-
-                // Validasi data customer
-                if (!customerName) {
-                    Toastify({
-                        text: "Nama pelanggan harus diisi",
-                        duration: 3000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#dc3545",
-                    }).showToast();
-                    return;
-                }
 
                 // Validasi jumlah dengan stok yang tersedia
                 const productSelect = document.getElementById('product_id');
@@ -809,65 +885,68 @@
                 const formData = new FormData(this);
 
                 fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errorData => {
-                            throw new Error(errorData.message || 'Terjadi kesalahan saat memproses permintaan');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Update cart container
-                        document.getElementById('cart-container').innerHTML = data.html_content;
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message ||
+                                    'Terjadi kesalahan saat memproses permintaan');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Update cart container
+                            document.getElementById('cart-container').innerHTML = data.html_content;
 
-                        // Reset form
-                        productForm.reset();
-                        productStockInfo.textContent = '';
+                            // Reset form
+                            productForm.reset();
+                            productStockInfo.textContent = '';
 
-                        // Enable checkout button
-                        document.getElementById('checkout-btn').disabled = false;
+                            // Enable checkout button
+                            document.getElementById('checkout-btn').disabled = false;
 
-                        // Show success message
+                            // Show success message
+                            Toastify({
+                                text: data.message,
+                                duration: 3000,
+                                close: true,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "#4fbe87",
+                            }).showToast();
+                        } else {
+                            // Show error message
+                            Toastify({
+                                text: data.message,
+                                duration: 3000,
+                                close: true,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "#dc3545",
+                            }).showToast();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
                         Toastify({
-                            text: data.message,
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#4fbe87",
-                        }).showToast();
-                    } else {
-                        // Show error message
-                        Toastify({
-                            text: data.message,
+                            text: error.message ||
+                                "Terjadi kesalahan saat memproses permintaan",
                             duration: 3000,
                             close: true,
                             gravity: "top",
                             position: "right",
                             backgroundColor: "#dc3545",
                         }).showToast();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Toastify({
-                        text: error.message || "Terjadi kesalahan saat memproses permintaan",
-                        duration: 3000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#dc3545",
-                    }).showToast();
-                });
+                    });
             });
 
             // Metode Pembayaran Handling
@@ -887,6 +966,11 @@
             checkoutForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // Validasi data pelanggan
+                if (!validateCustomerData()) {
+                    return;
+                }
+
                 // Ambil customer_id dari global atau dari item pertama di cart
                 const customerId = document.getElementById('global_customer_id').value;
                 if (customerId) {
@@ -894,7 +978,8 @@
                 } else {
                     const firstCustomerId = document.querySelector('[data-customer-id]');
                     if (firstCustomerId) {
-                        document.getElementById('customer_id').value = firstCustomerId.getAttribute('data-customer-id');
+                        document.getElementById('customer_id').value = firstCustomerId.getAttribute(
+                            'data-customer-id');
                     } else {
                         // Tidak ada customer_id yang tersedia
                         Toastify({
@@ -924,9 +1009,10 @@
 
                     // Konfirmasi penghapusan
                     if (confirm('Anda yakin ingin menghapus item ini?')) {
-                        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        const token = document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content');
 
-                        fetch(`{{ route('admin.pos.remove.item', '') }}/${itemId}`, {
+                        fetch(`${routeRemoveItem}/${itemId}`, {
                                 method: 'DELETE',
                                 headers: {
                                     'X-Requested-With': 'XMLHttpRequest',
@@ -944,7 +1030,8 @@
                             .then(data => {
                                 if (data.success) {
                                     // Update cart container
-                                    document.getElementById('cart-container').innerHTML = data.html_content;
+                                    document.getElementById('cart-container').innerHTML = data
+                                        .html_content;
 
                                     // Disable checkout button if cart is empty
                                     if (data.cart_total === 0) {
@@ -1018,7 +1105,7 @@
                 customerSearchResults.classList.remove('d-none');
 
                 // Fetch customer data
-                fetch(`{{ route('admin.pos.customers.search') }}?query=${encodeURIComponent(query)}`)
+                fetch(`${routeSearchCustomers}?query=${encodeURIComponent(query)}`)
                     .then(response => response.json())
                     .then(data => {
                         customerList.innerHTML = '';
@@ -1037,18 +1124,14 @@
                             item.innerHTML =
                                 `<strong>${customer.name}</strong> <br> ${customer.phone_number || '<i>Tidak ada nomor telepon</i>'}`;
 
-                            // Tampilkan poin jika ada
-                            if (customer.points > 0) {
-                                item.innerHTML += `<br><span class="badge bg-success">${customer.points} Poin</span>`;
-                            }
-
                             item.dataset.id = customer.id;
                             item.dataset.name = customer.name;
                             item.dataset.phone = customer.phone_number || '';
 
                             item.addEventListener('click', function(e) {
                                 e.preventDefault();
-                                selectCustomer(this.dataset.id, this.dataset.name, this.dataset.phone);
+                                selectCustomer(this.dataset.id, this.dataset.name, this.dataset
+                                    .phone);
                             });
 
                             customerList.appendChild(item);
@@ -1056,7 +1139,8 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        customerList.innerHTML = '<div class="list-group-item">Error saat mencari pelanggan</div>';
+                        customerList.innerHTML =
+                            '<div class="list-group-item">Error saat mencari pelanggan</div>';
                     });
             }
 
@@ -1118,6 +1202,21 @@
                     input.value = phone;
                 });
             });
+
+            // Set path route untuk HTTP request
+            const routeFieldTimeslots = '{{ route('admin.pos.field.timeslots') }}';
+            const routePhotographerTimeslots = '{{ route('admin.pos.photographer.timeslots') }}';
+            const routeSearchCustomers = '{{ route('admin.pos.customers.search') }}';
+            const routeRemoveItem = '{{ route('admin.pos.remove.item', '') }}';
         });
     </script>
+    <!-- Toastify CSS dan JS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- Flatpickr CSS dan JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- Tambahkan juga bahasa Indonesia jika diinginkan -->
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
 @endsection

@@ -157,15 +157,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
+            // Initialize DataTable with improved styling
             $('#fieldsTable').DataTable({
                 order: [[4, 'desc']], // Sort by revenue descending by default
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/id.json'
-                }
+                },
+                responsive: true,
+                pagingType: 'simple_numbers',
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]]
             });
 
-            // Field Type Chart
+            // Modern Field Type Chart (Doughnut instead of Pie)
             const fieldTypeData = @json($fields->groupBy('type')
                 ->map(function($group) {
                     return [
@@ -174,204 +177,439 @@
                     ];
                 })->values());
 
-            createPieChart('fieldTypeChart',
+            createModernDoughnutChart('fieldTypeChart',
                 fieldTypeData.map(item => item.type),
                 fieldTypeData.map(item => item.revenue),
                 'Pendapatan Bersih per Tipe Lapangan'
             );
 
-
-
-            // Field Revenue by Day Chart (Line Chart)
-            const fieldsByDay = groupBookingsByDay(@json($fields));
-            createLineChart('fieldRevenueByDayChart', fieldsByDay);
+            // Field Revenue by Day Chart (Modern Line Chart)
+            createModernLineChart('fieldRevenueByDayChart');
         });
 
-        function groupBookingsByDay(fields) {
-            // This function would need the actual booking data per day
-            // For now, we'll use dummy data
-            const startDate = new Date('{{ $startDate }}');
-            const endDate = new Date('{{ $endDate }}');
-            const days = [];
-
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                days.push(new Date(d).toISOString().split('T')[0]);
+        function createModernDoughnutChart(canvasId, labels, data, title) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
             }
 
-            return days;
-        }
-
-        function createPieChart(canvasId, labels, data, title) {
             const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
+
+            // Modern color palette
+            const colors = {
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.85)',   // red-500
+                    'rgba(59, 130, 246, 0.85)',  // blue-500
+                    'rgba(16, 185, 129, 0.85)',  // emerald-500
+                    'rgba(245, 158, 11, 0.85)',  // amber-500
+                    'rgba(139, 92, 246, 0.85)'   // purple-500
+                ],
+                borderColor: [
+                    'rgba(239, 68, 68, 1)',  // red-500
+                    'rgba(59, 130, 246, 1)', // blue-500
+                    'rgba(16, 185, 129, 1)', // emerald-500
+                    'rgba(245, 158, 11, 1)', // amber-500
+                    'rgba(139, 92, 246, 1)'  // purple-500
+                ],
+                hoverBackgroundColor: [
+                    'rgba(239, 68, 68, 0.95)',  // red-500
+                    'rgba(59, 130, 246, 0.95)', // blue-500
+                    'rgba(16, 185, 129, 0.95)', // emerald-500
+                    'rgba(245, 158, 11, 0.95)', // amber-500
+                    'rgba(139, 92, 246, 0.95)'  // purple-500
+                ]
+            };
+
+            // Calculate total revenue for center text
+            const totalRevenue = data.reduce((a, b) => a + b, 0);
+
+            // Custom center text plugin
+            const centerTextPlugin = {
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    if (chart.config.type !== 'doughnut') return;
+
+                    const width = chart.width;
+                    const height = chart.height;
+                    const ctx = chart.ctx;
+
+                    ctx.restore();
+
+                    // Text styles
+                    ctx.font = "14px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#6B7280'; // gray-500
+
+                    // Title text
+                    ctx.fillText('Total', width / 2, height / 2 - 15);
+
+                    // Amount text
+                    ctx.font = "bold 16px 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+                    ctx.fillStyle = '#111827'; // gray-900
+                    const formattedTotal = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalRevenue);
+                    ctx.fillText(formattedTotal, width / 2, height / 2 + 10);
+
+                    ctx.save();
+                }
+            };
+
+            // Create chart
+            window[canvasId + 'Instance'] = new Chart(ctx, {
+                type: 'doughnut',
+                plugins: [centerTextPlugin],
                 data: {
                     labels: labels,
                     datasets: [{
                         data: data,
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(54, 162, 235, 0.7)',
-                            'rgba(255, 206, 86, 0.7)',
-                            'rgba(75, 192, 192, 0.7)',
-                            'rgba(153, 102, 255, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)'
-                        ],
-                        borderWidth: 1
+                        backgroundColor: colors.backgroundColor.slice(0, labels.length),
+                        borderColor: colors.borderColor.slice(0, labels.length),
+                        borderWidth: 2,
+                        hoverBackgroundColor: colors.hoverBackgroundColor.slice(0, labels.length),
+                        hoverBorderColor: colors.borderColor.slice(0, labels.length),
+                        hoverBorderWidth: 3,
+                        borderRadius: 4,
+                        hoverOffset: 10
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '60%',
+                    layout: {
+                        padding: 20
+                    },
                     plugins: {
                         legend: {
                             position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 15,
+                                color: '#4B5563', // gray-600
+                                font: {
+                                    size: 12
+                                }
+                            }
                         },
                         title: {
                             display: true,
-                            text: title
+                            text: title,
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            usePointStyle: true,
                             callbacks: {
                                 label: function(context) {
                                     const value = context.raw;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = ((value / total) * 100).toFixed(1);
                                     return context.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(value) +
-                                           ' (' + percentage + '%)';
+                                            ' (' + percentage + '%)';
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 800,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
         }
 
-        function createBarChart(canvasId, labels, data, title) {
+        function createModernBarChart(canvasId, labels, data, title) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
+            }
+
             const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
+
+            // Membuat gradient untuk bar
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)'); // blue-500
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.4)'); // blue-500 with lower opacity
+
+            window[canvasId + 'Instance'] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Pendapatan Bersih',
                         data: data,
-                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(59, 130, 246, 1)', // blue-500
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barThickness: 30,
+                        maxBarThickness: 45
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 20,
+                            bottom: 10,
+                            left: 20
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                borderDash: [3, 3],
+                                color: 'rgba(229, 231, 235, 0.8)' // gray-200
+                            },
                             ticks: {
+                                color: '#6B7280', // gray-500
                                 callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toLocaleString('id-ID') + ' rb';
+                                    }
+                                    return 'Rp ' + value.toLocaleString('id-ID');
                                 }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6B7280' // gray-500
                             }
                         }
                     },
                     plugins: {
+                        legend: {
+                            display: false
+                        },
                         title: {
                             display: true,
-                            text: title
+                            text: title,
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
                             callbacks: {
                                 label: function(context) {
                                     return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
                     }
                 }
             });
         }
-        const dailyRevenueData = {!! json_encode($dailyRevenue ?? []) !!};
 
-        function createLineChart(canvasId, days) {
-    const ctx = document.getElementById(canvasId).getContext('2d');
+        function createModernLineChart(canvasId) {
+            // Hapus instance chart lama jika ada
+            if (window[canvasId + 'Instance']) {
+                window[canvasId + 'Instance'].destroy();
+            }
 
-    // Gunakan data dari controller
-    const dailyRevenueData = @json($dailyRevenue ?? []);
+            const ctx = document.getElementById(canvasId).getContext('2d');
 
-    // Buat array tanggal lengkap dari startDate hingga endDate
-    const startDate = new Date('{{ $startDate }}');
-    const endDate = new Date('{{ $endDate }}');
-    const dateRange = [];
+            // Gunakan data dari controller
+            const dailyRevenueData = @json($dailyRevenue ?? []);
 
-    // Isi semua tanggal dalam range
-    for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
-        dateRange.push(new Date(dt).toISOString().split('T')[0]); // Format 'YYYY-MM-DD'
-    }
+            // Buat array tanggal lengkap dari startDate hingga endDate
+            const startDate = new Date('{{ $startDate }}');
+            const endDate = new Date('{{ $endDate }}');
+            const dateRange = [];
 
-    // Buat dataset dengan nilai 0 untuk tanggal yang tidak ada transaksi
-    const completeData = dateRange.map(dateString => {
-        const existingData = dailyRevenueData.find(item => item.date === dateString);
-        return {
-            date: dateString,
-            revenue: existingData ? parseFloat(existingData.revenue) : 0
-        };
-    });
+            // Isi semua tanggal dalam range
+            for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+                dateRange.push(new Date(dt).toISOString().split('T')[0]); // Format 'YYYY-MM-DD'
+            }
 
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: completeData.map(item => {
+            // Buat dataset dengan nilai 0 untuk tanggal yang tidak ada transaksi
+            const completeData = dateRange.map(dateString => {
+                const existingData = dailyRevenueData.find(item => item.date === dateString);
+                return {
+                    date: dateString,
+                    revenue: existingData ? parseFloat(existingData.revenue) : 0
+                };
+            });
+
+            // Format labels (tanggal)
+            const labels = completeData.map(item => {
                 const date = new Date(item.date);
                 return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-            }),
-            datasets: [{
-                label: 'Pendapatan Bersih Harian',
-                data: completeData.map(item => item.revenue),
-                fill: false,
-                borderColor: 'rgba(40, 167, 69, 1)', // Warna hijau
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                        }
-                    }
-                },
-                x: {
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Tren Pendapatan Bersih Harian'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
+            });
 
-  </script>
+            // Data pendapatan
+            const revenueData = completeData.map(item => item.revenue);
+
+            // Membuat gradient untuk area di bawah line
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)'); // emerald-500 dengan opacity rendah
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)'); // emerald-500 dengan opacity lebih rendah
+
+            window[canvasId + 'Instance'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pendapatan Bersih Harian',
+                        data: revenueData,
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(16, 185, 129, 1)', // emerald-500
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)', // emerald-500
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 0, // Hide points by default
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: 'rgba(16, 185, 129, 1)', // emerald-500
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 20,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                borderDash: [3, 3],
+                                color: 'rgba(229, 231, 235, 0.8)' // gray-200
+                            },
+                            ticks: {
+                                color: '#6B7280', // gray-500
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toLocaleString('id-ID') + ' rb';
+                                    }
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6B7280', // gray-500
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Tren Pendapatan Bersih Harian',
+                            color: '#1F2937', // gray-800
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1F2937', // gray-800
+                            bodyColor: '#4B5563', // gray-600
+                            borderColor: 'rgba(229, 231, 235, 1)', // gray-200
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Pendapatan Bersih: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    animations: {
+                        tension: {
+                            duration: 1000,
+                            easing: 'easeOutQuart',
+                            from: 0.2,
+                            to: 0.4,
+                            loop: false
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.4
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+
     <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

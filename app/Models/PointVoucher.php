@@ -31,7 +31,6 @@ class PointVoucher extends Model
         'start_date',
         'end_date',
         'is_active',
-        'created_by',
     ];
 
     /**
@@ -50,13 +49,7 @@ class PointVoucher extends Model
         'end_date' => 'datetime',
     ];
 
-    /**
-     * Get the user who created this voucher.
-     */
-    public function createdBy()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
+
 
     /**
      * Get the redemptions for this voucher.

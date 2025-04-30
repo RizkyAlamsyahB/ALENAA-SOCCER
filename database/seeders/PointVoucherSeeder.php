@@ -15,7 +15,6 @@ class PointVoucherSeeder extends Seeder
      */
     public function run(): void
     {
-        // Ambil ID admin atau owner untuk created_by
         $admin = User::where('role', 'admin')->first();
         if (!$admin) {
             $admin = User::where('role', 'owner')->first();
@@ -49,7 +48,6 @@ class PointVoucherSeeder extends Seeder
                 'start_date' => $now,
                 'end_date' => $oneMonthLater,
                 'is_active' => true,
-                'created_by' => $adminId,
             ],
             [
                 'code' => 'POINT10PERCENT',
@@ -65,7 +63,6 @@ class PointVoucherSeeder extends Seeder
                 'start_date' => $now,
                 'end_date' => $oneMonthLater,
                 'is_active' => true,
-                'created_by' => $adminId,
             ],
             [
                 'code' => 'POINT200OFF',
@@ -81,7 +78,6 @@ class PointVoucherSeeder extends Seeder
                 'start_date' => $now,
                 'end_date' => $twoMonthsLater,
                 'is_active' => true,
-                'created_by' => $adminId,
             ],
             [
                 'code' => 'FIELDPOINT15',
@@ -97,7 +93,6 @@ class PointVoucherSeeder extends Seeder
                 'start_date' => $now,
                 'end_date' => $oneMonthLater,
                 'is_active' => true,
-                'created_by' => $adminId,
             ],
             [
                 'code' => 'RENTALPOINT20',
@@ -113,7 +108,6 @@ class PointVoucherSeeder extends Seeder
                 'start_date' => $now,
                 'end_date' => $oneMonthLater,
                 'is_active' => true,
-                'created_by' => $adminId,
             ],
             [
                 'code' => 'POINT500OFF',
@@ -129,7 +123,6 @@ class PointVoucherSeeder extends Seeder
                 'start_date' => $now,
                 'end_date' => $twoMonthsLater,
                 'is_active' => true,
-                'created_by' => $adminId,
             ],
         ];
 
@@ -141,6 +134,5 @@ class PointVoucherSeeder extends Seeder
             );
         }
 
-        $this->command->info('Point vouchers seeded successfully!');
     }
 }

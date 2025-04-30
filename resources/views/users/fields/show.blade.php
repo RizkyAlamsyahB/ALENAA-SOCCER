@@ -270,7 +270,7 @@
                                                         <i class="fas fa-arrow-right"></i>
                                                     </a>
                                                 @else
-                                                    <button class="btn-disabled">
+                                                    <button class="btn btn-secondary" disabled>
                                                         <span>Tidak Tersedia</span>
                                                     </button>
                                                 @endif
@@ -320,7 +320,7 @@
                                                         <i class="fas fa-arrow-right"></i>
                                                     </a>
                                                 @else
-                                                    <button class="btn-disabled">
+                                                    <button class="btn btn-secondary" disabled>
                                                         <span>Tidak Tersedia</span>
                                                     </button>
                                                 @endif
@@ -369,7 +369,7 @@
                                                         <i class="fas fa-arrow-right"></i>
                                                     </a>
                                                 @else
-                                                    <button class="btn-disabled">
+                                                    <button class="btn btn-secondary" disabled>
                                                         <span>Tidak Tersedia</span>
                                                     </button>
                                                 @endif
@@ -380,61 +380,66 @@
                             </div>
                         </div>
 
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                           <!-- Photographer Packages Card -->
-@if($photographerPackages->count() > 0)
-<div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-    <div class="card-header bg-white py-3 border-0 px-4">
-        <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
-    </div>
-    <div class="card-body p-4">
-        <div class="row g-4">
-            @foreach($photographerPackages as $photographer)
-            <div class="col-md-4">
-                <div class="photographer-card {{ $photographer->package_type }}">
-                    <div class="package-header">
-                        <div class="package-info">
-                            <div class="package-icon">
-                                <i class="fas fa-camera"></i>
-                            </div>
-                            <div>
-                                <h5 class="package-title">{{ $photographer->name }}</h5>
-                                <p class="package-subtitle">{{ $photographer->duration }} jam</p>
-                            </div>
-                        </div>
-                        <div class="badge {{ $photographer->package_type }}">
-                            {{ ucfirst($photographer->package_type) }}
-                        </div>
-                    </div>
+                            <!-- Photographer Packages Card -->
+                            @if ($photographerPackages->count() > 0)
+                                <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                    <div class="card-header bg-white py-3 border-0 px-4">
+                                        <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <div class="row g-4">
+                                            @foreach ($photographerPackages as $photographer)
+                                                <div class="col-md-4">
+                                                    <div class="photographer-card {{ $photographer->package_type }}">
+                                                        <div class="package-header">
+                                                            <div class="package-info">
+                                                                <div class="package-icon">
+                                                                    <i class="fas fa-camera"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h5 class="package-title">{{ $photographer->name }}
+                                                                    </h5>
+                                                                    <p class="package-subtitle">
+                                                                        {{ $photographer->duration }} jam</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="badge {{ $photographer->package_type }}">
+                                                                {{ ucfirst($photographer->package_type) }}
+                                                            </div>
+                                                        </div>
 
-                    <div class="package-features">
-                        <ul class="list-unstyled">
-                            @if(is_array(json_decode($photographer->features)))
-                                @foreach(json_decode($photographer->features) as $feature)
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> {{ $feature }}</li>
-                                @endforeach
+                                                        <div class="package-features">
+                                                            <ul class="list-unstyled">
+                                                                @if (is_array(json_decode($photographer->features)))
+                                                                    @foreach (json_decode($photographer->features) as $feature)
+                                                                        <li><i
+                                                                                class="fas fa-check-circle text-success me-2"></i>
+                                                                            {{ $feature }}</li>
+                                                                    @endforeach
+                                                                @endif
+                                                            </ul>
+                                                        </div>
+
+                                                        <div class="package-footer">
+                                                            <div class="price-info">
+                                                                <span class="price">Rp
+                                                                    {{ number_format($photographer->price, 0, ',', '.') }}</span>
+                                                                <span class="duration">/sesi</span>
+                                                            </div>
+                                                            <a href="{{ route('user.photographer.show', $photographer->id) }}"
+                                                                class="select-btn {{ $photographer->package_type }}">
+                                                                <span>Detail Paket</span>
+                                                                <i class="fas fa-arrow-right"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
                             @endif
-                        </ul>
-                    </div>
 
-                    <div class="package-footer">
-                        <div class="price-info">
-                            <span class="price">Rp {{ number_format($photographer->price, 0, ',', '.') }}</span>
-                            <span class="duration">/sesi</span>
-                        </div>
-                        <a href="{{ route('user.photographer.show', $photographer->id) }}" class="select-btn {{ $photographer->package_type }}">
-                            <span>Detail Paket</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-@endif
-                        </div>
 
                         <!-- Booking Card -->
                         <!-- Booking Wizard Card -->
@@ -1456,140 +1461,159 @@
             }
         }
 
-        /* Custom Flatpickr Theme - brand color #9e0620 */
-        /* Flatpickr Calendar Styling - Improved for Mobile */
-        .flatpickr-calendar {
-            width: 100% !important;
-            max-width: 320px !important;
-            box-sizing: border-box !important;
-            padding: 0 !important;
-            margin: 0 auto !important;
-            touch-action: manipulation;
-        }
+/* Custom Flatpickr Theme - brand color #9e0620 */
+/* Base Calendar Container */
+.flatpickr-calendar {
+    width: 100% !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    touch-action: manipulation;
+}
 
+/* Month Navigation Section */
+.flatpickr-months {
+    background-color: #ffffff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
 
-        .flatpickr-days {
-            width: 100% !important;
-            /* Ensure days container is full width */
-        }
+.flatpickr-month {
+    color: #fff;
+}
 
-        .dayContainer {
-            width: 100% !important;
-            /* Ensure day container is full width */
-            min-width: 100% !important;
-            max-width: 100% !important;
-            display: flex;
-            flex-wrap: wrap;
-        }
+.flatpickr-current-month {
+    font-weight: 600;
+}
 
-        .flatpickr-day {
-            width: 14.2857% !important;
-            /* Equal width for all 7 days (100% ÷ 7) */
-            max-width: 14.2857% !important;
-            flex-basis: 14.2857% !important;
-            height: 40px !important;
-            /* Consistent height */
-            line-height: 40px !important;
-            margin: 0 !important;
-            border-radius: 24 !important;
-        }
+.flatpickr-monthDropdown-months,
+.numInputWrapper span.arrowUp,
+.numInputWrapper span.arrowDown {
+    color: #fff;
+}
 
-        /* Make sure headers align with days */
-        span.flatpickr-weekday {
-            width: 14.2857% !important;
-            max-width: 14.2857% !important;
-            flex-basis: 14.2857% !important;
-        }
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    fill: #fff;
+}
 
-        /* Mobile adjustments */
-        @media (max-width: 576px) {
-            .flatpickr-calendar {
-                max-width: 100%;
-            }
+.flatpickr-prev-month:hover svg,
+.flatpickr-next-month:hover svg {
+    fill: #e9ecef;
+}
 
-            .flatpickr-day {
-                height: 35px !important;
-                line-height: 35px !important;
-            }
-        }
+/* Weekday Headers */
+span.flatpickr-weekday {
+    color: #9e0620;
+    font-weight: 600;
+    width: 14.2857% !important;
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+}
 
-        .flatpickr-months {
-            background-color: #ffffff;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
+/* Days Container */
+.flatpickr-days {
+    width: 100% !important;
+}
 
-        .flatpickr-month {
-            color: #fff;
-        }
+.dayContainer {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: flex;
+    flex-wrap: wrap;
+}
 
-        .flatpickr-current-month {
-            font-weight: 600;
-        }
+/* Day Cells */
+.flatpickr-day {
+    width: 14.2857% !important;
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+    height: 40px !important;
+    line-height: 40px !important;
+    margin: 0 !important;
+    border-radius: 24px !important;
+}
 
-        .flatpickr-monthDropdown-months,
-        .numInputWrapper span.arrowUp,
-        .numInputWrapper span.arrowDown {
-            color: #fff;
-        }
+/* Day States: Hover */
+.flatpickr-day:hover {
+    background: #fff8f8;
+    border-color: #fff8f8;
+}
 
-        span.flatpickr-weekday {
-            color: #9e0620;
-            font-weight: 600;
-        }
+/* Day States: Today */
+.flatpickr-day.today {
+    border-color: #9e0620;
+}
 
-        .flatpickr-day.selected,
-        .flatpickr-day.startRange,
-        .flatpickr-day.endRange,
-        .flatpickr-day.selected.inRange,
-        .flatpickr-day.startRange.inRange,
-        .flatpickr-day.endRange.inRange,
-        .flatpickr-day.selected:focus,
-        .flatpickr-day.startRange:focus,
-        .flatpickr-day.endRange:focus,
-        .flatpickr-day.selected:hover,
-        .flatpickr-day.startRange:hover,
-        .flatpickr-day.endRange:hover,
-        .flatpickr-day.selected.prevMonthDay,
-        .flatpickr-day.startRange.prevMonthDay,
-        .flatpickr-day.endRange.prevMonthDay,
-        .flatpickr-day.selected.nextMonthDay,
-        .flatpickr-day.startRange.nextMonthDay,
-        .flatpickr-day.endRange.nextMonthDay {
-            background: #9e0620;
-            border-color: #9e0620;
-        }
+.flatpickr-day.today:hover {
+    background: #fff8f8;
+    color: #9e0620;
+}
 
-        .flatpickr-day.today {
-            border-color: #9e0620;
-        }
+/* Day States: Selected */
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected.prevMonthDay,
+.flatpickr-day.startRange.prevMonthDay,
+.flatpickr-day.endRange.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay,
+.flatpickr-day.startRange.nextMonthDay,
+.flatpickr-day.endRange.nextMonthDay {
+    background: #9e0620;
+    border-color: #9e0620;
+    color: #fff;
+}
 
-        .flatpickr-day.today:hover {
-            background: #fff8f8;
-            color: #9e0620;
-        }
+/* Range Selection */
+.flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
+.flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
+.flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
+    box-shadow: -10px 0 0 #9e0620;
+}
 
-        .flatpickr-day:hover {
-            background: #fff8f8;
-            border-color: #fff8f8;
-        }
+/* Next Month Days (within booking window) */
+.flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
+    color: #393939 !important;
+    font-weight: normal !important;
+    background-color: transparent !important;
+    opacity: 1 !important;
+}
 
-        .flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
-        .flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
-        .flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
-            box-shadow: -10px 0 0 #9e0620;
-        }
+.flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
+    background-color: #fff8f8 !important;
+    border-color: #fff8f8 !important;
+    color: #9e0620 !important;
+}
 
-        .flatpickr-prev-month,
-        .flatpickr-next-month {
-            fill: #fff;
-        }
+.flatpickr-day.nextMonthDay.selected {
+    background-color: #9e0620 !important;
+    border-color: #9e0620 !important;
+    color: #fff !important;
+}
 
-        .flatpickr-prev-month:hover svg,
-        .flatpickr-next-month:hover svg {
-            fill: #e9ecef;
-        }
+/* Mobile Adjustments */
+@media (max-width: 576px) {
+    .flatpickr-calendar {
+        max-width: 100%;
+    }
 
+    .flatpickr-day {
+        height: 35px !important;
+        line-height: 35px !important;
+    }
+}
         .slot-membership {
             background-color: #ffeeba;
             /* Warna kuning lembut */
@@ -1601,168 +1625,171 @@
             color: #856404;
             /* Warna text kuning gelap */
         }
+
         /* Photographer Card Styles */
-.photographer-card {
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: white;
-    border: 1px solid #e9ecef;
-}
+        .photographer-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border: 1px solid #e9ecef;
+        }
 
-.photographer-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-}
+        .photographer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
 
-.photographer-card .package-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 1.25rem;
-    border-bottom: 1px solid #e9ecef;
-}
+        .photographer-card .package-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1.25rem;
+            border-bottom: 1px solid #e9ecef;
+        }
 
-.photographer-card .package-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
+        .photographer-card .package-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
 
-.photographer-card .package-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-}
+        .photographer-card .package-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
 
-.photographer-card.favorite .package-icon {
-    background-color: #fff8f1;
-    color: #fd7e14;
-}
+        .photographer-card.favorite .package-icon {
+            background-color: #fff8f1;
+            color: #fd7e14;
+        }
 
-.photographer-card.plus .package-icon {
-    background-color: #f1f9fe;
-    color: #0d6efd;
-}
+        .photographer-card.plus .package-icon {
+            background-color: #f1f9fe;
+            color: #0d6efd;
+        }
 
-.photographer-card.exclusive .package-icon {
-    background-color: #fff1f1;
-    color: #9e0620;
-}
+        .photographer-card.exclusive .package-icon {
+            background-color: #fff1f1;
+            color: #9e0620;
+        }
 
-.photographer-card .package-title {
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-}
+        .photographer-card .package-title {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
 
-.photographer-card .package-subtitle {
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-bottom: 0;
-}
+        .photographer-card .package-subtitle {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
 
-.photographer-card .badge {
-    border-radius: 20px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
+        .photographer-card .badge {
+            border-radius: 20px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
 
-.photographer-card .badge.favorite {
-    background-color: #fff8f1;
-    color: #fd7e14;
-}
+        .photographer-card .badge.favorite {
+            background-color: #fff8f1;
+            color: #fd7e14;
+        }
 
-.photographer-card .badge.plus {
-    background-color: #f1f9fe;
-    color: #0d6efd;
-}
+        .photographer-card .badge.plus {
+            background-color: #f1f9fe;
+            color: #0d6efd;
+        }
 
-.photographer-card .badge.exclusive {
-    background-color: #fff1f1;
-    color: #9e0620;
-}
+        .photographer-card .badge.exclusive {
+            background-color: #fff1f1;
+            color: #9e0620;
+        }
 
-.photographer-card .package-features {
-    padding: 1.25rem;
-    flex-grow: 1;
-}
+        .photographer-card .package-features {
+            padding: 1.25rem;
+            flex-grow: 1;
+        }
 
-.photographer-card .package-features li {
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: flex-start;
-}
+        .photographer-card .package-features li {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
 
-.photographer-card .package-features i {
-    margin-top: 0.25rem;
-    flex-shrink: 0;
-}
+        .photographer-card .package-features i {
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+        }
 
-.photographer-card .package-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem;
-    background-color: #f8f9fa;
-    border-top: 1px solid #e9ecef;
-}
+        .photographer-card .package-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
 
-.photographer-card .price-info {
-    display: flex;
-    flex-direction: column;
-}
+        .photographer-card .price-info {
+            display: flex;
+            flex-direction: column;
+        }
 
-.photographer-card .price {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #212529;
-}
+        .photographer-card .price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #212529;
+        }
 
-.photographer-card .duration {
-    font-size: 0.8rem;
-    color: #6c757d;
-}
+        .photographer-card .duration {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
 
-.photographer-card .select-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
+        .photographer-card .select-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
 
-.photographer-card .select-btn.favorite {
-    background-color: #fff8f1;
-    color: #fd7e14;
-}
+        .photographer-card .select-btn.favorite {
+            background-color: #fff8f1;
+            color: #fd7e14;
+        }
 
-.photographer-card .select-btn.plus {
-    background-color: #f1f9fe;
-    color: #0d6efd;
-}
+        .photographer-card .select-btn.plus {
+            background-color: #f1f9fe;
+            color: #0d6efd;
+        }
 
-.photographer-card .select-btn.exclusive {
-    background-color: #fff1f1;
-    color: #9e0620;
-}
+        .photographer-card .select-btn.exclusive {
+            background-color: #fff1f1;
+            color: #9e0620;
+        }
 
-.photographer-card .select-btn:hover {
-    transform: translateX(5px);
-}
+        .photographer-card .select-btn:hover {
+            transform: translateX(5px);
+        }
+
+
     </style>
 @endsection
