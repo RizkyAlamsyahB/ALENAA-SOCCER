@@ -19,19 +19,30 @@ class ReviewsController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $reviews = Review::with(['user', 'payment'])
-                ->select('reviews.*');
+            $reviews = Review::with(['user', 'payment'])->select('reviews.*');
 
             return DataTables::of($reviews)
                 ->addColumn('action', function ($review) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('owner.reviews.show', $review->id) . '" class="btn btn-sm btn-info">Detail</a>
-                            <button type="button" class="btn btn-sm btn-' . ($review->status === 'active' ? 'warning' : 'success') . ' toggle-btn"
-                                data-id="' . $review->id . '"
-                                data-status="' . $review->status . '">
-                                ' . ($review->status === 'active' ? 'Nonaktifkan' : 'Aktifkan') . '
+                            <a href="' .
+                        route('owner.reviews.show', $review->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <button type="button" class="btn btn-sm btn-' .
+                        ($review->status === 'active' ? 'warning' : 'success') .
+                        ' toggle-btn"
+                                data-id="' .
+                        $review->id .
+                        '"
+                                data-status="' .
+                        $review->status .
+                        '">
+                                ' .
+                        ($review->status === 'active' ? 'Nonaktifkan' : 'Aktifkan') .
+                        '
                             </button>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $review->id . '">Hapus</button>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $review->id .
+                        '">Hapus</button>
                         </div>';
                 })
                 ->addColumn('user_name', function ($review) {
@@ -51,7 +62,7 @@ class ReviewsController extends Controller
                     $types = [
                         'App\\Models\\Field' => 'Lapangan',
                         'App\\Models\\RentalItem' => 'Penyewaan',
-                        'App\\Models\\Photographer' => 'Fotografer'
+                        'App\\Models\\Photographer' => 'Fotografer',
                     ];
 
                     return $types[$review->item_type] ?? $review->item_type;
@@ -129,10 +140,13 @@ class ReviewsController extends Controller
         } catch (\Exception $e) {
             Log::error('Error toggling review status: ' . $e->getMessage());
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error: ' . $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -144,12 +158,12 @@ class ReviewsController extends Controller
         try {
             $review->delete();
 
-            return redirect()->route('owner.reviews.index')
-                ->with('success', 'Review berhasil dihapus');
+            return redirect()->route('owner.reviews.index')->with('success', 'Review berhasil dihapus');
         } catch (\Exception $e) {
             Log::error('Error deleting review: ' . $e->getMessage());
 
-            return redirect()->route('owner.reviews.index')
+            return redirect()
+                ->route('owner.reviews.index')
                 ->with('error', 'Gagal menghapus review: ' . $e->getMessage());
         }
     }
@@ -180,18 +194,14 @@ class ReviewsController extends Controller
                 $item = Photographer::findOrFail($itemId);
             }
 
-            $reviews = Review::with('user')
-                            ->where('item_id', $itemId)
-                            ->where('item_type', $modelClass)
-                            ->orderBy('created_at', 'desc')
-                            ->paginate(10);
+            $reviews = Review::with('user')->where('item_id', $itemId)->where('item_type', $modelClass)->orderBy('created_at', 'desc')->paginate(10);
 
             return view('owner.reviews.item-reviews', compact('reviews', 'item', 'itemType'));
-
         } catch (\Exception $e) {
             Log::error('Error getting item reviews: ' . $e->getMessage());
 
-            return redirect()->back()
+            return redirect()
+                ->back()
                 ->with('error', 'Gagal mendapatkan review: ' . $e->getMessage());
         }
     }
@@ -214,14 +224,11 @@ class ReviewsController extends Controller
                 ->get();
 
             // Rating per kategori
-            $fieldRatings = Review::where('item_type', 'App\\Models\\Field')
-                ->avg('rating');
+            $fieldRatings = Review::where('item_type', 'App\\Models\\Field')->avg('rating');
 
-            $rentalRatings = Review::where('item_type', 'App\\Models\\RentalItem')
-                ->avg('rating');
+            $rentalRatings = Review::where('item_type', 'App\\Models\\RentalItem')->avg('rating');
 
-            $photographerRatings = Review::where('item_type', 'App\\Models\\Photographer')
-                ->avg('rating');
+            $photographerRatings = Review::where('item_type', 'App\\Models\\Photographer')->avg('rating');
 
             // Distribusi rating
             $ratingDistribution = [];
@@ -229,21 +236,12 @@ class ReviewsController extends Controller
                 $ratingDistribution[$i] = Review::where('rating', $i)->count();
             }
 
-            return view('owner.reviews.summary', compact(
-                'totalReviews',
-                'activeReviews',
-                'avgRating',
-                'latestReviews',
-                'fieldRatings',
-                'rentalRatings',
-                'photographerRatings',
-                'ratingDistribution'
-            ));
-
+            return view('owner.reviews.summary', compact('totalReviews', 'activeReviews', 'avgRating', 'latestReviews', 'fieldRatings', 'rentalRatings', 'photographerRatings', 'ratingDistribution'));
         } catch (\Exception $e) {
             Log::error('Error getting review summary: ' . $e->getMessage());
 
-            return redirect()->back()
+            return redirect()
+                ->back()
                 ->with('error', 'Gagal mendapatkan ringkasan review: ' . $e->getMessage());
         }
     }

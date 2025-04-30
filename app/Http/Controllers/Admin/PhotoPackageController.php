@@ -24,9 +24,17 @@ class PhotoPackageController extends Controller
             return DataTables::of($photographers)
                 ->addColumn('action', function ($photographer) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('admin.photo-packages.show', $photographer->id) . '" class="btn btn-sm btn-info">Detail</a>
-                            <a href="' . route('admin.photo-packages.edit', $photographer->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $photographer->id . '" data-name="' . $photographer->name . '">Hapus</button>
+                            <a href="' .
+                        route('admin.photo-packages.show', $photographer->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <a href="' .
+                        route('admin.photo-packages.edit', $photographer->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $photographer->id .
+                        '" data-name="' .
+                        $photographer->name .
+                        '">Hapus</button>
                         </div>';
                 })
                 ->addColumn('photographer_name', function ($photographer) {
@@ -75,7 +83,7 @@ class PhotoPackageController extends Controller
     public function create()
     {
         $photographers = User::where('role', 'photographer')->get();
-        $fields = Field::all();  // Tambahkan ini
+        $fields = Field::all(); // Tambahkan ini
         return view('admin.photo-packages.create', compact('photographers', 'fields'));
     }
     /**
@@ -90,7 +98,7 @@ class PhotoPackageController extends Controller
             'price' => 'required|numeric|min:0',
             'package_type' => ['required', Rule::in(['basic', 'favorite', 'plus', 'exclusive'])],
             'duration' => 'required|integer|min:1',
-            'field_id' => 'nullable|exists:fields,id',  // Tambahkan ini
+            'field_id' => 'nullable|exists:fields,id', // Tambahkan ini
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'features' => 'required|array',
@@ -133,7 +141,7 @@ class PhotoPackageController extends Controller
     {
         $photographer = Photographer::findOrFail($id);
         $photographers = User::where('role', 'photographer')->get();
-        $fields = Field::all();  // Tambahkan ini
+        $fields = Field::all(); // Tambahkan ini
 
         // Only decode if it's a string and not already decoded
         if (is_string($photographer->features)) {
@@ -157,7 +165,7 @@ class PhotoPackageController extends Controller
             'price' => 'required|numeric|min:0',
             'package_type' => ['required', Rule::in(['basic', 'favorite', 'plus', 'exclusive'])],
             'duration' => 'required|integer|min:1',
-            'field_id' => 'nullable|exists:fields,id',  // Tambahkan ini
+            'field_id' => 'nullable|exists:fields,id', // Tambahkan ini
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'features' => 'required|array',

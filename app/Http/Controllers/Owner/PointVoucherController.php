@@ -24,9 +24,17 @@ class PointVoucherController extends Controller
             return DataTables::of($pointVouchers)
                 ->addColumn('action', function ($voucher) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('owner.point_vouchers.show', $voucher->id) . '" class="btn btn-sm btn-info">Detail</a>
-                            <a href="' . route('owner.point_vouchers.edit', $voucher->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $voucher->id . '" data-name="' . $voucher->name . '">Hapus</button>
+                            <a href="' .
+                        route('owner.point_vouchers.show', $voucher->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <a href="' .
+                        route('owner.point_vouchers.edit', $voucher->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $voucher->id .
+                        '" data-name="' .
+                        $voucher->name .
+                        '">Hapus</button>
                         </div>';
                 })
                 ->editColumn('discount_value', function ($voucher) {
@@ -42,9 +50,7 @@ class PointVoucherController extends Controller
                     return $voucher->max_discount ? 'Rp ' . number_format($voucher->max_discount, 0, ',', '.') : '-';
                 })
                 ->editColumn('is_active', function ($voucher) {
-                    return $voucher->is_active
-                        ? '<span class="badge bg-success">Aktif</span>'
-                        : '<span class="badge bg-danger">Tidak Aktif</span>';
+                    return $voucher->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Tidak Aktif</span>';
                 })
                 ->editColumn('start_date', function ($voucher) {
                     return $voucher->start_date ? Carbon::parse($voucher->start_date)->format('d M Y') : '-';
@@ -63,7 +69,7 @@ class PointVoucherController extends Controller
 
                     if ($now < $startDate) {
                         return '<span class="badge bg-warning">Belum Mulai</span>';
-                    } else if ($now > $endDate) {
+                    } elseif ($now > $endDate) {
                         return '<span class="badge bg-danger">Kedaluwarsa</span>';
                     } else {
                         return '<span class="badge bg-success">Sedang Berlangsung</span>';
@@ -116,7 +122,6 @@ class PointVoucherController extends Controller
 
         // Set nilai default untuk is_active jika tidak ada
         $validatedData['is_active'] = $request->has('is_active') ? $request->is_active : true;
-
 
         PointVoucher::create($validatedData);
 
@@ -188,7 +193,9 @@ class PointVoucherController extends Controller
         $pointVoucher->save();
 
         $status = $pointVoucher->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        return redirect()->route('owner.point_vouchers.index')->with('success', "Voucher poin berhasil $status");
+        return redirect()
+            ->route('owner.point_vouchers.index')
+            ->with('success', "Voucher poin berhasil $status");
     }
 
     /**

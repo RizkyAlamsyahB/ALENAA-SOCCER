@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-    <link rel="stylesheet" href="{{ asset('css/users/modern-cart.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('css/users/modern-cart.css') }}"> --}}
 
  <!-- Hero Section -->
 <div class="hero-section" style="margin-top: 50px;">

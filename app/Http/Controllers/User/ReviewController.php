@@ -30,22 +30,26 @@ class ReviewController extends Controller
             ]);
 
             // Periksa payment dan status
-            $payment = Payment::where('id', $request->payment_id)
-                              ->where('user_id', Auth::id())
-                              ->first();
+            $payment = Payment::where('id', $request->payment_id)->where('user_id', Auth::id())->first();
 
             if (!$payment) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pembayaran tidak ditemukan'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Pembayaran tidak ditemukan',
+                    ],
+                    404,
+                );
             }
 
             if ($payment->transaction_status !== 'success') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Hanya pembayaran yang berhasil yang dapat direview'
-                ], 400);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Hanya pembayaran yang berhasil yang dapat direview',
+                    ],
+                    400,
+                );
             }
 
             // Periksa apakah item ada berdasarkan tipe
@@ -66,18 +70,17 @@ class ReviewController extends Controller
             }
 
             if (!$itemModel) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Item tidak ditemukan'
-                ], 404);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Item tidak ditemukan',
+                    ],
+                    404,
+                );
             }
 
             // Periksa apakah user sudah pernah review item ini untuk payment ini
-            $existingReview = Review::where('user_id', Auth::id())
-                                  ->where('item_id', $itemId)
-                                  ->where('item_type', $modelClass)
-                                  ->where('payment_id', $payment->id)
-                                  ->first();
+            $existingReview = Review::where('user_id', Auth::id())->where('item_id', $itemId)->where('item_type', $modelClass)->where('payment_id', $payment->id)->first();
 
             if ($existingReview) {
                 // Update review yang sudah ada
@@ -88,7 +91,7 @@ class ReviewController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Review berhasil diperbarui',
-                    'review' => $existingReview
+                    'review' => $existingReview,
                 ]);
             }
 
@@ -100,25 +103,27 @@ class ReviewController extends Controller
                 'payment_id' => $payment->id,
                 'rating' => $request->rating,
                 'comment' => $request->comment,
-                'status' => 'active'
+                'status' => 'active',
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Review berhasil ditambahkan',
-                'review' => $review
+                'review' => $review,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error adding review: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error: ' . $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -145,25 +150,22 @@ class ReviewController extends Controller
                 $modelClass = 'App\\Models\\Photographer';
             }
 
-            $reviews = Review::with('user')
-                            ->where('item_id', $itemId)
-                            ->where('item_type', $modelClass)
-                            ->where('status', 'active')
-                            ->orderBy('created_at', 'desc')
-                            ->get();
+            $reviews = Review::with('user')->where('item_id', $itemId)->where('item_type', $modelClass)->where('status', 'active')->orderBy('created_at', 'desc')->get();
 
             return response()->json([
                 'success' => true,
-                'reviews' => $reviews
+                'reviews' => $reviews,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error getting reviews: ' . $e->getMessage());
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error: ' . $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 }

@@ -31,11 +31,7 @@ class SchedulesController extends Controller
     public function fieldSchedule($fieldId)
     {
         $field = Field::findOrFail($fieldId);
-        $bookings = FieldBooking::where('field_id', $fieldId)
-                    ->where('status', '!=', 'cancelled')
-                    ->whereDate('start_time', '>=', Carbon::today())
-                    ->orderBy('start_time')
-                    ->get();
+        $bookings = FieldBooking::where('field_id', $fieldId)->where('status', '!=', 'cancelled')->whereDate('start_time', '>=', Carbon::today())->orderBy('start_time')->get();
 
         return view('admin.schedule.field-schedule', compact('field', 'bookings'));
     }
@@ -45,47 +41,44 @@ class SchedulesController extends Controller
      */
     public function membershipSchedule()
     {
-        $memberships = MembershipSubscription::with('user', 'membership')
-                        ->where('status', 'active')
-                        ->get();
+        $memberships = MembershipSubscription::with('user', 'membership')->where('status', 'active')->get();
 
         return view('admin.schedule.membership-schedule', compact('memberships'));
     }
 
-/**
- * Tampilkan halaman detail jadwal membership
- */
-public function membershipDetail($id)
-{
-    $subscription = MembershipSubscription::with('user', 'membership', 'sessions.fieldBooking')
-                    ->findOrFail($id);
+    /**
+     * Tampilkan halaman detail jadwal membership
+     */
+    public function membershipDetail($id)
+    {
+        $subscription = MembershipSubscription::with('user', 'membership', 'sessions.fieldBooking')->findOrFail($id);
 
-    // Update status sesi jika sudah berlalu
-    $now = Carbon::now();
-    foreach ($subscription->sessions as $session) {
-        if ($session->status === 'scheduled') {
-            if ($now->between($session->start_time, $session->end_time)) {
-                $session->status = 'ongoing';
-                $session->save();
-            } elseif ($now->gt($session->end_time)) {
+        // Update status sesi jika sudah berlalu
+        $now = Carbon::now();
+        foreach ($subscription->sessions as $session) {
+            if ($session->status === 'scheduled') {
+                if ($now->between($session->start_time, $session->end_time)) {
+                    $session->status = 'ongoing';
+                    $session->save();
+                } elseif ($now->gt($session->end_time)) {
+                    $session->status = 'completed';
+                    $session->save();
+                }
+            } elseif ($session->status === 'ongoing' && $now->gt($session->end_time)) {
                 $session->status = 'completed';
                 $session->save();
             }
-        } elseif ($session->status === 'ongoing' && $now->gt($session->end_time)) {
-            $session->status = 'completed';
-            $session->save();
         }
+
+        // Reload sessions setelah update
+        $subscription->load('sessions');
+
+        // Urutkan sesi berdasarkan waktu mulai
+        $sortedSessions = $subscription->sessions->sortBy('start_time');
+        $subscription->setRelation('sessions', $sortedSessions);
+
+        return view('admin.schedule.membership-detail', compact('subscription'));
     }
-
-    // Reload sessions setelah update
-    $subscription->load('sessions');
-
-    // Urutkan sesi berdasarkan waktu mulai
-    $sortedSessions = $subscription->sessions->sortBy('start_time');
-    $subscription->setRelation('sessions', $sortedSessions);
-
-    return view('admin.schedule.membership-detail', compact('subscription'));
-}
 
     /**
      * Ambil data jadwal dalam format JSON untuk kalender
@@ -104,13 +97,12 @@ public function membershipDetail($id)
         }
 
         // Filter berdasarkan rentang tanggal
-        $query->where(function($q) use ($start, $end) {
+        $query->where(function ($q) use ($start, $end) {
             $q->whereBetween('start_time', [$start, $end])
-              ->orWhereBetween('end_time', [$start, $end])
-              ->orWhere(function($query) use ($start, $end) {
-                  $query->where('start_time', '<=', $start)
-                        ->where('end_time', '>=', $end);
-              });
+                ->orWhereBetween('end_time', [$start, $end])
+                ->orWhere(function ($query) use ($start, $end) {
+                    $query->where('start_time', '<=', $start)->where('end_time', '>=', $end);
+                });
         });
 
         // Hanya ambil booking yang aktif
@@ -149,95 +141,97 @@ public function membershipDetail($id)
                     'status' => $booking->status,
                     'is_membership' => $booking->is_membership,
                     'membership_session_id' => $booking->membership_session_id,
-                ]
+                ],
             ];
         }
 
         return response()->json($events);
     }
 
-/**
- * Mengambil detail booking untuk ditampilkan di modal
- */
-public function getBookingDetail($id)
-{
-    // Tambahkan eager loading untuk rental items
-    $booking = FieldBooking::with([
-        'user',
-        'field',
-        'payment',
-        'membershipSession.subscription.membership',
-        'photographerBookings.photographer', // Eager load photographer
-        'rentalBookings.rentalItem'          // Eager load rental items dengan relasinya
-    ])->findOrFail($id);
+    /**
+     * Mengambil detail booking untuk ditampilkan di modal
+     */
+    public function getBookingDetail($id)
+    {
+        // Tambahkan eager loading untuk rental items
+        $booking = FieldBooking::with([
+            'user',
+            'field',
+            'payment',
+            'membershipSession.subscription.membership',
+            'photographerBookings.photographer', // Eager load photographer
+            'rentalBookings.rentalItem', // Eager load rental items dengan relasinya
+        ])->findOrFail($id);
 
-    // Kembalikan data lengkap tanpa perlu query terpisah
-    return response()->json([
-        'booking' => $booking
-    ]);
-}
-
-/**
- * Tampilkan halaman jadwal semua booking dalam bentuk tabel
- */
-public function allBookingsTable(Request $request)
-{
-    if ($request->ajax()) {
-        $bookings = FieldBooking::with(['user', 'field', 'membershipSession.subscription.membership']);
-
-        return DataTables::of($bookings)
-            ->addColumn('user_name', function ($booking) {
-                return $booking->user->name;
-            })
-            ->addColumn('field_name', function ($booking) {
-                return $booking->field->name;
-            })
-            ->addColumn('booking_type', function ($booking) {
-                return $booking->is_membership ? 'Membership' : 'Regular';
-            })
-            ->addColumn('membership_info', function ($booking) {
-                if ($booking->is_membership && $booking->membershipSession) {
-                    $subscription = $booking->membershipSession->subscription;
-                    if ($subscription && $subscription->membership) {
-                        return $subscription->membership->name . ' (Session ' . $booking->membershipSession->session_number . ')';
-                    }
-                }
-                return '-';
-            })
-            ->editColumn('start_time', function ($booking) {
-                return Carbon::parse($booking->start_time)->format('d M Y H:i');
-            })
-            ->editColumn('end_time', function ($booking) {
-                return Carbon::parse($booking->end_time)->format('H:i');
-            })
-            ->editColumn('status', function ($booking) {
-                $statusClass = '';
-                switch ($booking->status) {
-                    case 'confirmed':
-                        $statusClass = 'bg-success';
-                        break;
-                    case 'pending':
-                        $statusClass = 'bg-warning';
-                        break;
-                    case 'cancelled':
-                        $statusClass = 'bg-danger';
-                        break;
-                    default:
-                        $statusClass = 'bg-secondary';
-                }
-                return '<span class="badge ' . $statusClass . '">' . ucfirst($booking->status) . '</span>';
-            })
-            ->addColumn('action', function ($booking) {
-                return '<div class="d-flex gap-1">
-                        <button type="button" class="btn btn-sm btn-info view-details" data-id="' . $booking->id . '">Detail</button>
-                    </div>';
-            })
-            ->rawColumns(['status', 'action'])
-            ->make(true);
+        // Kembalikan data lengkap tanpa perlu query terpisah
+        return response()->json([
+            'booking' => $booking,
+        ]);
     }
 
-    return view('admin.schedule.all-bookings');
-}
+    /**
+     * Tampilkan halaman jadwal semua booking dalam bentuk tabel
+     */
+    public function allBookingsTable(Request $request)
+    {
+        if ($request->ajax()) {
+            $bookings = FieldBooking::with(['user', 'field', 'membershipSession.subscription.membership']);
+
+            return DataTables::of($bookings)
+                ->addColumn('user_name', function ($booking) {
+                    return $booking->user->name;
+                })
+                ->addColumn('field_name', function ($booking) {
+                    return $booking->field->name;
+                })
+                ->addColumn('booking_type', function ($booking) {
+                    return $booking->is_membership ? 'Membership' : 'Regular';
+                })
+                ->addColumn('membership_info', function ($booking) {
+                    if ($booking->is_membership && $booking->membershipSession) {
+                        $subscription = $booking->membershipSession->subscription;
+                        if ($subscription && $subscription->membership) {
+                            return $subscription->membership->name . ' (Session ' . $booking->membershipSession->session_number . ')';
+                        }
+                    }
+                    return '-';
+                })
+                ->editColumn('start_time', function ($booking) {
+                    return Carbon::parse($booking->start_time)->format('d M Y H:i');
+                })
+                ->editColumn('end_time', function ($booking) {
+                    return Carbon::parse($booking->end_time)->format('H:i');
+                })
+                ->editColumn('status', function ($booking) {
+                    $statusClass = '';
+                    switch ($booking->status) {
+                        case 'confirmed':
+                            $statusClass = 'bg-success';
+                            break;
+                        case 'pending':
+                            $statusClass = 'bg-warning';
+                            break;
+                        case 'cancelled':
+                            $statusClass = 'bg-danger';
+                            break;
+                        default:
+                            $statusClass = 'bg-secondary';
+                    }
+                    return '<span class="badge ' . $statusClass . '">' . ucfirst($booking->status) . '</span>';
+                })
+                ->addColumn('action', function ($booking) {
+                    return '<div class="d-flex gap-1">
+                        <button type="button" class="btn btn-sm btn-info view-details" data-id="' .
+                        $booking->id .
+                        '">Detail</button>
+                    </div>';
+                })
+                ->rawColumns(['status', 'action'])
+                ->make(true);
+        }
+
+        return view('admin.schedule.all-bookings');
+    }
 
     // /**
     //  * Halaman edit status booking

@@ -23,9 +23,17 @@ class RentalItemController extends Controller
             return DataTables::of($rentalItems)
                 ->addColumn('action', function ($rentalItem) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('admin.rental-items.show', $rentalItem->id) . '" class="btn btn-sm btn-info">Show</a>
-                            <a href="' . route('admin.rental-items.edit', $rentalItem->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $rentalItem->id . '" data-name="' . $rentalItem->name . '">Hapus</button>
+                            <a href="' .
+                        route('admin.rental-items.show', $rentalItem->id) .
+                        '" class="btn btn-sm btn-info">Show</a>
+                            <a href="' .
+                        route('admin.rental-items.edit', $rentalItem->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $rentalItem->id .
+                        '" data-name="' .
+                        $rentalItem->name .
+                        '">Hapus</button>
                         </div>';
                 })
 
@@ -34,14 +42,14 @@ class RentalItemController extends Controller
                         'ball' => 'bg-primary',
                         'jersey' => 'bg-info',
                         'shoes' => 'bg-warning',
-                        'other' => 'bg-secondary'
+                        'other' => 'bg-secondary',
                     ];
 
                     $badge = isset($badges[$rentalItem->category]) ? $badges[$rentalItem->category] : 'bg-secondary';
                     return '<span class="badge ' . $badge . '">' . ucfirst($rentalItem->category) . '</span>';
                 })
                 ->editColumn('stock_available', function ($rentalItem) {
-                    $percentage = ($rentalItem->stock_total > 0) ? ($rentalItem->stock_available / $rentalItem->stock_total) * 100 : 0;
+                    $percentage = $rentalItem->stock_total > 0 ? ($rentalItem->stock_available / $rentalItem->stock_total) * 100 : 0;
 
                     if ($percentage <= 20) {
                         $badgeClass = 'bg-danger';
@@ -169,6 +177,4 @@ class RentalItemController extends Controller
             return redirect()->route('admin.rental-items.index')->with('error', 'Tidak dapat menghapus item sewa');
         }
     }
-
- 
 }

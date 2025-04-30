@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/users/maincourt.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/users/field-show.css') }}">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/default.css">

@@ -24,9 +24,17 @@ class FieldController extends Controller
             return DataTables::of($fields)
                 ->addColumn('action', function ($field) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('admin.fields.show', $field->id) . '" class="btn btn-sm btn-info">Detail</a>
-                            <a href="' . route('admin.fields.edit', $field->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $field->id . '" data-name="' . $field->name . '">Hapus</button>
+                            <a href="' .
+                        route('admin.fields.show', $field->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <a href="' .
+                        route('admin.fields.edit', $field->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $field->id .
+                        '" data-name="' .
+                        $field->name .
+                        '">Hapus</button>
                         </div>';
                 })
                 ->addColumn('photographer', function ($field) {

@@ -71,31 +71,12 @@
                         </span>
                     </a>
 
-<!-- User Dropdown -->
+<!-- User Dropdown (Nama Saja) -->
 <div class="dropdown">
     <button class="btn btn-light rounded-pill px-4 py-2 d-flex align-items-center gap-2" type="button"
-        id="userMenu" data-bs-toggle="dropdown" aria-expanded="false"
-        style="min-width: 150px; max-width: 220px;">
+        id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
 
-        @if(Auth::user()->profile_picture)
-            <!-- Display profile picture if available -->
-            <div class="rounded-circle d-flex align-items-center justify-content-center"
-                style="width: 40px; height: 40px; overflow: hidden;">
-                <img src="{{ Storage::url(Auth::user()->profile_picture) }}" alt="{{ Auth::user()->name }}"
-                    class="w-100 h-100" style="object-fit: cover;">
-            </div>
-        @else
-            <!-- Fallback to initial if no profile picture -->
-            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center"
-                style="width: 40px; height: 40px; font-size: 18px;">
-                {{ substr(Auth::user()->name, 0, 1) }}
-            </div>
-        @endif
-
-        <span class="d-none d-md-inline" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            {{ Auth::user()->name }}
-        </span>
-
+        {{ Auth::user()->name }}
         <i class="fas fa-chevron-down ms-1"></i>
     </button>
 

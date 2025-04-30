@@ -24,9 +24,17 @@ class UserManagementController extends Controller
             return DataTables::of($users)
                 ->addColumn('action', function ($user) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('admin.users.show', $user->id) . '" class="btn btn-sm btn-info">Detail</a>
-                            <a href="' . route('admin.users.edit', $user->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $user->id . '" data-name="' . $user->name . '">Hapus</button>
+                            <a href="' .
+                        route('admin.users.show', $user->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <a href="' .
+                        route('admin.users.edit', $user->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $user->id .
+                        '" data-name="' .
+                        $user->name .
+                        '">Hapus</button>
                         </div>';
                 })
                 ->editColumn('role', function ($user) {

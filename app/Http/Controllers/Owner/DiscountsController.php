@@ -23,9 +23,17 @@ class DiscountsController extends Controller
             return DataTables::of($discounts)
                 ->addColumn('action', function ($discount) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('owner.discounts.show', $discount->id) . '" class="btn btn-sm btn-info">Detail</a>
-                            <a href="' . route('owner.discounts.edit', $discount->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $discount->id . '" data-name="' . $discount->name . '">Hapus</button>
+                            <a href="' .
+                        route('owner.discounts.show', $discount->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <a href="' .
+                        route('owner.discounts.edit', $discount->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $discount->id .
+                        '" data-name="' .
+                        $discount->name .
+                        '">Hapus</button>
                         </div>';
                 })
                 ->editColumn('value', function ($discount) {
@@ -41,9 +49,7 @@ class DiscountsController extends Controller
                     return $discount->max_discount ? 'Rp ' . number_format($discount->max_discount, 0, ',', '.') : '-';
                 })
                 ->editColumn('is_active', function ($discount) {
-                    return $discount->is_active
-                        ? '<span class="badge bg-success">Aktif</span>'
-                        : '<span class="badge bg-danger">Tidak Aktif</span>';
+                    return $discount->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Tidak Aktif</span>';
                 })
                 ->editColumn('start_date', function ($discount) {
                     return $discount->start_date ? Carbon::parse($discount->start_date)->format('d M Y') : '-';
@@ -62,7 +68,7 @@ class DiscountsController extends Controller
 
                     if ($now < $startDate) {
                         return '<span class="badge bg-warning">Belum Mulai</span>';
-                    } else if ($now > $endDate) {
+                    } elseif ($now > $endDate) {
                         return '<span class="badge bg-danger">Kedaluwarsa</span>';
                     } else {
                         return '<span class="badge bg-success">Sedang Berlangsung</span>';
@@ -184,7 +190,9 @@ class DiscountsController extends Controller
         $discount->save();
 
         $status = $discount->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        return redirect()->route('owner.discounts.index')->with('success', "Diskon berhasil $status");
+        return redirect()
+            ->route('owner.discounts.index')
+            ->with('success', "Diskon berhasil $status");
     }
 
     /**

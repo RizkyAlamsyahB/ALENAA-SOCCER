@@ -27,9 +27,17 @@ class MembershipsController extends Controller
             return DataTables::of($memberships)
                 ->addColumn('action', function ($membership) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('admin.memberships.show', $membership->id) . '" class="btn btn-sm btn-info">Detail</a>
-                            <a href="' . route('admin.memberships.edit', $membership->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $membership->id . '" data-name="' . $membership->name . '">Hapus</button>
+                            <a href="' .
+                        route('admin.memberships.show', $membership->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <a href="' .
+                        route('admin.memberships.edit', $membership->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $membership->id .
+                        '" data-name="' .
+                        $membership->name .
+                        '">Hapus</button>
                         </div>';
                 })
                 ->addColumn('field_name', function ($membership) {
@@ -75,8 +83,12 @@ class MembershipsController extends Controller
                     return '<span class="badge bg-secondary">Tidak termasuk</span>';
                 })
                 ->addColumn('details', function ($membership) {
-                    return '<span class="badge bg-primary">' . $membership->sessions_per_week . ' sesi/minggu</span>
-                            <span class="badge bg-info">' . $membership->session_duration . ' jam/sesi</span>';
+                    return '<span class="badge bg-primary">' .
+                        $membership->sessions_per_week .
+                        ' sesi/minggu</span>
+                            <span class="badge bg-info">' .
+                        $membership->session_duration .
+                        ' jam/sesi</span>';
                 })
                 ->rawColumns(['action', 'type', 'status', 'image', 'photographer', 'details'])
                 ->make(true);
