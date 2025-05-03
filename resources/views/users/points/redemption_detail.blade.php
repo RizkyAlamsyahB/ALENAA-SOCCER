@@ -3,6 +3,8 @@
     <!-- Link untuk font dan stylesheet tambahan -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tambahkan script clipboard.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 
     <!-- Hero Section -->
     <div class="hero-section" style="margin-top: 50px;">
@@ -445,22 +447,34 @@
         }
     </style>
 
-    @push('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             var clipboard = new ClipboardJS('.copy-btn');
 
             clipboard.on('success', function(e) {
-                $(e.trigger).html('<i class="fas fa-check"></i>');
+                const button = e.trigger;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
 
                 setTimeout(function() {
-                    $(e.trigger).html('<i class="far fa-copy"></i>');
+                    button.innerHTML = originalText;
                 }, 1000);
 
                 e.clearSelection();
             });
+
+            clipboard.on('error', function(e) {
+                console.error('Action:', e.action);
+                console.error('Trigger:', e.trigger);
+
+                const button = e.trigger;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-times"></i>';
+
+                setTimeout(function() {
+                    button.innerHTML = originalText;
+                }, 1000);
+            });
         });
     </script>
-    @endpush
 @endsection

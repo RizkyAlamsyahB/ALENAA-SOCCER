@@ -1,88 +1,78 @@
 <?php
-
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\RentalItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class RentalItemSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        $rentalItems = [
-            // Kategori Ball
+        // Map antara nama item dan nama file gambar
+        $items = [
             [
                 'name' => 'Bola Futsal Specs',
-                'description' => 'Bola futsal ukuran standar dengan kualitas terbaik',
+                'file' => 'bola-futsal-specs.jpg',
                 'category' => 'ball',
                 'rental_price' => 25000,
-                'stock_total' => 2,
-                'stock_available' => 2,
+                'stock' => 2,
                 'condition' => 'Baru',
-                'image' => 'assets/ball.png',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Bola futsal ukuran standar dengan kualitas terbaik',
             ],
             [
                 'name' => 'Bola Futsal Nike',
-                'description' => 'Bola futsal premium dari Nike',
+                'file' => 'bola-nike.jpg',
                 'category' => 'ball',
                 'rental_price' => 30000,
-                'stock_total' => 2,
-                'stock_available' => 2,
+                'stock' => 2,
                 'condition' => 'Baru',
-                'image' => 'assets/ball.png',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Bola futsal premium dari Nike',
             ],
-
-            // Kategori Shoes
             [
                 'name' => 'Sepatu Futsal Nike Size 42',
+                'file' => 'Sepatu Futsal Nike Size 42.jpeg',
+                'category' => 'shoes',
+                'rental_price' => 40000,
+                'stock' => 5,
+                'condition' => 'Baik',
                 'description' => 'Sepatu futsal Nike ukuran 42 dengan grip terbaik',
-                'category' => 'shoes',
-                'rental_price' => 40000,
-                'stock_total' => 5,
-                'stock_available' => 5,
-                'condition' => 'Baik',
-                'image' => 'assets/shoes.png',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
-            [
-                'name' => 'Sepatu Futsal Adidas Size 43',
-                'description' => 'Sepatu futsal Adidas ukuran 43',
-                'category' => 'shoes',
-                'rental_price' => 40000,
-                'stock_total' => 4,
-                'stock_available' => 4,
-                'condition' => 'Baik',
-                'image' => 'assets/shoes.png',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            // Kategori Other
             [
                 'name' => 'Rompi Pembeda Tim',
-                'description' => 'Set rompi pembeda tim (10 pcs)',
+                'file' => 'rompi.jpg',
                 'category' => 'other',
                 'rental_price' => 50000,
-                'stock_total' => 5,
-                'stock_available' => 5,
+                'stock' => 5,
                 'condition' => 'Baik',
-                'image' => 'rental_items/rompi-tim.jpg',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Set rompi pembeda tim (10 pcs)',
             ],
         ];
 
-        DB::table('rental_items')->insert($rentalItems);
+        $data = [];
+
+        foreach ($items as $item) {
+            $sourcePath = database_path('seeders/images/' . $item['file']);
+            $targetPath = 'rental_items/' . Str::slug(pathinfo($item['file'], PATHINFO_FILENAME)) . '-' . Str::random(5) . '.' . pathinfo($item['file'], PATHINFO_EXTENSION);
+
+            // Salin file ke storage
+            Storage::disk('public')->put($targetPath, file_get_contents($sourcePath));
+
+            $data[] = [
+                'name' => $item['name'],
+                'description' => $item['description'],
+                'category' => $item['category'],
+                'rental_price' => $item['rental_price'],
+                'stock_total' => $item['stock'],
+                'stock_available' => $item['stock'],
+                'condition' => $item['condition'],
+                'image' => $targetPath, // path di storage
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        DB::table('rental_items')->insert($data);
     }
 }

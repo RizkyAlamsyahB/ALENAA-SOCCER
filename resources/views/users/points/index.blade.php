@@ -3,8 +3,11 @@
     <!-- Link untuk font dan stylesheet tambahan -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.js">
+    <!-- Hapus link yang salah dan ganti dengan script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <!-- Tambahkan jQuery untuk tooltip -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <!-- Hero Section -->
     <div class="hero-section" style="margin-top: 50px;">
         <div class="container">
@@ -428,52 +431,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
 </script>
-    @push('scripts')
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                // Pastikan jQuery sudah dimuat sebelum menginisialisasi tooltip
-                if (typeof $ === 'undefined') {
-                    console.error('jQuery is not loaded');
-                    return;
-                }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inisialisasi clipboard.js
+            var clipboard = new ClipboardJS('.copy-btn');
 
-                // Inisialisasi tooltip pada semua tombol copy
-                $('.copy-btn').tooltip({
-                    trigger: 'manual',
-                    placement: 'top'
-                });
+            clipboard.on('success', function(e) {
+                // Tampilkan pesan sukses
+                const button = e.trigger;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
 
-                // Inisialisasi clipboard.js
-                var clipboard = new ClipboardJS('.copy-btn');
+                // Kembalikan ke tampilan awal setelah 1 detik
+                setTimeout(function() {
+                    button.innerHTML = originalText;
+                }, 1000);
 
-                clipboard.on('success', function(e) {
-                    // Mengubah teks tooltip menjadi 'Tersalin!'
-                    $(e.trigger).attr('data-original-title', 'Tersalin!').tooltip('show');
-
-                    // Menghilangkan tooltip setelah 1 detik
-                    setTimeout(function() {
-                        $(e.trigger).tooltip('hide');
-                        // Reset tooltip title kembali
-                        $(e.trigger).attr('data-original-title', 'Salin kode');
-                    }, 1000);
-
-                    e.clearSelection();
-                });
-
-                clipboard.on('error', function(e) {
-                    console.error('Action:', e.action);
-                    console.error('Trigger:', e.trigger);
-
-                    // Menampilkan pesan error
-                    $(e.trigger).attr('data-original-title', 'Gagal menyalin!').tooltip('show');
-
-                    setTimeout(function() {
-                        $(e.trigger).tooltip('hide');
-                        $(e.trigger).attr('data-original-title', 'Salin kode');
-                    }, 1000);
-                });
+                e.clearSelection();
             });
-        </script>
-    @endpush
+
+            clipboard.on('error', function(e) {
+                console.error('Action:', e.action);
+                console.error('Trigger:', e.trigger);
+
+                // Tampilkan pesan error
+                const button = e.trigger;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-times"></i>';
+
+                setTimeout(function() {
+                    button.innerHTML = originalText;
+                }, 1000);
+            });
+        });
+    </script>
 @endsection

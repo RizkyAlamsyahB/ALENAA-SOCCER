@@ -500,27 +500,6 @@
             @endif
         });
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle tab ubah jadwal
-            const btnUbahJadwal = document.getElementById('tab-ubah-jadwal');
-            btnUbahJadwal.addEventListener('click', function() {
-                // Sembunyikan semua tab panes
-                document.querySelectorAll('.tab-pane').forEach(pane => {
-                    pane.style.display = 'none';
-                });
-
-                // Tampilkan tab schedule
-                document.getElementById('content-schedule').style.display = 'block';
-
-                // Update active state pada buttons
-                document.querySelectorAll('.nav-link').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-            });
-        });
-    </script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">

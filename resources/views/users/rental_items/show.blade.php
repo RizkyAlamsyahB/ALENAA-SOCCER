@@ -35,11 +35,44 @@
     <!-- Main Content -->
     <div class="container mt-3">
 
-        <!-- Gallery Section -->
-        <div class="row g-3 mb-5 d-none d-lg-flex mt-3">
-            <!-- Main Image -->
-            <div class="col-lg-8">
-                <div class="gallery-card main-gallery">
+ <!-- Gallery Section -->
+ <div class="row g-3 mb-5 d-none d-lg-flex mt-3">
+    <!-- Main Image -->
+    <div class="col-lg-8">
+        <div class="gallery-card main-gallery">
+            <div class="gallery-img">
+                @if ($rentalItem->image)
+                    <img src="{{ Storage::url($rentalItem->image) }}" class="img-fluid w-100"
+                        alt="{{ $rentalItem->name }}">
+                @else
+                    <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100"
+                        alt="{{ $rentalItem->name }}">
+                @endif
+                <div class="gallery-overlay">
+                    <button class="view-btn">
+                        <i class="fas fa-expand-alt"></i>
+                        View Full Image
+                    </button>
+                </div>
+            </div>
+            <div class="status-badge">
+                <span class="badge-content">
+                    @if ($rentalItem->stock_available > 0)
+                        <i class="fas fa-check-circle me-1"></i>
+                        Available Now
+                    @else
+                        <i class="fas fa-times-circle me-1"></i>
+                        Out of Stock
+                    @endif
+                </span>
+            </div>
+        </div>
+    </div>
+    <!-- Side Images -->
+    <div class="col-lg-4">
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="gallery-card">
                     <div class="gallery-img">
                         @if ($rentalItem->image)
                             <img src="{{ Storage::url($rentalItem->image) }}" class="img-fluid w-100"
@@ -55,137 +88,128 @@
                             </button>
                         </div>
                     </div>
-                    <div class="status-badge">
-                        <span class="badge-content">
-                            @if ($rentalItem->stock_available > 0)
-                                <i class="fas fa-check-circle me-1"></i>
-                                Available Now
-                            @else
-                                <i class="fas fa-times-circle me-1"></i>
-                                Out of Stock
-                            @endif
-                        </span>
-                    </div>
                 </div>
             </div>
-            <!-- Side Images -->
-            <div class="col-lg-4">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <div class="gallery-card">
-                            <div class="gallery-img">
-                                <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100" alt="Item view 2">
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="gallery-card">
-                            <div class="gallery-img">
-                                <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100" alt="Item view 3">
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Gallery Carousel -->
-        <div class="mobile-gallery d-lg-none">
-            <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
-                <!-- Carousel Inner -->
-                <div class="carousel-inner rounded-4 overflow-hidden">
-                    <div class="carousel-item active">
-                        <div class="carousel-img-wrapper">
-                            @if ($rentalItem->image)
-                                <img src="{{ Storage::url($rentalItem->image) }}" class="d-block w-100"
-                                    alt="{{ $rentalItem->name }}">
-                            @else
-                                <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100"
-                                    alt="{{ $rentalItem->name }}">
-                            @endif
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                1/3
-                            </span>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="carousel-img-wrapper">
-                            <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100" alt="Item view 2">
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                2/3
-                            </span>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="carousel-img-wrapper">
-                            <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100" alt="Item view 3">
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                3/3
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation Buttons -->
-                <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
-                    data-bs-slide="prev">
-                    <span class="control-icon">
-                        <i class="fas fa-chevron-left"></i>
-                    </span>
-                </button>
-                <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
-                    data-bs-slide="next">
-                    <span class="control-icon">
-                        <i class="fas fa-chevron-right"></i>
-                    </span>
-                </button>
-
-                <!-- Indicators -->
-                <div class="carousel-indicators custom-indicators">
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
-                        aria-current="true"></button>
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
-                </div>
-
-                <!-- Available Badge -->
-                <div class="available-badge">
-                    <span class="badge-content">
-                        @if ($rentalItem->stock_available > 0)
-                            <i class="fas fa-check-circle"></i>
-                            Available Now
+            <div class="col-12">
+                <div class="gallery-card">
+                    <div class="gallery-img">
+                        @if ($rentalItem->image)
+                            <img src="{{ Storage::url($rentalItem->image) }}" class="img-fluid w-100"
+                                alt="{{ $rentalItem->name }}">
                         @else
-                            <i class="fas fa-times-circle"></i>
-                            Out of Stock
+                            <img src="{{ asset('assets/placeholder.jpg') }}" class="img-fluid w-100"
+                                alt="{{ $rentalItem->name }}">
                         @endif
+                        <div class="gallery-overlay">
+                            <button class="view-btn">
+                                <i class="fas fa-expand-alt"></i>
+                                View Full Image
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Gallery Carousel -->
+<div class="mobile-gallery d-lg-none">
+    <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+        <!-- Carousel Inner -->
+        <div class="carousel-inner rounded-4 overflow-hidden">
+            <div class="carousel-item active">
+                <div class="carousel-img-wrapper">
+                    @if ($rentalItem->image)
+                        <img src="{{ Storage::url($rentalItem->image) }}" class="d-block w-100"
+                            alt="{{ $rentalItem->name }}">
+                    @else
+                        <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100"
+                            alt="{{ $rentalItem->name }}">
+                    @endif
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <span class="caption-badge">
+                        <i class="fas fa-image"></i>
+                        1/3
+                    </span>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-img-wrapper">
+                    @if ($rentalItem->image)
+                        <img src="{{ Storage::url($rentalItem->image) }}" class="d-block w-100"
+                            alt="{{ $rentalItem->name }}">
+                    @else
+                        <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100"
+                            alt="{{ $rentalItem->name }}">
+                    @endif
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <span class="caption-badge">
+                        <i class="fas fa-image"></i>
+                        2/3
+                    </span>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-img-wrapper">
+                    @if ($rentalItem->image)
+                        <img src="{{ Storage::url($rentalItem->image) }}" class="d-block w-100"
+                            alt="{{ $rentalItem->name }}">
+                    @else
+                        <img src="{{ asset('assets/placeholder.jpg') }}" class="d-block w-100"
+                            alt="{{ $rentalItem->name }}">
+                    @endif
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <span class="caption-badge">
+                        <i class="fas fa-image"></i>
+                        3/3
                     </span>
                 </div>
             </div>
         </div>
+
+        <!-- Navigation Buttons -->
+        <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
+            data-bs-slide="prev">
+            <span class="control-icon">
+                <i class="fas fa-chevron-left"></i>
+            </span>
+        </button>
+        <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
+            data-bs-slide="next">
+            <span class="control-icon">
+                <i class="fas fa-chevron-right"></i>
+            </span>
+        </button>
+
+        <!-- Indicators -->
+        <div class="carousel-indicators custom-indicators">
+            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
+                aria-current="true"></button>
+            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
+        </div>
+
+        <!-- Available Badge -->
+        <div class="available-badge">
+            <span class="badge-content">
+                @if ($rentalItem->stock_available > 0)
+                    <i class="fas fa-check-circle"></i>
+                    Available Now
+                @else
+                    <i class="fas fa-times-circle"></i>
+                    Out of Stock
+                @endif
+            </span>
+        </div>
+    </div>
+</div>
         <!-- Main Information -->
         <div class="row">
             <!-- Item Details Container -->

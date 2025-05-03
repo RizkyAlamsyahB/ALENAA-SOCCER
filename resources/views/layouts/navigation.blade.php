@@ -71,48 +71,66 @@
                         </span>
                     </a>
 
-<!-- User Dropdown (Nama Saja) -->
+<!-- User Dropdown (Dark Style) -->
 <div class="dropdown">
     <button class="btn btn-light rounded-pill px-4 py-2 d-flex align-items-center gap-2" type="button"
         id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-
         {{ Auth::user()->name }}
         <i class="fas fa-chevron-down ms-1"></i>
     </button>
 
-    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+    <ul class="dropdown-menu dropdown-menu-end border-0 rounded-4 shadow-lg  text-dark" style="min-width: 240px;">
         <li>
-            <div class="dropdown-header px-4 py-3 border-bottom">
+            <div class="dropdown-header px-4 py-3 border-bottom border-secondary">
                 <div class="fw-bold">{{ Auth::user()->name }}</div>
-                <div class="text-muted small">{{ Auth::user()->email }}</div>
-                <div class="text-muted small">
+                <div class="text-light-50 small">{{ Auth::user()->email }}</div>
+                <div class="text-light-50 small">
                     Role: {{ ucfirst(Auth::user()->role ?? 'user') }}
                 </div>
             </div>
         </li>
-        <li><a class="dropdown-item px-4 py-2" href="{{ route('profile.edit') }}">
-                <i class="fas fa-user me-2 text-muted"></i>My Profile
+        <li><a class="dropdown-item px-4 py-3 text-dark" href="{{ route('profile.edit') }}">
+                <i class="fas fa-user me-2"></i>My Profile
             </a></li>
-        <li><a class="dropdown-item px-4 py-2" href="{{ route('user.membership.my-memberships') }}">
-                <i class="fas fa-user-tag me-2 text-muted"></i>My Membership
+        <li><a class="dropdown-item px-4 py-3 text-dark" href="{{ route('user.membership.my-memberships') }}">
+                <i class="fas fa-user-tag me-2"></i>My Membership
             </a></li>
-
-        <li><a class="dropdown-item px-4 py-2" href="{{ route('user.payment.history') }}">
-                <i class="fas fa-receipt me-2 text-muted"></i>Payment History
+        <li><a class="dropdown-item px-4 py-3 text-dark" href="{{ route('user.payment.history') }}">
+                <i class="fas fa-receipt me-2"></i>Payment History
             </a></li>
         <li>
-            <hr class="dropdown-divider">
+            <hr class="dropdown-divider border-secondary m-0">
         </li>
         <li>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="dropdown-item px-4 py-2 text-danger">
+                <button type="submit" class="dropdown-item px-4 py-3 text-danger">
                     <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </button>
             </form>
         </li>
     </ul>
 </div>
+
+<!-- CSS untuk dropdown dark mode -->
+<style>
+
+
+.dropdown-menu. {
+    animation: dropdown-fade-in 0.2s ease forwards;
+}
+
+@keyframes dropdown-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
                 @else
                     <a href="/login" class="btn btn-outline-danger rounded-pill px-4 py-2 hover-scale">
                         <i class="fas fa-sign-in-alt me-2"></i>Masuk
