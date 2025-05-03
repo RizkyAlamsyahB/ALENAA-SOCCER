@@ -146,14 +146,8 @@
             <i class="fas fa-user-tag"></i>
             <span>{{ ucfirst($membershipType) }} Package</span>
         </div>
-        <div class="info-badge">
-            <i class="fas fa-calendar-week"></i>
-            <span>3x permainan/minggu</span>
-        </div>
-        <div class="info-badge">
-            <i class="fas fa-clock"></i>
-            <span>{{ $sessionDuration }} jam/sesi</span>
-        </div>
+
+       
         @if(!empty($item->membership_sessions))
             <?php $sessions = json_decode($item->membership_sessions, true); ?>
             <div class="info-badge">

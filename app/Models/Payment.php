@@ -2,11 +2,13 @@
 namespace App\Models;
 
 use App\Models\User;
-use App\Models\FieldBooking;
+use App\Models\Customer;
 use App\Models\Discount;
+use App\Models\FieldBooking;
+use App\Models\ProductSaleItem;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Payment extends Model
@@ -19,6 +21,7 @@ class Payment extends Model
         'amount',
         'original_amount',
         'discount_id',
+        'point_redemption_id',  // Tambahkan ini
         'discount_amount',
         'transaction_id',
         'transaction_status',
@@ -26,7 +29,7 @@ class Payment extends Model
         'payment_type',
         'payment_details',
         'expires_at',
-        'on_hold_booking_ids',
+        'customer_id',
     ];
 
     protected $casts = [
@@ -59,14 +62,6 @@ class Payment extends Model
     public function fieldBookings(): HasMany
     {
         return $this->hasMany(FieldBooking::class);
-    }
-
-    /**
-     * Get the field bookings on hold for renewal associated with this payment.
-     */
-    public function onHoldBookings(): HasMany
-    {
-        return $this->hasMany(FieldBooking::class, 'renewal_payment_id');
     }
 
     /**
@@ -124,16 +119,16 @@ class Payment extends Model
     {
         return $this->payment_type === 'membership_renewal' || strpos($this->order_id, 'RENEW-MEM-') === 0;
     }
-
     /**
-     * Get on-hold bookings IDs as array.
+     * Get the customer associated with this payment.
      */
-    public function getOnHoldBookingIdsAttribute($value)
+    public function customer(): BelongsTo
     {
-        if (!$value) {
-            return [];
-        }
-
-        return json_decode($value, true) ?? [];
+        return $this->belongsTo(Customer::class);
     }
+    // Di dalam model Payment, tambahkan method ini:
+public function productItems()
+{
+    return $this->hasMany(ProductSaleItem::class);
+}
 }

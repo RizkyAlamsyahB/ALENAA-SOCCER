@@ -17,8 +17,9 @@ return new class extends Migration
             $table->date('session_date');
             $table->dateTime('start_time');
             $table->dateTime('end_time');
-            $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
+            $table->enum('status', ['scheduled', 'upcoming', 'completed', 'cancelled', 'ongoing'])->default('scheduled');
             $table->integer('session_number')->default(1);
+            $table->foreignId('field_booking_id')->nullable()->constrained('field_bookings')->nullOnDelete();
             $table->timestamps();
         });
     }

@@ -24,7 +24,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container content-wrapper">
+    <div class="container content-wrapper mt-4">
         <div class="row g-4">
             <!-- Left Column: Membership Details -->
             <div class="col-lg-8">
@@ -170,55 +170,7 @@
                     </div>
                 </div>
 
-                <!-- Field Information -->
-                <div class="card content-card">
-                    <div class="card-header">
-                        <h3>Informasi Lapangan</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="field-info-grid">
-                            <div class="field-info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-ruler"></i>
-                                </div>
-                                <div class="info-content">
-                                    <h4>Ukuran</h4>
-                                    <p>25 x 15m</p>
-                                </div>
-                            </div>
 
-                            <div class="field-info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <div class="info-content">
-                                    <h4>Kapasitas</h4>
-                                    <p>5v5 Players</p>
-                                </div>
-                            </div>
-
-                            <div class="field-info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-volleyball-ball"></i>
-                                </div>
-                                <div class="info-content">
-                                    <h4>Tipe</h4>
-                                    <p>{{ $field->type }}</p>
-                                </div>
-                            </div>
-
-                            <div class="field-info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-map-marked-alt"></i>
-                                </div>
-                                <div class="info-content">
-                                    <h4>Lokasi</h4>
-                                    <p>Sidoarjo</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Terms and Conditions -->
                 <div class="card content-card">
@@ -326,7 +278,7 @@
 
         /* Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%);
+    background: linear-gradient(to right, #9e0620, #bb2d3b);
             height: 220px;
             position: relative;
             display: flex;

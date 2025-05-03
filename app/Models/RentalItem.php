@@ -17,16 +17,7 @@ class RentalItem extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'name',
-        'description',
-        'category',
-        'rental_price',
-        'stock_total',
-        'stock_available',
-        'condition',
-        'image',
-    ];
+    protected $fillable = ['name', 'description', 'category', 'rental_price', 'stock_total', 'stock_available', 'condition', 'image'];
 
     /**
      * Atribut yang harus dikonversi ke tipe data tertentu
@@ -54,8 +45,7 @@ class RentalItem extends Model
      */
     public function cartItems()
     {
-        return $this->hasMany(CartItem::class, 'item_id')
-            ->where('type', 'rental_item');
+        return $this->hasMany(CartItem::class, 'item_id')->where('type', 'rental_item');
     }
 
     /**
@@ -78,8 +68,6 @@ class RentalItem extends Model
         return ($this->stock_available / $this->stock_total) * 100;
     }
 
-
-
     /**
      * Mendapatkan kategori dalam bahasa Indonesia
      */
@@ -100,8 +88,36 @@ class RentalItem extends Model
     }
 
     // Di model Field.php
-public function reviews()
-{
-    return $this->morphMany(Review::class, 'reviewable', 'item_type', 'item_id');
-}
+    // Tambahkan di Model RentalItem.php
+
+    /**
+     * Relasi dengan review
+     */
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable', 'item_type', 'item_id');
+    }
+
+    /**
+     * Mendapatkan rata-rata rating item rental
+     */
+    public function getRatingAttribute()
+    {
+        return $this->reviews()->where('status', 'active')->avg('rating') ?: 0;
+    }
+
+    /**
+     * Mendapatkan jumlah review item rental
+     */
+    public function getReviewsCountAttribute()
+    {
+        return $this->reviews()->where('status', 'active')->count();
+    }
+    /**
+     * Get the memberships that use this rental item.
+     */
+    public function memberships()
+    {
+        return $this->hasMany(Membership::class, 'rental_item_id');
+    }
 }

@@ -3,7 +3,6 @@
 use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Console\Scheduling\Schedule;
-use App\Http\Controllers\User\PaymentController;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -14,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php', // Pastikan file ini ada
         health: '/up',
     )
+    ->withCommands([
+        // Daftarkan custom commands
+        \App\Console\Commands\ScheduleMembershipRenewalInvoices::class,
+        \App\Console\Commands\CheckExpiredMembershipRenewals::class,
+        \App\Console\Commands\UpdateCompletedSessions::class,
+    ])
     ->withMiddleware(function (Middleware $middleware) {
         // Alias Middleware
         $middleware->alias([
@@ -37,15 +42,23 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/payments-expired.log'));
 
-      // Cek setiap jam
-$schedule->call([PaymentController::class, 'checkExpiredMembershipRenewals'])
-->hourly();
+        // Schedule invoice perpanjangan membership setiap hari
+        $schedule->command('membership:schedule-renewals')
+                 ->daily()
+                 ->at('09:12')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/membership-renewals.log'));
 
-// Atau setiap 30 menit
-$schedule->call([PaymentController::class, 'checkExpiredMembershipRenewals'])
-->everyThirtyMinutes();
+        // Cek membership yang kedaluwarsa setiap jam
+        $schedule->command('membership:check-expired')
+                 ->hourly()
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/membership-expired.log'));
 
-                 // Jalankan setiap jam
-    $schedule->command('sessions:update-completed')->hourly();
+        // Update status sesi yang sudah selesai setiap jam
+        $schedule->command('sessions:update-completed')
+                 ->hourly()
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/sessions-completed.log'));
     })
     ->create();

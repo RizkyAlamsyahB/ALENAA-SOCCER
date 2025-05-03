@@ -17,13 +17,14 @@ class CreatePaymentsTable extends Migration
             $table->id();
             $table->string('order_id')->unique();
             $table->foreignId('user_id')->constrained();
+            $table->unsignedBigInteger('customer_id')->nullable();
             $table->decimal('amount', 12, 2);
             $table->string('payment_type')->nullable();
             $table->string('transaction_id')->nullable();
             $table->string('transaction_status')->default('pending');
             $table->string('transaction_time')->nullable();
             $table->text('payment_details')->nullable(); // For storing JSON response
-              $table->text('on_hold_booking_ids')->nullable();
+            $table->text('on_hold_booking_ids')->nullable();
             $table->timestamps();
         });
     }

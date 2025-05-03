@@ -13,102 +13,283 @@ class DiscountSeeder extends Seeder
      */
     public function run(): void
     {
-        // Diskon persentase dengan nilai 10%
+        // Weekly Bronze Membership Discount (702,000 - 1,000 = 701,000)
         Discount::create([
-            'code' => 'DISKON10',
-            'name' => 'Diskon 10%',
-            'description' => 'Diskon 10% untuk semua booking',
-            'type' => 'percentage',
-            'value' => 10,
-            'min_order' => 50000, // Minimal order 50rb
-            'max_discount' => 100000, // Maksimal diskon 100rb
-            'applicable_to' => 'all',
+            'code' => 'BRONZE-WEEKLY',
+            'name' => 'Diskon Bronze Mingguan',
+            'description' => 'Potongan langsung Rp 701.000 untuk paket Bronze Mingguan',
+            'type' => 'fixed',
+            'value' => 701000,
+            'min_order' => 702000,
+            'applicable_to' => 'membership',
             'usage_limit' => 100,
-            'user_usage_limit' => 1,
+            'user_usage_limit' => 100,
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addMonths(3),
             'is_active' => true,
         ]);
 
-        // Diskon nilai tetap 50rb
+        // Weekly Silver Membership Discount (1,326,000 - 1,000 = 1,325,000)
         Discount::create([
-            'code' => 'FLAT700K',
-            'name' => 'Diskon Rp 700.000',
-            'description' => 'Potongan langsung Rp 700000.000 untuk pembelian minimal Rp 700.000',
+            'code' => 'SILVER-WEEKLY',
+            'name' => 'Diskon Silver Mingguan',
+            'description' => 'Potongan langsung Rp 1.325.000 untuk paket Silver Mingguan',
             'type' => 'fixed',
-            'value' => 700000,
-            'min_order' => 700000, // Minimal order 200rb
-            'applicable_to' => 'all',
-            'usage_limit' => 50,
-            'user_usage_limit' => 100000,
+            'value' => 1325000,
+            'min_order' => 1326000,
+            'applicable_to' => 'membership',
+            'usage_limit' => 100,
+            'user_usage_limit' => 100,
             'start_date' => Carbon::now(),
-            'end_date' => Carbon::now()->addMonths(1),
+            'end_date' => Carbon::now()->addMonths(3),
             'is_active' => true,
         ]);
 
-        // Diskon khusus untuk booking lapangan
+        // Weekly Gold Membership Discount (799,000 - 1,000 = 798,000)
         Discount::create([
-            'code' => 'FIELD20',
-            'name' => 'Diskon Lapangan 20%',
-            'description' => 'Diskon 20% khusus booking lapangan',
-            'type' => 'percentage',
-            'value' => 20,
-            'min_order' => 100000, // Minimal order 100rb
-            'max_discount' => 200000, // Maksimal diskon 200rb
-            'applicable_to' => 'field_booking',
-            'usage_limit' => 30,
-            'user_usage_limit' => 2,
+            'code' => 'GOLD-WEEKLY',
+            'name' => 'Diskon Gold Mingguan',
+            'description' => 'Potongan langsung Rp 798.000 untuk paket Gold Mingguan',
+            'type' => 'fixed',
+            'value' => 798000,
+            'min_order' => 799000,
+            'applicable_to' => 'membership',
+            'usage_limit' => 100,
+            'user_usage_limit' => 100,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+
+        // Monthly Bronze Membership Discount (702,000 * 4 - 1,000 = 2,807,000)
+        Discount::create([
+            'code' => 'BRONZE-MONTHLY',
+            'name' => 'Diskon Bronze Bulanan',
+            'description' => 'Potongan langsung Rp 2.807.000 untuk paket Bronze Bulanan',
+            'type' => 'fixed',
+            'value' => 2807000,
+            'min_order' => 2808000, // 702,000 * 4
+            'applicable_to' => 'membership',
+            'usage_limit' => 100,
+            'user_usage_limit' => 100,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+
+        // Monthly Silver Membership Discount (1,326,000 * 4 - 1,000 = 5,303,000)
+        Discount::create([
+            'code' => 'SILVER-MONTHLY',
+            'name' => 'Diskon Silver Bulanan',
+            'description' => 'Potongan langsung Rp 5.303.000 untuk paket Silver Bulanan',
+            'type' => 'fixed',
+            'value' => 5303000,
+            'min_order' => 5304000, // 1,326,000 * 4
+            'applicable_to' => 'membership',
+            'usage_limit' => 100,
+            'user_usage_limit' => 100,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+
+        // Monthly Gold Membership Discount (799,000 * 4 - 1,000 = 3,195,000)
+        Discount::create([
+            'code' => 'GOLD-MONTHLY',
+            'name' => 'Diskon Gold Bulanan',
+            'description' => 'Potongan langsung Rp 3.195.000 untuk paket Gold Bulanan',
+            'type' => 'fixed',
+            'value' => 3195000,
+            'min_order' => 3196000, // 799,000 * 4
+            'applicable_to' => 'membership',
+            'usage_limit' => 100,
+            'user_usage_limit' => 100,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+         // Rental Item Discounts
+
+        // Bola Futsal Specs (25,000 - 1,000 = 24,000)
+        Discount::create([
+            'code' => 'BOLA-SPECS',
+            'name' => 'Diskon Bola Futsal Specs',
+            'description' => 'Potongan langsung Rp 24.000 untuk rental Bola Futsal Specs',
+            'type' => 'fixed',
+            'value' => 24000,
+            'min_order' => 25000,
+            'applicable_to' => 'rental_item',
+            'usage_limit' => 50,
+            'user_usage_limit' => 5,
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addMonths(2),
             'is_active' => true,
         ]);
 
-        // Diskon khusus untuk rental peralatan
+        // Bola Futsal Nike (30,000 - 1,000 = 29,000)
         Discount::create([
-            'code' => 'RENTAL15',
-            'name' => 'Diskon Rental 15%',
-            'description' => 'Diskon 15% untuk penyewaan peralatan',
-            'type' => 'percentage',
-            'value' => 15,
+            'code' => 'BOLA-NIKE',
+            'name' => 'Diskon Bola Futsal Nike',
+            'description' => 'Potongan langsung Rp 29.000 untuk rental Bola Futsal Nike',
+            'type' => 'fixed',
+            'value' => 29000,
+            'min_order' => 30000,
+            'applicable_to' => 'rental_item',
+            'usage_limit' => 50,
+            'user_usage_limit' => 5,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(2),
+            'is_active' => true,
+        ]);
+
+        // Sepatu Futsal (40,000 - 1,000 = 39,000)
+        Discount::create([
+            'code' => 'SEPATU-DISKON',
+            'name' => 'Diskon Sepatu Futsal',
+            'description' => 'Potongan langsung Rp 39.000 untuk rental Sepatu Futsal',
+            'type' => 'fixed',
+            'value' => 39000,
+            'min_order' => 40000,
+            'applicable_to' => 'rental_item',
+            'usage_limit' => 75,
+            'user_usage_limit' => 10,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(2),
+            'is_active' => true,
+        ]);
+
+        // Rompi Pembeda Tim (50,000 - 1,000 = 49,000)
+        Discount::create([
+            'code' => 'ROMPI-TEAM',
+            'name' => 'Diskon Rompi Pembeda Tim',
+            'description' => 'Potongan langsung Rp 49.000 untuk rental Set Rompi Pembeda Tim',
+            'type' => 'fixed',
+            'value' => 49000,
             'min_order' => 50000,
             'applicable_to' => 'rental_item',
             'usage_limit' => 40,
-            'user_usage_limit' => 1,
+            'user_usage_limit' => 5,
             'start_date' => Carbon::now(),
-            'end_date' => Carbon::now()->addWeeks(6),
+            'end_date' => Carbon::now()->addMonths(2),
             'is_active' => true,
         ]);
 
-        // Diskon besar yang sudah kadaluwarsa
+        // Field Discounts
+
+        // Lapangan 1 (65,000 - 1,000 = 64,000)
         Discount::create([
-            'code' => 'EXPIRED50',
-            'name' => 'Diskon 50% (Expired)',
-            'description' => 'Diskon besar yang sudah kadaluwarsa',
-            'type' => 'percentage',
-            'value' => 50,
-            'min_order' => 0,
-            'applicable_to' => 'all',
-            'usage_limit' => 10,
-            'user_usage_limit' => 1,
-            'start_date' => Carbon::now()->subMonths(2),
-            'end_date' => Carbon::now()->subMonths(1),
+            'code' => 'LAP1-DISKON',
+            'name' => 'Diskon Lapangan 1',
+            'description' => 'Potongan langsung Rp 64.000 untuk booking Lapangan 1',
+            'type' => 'fixed',
+            'value' => 64000,
+            'min_order' => 65000,
+            'applicable_to' => 'field_booking',
+            'usage_limit' => 100,
+            'user_usage_limit' => 5,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
             'is_active' => true,
         ]);
 
-        // Diskon yang tidak aktif
+        // Lapangan 2 (75,000 - 1,000 = 74,000)
         Discount::create([
-            'code' => 'INACTIVE25',
-            'name' => 'Diskon 25% (Inactive)',
-            'description' => 'Diskon yang sengaja dinonaktifkan',
-            'type' => 'percentage',
-            'value' => 25,
-            'min_order' => 0,
-            'applicable_to' => 'all',
-            'usage_limit' => null,
-            'user_usage_limit' => 1,
+            'code' => 'LAP2-DISKON',
+            'name' => 'Diskon Lapangan 2',
+            'description' => 'Potongan langsung Rp 74.000 untuk booking Lapangan 2',
+            'type' => 'fixed',
+            'value' => 74000,
+            'min_order' => 75000,
+            'applicable_to' => 'field_booking',
+            'usage_limit' => 100,
+            'user_usage_limit' => 5,
             'start_date' => Carbon::now(),
-            'end_date' => Carbon::now()->addMonths(6),
-            'is_active' => false,
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
         ]);
+
+        // Lapangan 3 (110,000 - 1,000 = 109,000)
+        Discount::create([
+            'code' => 'LAP3-DISKON',
+            'name' => 'Diskon Lapangan 3',
+            'description' => 'Potongan langsung Rp 109.000 untuk booking Lapangan 3',
+            'type' => 'fixed',
+            'value' => 109000,
+            'min_order' => 110000,
+            'applicable_to' => 'field_booking',
+            'usage_limit' => 100,
+            'user_usage_limit' => 5,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+
+        // Photographer Discounts
+
+        // Paket Favorite (499,000 - 1,000 = 498,000)
+        Discount::create([
+            'code' => 'FOTO-FAVORITE',
+            'name' => 'Diskon Paket Favorite',
+            'description' => 'Potongan langsung Rp 498.000 untuk Paket Fotografer Favorite',
+            'type' => 'fixed',
+            'value' => 498000,
+            'min_order' => 499000,
+            'applicable_to' => 'photographer',
+            'usage_limit' => 50,
+            'user_usage_limit' => 2,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+
+        // Paket Plus (799,000 - 1,000 = 798,000)
+        Discount::create([
+            'code' => 'FOTO-PLUS',
+            'name' => 'Diskon Paket Plus',
+            'description' => 'Potongan langsung Rp 798.000 untuk Paket Fotografer Plus',
+            'type' => 'fixed',
+            'value' => 798000,
+            'min_order' => 799000,
+            'applicable_to' => 'photographer',
+            'usage_limit' => 50,
+            'user_usage_limit' => 2,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+
+        // Paket Exclusive (999,000 - 1,000 = 998,000)
+        Discount::create([
+            'code' => 'FOTO-EXCLUSIVE',
+            'name' => 'Diskon Paket Exclusive',
+            'description' => 'Potongan langsung Rp 998.000 untuk Paket Fotografer Exclusive',
+            'type' => 'fixed',
+            'value' => 998000,
+            'min_order' => 999000,
+            'applicable_to' => 'photographer',
+            'usage_limit' => 50,
+            'user_usage_limit' => 2,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(3),
+            'is_active' => true,
+        ]);
+
+        // Bundle discounts (Example: Field + Photographer)
+        Discount::create([
+            'code' => 'BUNDLE-LAPFOTO',
+            'name' => 'Diskon Bundle Lapangan + Fotografer',
+            'description' => 'Diskon 10% untuk pemesanan lapangan dan fotografer sekaligus',
+            'type' => 'percentage',
+            'value' => 10,
+            'min_order' => 500000,
+            'max_discount' => 200000,
+            'applicable_to' => 'bundle',
+            'usage_limit' => 30,
+            'user_usage_limit' => 3,
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addMonths(2),
+            'is_active' => true,
+        ]);
+    
     }
 }

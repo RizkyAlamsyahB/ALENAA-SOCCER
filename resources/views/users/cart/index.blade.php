@@ -1,41 +1,61 @@
 @extends('layouts.app')
 @section('content')
-    <link rel="stylesheet" href="{{ asset('css/users/modern-cart.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('css/users/modern-cart.css') }}"> --}}
 
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-wrapper" style="margin-top: 50px;">
-        <div class="container py-2">
-            <ol class="custom-breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="/" class="breadcrumb-link">
-                        <i class="fas fa-home"></i>
-                        <span>Home</span>
-                    </a>
-                </li>
-                <li class="breadcrumb-item active">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Keranjang</span>
-                </li>
-            </ol>
+ <!-- Hero Section -->
+<div class="hero-section" style="margin-top: 50px;">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Keranjang</h1>
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/">
+                                <i class="fas fa-home"></i> Home
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="fas fa-shopping-cart"></i> Keranjang
+                        </li>
+                    </ol>
+                </nav>
+            </div>
         </div>
-    </nav>
+    </div>
+</div>
+
 
     <!-- Main Content -->
     <div class="container mt-4 mb-5">
-        <!-- Bootstrap Alert for Session Messages -->
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+      <!-- Bootstrap Alert for Session Messages -->
+@if (session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
 
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+@if (session('error'))
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if (session('info'))
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    {{ session('info') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if (session('warning'))
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{ session('warning') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
 
         <div class="row">
             <div class="col-12">
@@ -115,11 +135,25 @@
                                                                     {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
                                                                 </span>
                                                             </div>
-                                                        @elseif($item->type == 'membership')
+                                                            @elseif($item->type == 'membership')
                                                             <div class="info-badge">
                                                                 <i class="fas fa-id-card"></i>
                                                                 <span>{{ $item->details ?? 'Membership' }}</span>
                                                             </div>
+
+                                                            <!-- Tambahkan bagian ini untuk menampilkan periode pembayaran -->
+                                                            <div class="info-badge">
+                                                                <i class="fas fa-credit-card"></i>
+                                                                <span>
+                                                                    Periode:
+                                                                    @if (isset($item->payment_period) && $item->payment_period == 'monthly')
+                                                                        Bulanan (4 Minggu)
+                                                                    @else
+                                                                        Mingguan
+                                                                    @endif
+                                                                </span>
+                                                            </div>
+
                                                             @if (!empty($item->membership_sessions))
                                                                 @php
                                                                     $sessions = json_decode(
@@ -127,27 +161,8 @@
                                                                         true,
                                                                     );
                                                                 @endphp
-                                                                <div class="info-badge">
-                                                                    <i class="fas fa-calendar-alt"></i>
-                                                                    <span>{{ count($sessions) }} jadwal tetap/minggu</span>
-                                                                </div>
 
-                                                                <!-- Tambahkan bagian ini untuk menampilkan detail jadwal -->
-                                                                <div class="mt-2">
-                                                                    <small class="text-muted">Jadwal:</small>
-                                                                    <ul class="list-unstyled ms-3">
-                                                                        @foreach ($sessions as $index => $session)
-                                                                            <li>
-                                                                                <small>
-                                                                                    {{ \Carbon\Carbon::parse($session['date'])->format('d M Y') }}
-                                                                                    ({{ \Carbon\Carbon::parse($session['start_time'])->format('H:i') }}
-                                                                                    -
-                                                                                    {{ \Carbon\Carbon::parse($session['end_time'])->format('H:i') }})
-                                                                                </small>
-                                                                            </li>
-                                                                        @endforeach
-                                                                    </ul>
-                                                                </div>
+
                                                             @endif
                                                         @endif
                                                     </div>
@@ -178,92 +193,156 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="card border-0 rounded-4 shadow-sm hover-shadow summary-card">
-                        <div class="card-header bg-white py-3 border-0 px-4">
-                            <h5 class="mb-0 fw-bold">Ringkasan Booking</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <!-- Form Kupon Diskon -->
+<!-- Form Diskon dan Voucher Poin yang dipisahkan -->
+<div class="card border-0 rounded-4 shadow-sm hover-shadow summary-card">
+    <div class="card-header bg-white py-3 border-0 px-4">
+        <h5 class="mb-0 fw-bold">Ringkasan Booking</h5>
+    </div>
+    <div class="card-body p-4">
+        <!-- Tampilkan jika ada diskon atau voucher yang diterapkan -->
+        @if (session()->has('cart_discount') || session()->has('cart_point_voucher'))
+            <div class="discount-applied mb-4">
+                <div class="discount-info p-3 {{ session()->has('cart_point_voucher') ? 'bg-warning-subtle' : 'bg-success-subtle' }} rounded-3 mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
                             @if (session()->has('cart_discount'))
-                                <div class="discount-applied mb-4">
-                                    <div class="discount-info p-3 bg-success-subtle rounded-3 mb-2">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="fw-bold mb-1">{{ session('cart_discount')['name'] }}</h6>
-                                                <span
-                                                    class="badge bg-success">{{ session('cart_discount')['code'] }}</span>
-                                                <div class="text-success mt-1 fw-bold">
-                                                    - Rp
-                                                    {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}
-                                                </div>
-                                            </div>
-                                            <a href="{{ route('user.cart.remove.discount') }}" class="btn-remove-discount"
-                                                title="Hapus kupon">
-                                                <i class="fas fa-times"></i>
-                                            </a>
-                                        </div>
-                                    </div>
+                                <h6 class="fw-bold mb-1">{{ session('cart_discount')['name'] }}</h6>
+                                <span class="badge bg-success">{{ session('cart_discount')['code'] }}</span>
+                                <div class="text-success mt-1 fw-bold">
+                                    - Rp {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}
                                 </div>
                             @else
-                                <div class="discount-form mb-4">
-                                    <form action="{{ route('user.cart.apply.discount') }}" method="POST">
-                                        @csrf
-                                        <div class="input-group">
-                                            <input type="text" name="discount_code" class="form-control"
-                                                placeholder="Kode kupon" required>
-                                            <button type="submit" class="btn-apply-discount">Terapkan</button>
-                                        </div>
-                                        @error('discount_code')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </form>
-                                    <button type="button" class="btn-view-promos mt-2" data-bs-toggle="modal"
-                                        data-bs-target="#promosModal">
-                                        <i class="fas fa-tags me-2"></i>Lihat Promo
-                                    </button>
+                                <h6 class="fw-bold mb-1">{{ session('cart_point_voucher')['name'] }}</h6>
+                                <span class="badge bg-warning text-dark">{{ session('cart_point_voucher')['code'] }}</span>
+                                <span class="badge bg-warning text-dark ms-1">
+                                    <i class="fas fa-coins me-1"></i> Voucher Poin
+                                </span>
+                                <div class="text-warning text-dark mt-1 fw-bold">
+                                    - Rp {{ number_format(session('cart_point_voucher')['amount'], 0, ',', '.') }}
                                 </div>
                             @endif
-
-                            <div class="summary-items mb-4">
-                                <div class="summary-item d-flex justify-content-between mb-3">
-                                    <span class="label">Subtotal</span>
-                                    <span class="value">Rp
-                                        {{ number_format(isset($subtotal) ? $subtotal : $totalPrice, 0, ',', '.') }}</span>
-                                </div>
-
-                                @if (session()->has('cart_discount') && isset($discountAmount) && $discountAmount > 0)
-                                    <div class="summary-item d-flex justify-content-between mb-3 text-success">
-                                        <span class="label">Diskon</span>
-                                        <span class="value">- Rp {{ number_format($discountAmount, 0, ',', '.') }}</span>
-                                    </div>
-                                @endif
-
-                                <div class="summary-item d-flex justify-content-between mb-3">
-                                    <span class="label">Jumlah Item</span>
-                                    <span class="value">{{ count($cartItems) }} item</span>
-                                </div>
-                            </div>
-                            <div class="summary-total d-flex justify-content-between align-items-center p-3 rounded-3">
-                                <span class="fw-bold">Total</span>
-                                <span class="total-price">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="mt-4">
-                                <form action="{{ route('user.cart.checkout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn-checkout">
-                                        <span>Checkout</span>
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="mt-3 text-center">
-                                <a href="{{ route('user.fields.index') }}" class="continue-shopping-link">
-                                    <i class="fas fa-arrow-left me-2"></i>
-                                    Lanjutkan Booking
-                                </a>
-                            </div>
                         </div>
+                        <a href="{{ route('user.cart.remove.discount') }}" class="btn-remove-discount"
+                            title="Hapus diskon/voucher">
+                            <i class="fas fa-times"></i>
+                        </a>
                     </div>
+                </div>
+            </div>
+        @else
+            <!-- Form Kupon Diskon Reguler -->
+            <div class="discount-form mb-3">
+                <h6 class="fw-semibold mb-2">Kode Promo</h6>
+                <form action="{{ route('user.cart.apply.discount') }}" method="POST">
+                    @csrf
+                    <div class="input-group">
+                        <input type="text" name="discount_code" class="form-control"
+                            placeholder="Masukkan kode promo" required>
+                        <button type="submit" class="btn-apply-discount">Terapkan</button>
+                    </div>
+                    @error('discount_code')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </form>
+                <button type="button" class="btn-view-promos mt-2" data-bs-toggle="modal"
+                    data-bs-target="#promosModal">
+                    <i class="fas fa-tags me-2"></i>Lihat Promo
+                </button>
+            </div>
+
+            <!-- Form untuk Penukaran Poin -->
+            <div class="point-voucher-section mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-semibold mb-0">Voucher Poin</h6>
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-coins me-1"></i> {{ Auth::user()->points }} Poin
+                    </span>
+                </div>
+
+                <div class="point-voucher-options">
+                    <!-- Opsi 1: Gunakan voucher yang sudah ada -->
+                    <div class="point-option mb-2">
+                        <form action="{{ route('user.cart.apply.point.voucher') }}" method="POST">
+                            @csrf
+                            <div class="input-group">
+                                <input type="text" name="voucher_code" class="form-control"
+                                    placeholder="Kode voucher poin" required>
+                                <button type="submit" class="btn-apply-point-voucher">
+                                    <i class="fas fa-check me-1"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Opsi 2: Tukar poin sekarang -->
+                    <a href="{{ route('user.points.index') }}" class="btn-points w-100">
+                        <i class="fas fa-coins me-2" style="color: #FFD700;"></i>
+                        Tukar Poin
+                    </a>
+                </div>
+            </div>
+        @endif
+
+        <!-- Ringkasan Harga -->
+        <div class="summary-items mb-4">
+            <div class="summary-item d-flex justify-content-between mb-3">
+                <span class="label">Subtotal</span>
+                <span class="value">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+            </div>
+
+            @if (session()->has('cart_discount'))
+                <div class="summary-item d-flex justify-content-between mb-3 text-success">
+                    <span class="label">Diskon</span>
+                    <span class="value">- Rp {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}</span>
+                </div>
+            @elseif (session()->has('cart_point_voucher'))
+                <div class="summary-item d-flex justify-content-between mb-3 text-warning">
+                    <span class="label">Voucher Poin</span>
+                    <span class="value">- Rp {{ number_format(session('cart_point_voucher')['amount'], 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            <div class="summary-item d-flex justify-content-between mb-3">
+                <span class="label">Jumlah Item</span>
+                <span class="value">{{ count($cartItems) }} item</span>
+            </div>
+        </div>
+
+        <!-- Total -->
+        <div class="summary-total d-flex justify-content-between align-items-center p-3 rounded-3">
+            <span class="fw-bold">Total</span>
+            <span class="total-price">
+                Rp {{ number_format(
+                    session('cart_discount')
+                        ? $subtotal - session('cart_discount')['amount']
+                        : (session('cart_point_voucher')
+                            ? $subtotal - session('cart_point_voucher')['amount']
+                            : $subtotal),
+                    0, ',', '.')
+                }}
+            </span>
+        </div>
+
+        <!-- Tombol Checkout -->
+        <div class="mt-4">
+            <form action="{{ route('user.cart.checkout') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-checkout">
+                    <span>Checkout</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Link Lanjutkan Shopping -->
+        <div class="mt-3 text-center">
+            <a href="{{ route('user.fields.index') }}" class="continue-shopping-link">
+                <i class="fas fa-arrow-left me-2"></i>
+                Lanjutkan Booking
+            </a>
+        </div>
+    </div>
+</div>
                 </div>
             </div>
         @else
@@ -287,6 +366,39 @@
             </div>
         @endif
     </div>
+    <script>
+        // Menangani klik tombol "Gunakan Promo"
+        document.addEventListener('DOMContentLoaded', function() {
+            const usePromoButtons = document.querySelectorAll('.btn-use-promo');
+            const discountInput = document.querySelector('input[name="discount_code"]');
+
+            usePromoButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const promoCode = this.getAttribute('data-code');
+                    if (discountInput) {
+                        discountInput.value = promoCode;
+                    }
+                });
+            });
+
+            // Fungsi untuk menyalin kode promo
+            const copyButtons = document.querySelectorAll('.btn-copy-code');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const code = this.getAttribute('data-code');
+                    navigator.clipboard.writeText(code).then(() => {
+                        // Feedback visual bahwa kode telah disalin
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                        }, 1500);
+                    });
+                });
+            });
+        });
+    </script>
 
     <!-- Modal Daftar Promo -->
     <div class="modal fade" id="promosModal" tabindex="-1" aria-labelledby="promosModalLabel" aria-hidden="true">
@@ -390,95 +502,72 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-    <script>
-        // Menangani klik tombol "Gunakan Promo"
-        document.addEventListener('DOMContentLoaded', function() {
-            const usePromoButtons = document.querySelectorAll('.btn-use-promo');
-            const discountInput = document.querySelector('input[name="discount_code"]');
 
-            usePromoButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const promoCode = this.getAttribute('data-code');
-                    if (discountInput) {
-                        discountInput.value = promoCode;
-                    }
-                });
-            });
-
-            // Fungsi untuk menyalin kode promo
-            const copyButtons = document.querySelectorAll('.btn-copy-code');
-            copyButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const code = this.getAttribute('data-code');
-                    navigator.clipboard.writeText(code).then(() => {
-                        // Feedback visual bahwa kode telah disalin
-                        const originalText = this.innerHTML;
-                        this.innerHTML = '<i class="fas fa-check"></i>';
-                        setTimeout(() => {
-                            this.innerHTML = originalText;
-                        }, 1500);
-                    });
-                });
-            });
-        });
-    </script>
     <style>
         /* Modern Cart Styling */
 
-        /* Breadcrumb */
-        .breadcrumb-wrapper {
-            background: linear-gradient(to right, #9e0620, #bb2d3b);
+     /* Hero Section */
+     .hero-section {
+        background: linear-gradient(to right, #9e0620, #bb2d3b);
+
+            height: 220px;
             position: relative;
-            overflow: hidden;
-            height: 200px;
             display: flex;
             align-items: center;
+            margin-bottom: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-content {
+            color: white;
+            text-align: center;
+            width: 100%;
+        }
+
+        .hero-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .breadcrumb-wrapper {
+            display: flex;
             justify-content: center;
         }
 
-        .custom-breadcrumb {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 0;
-            margin: 0;
-            list-style: none;
-            align-items: center;
-            justify-content: center;
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            display: inline-flex;
+            margin-bottom: 0;
         }
 
         .breadcrumb-item {
-            display: flex;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.8);
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
-
-        .breadcrumb-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            font-weight: 700;
-            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
         }
 
         .breadcrumb-item.active {
-            display: flex;
-            align-items: center;
-            gap: 8px;
             color: white;
-            padding: 6px 12px;
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.15);
-            font-weight: 700;
-            font-size: 1.3rem;
+            font-weight: 500;
         }
+
+        .breadcrumb-item a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: white;
+        }
+
+        .breadcrumb-item+.breadcrumb-item::before {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
 
         /* Card Styling */
         .card {
@@ -1013,5 +1102,95 @@
                 margin: 10px;
             }
         }
+        .btn-points {
+    display: block;
+    padding: 8px 12px;
+    background-color: #9E0620;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-points:hover {
+    background-color: #7d0519;
+    color: white;
+    text-decoration: none;
+}
+/* Styling untuk Form Voucher Poin */
+.point-voucher-section {
+    border: 1px dashed #ffc107;
+    border-radius: 12px;
+    padding: 16px;
+    background-color: #fff8e1;
+}
+
+.btn-apply-point-voucher {
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    padding: 0 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-apply-point-voucher:hover {
+    background-color: #e0a800;
+}
+
+.point-option {
+    padding: 5px 0;
+}
+
+.btn-points {
+    display: block;
+    padding: 10px 12px;
+    background-color: #212529;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-points:hover {
+    background-color: #343a40;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* Badge styling */
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+/* Hover effect untuk badge */
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: translateY(-2px);
+}
+
+/* Warna untuk voucher point */
+.bg-warning-subtle {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
     </style>
 @endsection

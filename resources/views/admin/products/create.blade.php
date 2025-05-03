@@ -9,6 +9,26 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-body">
+                @if (session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if (session('error'))
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+@if (session('info'))
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    {{ session('info') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
                 <h4 class="mt-0 header-title">Form Tambah Produk</h4>
 
                 <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
@@ -24,7 +44,16 @@
 
                     <div class="form-group">
                         <label for="image">Gambar Produk</label>
-                        <input type="file" name="image" id="image" class="form-control-file" accept="image/*" onchange="previewImage(event)">
+                        <input type="file" 
+                               name="image" 
+                               id="image" 
+                               class="form-control-file @error('image') is-invalid @enderror" 
+                               accept="image/jpeg,image/png,image/jpg,image/gif" 
+                               onchange="previewImage(event)">
+                        <small class="text-muted">Format yang diizinkan: JPG, JPEG, PNG, GIF. Maksimal 2MB</small>
+                        @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                         <div class="mt-2">
                             <img id="imagePreview" src="#" alt="Preview Gambar" style="display: none; max-width: 200px; height: auto;" class="img-thumbnail">
                         </div>

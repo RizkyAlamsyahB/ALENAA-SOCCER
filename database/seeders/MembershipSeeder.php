@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Field;
 use App\Models\Membership;
 use Illuminate\Database\Seeder;
 
@@ -10,60 +9,61 @@ class MembershipSeeder extends Seeder
 {
     public function run()
     {
-        // Dapatkan semua field/lapangan
-        $fields = Field::all();
+        // Bronze membership - Lapangan 1
+        Membership::create([
+            'field_id' => 1,
+            'name' => 'Bronze',
+            'type' => 'bronze',
+            'price' => 702000, // Harga per minggu
+            'description' => 'Paket basic dengan 3 sesi perminggu, masing-masing 1 jam',
+            'sessions_per_week' => 3,
+            'session_duration' => 1, // dalam jam
+            'photographer_duration' => 3, // 3 jam untuk fotografer
+            'status' => 'active',
+            'image' => 'memberships/bronze.jpg',
+            'includes_photographer' => true,
+            'photographer_id' => 1, // ID fotografer paket Favorite
+            'includes_rental_item' => true,
+            'rental_item_id' => 1, // ID bola futsal
+            'rental_item_quantity' => 2 // 2 bola
+        ]);
 
-        foreach ($fields as $field) {
-            // Bronze Membership
-            Membership::create([
-                'field_id' => $field->id,
-                'name' => $field->name . ' Bronze Membership',
-                'type' => 'bronze',
-                'price' => $field->price * 3 * 4 * 0.9, // 10% diskon
-                'description' => 'Paket Bronze Membership untuk lapangan ' . $field->name . ' dengan durasi 1 jam permainan.',
-                'sessions_per_week' => 3,
-                'session_duration' => 1,
-                'includes_ball' => true,
-                'includes_water' => true,
-                'includes_photographer' => true,
-                'photographer_duration' => 1,
-                'status' => 'active',
-                'image' => $field->image,
-            ]);
+        // Silver membership - Lapangan 1
+        Membership::create([
+            'field_id' => 1,
+            'name' => 'Silver',
+            'type' => 'silver',
+            'price' => 1326000, // Harga per minggu
+            'description' => 'Paket menengah dengan 3 sesi perminggu, masing-masing 2 jam',
+            'sessions_per_week' => 3,
+            'session_duration' => 2, // dalam jam
+            'photographer_duration' => 6, // 6 jam untuk fotografer
+            'status' => 'active',
+            'image' => 'memberships/silver.jpg',
+            'includes_photographer' => true,
+            'photographer_id' => 2, // ID fotografer paket Plus
+            'includes_rental_item' => true,
+            'rental_item_id' => 1, // ID bola futsal
+            'rental_item_quantity' => 3 // 3 bola
+        ]);
 
-            // Silver Membership
-            Membership::create([
-                'field_id' => $field->id,
-                'name' => $field->name . ' Silver Membership',
-                'type' => 'silver',
-                'price' => $field->price * 3 * 4 * 2 * 0.85, // 15% diskon
-                'description' => 'Paket Silver Membership untuk lapangan ' . $field->name . ' dengan durasi 2 jam permainan.',
-                'sessions_per_week' => 3,
-                'session_duration' => 2,
-                'includes_ball' => true,
-                'includes_water' => true,
-                'includes_photographer' => true,
-                'photographer_duration' => 2,
-                'status' => 'active',
-                'image' => $field->image,
-            ]);
-
-            // Gold Membership
-            Membership::create([
-                'field_id' => $field->id,
-                'name' => $field->name . ' Gold Membership',
-                'type' => 'gold',
-                'price' => $field->price * 3 * 4 * 3 * 0.8, // 20% diskon
-                'description' => 'Paket Gold Membership untuk lapangan ' . $field->name . ' dengan durasi 3 jam permainan.',
-                'sessions_per_week' => 3,
-                'session_duration' => 3,
-                'includes_ball' => true,
-                'includes_water' => true,
-                'includes_photographer' => true,
-                'photographer_duration' => 3,
-                'status' => 'active',
-                'image' => $field->image,
-            ]);
-        }
+        // Gold membership - Lapangan 1
+        Membership::create([
+            'field_id' => 1,
+            'name' => 'Gold',
+            'type' => 'gold',
+            'price' => 799000, // Harga per minggu
+            'description' => 'Paket premium dengan 3 sesi perminggu, masing-masing 3 jam',
+            'sessions_per_week' => 3,
+            'session_duration' => 3, // dalam jam
+            'photographer_duration' => 9, // 9 jam untuk fotografer
+            'status' => 'active',
+            'image' => 'memberships/gold.jpg',
+            'includes_photographer' => true,
+            'photographer_id' => 3, // ID fotografer paket Exclusive
+            'includes_rental_item' => true,
+            'rental_item_id' => 2, // ID bola futsal premium
+            'rental_item_quantity' => 4 // 4 bola
+        ]);
     }
 }

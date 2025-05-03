@@ -26,15 +26,15 @@
 
                     <div class="form-group">
                         <label for="image">Gambar Produk</label>
-                        <input type="file" name="image" id="image" class="form-control-file" accept="image/*" onchange="previewImage(event)">
+                        <input type="file" name="image" id="image"
+                               class="form-control-file @error('image') is-invalid @enderror"
+                               accept="image/jpeg,image/png,image/jpg,image/gif"
+                               onchange="previewImage(event)">
+                        @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Format yang diizinkan: JPG, JPEG, PNG, GIF. Maksimal 2MB</small>
                         <div class="mt-2">
-                            @if($product->image)
-                                <img id="imagePreview" src="{{ asset('storage/' . $product->image) }}" alt="Gambar Produk" style="max-width: 200px; height: auto;" class="img-thumbnail">
-                            @else
-                                <img id="imagePreview" src="#" alt="Preview Gambar" style="display: none; max-width: 200px; height: auto;" class="img-thumbnail">
-                            @endif
-                        </div>
-                    </div>
 
                     <div class="form-group">
                         <label>Kategori Produk</label>

@@ -15,58 +15,64 @@ use Illuminate\Support\Facades\DB;
 
 class RentalItemsController extends Controller
 {
-    /**
-     * Menampilkan daftar item rental untuk user
-     */
-    public function index(Request $request)
-    {
-        // Inisialisasi query
-        $query = RentalItem::query();
+/**
+ * Menampilkan daftar item rental untuk user
+ */
+public function index(Request $request)
+{
+    // Inisialisasi query
+    $query = RentalItem::query();
 
-        // Filter berdasarkan pencarian
-        if ($request->has('search') && !empty($request->search)) {
-            $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhere('description', 'like', "%{$searchTerm}%");
-            });
-        }
-
-        // Filter berdasarkan kategori
-        if ($request->has('category') && $request->category != 'all') {
-            $query->where('category', $request->category);
-        }
-
-        // Sorting
-        if ($request->has('sort')) {
-            switch ($request->sort) {
-                case 'price_low':
-                    $query->orderBy('rental_price', 'asc');
-                    break;
-                case 'price_high':
-                    $query->orderBy('rental_price', 'desc');
-                    break;
-                default:
-                    $query->latest();
-                    break;
-            }
-        } else {
-            $query->latest();
-        }
-
-        // Hitung jumlah item per kategori untuk filter
-        $categoryCounts = [
-            'jersey' => RentalItem::where('category', 'jersey')->count(),
-            'shoes' => RentalItem::where('category', 'shoes')->count(),
-            'ball' => RentalItem::where('category', 'ball')->count(),
-            'other' => RentalItem::where('category', 'other')->count()
-        ];
-
-        // Pagination
-        $rentalItems = $query->paginate(12);
-
-        return view('users.rental_items.index', compact('rentalItems', 'categoryCounts'));
+    // Filter berdasarkan pencarian
+    if ($request->has('search') && !empty($request->search)) {
+        $searchTerm = $request->search;
+        $query->where(function($q) use ($searchTerm) {
+            $q->where('name', 'like', "%{$searchTerm}%")
+              ->orWhere('description', 'like', "%{$searchTerm}%");
+        });
     }
+
+    // Filter berdasarkan kategori
+    if ($request->has('category') && $request->category != 'all') {
+        $query->where('category', $request->category);
+    }
+
+    // Sorting
+    if ($request->has('sort')) {
+        switch ($request->sort) {
+            case 'price_low':
+                $query->orderBy('rental_price', 'asc');
+                break;
+            case 'price_high':
+                $query->orderBy('rental_price', 'desc');
+                break;
+            default:
+                $query->latest();
+                break;
+        }
+    } else {
+        $query->latest();
+    }
+
+    // Hitung jumlah item per kategori untuk filter
+    $categoryCounts = [
+        'jersey' => RentalItem::where('category', 'jersey')->count(),
+        'shoes' => RentalItem::where('category', 'shoes')->count(),
+        'ball' => RentalItem::where('category', 'ball')->count(),
+        'other' => RentalItem::where('category', 'other')->count()
+    ];
+
+    // Pagination
+    $rentalItems = $query->paginate(12);
+
+    // Tambahkan rating dan review count untuk setiap item
+    foreach ($rentalItems as $item) {
+        $item->rating = $item->getRatingAttribute();
+        $item->reviews_count = $item->getReviewsCountAttribute();
+    }
+
+    return view('users.rental_items.index', compact('rentalItems', 'categoryCounts'));
+}
 
 
     /**

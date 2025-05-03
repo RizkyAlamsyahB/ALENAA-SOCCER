@@ -23,9 +23,17 @@ class ProductController extends Controller
             return DataTables::of($products)
                 ->addColumn('action', function ($product) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('admin.products.show', $product->id) . '" class="btn btn-sm btn-info">Show</a>
-                            <a href="' . route('admin.products.edit', $product->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $product->id . '" data-name="' . $product->name . '">Hapus</button>
+                            <a href="' .
+                        route('admin.products.show', $product->id) .
+                        '" class="btn btn-sm btn-info">Show</a>
+                            <a href="' .
+                        route('admin.products.edit', $product->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $product->id .
+                        '" data-name="' .
+                        $product->name .
+                        '">Hapus</button>
                         </div>';
                 })
 
@@ -34,13 +42,13 @@ class ProductController extends Controller
                         'food' => 'bg-primary',
                         'beverage' => 'bg-info',
                         'equipment' => 'bg-warning',
-                        'other' => 'bg-secondary'
+                        'other' => 'bg-secondary',
                     ];
 
                     $badge = isset($badges[$product->category]) ? $badges[$product->category] : 'bg-secondary';
                     return '<span class="badge ' . $badge . '">' . ucfirst($product->category) . '</span>';
                 })
-                ->rawColumns(['action',  'category'])
+                ->rawColumns(['action', 'category'])
                 ->make(true);
         }
 
@@ -145,6 +153,4 @@ class ProductController extends Controller
             return redirect()->route('admin.products.index')->with('error', 'Tidak dapat menghapus produk');
         }
     }
-
-
 }

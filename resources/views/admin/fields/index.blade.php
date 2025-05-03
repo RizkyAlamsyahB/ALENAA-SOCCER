@@ -36,9 +36,10 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Fotografer</th>
                                 <th>Nama</th>
                                 <th>Tipe</th>
-                                <th>Harga </th>
+                                <th>Harga</th>
                                 <th>Gambar</th>
                                 <th>Dibuat Pada</th>
                                 <th>Diperbarui Pada</th>
@@ -106,6 +107,12 @@
                         name: 'id'
                     },
                     {
+                        data: 'photographer',
+                        name: 'photographer',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
                         data: 'name',
                         name: 'name'
                     },
@@ -118,7 +125,6 @@
                         name: 'price',
                         render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
                     },
-
                     {
                         data: 'image',
                         name: 'image',
@@ -189,9 +195,6 @@
                 form.appendChild(methodField);
 
                 document.body.appendChild(form);
-
-                // Hilangkan toastr success di sini
-                // toastr.success('Lapangan berhasil dihapus!', 'Berhasil'); -- HAPUS BARIS INI
 
                 // Kirim form dan biarkan controller mengembalikan flash message
                 form.submit();

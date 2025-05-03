@@ -1,10 +1,9 @@
 @extends('layouts.app')
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/users/maincourt.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/users/field-show.css') }}">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_red.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/default.css">
 
     <!-- CSRF Token untuk AJAX Requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -36,14 +35,42 @@
     <!-- Main Content -->
     <div class="container mt-3">
 
-        <!-- Gallery Section -->
-        <div class="row g-3 mb-5 d-none d-lg-flex mt-3">
-            <!-- Main Image -->
-            <div class="col-lg-8">
-                <div class="gallery-card main-gallery">
+<!-- Gallery Section -->
+<div class="row g-3 mb-5 d-none d-lg-flex mt-3">
+    <!-- Main Image -->
+    <div class="col-lg-8">
+        <div class="gallery-card main-gallery">
+            <div class="gallery-img">
+                @if ($field->image)
+                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
+                @else
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                        class="img-fluid w-100" alt="{{ $field->name }}">
+                @endif
+                <div class="gallery-overlay">
+                    <button class="view-btn">
+                        <i class="fas fa-expand-alt"></i>
+                        View Full Image
+                    </button>
+                </div>
+            </div>
+            <div class="status-badge">
+                <span class="badge-content">
+                    <i class="fas fa-check-circle me-1"></i>
+                    Available Now
+                </span>
+            </div>
+        </div>
+    </div>
+    <!-- Side Images -->
+    <div class="col-lg-4">
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="gallery-card">
                     <div class="gallery-img">
                         @if ($field->image)
-                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
+                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                alt="{{ $field->name }}">
                         @else
                             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
                                 class="img-fluid w-100" alt="{{ $field->name }}">
@@ -55,141 +82,123 @@
                             </button>
                         </div>
                     </div>
-                    <div class="status-badge">
-                        <span class="badge-content">
-                            <i class="fas fa-check-circle me-1"></i>
-                            Available Now
-                        </span>
-                    </div>
                 </div>
             </div>
-            <!-- Side Images -->
-            <div class="col-lg-4">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <div class="gallery-card">
-                            <div class="gallery-img">
-                                @if ($field->image)
-                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
-                                        alt="{{ $field->name }}">
-                                @else
-                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                        class="img-fluid w-100" alt="{{ $field->name }}">
-                                @endif
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="gallery-card">
-                            <div class="gallery-img">
-                                @if ($field->image)
-                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
-                                        alt="{{ $field->name }}">
-                                @else
-                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                        class="img-fluid w-100" alt="{{ $field->name }}">
-                                @endif
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
-                            </div>
+            <div class="col-12">
+                <div class="gallery-card">
+                    <div class="gallery-img">
+                        @if ($field->image)
+                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                alt="{{ $field->name }}">
+                        @else
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                class="img-fluid w-100" alt="{{ $field->name }}">
+                        @endif
+                        <div class="gallery-overlay">
+                            <button class="view-btn">
+                                <i class="fas fa-expand-alt"></i>
+                                View Full Image
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Mobile Gallery Carousel -->
-        <div class="mobile-gallery d-lg-none">
-            <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
-                <!-- Carousel Inner -->
-                <div class="carousel-inner rounded-4 overflow-hidden">
-                    <div class="carousel-item active">
-                        <div class="carousel-img-wrapper">
-                            @if ($field->image)
-                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                                    alt="{{ $field->name }}">
-                            @else
-                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                    class="d-block w-100" alt="{{ $field->name }}">
-                            @endif
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                1/3
-                            </span>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="carousel-img-wrapper">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="d-block w-100" alt="Court view 2">
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                2/3
-                            </span>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="carousel-img-wrapper">
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="d-block w-100" alt="Court view 3">
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                3/3
-                            </span>
-                        </div>
-                    </div>
+<!-- Mobile Gallery Carousel -->
+<div class="mobile-gallery d-lg-none">
+    <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+        <!-- Carousel Inner -->
+        <div class="carousel-inner rounded-4 overflow-hidden">
+            <div class="carousel-item active">
+                <div class="carousel-img-wrapper">
+                    @if ($field->image)
+                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                            alt="{{ $field->name }}">
+                    @else
+                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                            class="d-block w-100" alt="{{ $field->name }}">
+                    @endif
+                    <div class="image-overlay"></div>
                 </div>
-
-                <!-- Navigation Buttons -->
-                <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
-                    data-bs-slide="prev">
-                    <span class="control-icon">
-                        <i class="fas fa-chevron-left"></i>
+                <div class="carousel-caption">
+                    <span class="caption-badge">
+                        <i class="fas fa-image"></i>
+                        1/3
                     </span>
-                </button>
-                <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
-                    data-bs-slide="next">
-                    <span class="control-icon">
-                        <i class="fas fa-chevron-right"></i>
-                    </span>
-                </button>
-
-                <!-- Indicators -->
-                <div class="carousel-indicators custom-indicators">
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
-                        aria-current="true"></button>
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
                 </div>
-
-                <!-- Available Badge -->
-                <div class="available-badge">
-                    <span class="badge-content">
-                        <i class="fas fa-check-circle"></i>
-                        Available Now
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-img-wrapper">
+                    @if ($field->image)
+                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                            alt="{{ $field->name }}">
+                    @else
+                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                            class="d-block w-100" alt="{{ $field->name }}">
+                    @endif
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <span class="caption-badge">
+                        <i class="fas fa-image"></i>
+                        2/3
+                    </span>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-img-wrapper">
+                    @if ($field->image)
+                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                            alt="{{ $field->name }}">
+                    @else
+                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                            class="d-block w-100" alt="{{ $field->name }}">
+                    @endif
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <span class="caption-badge">
+                        <i class="fas fa-image"></i>
+                        3/3
                     </span>
                 </div>
             </div>
         </div>
+
+        <!-- Navigation Buttons -->
+        <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
+            data-bs-slide="prev">
+            <span class="control-icon">
+                <i class="fas fa-chevron-left"></i>
+            </span>
+        </button>
+        <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
+            data-bs-slide="next">
+            <span class="control-icon">
+                <i class="fas fa-chevron-right"></i>
+            </span>
+        </button>
+
+        <!-- Indicators -->
+        <div class="carousel-indicators custom-indicators">
+            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
+                aria-current="true"></button>
+            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
+        </div>
+
+        <!-- Available Badge -->
+        <div class="available-badge">
+            <span class="badge-content">
+                <i class="fas fa-check-circle"></i>
+                Available Now
+            </span>
+        </div>
+    </div>
+</div>
         <!-- Main Information -->
         <div class="row">
             <!-- Field Details Container -->
@@ -210,8 +219,8 @@
                                             </div>
                                             <div class="d-flex align-items-center rating-badge">
                                                 <i class="fas fa-star text-warning me-2"></i>
-                                                <span class="text-secondary">{{ $field->rating ?? '4.8' }}
-                                                    ({{ $field->reviews_count ?? '128' }} reviews)</span>
+                                                <span class="text-secondary">{{ number_format($field->rating, 1) }}
+                                                    ({{ $field->reviews_count }} reviews)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -224,99 +233,222 @@
                             </div>
                         </div>
 
-                        <!-- Field Overview Card -->
+                        <!-- Membership Packages Card -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
                             <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Field Overview</h5>
+                                <h5 class="mb-0 fw-bold">Membership Packages</h5>
                             </div>
                             <div class="card-body p-4">
-                                <div class="row g-3">
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-ruler"></i>
+                                <div class="row g-4">
+                                    <!-- Bronze Package -->
+                                    <div class="col-md-4">
+                                        <div class="membership-card bronze">
+                                            <div class="package-header">
+                                                <div class="package-info">
+                                                    <div class="package-icon">
+                                                        <i class="fas fa-award"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="package-title">Bronze</h5>
+                                                        <p class="package-subtitle">3x main/minggu</p>
+                                                    </div>
+                                                </div>
+                                                <div class="save-badge bronze">
+                                                    <i class="fas fa-tag"></i>
+                                                    <span>Save 10%</span>
+                                                </div>
                                             </div>
-                                            <h6 class="mb-1 fw-semibold">Size</h6>
-                                            <small class="text-muted">25 x 15m</small>
+
+                                            <div class="package-footer">
+                                                <div class="price-info">
+                                                    <span class="price">Rp
+                                                        {{ number_format($field->price * 3 * 4 * 0.9, 0, ',', '.') }}</span>
+                                                    <span class="duration">/minggu</span>
+                                                </div>
+
+                                                @php
+                                                    $bronzeMembership = $memberships
+                                                        ->where('field_id', $field->id)
+                                                        ->where('type', 'bronze')
+                                                        ->first();
+                                                @endphp
+                                                @if ($bronzeMembership)
+                                                    <a href="{{ route('user.membership.show', $bronzeMembership->id) }}"
+                                                        class="select-btn bronze">
+                                                        <span>Pilih Paket</span>
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </a>
+                                                @else
+                                                    <button class="btn btn-secondary" disabled>
+                                                        <span>Tidak Tersedia</span>
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-users"></i>
+
+                                    <!-- Silver Package -->
+                                    <div class="col-md-4">
+                                        <div class="membership-card silver featured">
+                                            <div class="featured-label">Populer</div>
+                                            <div class="package-header">
+                                                <div class="package-info">
+                                                    <div class="package-icon">
+                                                        <i class="fas fa-medal"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="package-title">Silver</h5>
+                                                        <p class="package-subtitle">3x main/minggu</p>
+                                                    </div>
+                                                </div>
+                                                <div class="save-badge silver">
+                                                    <i class="fas fa-tag"></i>
+                                                    <span>Save 15%</span>
+                                                </div>
                                             </div>
-                                            <h6 class="mb-1 fw-semibold">Capacity</h6>
-                                            <small class="text-muted">5v5 Players</small>
+
+
+
+                                            <div class="package-footer">
+                                                <div class="price-info">
+                                                    <span class="price">Rp
+                                                        {{ number_format($field->price * 3 * 4 * 2 * 0.85, 0, ',', '.') }}</span>
+                                                    <span class="duration">/minggu</span>
+                                                </div>
+
+                                                @php
+                                                    $silverMembership = $memberships
+                                                        ->where('field_id', $field->id)
+                                                        ->where('type', 'silver')
+                                                        ->first();
+                                                @endphp
+                                                @if ($silverMembership)
+                                                    <a href="{{ route('user.membership.show', $silverMembership->id) }}"
+                                                        class="select-btn silver">
+                                                        <span>Pilih Paket</span>
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </a>
+                                                @else
+                                                    <button class="btn btn-secondary" disabled>
+                                                        <span>Tidak Tersedia</span>
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-clock"></i>
+
+                                    <!-- Gold Package -->
+                                    <div class="col-md-4">
+                                        <div class="membership-card gold">
+                                            <div class="package-header">
+                                                <div class="package-info">
+                                                    <div class="package-icon">
+                                                        <i class="fas fa-trophy"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="package-title">Gold</h5>
+                                                        <p class="package-subtitle">3x main/minggu</p>
+                                                    </div>
+                                                </div>
+                                                <div class="save-badge gold">
+                                                    <i class="fas fa-tag"></i>
+                                                    <span>Save 20%</span>
+                                                </div>
                                             </div>
-                                            <h6 class="mb-1 fw-semibold">Duration</h6>
-                                            <small class="text-muted">1 Hour/Session</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="overview-item text-center">
-                                            <div class="icon-wrapper mb-2">
-                                                <i class="fas fa-volleyball-ball"></i>
+
+
+
+                                            <div class="package-footer">
+                                                <div class="price-info">
+                                                    <span class="price">Rp
+                                                        {{ number_format($field->price * 3 * 4 * 3 * 0.8, 0, ',', '.') }}</span>
+                                                    <span class="duration">/minggu</span>
+                                                </div>
+
+                                                @php
+                                                    $goldMembership = $memberships
+                                                        ->where('field_id', $field->id)
+                                                        ->where('type', 'gold')
+                                                        ->first();
+                                                @endphp
+                                                @if ($goldMembership)
+                                                    <a href="{{ route('user.membership.show', $goldMembership->id) }}"
+                                                        class="select-btn gold">
+                                                        <span>Pilih Paket</span>
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </a>
+                                                @else
+                                                    <button class="btn btn-secondary" disabled>
+                                                        <span>Tidak Tersedia</span>
+                                                    </button>
+                                                @endif
                                             </div>
-                                            <h6 class="mb-1 fw-semibold">Type</h6>
-                                            <small class="text-muted">{{ $field->type }}</small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Available Facilities Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Available Facilities</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-3">
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-parking"></i>
-                                            <span>Free Parking</span>
-                                        </div>
+                            <!-- Photographer Packages Card -->
+                            @if ($photographerPackages->count() > 0)
+                                <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                    <div class="card-header bg-white py-3 border-0 px-4">
+                                        <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
                                     </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-wifi"></i>
-                                            <span>Free WiFi</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-shower"></i>
-                                            <span>Shower Room</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-tshirt"></i>
-                                            <span>Changing Room</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-store"></i>
-                                            <span>Mini Store</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="facility-badge">
-                                            <i class="fas fa-first-aid"></i>
-                                            <span>First Aid</span>
+                                    <div class="card-body p-4">
+                                        <div class="row g-4">
+                                            @foreach ($photographerPackages as $photographer)
+                                                <div class="col-md-4">
+                                                    <div class="photographer-card {{ $photographer->package_type }}">
+                                                        <div class="package-header">
+                                                            <div class="package-info">
+                                                                <div class="package-icon">
+                                                                    <i class="fas fa-camera"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h5 class="package-title">{{ $photographer->name }}
+                                                                    </h5>
+                                                                    <p class="package-subtitle">
+                                                                        {{ $photographer->duration }} jam</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="badge {{ $photographer->package_type }}">
+                                                                {{ ucfirst($photographer->package_type) }}
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="package-features">
+                                                            <ul class="list-unstyled">
+                                                                @if (is_array(json_decode($photographer->features)))
+                                                                    @foreach (json_decode($photographer->features) as $feature)
+                                                                        <li><i
+                                                                                class="fas fa-check-circle text-success me-2"></i>
+                                                                            {{ $feature }}</li>
+                                                                    @endforeach
+                                                                @endif
+                                                            </ul>
+                                                        </div>
+
+                                                        <div class="package-footer">
+                                                            <div class="price-info">
+                                                                <span class="price">Rp
+                                                                    {{ number_format($photographer->price, 0, ',', '.') }}</span>
+                                                                <span class="duration">/sesi</span>
+                                                            </div>
+                                                            <a href="{{ route('user.photographer.show', $photographer->id) }}"
+                                                                class="select-btn {{ $photographer->package_type }}">
+                                                                <span>Detail Paket</span>
+                                                                <i class="fas fa-arrow-right"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            @endif
+
 
                         <!-- Booking Card -->
                         <!-- Booking Wizard Card -->
@@ -475,8 +607,8 @@
                                     locale: 'id',
                                     dateFormat: 'Y-m-d',
                                     minDate: 'today',
+                                    maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
                                     responsive: true, // Enable responsive mode
-                                    maxDate: new Date().fp_incr(6), // Set maximum date to today + 6 days (total of 7 days including today)
                                     onChange: function(selectedDates, dateStr) {
                                         selectedDate = dateStr;
                                         document.getElementById('selectedDate').value = dateStr;
@@ -741,11 +873,18 @@
                                         let statusClass = '';
                                         let statusIcon = '';
                                         let isDisabled = false;
+                                        let statusText = '';
 
                                         switch (slot.status) {
                                             case 'booked':
                                                 statusClass = 'slot-booked';
                                                 statusIcon = '<i class="fas fa-lock"></i>';
+                                                isDisabled = true;
+                                                break;
+                                            case 'membership':
+                                                statusClass = 'slot-membership';
+                                                statusIcon = '<i class="fas fa-users"></i>';
+                                                statusText = 'Member';
                                                 isDisabled = true;
                                                 break;
                                             case 'in_cart':
@@ -757,7 +896,6 @@
                                                 statusIcon = '<i class="fas fa-clock"></i>';
                                                 break;
                                         }
-
                                         const isSelected = selectedSlots.has(slot.display);
                                         if (isSelected) {
                                             statusClass = 'slot-selected';
@@ -1156,13 +1294,14 @@
         /* Time Slots */
         .time-slots-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            width: 100%;
         }
 
         .time-slot {
             position: relative;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -1174,26 +1313,28 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border-color: #9e0620;
         }
+
         .slot-time {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 50px; /* Adjust as needed */
-    text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.9rem;
         }
-        
 
         .slot-time i {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #6c757d;
-
+            margin-right: 5px;
         }
 
         .slot-price {
             background-color: #f8f9fa;
             padding: 0.5rem;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
@@ -1237,6 +1378,7 @@
             background-color: #f8f9fa;
             border-radius: 10px;
             padding: 1rem;
+            width: 100%;
         }
 
         .selected-slots-list .list-group-item {
@@ -1328,50 +1470,335 @@
             }
         }
 
-        /* Responsive Flatpickr Styles */
-        .flatpickr-responsive {
-            width: 100% !important;
-            max-width: 400px;
-            margin: 0 auto;
+/* Custom Flatpickr Theme - brand color #9e0620 */
+/* Base Calendar Container */
+.flatpickr-calendar {
+    width: 100% !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    touch-action: manipulation;
+}
+
+/* Month Navigation Section */
+.flatpickr-months {
+    background-color: #ffffff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.flatpickr-month {
+    color: #fff;
+}
+
+.flatpickr-current-month {
+    font-weight: 600;
+}
+
+.flatpickr-monthDropdown-months,
+.numInputWrapper span.arrowUp,
+.numInputWrapper span.arrowDown {
+    color: #fff;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    fill: #fff;
+}
+
+.flatpickr-prev-month:hover svg,
+.flatpickr-next-month:hover svg {
+    fill: #e9ecef;
+}
+
+/* Weekday Headers */
+span.flatpickr-weekday {
+    color: #9e0620;
+    font-weight: 600;
+    width: 14.2857% !important;
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+}
+
+/* Days Container */
+.flatpickr-days {
+    width: 100% !important;
+}
+
+.dayContainer {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Day Cells */
+.flatpickr-day {
+    width: 14.2857% !important;
+    max-width: 14.2857% !important;
+    flex-basis: 14.2857% !important;
+    height: 40px !important;
+    line-height: 40px !important;
+    margin: 0 !important;
+    border-radius: 24px !important;
+}
+
+/* Day States: Hover */
+.flatpickr-day:hover {
+    background: #fff8f8;
+    border-color: #fff8f8;
+}
+
+/* Day States: Today */
+.flatpickr-day.today {
+    border-color: #9e0620;
+}
+
+.flatpickr-day.today:hover {
+    background: #fff8f8;
+    color: #9e0620;
+}
+
+/* Day States: Selected */
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected.prevMonthDay,
+.flatpickr-day.startRange.prevMonthDay,
+.flatpickr-day.endRange.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay,
+.flatpickr-day.startRange.nextMonthDay,
+.flatpickr-day.endRange.nextMonthDay {
+    background: #9e0620;
+    border-color: #9e0620;
+    color: #fff;
+}
+
+/* Range Selection */
+.flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
+.flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
+.flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
+    box-shadow: -10px 0 0 #9e0620;
+}
+
+/* Next Month Days (within booking window) */
+.flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
+    color: #393939 !important;
+    font-weight: normal !important;
+    background-color: transparent !important;
+    opacity: 1 !important;
+}
+
+.flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
+    background-color: #fff8f8 !important;
+    border-color: #fff8f8 !important;
+    color: #9e0620 !important;
+}
+
+.flatpickr-day.nextMonthDay.selected {
+    background-color: #9e0620 !important;
+    border-color: #9e0620 !important;
+    color: #fff !important;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 576px) {
+    .flatpickr-calendar {
+        max-width: 100%;
+    }
+
+    .flatpickr-day {
+        height: 35px !important;
+        line-height: 35px !important;
+    }
+}
+        .slot-membership {
+            background-color: #ffeeba;
+            /* Warna kuning lembut */
+            border-color: #ffdf7e;
+            cursor: not-allowed;
         }
 
-        .flatpickr-responsive .flatpickr-months {
+        .slot-membership .slot-time {
+            color: #856404;
+            /* Warna text kuning gelap */
+        }
+
+        /* Photographer Card Styles */
+        .photographer-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border: 1px solid #e9ecef;
+        }
+
+        .photographer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .photographer-card .package-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1.25rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .photographer-card .package-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .photographer-card .package-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .photographer-card.favorite .package-icon {
+            background-color: #fff8f1;
+            color: #fd7e14;
+        }
+
+        .photographer-card.plus .package-icon {
+            background-color: #f1f9fe;
+            color: #0d6efd;
+        }
+
+        .photographer-card.exclusive .package-icon {
+            background-color: #fff1f1;
+            color: #9e0620;
+        }
+
+        .photographer-card .package-title {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .photographer-card .package-subtitle {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        .photographer-card .badge {
+            border-radius: 20px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .photographer-card .badge.favorite {
+            background-color: #fff8f1;
+            color: #fd7e14;
+        }
+
+        .photographer-card .badge.plus {
+            background-color: #f1f9fe;
+            color: #0d6efd;
+        }
+
+        .photographer-card .badge.exclusive {
+            background-color: #fff1f1;
+            color: #9e0620;
+        }
+
+        .photographer-card .package-features {
+            padding: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .photographer-card .package-features li {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .photographer-card .package-features i {
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .photographer-card .package-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 1.25rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
         }
 
-        .flatpickr-responsive .flatpickr-month {
-            flex-grow: 1;
-            text-align: center;
-        }
-
-        .flatpickr-responsive .flatpickr-weekdays {
+        .photographer-card .price-info {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
         }
 
-        .flatpickr-responsive .flatpickr-weekday {
-            flex: 1;
-            text-align: center;
+        .photographer-card .price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #212529;
         }
 
-        .flatpickr-responsive .flatpickr-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
+        .photographer-card .duration {
+            font-size: 0.8rem;
+            color: #6c757d;
         }
 
-        @media (max-width: 576px) {
-            .flatpickr-responsive {
-                font-size: 0.9rem;
-            }
-
-            .flatpickr-responsive .flatpickr-day {
-                max-width: 30px;
-                max-height: 30px;
-                line-height: 30px;
-            }
+        .photographer-card .select-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
+
+        .photographer-card .select-btn.favorite {
+            background-color: #fff8f1;
+            color: #fd7e14;
+        }
+
+        .photographer-card .select-btn.plus {
+            background-color: #f1f9fe;
+            color: #0d6efd;
+        }
+
+        .photographer-card .select-btn.exclusive {
+            background-color: #fff1f1;
+            color: #9e0620;
+        }
+
+        .photographer-card .select-btn:hover {
+            transform: translateX(5px);
+        }
+
+
     </style>
 @endsection

@@ -2,44 +2,75 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\PhotoPackage;
+use App\Models\User;
+use App\Models\Field;
+use App\Models\Photographer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class PhotoPackageController extends Controller
 {
     /**
-     * Menampilkan daftar paket foto dengan server-side processing
+     * Menampilkan daftar paket fotografer dengan server-side processing
      */
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $photoPackages = PhotoPackage::select('*');
+            $photographers = Photographer::with('user')->select('*');
 
-            return DataTables::of($photoPackages)
-                ->addColumn('action', function ($photoPackage) {
+            return DataTables::of($photographers)
+                ->addColumn('action', function ($photographer) {
                     return '<div class="d-flex gap-1">
-                            <a href="' . route('admin.photo-packages.show', $photoPackage->id) . '" class="btn btn-sm btn-info">Show</a>
-                            <a href="' . route('admin.photo-packages.edit', $photoPackage->id) . '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $photoPackage->id . '" data-name="' . $photoPackage->name . '">Hapus</button>
+                            <a href="' .
+                        route('admin.photo-packages.show', $photographer->id) .
+                        '" class="btn btn-sm btn-info">Detail</a>
+                            <a href="' .
+                        route('admin.photo-packages.edit', $photographer->id) .
+                        '" class="btn btn-sm btn-warning">Edit</a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
+                        $photographer->id .
+                        '" data-name="' .
+                        $photographer->name .
+                        '">Hapus</button>
                         </div>';
                 })
-
-                ->editColumn('includes_editing', function ($photoPackage) {
-                    return $photoPackage->includes_editing ? '<span class="badge bg-success">Ya</span>' : '<span class="badge bg-secondary">Tidak</span>';
+                ->addColumn('photographer_name', function ($photographer) {
+                    return $photographer->user ? $photographer->user->name : 'N/A';
                 })
-                ->editColumn('duration_minutes', function ($photoPackage) {
-                    // Format durasi menjadi jam:menit jika lebih dari 60 menit
-                    if ($photoPackage->duration_minutes >= 60) {
-                        $hours = floor($photoPackage->duration_minutes / 60);
-                        $minutes = $photoPackage->duration_minutes % 60;
-                        return $hours . ' jam ' . ($minutes > 0 ? $minutes . ' menit' : '');
+                ->editColumn('package_type', function ($photographer) {
+                    $badgeClass = '';
+                    switch ($photographer->package_type) {
+                        case 'favorite':
+                            $badgeClass = 'bg-warning';
+                            break;
+                        case 'plus':
+                            $badgeClass = 'bg-info';
+                            break;
+                        case 'exclusive':
+                            $badgeClass = 'bg-primary';
+                            break;
+                        default:
+                            $badgeClass = 'bg-secondary';
                     }
-                    return $photoPackage->duration_minutes . ' menit';
+                    return '<span class="badge ' . $badgeClass . '">' . ucfirst($photographer->package_type) . '</span>';
                 })
-                ->rawColumns(['action','includes_editing'])
+                ->editColumn('price', function ($photographer) {
+                    return 'Rp ' . number_format($photographer->price, 0, ',', '.');
+                })
+                ->editColumn('status', function ($photographer) {
+                    $statusClass = $photographer->status === 'active' ? 'bg-success' : 'bg-danger';
+                    return '<span class="badge ' . $statusClass . '">' . ucfirst($photographer->status) . '</span>';
+                })
+                ->editColumn('image', function ($photographer) {
+                    if ($photographer->image) {
+                        return '<img src="' . asset('storage/' . $photographer->image) . '" alt="Package" class="img-thumbnail" width="50">';
+                    }
+                    return '<span class="badge bg-secondary">No Image</span>';
+                })
+                ->rawColumns(['action', 'package_type', 'status', 'image'])
                 ->make(true);
         }
 
@@ -47,84 +78,136 @@ class PhotoPackageController extends Controller
     }
 
     /**
-     * Menampilkan form tambah paket foto
+     * Menampilkan form tambah paket fotografer
      */
     public function create()
     {
-        return view('admin.photo-packages.create');
+        $photographers = User::where('role', 'photographer')->get();
+        $fields = Field::all(); // Tambahkan ini
+        return view('admin.photo-packages.create', compact('photographers', 'fields'));
     }
-
     /**
-     * Menyimpan paket foto baru
+     * Menyimpan paket fotografer baru
      */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255|unique:photo_packages,name',
+            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration_minutes' => 'required|numeric|min:1',
-            'number_of_photos' => 'required|numeric|min:1',
-            'includes_editing' => 'boolean',
+            'package_type' => ['required', Rule::in(['basic', 'favorite', 'plus', 'exclusive'])],
+            'duration' => 'required|integer|min:1',
+            'field_id' => 'nullable|exists:fields,id', // Tambahkan ini
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+            'features' => 'required|array',
+            'features.*' => 'required|string',
         ]);
+        // Encode features array ke json
+        $validatedData['features'] = json_encode($validatedData['features']);
 
-        PhotoPackage::create($validatedData);
+        // Upload gambar jika ada
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('photographers', 'public');
+            $validatedData['image'] = $path;
+        }
 
-        return redirect()->route('admin.photo-packages.index')->with('success', 'Paket foto berhasil ditambahkan');
+        Photographer::create($validatedData);
+
+        return redirect()->route('admin.photo-packages.index')->with('success', 'Paket fotografer berhasil ditambahkan');
     }
 
     /**
-     * Menampilkan detail paket foto
+     * Menampilkan detail paket fotografer
      */
-    public function show(PhotoPackage $photoPackage)
+    public function show($id)
     {
-        return view('admin.photo-packages.show', compact('photoPackage'));
+        $photographer = Photographer::findOrFail($id);
+        $user = $photographer->user;
+
+        // Correctly handle features - check if it's already decoded
+        if (is_string($photographer->features)) {
+            $photographer->features = json_decode($photographer->features);
+        }
+
+        return view('admin.photo-packages.show', compact('photographer', 'user'));
     }
 
     /**
-     * Menampilkan form edit paket foto
+     * Menampilkan form edit paket fotografer
      */
-    public function edit(PhotoPackage $photoPackage)
+    public function edit($id)
     {
-        return view('admin.photo-packages.edit', compact('photoPackage'));
+        $photographer = Photographer::findOrFail($id);
+        $photographers = User::where('role', 'photographer')->get();
+        $fields = Field::all(); // Tambahkan ini
+
+        // Only decode if it's a string and not already decoded
+        if (is_string($photographer->features)) {
+            $photographer->features = json_decode($photographer->features);
+        }
+
+        return view('admin.photo-packages.edit', compact('photographer', 'photographers', 'fields'));
     }
 
     /**
-     * Memperbarui data paket foto
+     * Memperbarui data paket fotografer
      */
-    public function update(Request $request, PhotoPackage $photoPackage)
+    public function update(Request $request, $id)
     {
+        $photographer = Photographer::findOrFail($id);
+
         $validatedData = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('photo_packages')->ignore($photoPackage->id)],
+            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration_minutes' => 'required|numeric|min:1',
-            'number_of_photos' => 'required|numeric|min:1',
-            'includes_editing' => 'boolean',
+            'package_type' => ['required', Rule::in(['basic', 'favorite', 'plus', 'exclusive'])],
+            'duration' => 'required|integer|min:1',
+            'field_id' => 'nullable|exists:fields,id', // Tambahkan ini
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+            'features' => 'required|array',
+            'features.*' => 'required|string',
         ]);
 
-        $photoPackage->update($validatedData);
+        // We're receiving features as an array, so we need to encode it to JSON
+        // No need to decode first since it's already an array from form input
+        $validatedData['features'] = json_encode($validatedData['features']);
 
-        return redirect()->route('admin.photo-packages.index')->with('success', 'Paket foto berhasil diperbarui');
+        // Upload gambar jika ada
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($photographer->image && Storage::exists('public/' . $photographer->image)) {
+                Storage::delete('public/' . $photographer->image);
+            }
+
+            $path = $request->file('image')->store('photographers', 'public');
+            $validatedData['image'] = $path;
+        }
+
+        $photographer->update($validatedData);
+
+        return redirect()->route('admin.photo-packages.index')->with('success', 'Paket fotografer berhasil diperbarui');
     }
-
     /**
-     * Menghapus paket foto
+     * Menghapus paket fotografer
      */
-    public function destroy(PhotoPackage $photoPackage)
+    public function destroy($id)
     {
         try {
-            // Cek jika paket digunakan dalam booking (implementasi bisa ditambahkan nanti)
-            // if ($photoPackage->photographerBookings()->exists()) {
-            //     return redirect()->route('admin.photo-packages.index')->with('error', 'Tidak dapat menghapus paket karena sedang digunakan dalam booking');
-            // }
+            $photographer = Photographer::findOrFail($id);
 
-            $photoPackage->delete();
-            return redirect()->route('admin.photo-packages.index')->with('success', 'Paket foto berhasil dihapus');
+            // Hapus gambar jika ada
+            if ($photographer->image && Storage::exists('public/' . $photographer->image)) {
+                Storage::delete('public/' . $photographer->image);
+            }
+
+            $photographer->delete();
+            return redirect()->route('admin.photo-packages.index')->with('success', 'Paket fotografer berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->route('admin.photo-packages.index')->with('error', 'Tidak dapat menghapus paket foto');
+            return redirect()->route('admin.photo-packages.index')->with('error', 'Tidak dapat menghapus paket fotografer');
         }
     }
-
- 
 }

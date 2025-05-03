@@ -101,7 +101,7 @@
 
                     <!-- CTA Buttons -->
                     <div class="button-group fade-in-up delay-4">
-                        <a href="#booking" class="btn btn-danger me-3 mb-3 mb-sm-0">
+                        <a href="/fields" class="btn btn-danger me-3 mb-3 mb-sm-0">
                             Booking Sekarang
                             <i class="fas fa-arrow-right ms-2"></i>
                         </a>
@@ -115,19 +115,19 @@
                     <div class="stats-wrapper mt-5 fade-in-up delay-5">
                         <div class="stats-container">
                             <div class="stat-item">
-                                <h3 class="text-white mb-0">3</h3>
+                                <h3 class="text-white mb-0">{{ $fieldCount }}</h3>
                                 <p class="text-white-50 mb-0">Lapangan</p>
                             </div>
                             <div class="stat-divider"></div>
                             <div class="stat-item">
-                                <h3 class="text-white mb-0">20+</h3>
+                                <h3 class="text-white mb-0">{{ $activeMemberCount }}+</h3>
                                 <p class="text-white-50 mb-0">Member Aktif</p>
                             </div>
                             <div class="stat-divider"></div>
-                            <div class="stat-item">
-                                <h3 class="text-white mb-0">100+</h3>
+                            {{-- <div class="stat-item">
+                                <h3 class="text-white mb-0">{{ $eventCount }}+</h3>
                                 <p class="text-white-50 mb-0">Event</p>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -183,12 +183,12 @@
                                 Jaminan jadwal pasti
                             </div>
                         </div>
-                        <a href="/booking" class="btn btn-danger mt-4">
+                        <a href="/fields" class="btn btn-danger mt-4">
                             Booking Sekarang <i class="fas fa-arrow-right ms-2"></i>
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-6 mt-4 mt-lg-0">
                     <div class="booking-image">
                         <img src="assets/futsal-field.jpg" alt="Booking Lapangan" class="img-fluid rounded-3 shadow"
                             loading="lazy">
@@ -230,12 +230,12 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="/community" class="btn btn-danger">
+                        <a href="/mabar" class="btn btn-danger">
                             Gabung Komunitas <i class="fas fa-users ms-2"></i>
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6 order-lg-1">
+                <div class="col-lg-6 order-lg-1 mt-4 mt-lg-0">
                     <div class="community-image">
                         <img src="assets/komunitas.jpg" alt="Komunitas Sepakbola" class="img-fluid rounded-3 shadow"
                             loading="lazy">
@@ -379,6 +379,12 @@
     </section>
 
     <style>
+        .bg-danger {
+            background-color: #9E0620 !important;
+        }
+        .text-danger {
+            color: #9E0620 !important;
+        }
         /* New Sections Styling */
         .section-title {
             font-size: 2.5rem;

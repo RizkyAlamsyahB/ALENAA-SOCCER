@@ -1,10 +1,9 @@
 @extends('layouts.app')
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/users/maincourt.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/users/field-show.css') }}">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_red.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/default.css">
 
     <!-- CSRF Token untuk AJAX Requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -43,7 +42,8 @@
                 <div class="gallery-card main-gallery">
                     <div class="gallery-img">
                         @if ($photographer->image)
-                            <img src="{{ Storage::url($photographer->image) }}" class="img-fluid w-100" alt="{{ $photographer->name }}">
+                            <img src="{{ Storage::url($photographer->image) }}" class="img-fluid w-100"
+                                alt="{{ $photographer->name }}">
                         @else
                             <img src="/api/placeholder/800/500" class="img-fluid w-100" alt="{{ $photographer->name }}">
                         @endif
@@ -103,7 +103,8 @@
                     <div class="carousel-item active">
                         <div class="carousel-img-wrapper">
                             @if ($photographer->image)
-                                <img src="{{ Storage::url($photographer->image) }}" class="d-block w-100" alt="{{ $photographer->name }}">
+                                <img src="{{ Storage::url($photographer->image) }}" class="d-block w-100"
+                                    alt="{{ $photographer->name }}">
                             @else
                                 <img src="/api/placeholder/800/500" class="d-block w-100" alt="{{ $photographer->name }}">
                             @endif
@@ -143,12 +144,14 @@
                 </div>
 
                 <!-- Navigation Buttons -->
-                <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
+                    data-bs-slide="prev">
                     <span class="control-icon">
                         <i class="fas fa-chevron-left"></i>
                     </span>
                 </button>
-                <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
+                    data-bs-slide="next">
                     <span class="control-icon">
                         <i class="fas fa-chevron-right"></i>
                     </span>
@@ -156,7 +159,8 @@
 
                 <!-- Indicators -->
                 <div class="carousel-indicators custom-indicators">
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
+                        aria-current="true"></button>
                     <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
                     <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
                 </div>
@@ -182,16 +186,25 @@
                             <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3 flex-column flex-md-row">
                                     <div>
-                                        <h1 class="h4 mb-2 text-center text-md-start fw-bold">{{ $photographer->name }}</h1>
-                                        <div class="d-flex flex-column flex-md-row align-items-center gap-3 text-center text-md-start">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h1 class="h4 mb-0 text-md-start fw-bold me-3">{{ $photographer->name }}</h1>
+                                            <div class="rating-badge">
+                                                <i class="fas fa-star text-warning me-1"></i>
+                                                <span
+                                                    class="text-secondary">{{ number_format($photographer->rating ?? 0, 1) }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column flex-md-row align-items-center gap-3 text-md-start">
                                             <div class="d-flex align-items-center package-badge">
                                                 <i class="fas fa-camera text-danger me-2"></i>
-                                                <span class="text-secondary">{{ ucfirst($photographer->package_type) }} Package</span>
+                                                <span class="text-secondary">{{ ucfirst($photographer->package_type) }}
+                                                    Package</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="text-md-end text-center price-tag">
-                                        <div class="h3 text-danger fw-bold mb-0">Rp {{ number_format($photographer->price, 0, ',', '.') }}</div>
+                                        <div class="h3 text-danger fw-bold mb-0">Rp
+                                            {{ number_format($photographer->price, 0, ',', '.') }}</div>
                                         <small class="text-muted">/sesi</small>
                                     </div>
                                 </div>
@@ -199,26 +212,7 @@
                             </div>
                         </div>
 
-                        <!-- Package Features Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Fasilitas Paket</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-3">
-                                    @if(is_array($photographer->features))
-                                        @foreach($photographer->features as $feature)
-                                            <div class="col-md-6">
-                                                <div class="feature-badge">
-                                                    <i class="fas fa-check-circle text-success"></i>
-                                                    <span>{{ $feature }}</span>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
+
 
                         <!-- Booking Card -->
                         <!-- Booking Wizard Card -->
@@ -286,7 +280,8 @@
                                                     <h6 class="fw-semibold mb-0">
                                                         Slot Waktu Tersedia (<span id="selected-date-display"></span>)
                                                     </h6>
-                                                    <span class="badge bg-secondary" id="available-slots-count">0 slot</span>
+                                                    <span class="badge bg-secondary" id="available-slots-count">0
+                                                        slot</span>
                                                 </div>
                                                 <div id="time-slots-wrapper" class="time-slots-container">
                                                     <div class="text-center py-4 slot-placeholder">
@@ -320,13 +315,15 @@
 
                                                 <h6 class="fw-semibold mb-3">Waktu Terpilih</h6>
                                                 <div class="selected-slots-list mb-3">
-                                                    <div id="selected-time-display" class="alert alert-info mb-3">
+                                                    <div id="selected-time-display" class="alert  mb-3">
                                                         <i class="fas fa-info-circle me-2"></i>
                                                         Belum ada waktu yang dipilih
                                                     </div>
-                                                    <div class="d-flex justify-content-between align-items-center mt-3 p-3 bg-light rounded">
+                                                    <div
+                                                        class="d-flex justify-content-between align-items-center mt-3 p-3  rounded">
                                                         <span class="fw-bold">Total:</span>
-                                                        <span id="total-price" class="text-danger fw-bold fs-5">Rp {{ number_format($photographer->price, 0, ',', '.') }}</span>
+                                                        <span id="total-price" class="text-danger fw-bold fs-5">Rp
+                                                            {{ number_format($photographer->price, 0, ',', '.') }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -362,7 +359,8 @@
                                         <div class="testimonial-card p-3 border rounded-3">
                                             <div class="d-flex align-items-center mb-3">
                                                 <div class="avatar me-3">
-                                                    <img src="/api/placeholder/40/40" class="rounded-circle" alt="User">
+                                                    <img src="/api/placeholder/40/40" class="rounded-circle"
+                                                        alt="User">
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0">Ahmad Fauzi</h6>
@@ -376,7 +374,8 @@
                                                 </div>
                                             </div>
                                             <p class="testimonial-text">
-                                                "Fotografer sangat profesional. Hasil fotonya bagus dan dikirim tepat waktu sesuai janji."
+                                                "Fotografer sangat profesional. Hasil fotonya bagus dan dikirim tepat waktu
+                                                sesuai janji."
                                             </p>
                                         </div>
                                     </div>
@@ -384,7 +383,8 @@
                                         <div class="testimonial-card p-3 border rounded-3">
                                             <div class="d-flex align-items-center mb-3">
                                                 <div class="avatar me-3">
-                                                    <img src="/api/placeholder/40/40" class="rounded-circle" alt="User">
+                                                    <img src="/api/placeholder/40/40" class="rounded-circle"
+                                                        alt="User">
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0">Budi Santoso</h6>
@@ -398,7 +398,8 @@
                                                 </div>
                                             </div>
                                             <p class="testimonial-text">
-                                                "Pelayanan memuaskan, fotografer datang tepat waktu dan hasil foto sangat bagus."
+                                                "Pelayanan memuaskan, fotografer datang tepat waktu dan hasil foto sangat
+                                                bagus."
                                             </p>
                                         </div>
                                     </div>
@@ -421,11 +422,13 @@
             // Initialize variables
             const photographerId = document.getElementById('photographerId').value;
             let selectedDate = '';
-            let selectedStartTime = '';
-            let selectedEndTime = '';
             let currentStep = 1;
             const totalSteps = 3;
-            const duration = {{ $photographer->duration }}; // Durasi dalam jam dari model
+            const duration = parseInt(document.querySelector('[data-duration]')?.dataset.duration ||
+            1); // Durasi dalam jam dari model
+
+            // Store selected time slots in an array
+            window.selectedTimeSlots = [];
 
             // DOM Elements
             const progressBar = document.getElementById('wizard-progress-bar');
@@ -442,6 +445,7 @@
                 locale: 'id',
                 dateFormat: 'Y-m-d',
                 minDate: 'today',
+                maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
                 responsive: true, // Enable responsive mode
                 onChange: function(selectedDates, dateStr) {
                     selectedDate = dateStr;
@@ -501,8 +505,28 @@
 
                 // Disable next button on time selection step if no time is selected
                 if (currentStep === 2) {
-                    nextBtn.disabled = !selectedStartTime;
+                    nextBtn.disabled = window.selectedTimeSlots.length === 0;
                 }
+            }
+
+            // Function to update selected time slots
+            function updateSelectedTimeSlots() {
+                // Clear previous selection
+                window.selectedTimeSlots = [];
+
+                // Collect all selected slots
+                document.querySelectorAll('.time-slot.slot-selected').forEach(slot => {
+                    window.selectedTimeSlots.push({
+                        startTime: slot.dataset.startTime,
+                        endTime: slot.dataset.endTime,
+                        display: slot.dataset.display
+                    });
+                });
+
+                // Sort them by start time
+                window.selectedTimeSlots.sort((a, b) => {
+                    return a.startTime.localeCompare(b.startTime);
+                });
             }
 
             // Navigate to step
@@ -539,13 +563,49 @@
                     document.getElementById('confirm-date').textContent = formattedDate;
 
                     // Update selected time display
-                    if (selectedStartTime && selectedEndTime) {
-                        document.getElementById('selected-time-display').innerHTML = `
+                    const selectedTimeDisplay = document.getElementById('selected-time-display');
+
+                    if (window.selectedTimeSlots && window.selectedTimeSlots.length > 0) {
+                        // Create HTML for all selected time slots
+                        let timeSlotHTML = '<div class="selected-slots">';
+
+                        window.selectedTimeSlots.forEach((slot, index) => {
+                            timeSlotHTML += `
+                        <div class="selected-slot-item mb-2 p-2  ">
                             <i class="fas fa-clock me-2"></i>
-                            <strong>Waktu:</strong> ${selectedStartTime} - ${selectedEndTime}
-                        `;
+                            <strong>Slot ${index + 1}:</strong> ${slot.display}
+                        </div>
+                    `;
+                        });
+
+                        timeSlotHTML += '</div>';
+                        selectedTimeDisplay.innerHTML = timeSlotHTML;
+
+                        // Get the base price per hour
+                        const basePrice = document.querySelector('.price-tag .h3')?.textContent || '';
+                        let pricePerHour = 0;
+
+                        // Extract the numeric value from "Rp 300.000" format
+                        const priceMatch = basePrice.match(/\d+(\.\d+)*/);
+                        if (priceMatch) {
+                            pricePerHour = parseInt(priceMatch[0].replace(/\./g, ''));
+                        }
+
+                        // Calculate total price (price per hour * number of selected slots)
+                        const totalPrice = pricePerHour * window.selectedTimeSlots.length;
+                        document.getElementById('total-price').textContent = 'Rp ' + numberWithCommas(totalPrice);
+                    } else {
+                        selectedTimeDisplay.innerHTML = `
+                    <i class="fas fa-info-circle me-2"></i>
+                    Belum ada waktu yang dipilih
+                `;
                     }
                 }
+            }
+
+            // Helper function for formatting numbers with commas
+            function numberWithCommas(x) {
+                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             }
 
             // Next button click handler
@@ -564,21 +624,26 @@
 
             // Submit button click handler (Add to Cart)
             submitBtn.addEventListener('click', function() {
+                // Check if we have selected time slots
+                if (!window.selectedTimeSlots || window.selectedTimeSlots.length === 0) {
+                    showToast('Error', 'Silakan pilih setidaknya satu slot waktu', 'error');
+                    return;
+                }
+
                 // Disable button and show loading state
                 this.disabled = true;
                 const originalText = this.innerHTML;
                 this.innerHTML = `
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    <span class="ms-2">Menambahkan...</span>
-                `;
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span class="ms-2">Menambahkan...</span>
+        `;
 
                 // Prepare data for API request
                 const requestData = {
                     type: 'photographer',
                     photographer_id: parseInt(photographerId),
                     date: selectedDate,
-                    start_time: selectedStartTime,
-                    end_time: selectedEndTime
+                    time_slots: window.selectedTimeSlots
                 };
 
                 // Log data yang akan dikirim (untuk debugging)
@@ -589,55 +654,57 @@
 
                 // Send request to add to cart
                 fetch('/cart/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(requestData)
-                })
-                .then(response => {
-                    // Log response status (untuk debugging)
-                    console.log('Response status:', response.status);
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    })
+                    .then(response => {
+                        // Log response status (untuk debugging)
+                        console.log('Response status:', response.status);
 
-                    return response.json().then(data => {
-                        if (!response.ok) {
-                            throw new Error(data.message || 'Error: ' + response.statusText);
+                        return response.json().then(data => {
+                            if (!response.ok) {
+                                throw new Error(data.message || 'Error: ' + response
+                                .statusText);
+                            }
+                            return data;
+                        });
+                    })
+                    .then(data => {
+                        // Log response data (untuk debugging)
+                        console.log('Response data:', data);
+
+                        if (data.success) {
+                            // Show success message
+                            showToast('Success', data.message, 'success');
+
+                            // Update cart count in navbar if exists
+                            const cartCountElement = document.querySelector('.cart-count');
+                            if (cartCountElement) {
+                                cartCountElement.textContent = data.cart_count;
+                            }
+
+                            // Redirect to cart page or stay on current page based on preference
+                            setTimeout(() => {
+                                window.location.href = '/cart';
+                            }, 1500);
+                        } else {
+                            throw new Error(data.message || 'Failed to add to cart');
                         }
-                        return data;
+                    })
+                    .catch(error => {
+                        console.error('Error adding to cart:', error);
+                        showToast('Error', error.message ||
+                            'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+
+                        // Restore button state
+                        this.disabled = false;
+                        this.innerHTML = originalText;
                     });
-                })
-                .then(data => {
-                    // Log response data (untuk debugging)
-                    console.log('Response data:', data);
-
-                    if (data.success) {
-                        // Show success message
-                        showToast('Success', data.message, 'success');
-
-                        // Update cart count in navbar if exists
-                        const cartCountElement = document.querySelector('.cart-count');
-                        if (cartCountElement) {
-                            cartCountElement.textContent = data.cart_count;
-                        }
-
-                        // Redirect to cart page or stay on current page based on preference
-                        setTimeout(() => {
-                            window.location.href = '/cart';
-                        }, 1500);
-                    } else {
-                        throw new Error(data.message || 'Failed to add to cart');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error adding to cart:', error);
-                    showToast('Error', error.message || 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
-
-                    // Restore button state
-                    this.disabled = false;
-                    this.innerHTML = originalText;
-                });
             });
 
             // Function to load available slots
@@ -646,13 +713,16 @@
 
                 // Show loading state
                 slotsWrapper.innerHTML = `
-                    <div class="text-center py-4 slot-placeholder">
-                        <div class="spinner-border text-danger" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
-                    </div>
-                `;
+            <div class="text-center py-4 slot-placeholder">
+                <div class="spinner-border text-danger" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
+            </div>
+        `;
+
+                // Clear selected time slots when loading new date
+                window.selectedTimeSlots = [];
 
                 // Fetch available slots from the server
                 fetch(`/photographer/${photographerId}/available-slots?date=${date}`)
@@ -668,11 +738,11 @@
                     .catch(error => {
                         console.error('Error fetching available slots:', error);
                         slotsWrapper.innerHTML = `
-                            <div class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                Gagal memuat slot waktu. Silakan coba lagi nanti.
-                            </div>
-                        `;
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Gagal memuat slot waktu. Silakan coba lagi nanti.
+                    </div>
+                `;
                     });
             }
 
@@ -691,11 +761,11 @@
                 // If no available slots
                 if (availableCount === 0) {
                     slotsWrapper.innerHTML = `
-                        <div class="alert alert-warning" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
-                        </div>
-                    `;
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
+                </div>
+            `;
                     return;
                 }
 
@@ -703,52 +773,30 @@
                 const slotGrid = document.createElement('div');
                 slotGrid.classList.add('time-slots-grid');
 
-                // Group slots by starting time to create blocks of duration length
-                const groupedSlots = {};
+                // Add available slots to grid
                 slots.forEach(slot => {
                     if (slot.is_available) {
-                        // Check if this slot can be a starting point for a session of the required duration
-                        let canBeStartingPoint = true;
-                        const startIndex = slots.findIndex(s => s.display === slot.display);
-
-                        // Check if we have enough consecutive slots after this one
-                        for (let i = 1; i < duration; i++) {
-                            if (startIndex + i >= slots.length || !slots[startIndex + i].is_available) {
-                                canBeStartingPoint = false;
-                                break;
-                            }
+                        const slotDiv = document.createElement('div');
+                        slotDiv.className = 'time-slot slot-available';
+                        if (slot.in_cart) {
+                            slotDiv.classList.add('slot-in-cart');
                         }
 
-                        if (canBeStartingPoint) {
-                            groupedSlots[slot.display] = {
-                                startSlot: slot,
-                                endSlot: slots[startIndex + duration - 1]
-                            };
-                        }
+                        slotDiv.dataset.startTime = slot.start;
+                        slotDiv.dataset.endTime = slot.end;
+                        slotDiv.dataset.display = slot.display;
+                        slotDiv.dataset.price = slot.price;
+
+                        slotDiv.innerHTML = `
+                    <div class="slot-time">
+                        <i class="fas fa-clock"></i>
+                        <span>${slot.display}</span>
+                    </div>
+                    <div class="slot-duration">1 Jam</div>
+                `;
+
+                        slotGrid.appendChild(slotDiv);
                     }
-                });
-
-                // Add slots to grid
-                Object.keys(groupedSlots).forEach(startTime => {
-                    const group = groupedSlots[startTime];
-                    const endTime = group.endSlot.display.split(' - ')[1];
-                    const displayTime = `${startTime.split(' - ')[0]} - ${endTime}`;
-
-                    const slotDiv = document.createElement('div');
-                    slotDiv.className = 'time-slot slot-available';
-                    slotDiv.dataset.startTime = startTime.split(' - ')[0];
-                    slotDiv.dataset.endTime = endTime;
-                    slotDiv.dataset.display = displayTime;
-
-                    slotDiv.innerHTML = `
-                        <div class="slot-time">
-                            <i class="fas fa-clock"></i>
-                            <span>${displayTime}</span>
-                        </div>
-                        <div class="slot-duration">${duration} Jam</div>
-                    `;
-
-                    slotGrid.appendChild(slotDiv);
                 });
 
                 slotsWrapper.appendChild(slotGrid);
@@ -756,24 +804,23 @@
                 // Add slot click event listeners
                 document.querySelectorAll('.time-slot').forEach(slotElement => {
                     slotElement.addEventListener('click', function() {
-                        // Remove selection from all slots
-                        document.querySelectorAll('.time-slot').forEach(s => {
-                            s.classList.remove('slot-selected');
-                            const icon = s.querySelector('.slot-time i');
-                            icon.className = 'fas fa-clock';
-                        });
-
-                        // Add selection to this slot
-                        this.classList.add('slot-selected');
+                        // Toggle selection for this slot
+                        this.classList.toggle('slot-selected');
                         const icon = this.querySelector('.slot-time i');
-                        icon.className = 'fas fa-check';
 
-                        // Store selected times
-                        selectedStartTime = this.dataset.startTime;
-                        selectedEndTime = this.dataset.endTime;
+                        if (this.classList.contains('slot-selected')) {
+                            // If selected
+                            icon.className = 'fas fa-check';
+                        } else {
+                            // If deselected
+                            icon.className = 'fas fa-clock';
+                        }
 
-                        // Enable next button
-                        nextBtn.disabled = false;
+                        // Update the selected time slots array
+                        updateSelectedTimeSlots();
+
+                        // Enable next button if at least one slot is selected
+                        nextBtn.disabled = window.selectedTimeSlots.length === 0;
                     });
                 });
             }
@@ -788,19 +835,20 @@
                     if (typeof bootstrap !== 'undefined') {
                         // Create toast element
                         const toastEl = document.createElement('div');
-                        toastEl.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
+                        toastEl.className =
+                            `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
                         toastEl.setAttribute('role', 'alert');
                         toastEl.setAttribute('aria-live', 'assertive');
                         toastEl.setAttribute('aria-atomic', 'true');
 
                         toastEl.innerHTML = `
-                            <div class="d-flex">
-                                <div class="toast-body">
-                                    <strong>${title}:</strong> ${message}
-                                </div>
-                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                        `;
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}:</strong> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
 
                         // Add to container
                         const toastContainer = document.querySelector('.toast-container');
@@ -827,7 +875,6 @@
             goToStep(1);
         });
     </script>
-
     <style>
         /* Wizard Booking Process Styling */
         .booking-wizard {
@@ -1048,49 +1095,52 @@
             transform: none !important;
         }
 
+        /* Calendar and Time Slot Specific Styling */
+
         /* Time Slots */
         .time-slots-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            width: 100%;
         }
 
         .time-slot {
             position: relative;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
             border: 2px solid #e9ecef;
         }
 
-        .time-slot:hover {
+        .time-slot:not(.disabled):hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border-color: #9e0620;
         }
 
         .slot-time {
-            padding: 0.75rem;
-            text-align: center;
-            font-weight: 600;
-            color: #495057;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            min-height: 50px;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.9rem;
         }
 
         .slot-time i {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #6c757d;
+            margin-right: 5px;
         }
 
-        .slot-duration {
+        .slot-price {
             background-color: #f8f9fa;
             padding: 0.5rem;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
@@ -1113,30 +1163,69 @@
             color: #9e0620;
         }
 
-        /* Feature Badges */
-        .feature-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0.75rem 1rem;
+        .time-slot.slot-booked {
+            border-color: #6c757d;
             background-color: #f8f9fa;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .time-slot.slot-in-cart {
+            border-color: #fd7e14;
+            background-color: #fff8f1;
+        }
+
+        .time-slot.slot-in-cart .slot-time i {
+            color: #fd7e14;
+        }
+
+        /* Selected Slots List */
+        .selected-slots-list {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            width: 100%;
+        }
+
+        .selected-slots-list .list-group-item {
+            background-color: transparent;
+            border-color: #e9ecef;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
             border-radius: 8px;
             transition: all 0.3s ease;
         }
 
-        .feature-badge:hover {
+        .selected-slots-list .list-group-item:hover {
+            background-color: #fff;
             transform: translateX(5px);
-            background-color: #f0f0f0;
         }
 
-        /* Testimonial Cards */
-        .testimonial-card {
-            transition: all 0.3s ease;
+        /* Confirmation Details */
+        .confirmation-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
         }
 
-        .testimonial-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        .confirmation-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .confirmation-item:last-child {
+            border-bottom: none;
+        }
+
+        .confirmation-item .label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .confirmation-item .value {
+            color: #212529;
         }
 
         /* Responsive adjustments */
@@ -1186,8 +1275,174 @@
                 order: 1;
             }
         }
+
+        /* Custom Flatpickr Theme - brand color #9e0620 */
+        /* Base Calendar Container */
+        .flatpickr-calendar {
+            width: 100% !important;
+            max-width: 320px !important;
+            box-sizing: border-box !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
+            touch-action: manipulation;
+        }
+
+        /* Month Navigation Section */
+        .flatpickr-months {
+            background-color: #ffffff;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .flatpickr-month {
+            color: #fff;
+        }
+
+        .flatpickr-current-month {
+            font-weight: 600;
+        }
+
+        .flatpickr-monthDropdown-months,
+        .numInputWrapper span.arrowUp,
+        .numInputWrapper span.arrowDown {
+            color: #fff;
+        }
+
+        .flatpickr-prev-month,
+        .flatpickr-next-month {
+            fill: #fff;
+        }
+
+        .flatpickr-prev-month:hover svg,
+        .flatpickr-next-month:hover svg {
+            fill: #e9ecef;
+        }
+
+        /* Weekday Headers */
+        span.flatpickr-weekday {
+            color: #9e0620;
+            font-weight: 600;
+            width: 14.2857% !important;
+            max-width: 14.2857% !important;
+            flex-basis: 14.2857% !important;
+        }
+
+        /* Days Container */
+        .flatpickr-days {
+            width: 100% !important;
+        }
+
+        .dayContainer {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* Day Cells */
+        .flatpickr-day {
+            width: 14.2857% !important;
+            max-width: 14.2857% !important;
+            flex-basis: 14.2857% !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            margin: 0 !important;
+            border-radius: 24px !important;
+        }
+
+        /* Day States: Hover */
+        .flatpickr-day:hover {
+            background: #fff8f8;
+            border-color: #fff8f8;
+        }
+
+        /* Day States: Today */
+        .flatpickr-day.today {
+            border-color: #9e0620;
+        }
+
+        .flatpickr-day.today:hover {
+            background: #fff8f8;
+            color: #9e0620;
+        }
+
+        /* Day States: Selected */
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange,
+        .flatpickr-day.selected.inRange,
+        .flatpickr-day.startRange.inRange,
+        .flatpickr-day.endRange.inRange,
+        .flatpickr-day.selected:focus,
+        .flatpickr-day.startRange:focus,
+        .flatpickr-day.endRange:focus,
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.startRange:hover,
+        .flatpickr-day.endRange:hover,
+        .flatpickr-day.selected.prevMonthDay,
+        .flatpickr-day.startRange.prevMonthDay,
+        .flatpickr-day.endRange.prevMonthDay,
+        .flatpickr-day.selected.nextMonthDay,
+        .flatpickr-day.startRange.nextMonthDay,
+        .flatpickr-day.endRange.nextMonthDay {
+            background: #9e0620;
+            border-color: #9e0620;
+            color: #fff;
+        }
+
+        /* Range Selection */
+        .flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
+        .flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
+        .flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
+            box-shadow: -10px 0 0 #9e0620;
+        }
+
+        /* Next Month Days (within booking window) */
+        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
+            color: #393939 !important;
+            font-weight: normal !important;
+            background-color: transparent !important;
+            opacity: 1 !important;
+        }
+
+        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
+            background-color: #fff8f8 !important;
+            border-color: #fff8f8 !important;
+            color: #9e0620 !important;
+        }
+
+        .flatpickr-day.nextMonthDay.selected {
+            background-color: #9e0620 !important;
+            border-color: #9e0620 !important;
+            color: #fff !important;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 576px) {
+            .flatpickr-calendar {
+                max-width: 100%;
+            }
+
+            .flatpickr-day {
+                height: 35px !important;
+                line-height: 35px !important;
+            }
+        }
+
+        .slot-membership {
+            background-color: #ffeeba;
+            /* Warna kuning lembut */
+            border-color: #ffdf7e;
+            cursor: not-allowed;
+        }
+
+        .slot-membership .slot-time {
+            color: #856404;
+            /* Warna text kuning gelap */
+        }
     </style>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
 @endsection

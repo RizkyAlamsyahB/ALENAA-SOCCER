@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\RentalItem;
+use App\Models\FieldBooking;
+use App\Models\MembershipSession;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -26,6 +28,9 @@ class RentalBooking extends Model
         'quantity',
         'total_price',
         'status',
+        'field_booking_id',
+        'membership_session_id',
+        'is_membership',
     ];
 
     /**
@@ -55,7 +60,7 @@ class RentalBooking extends Model
      */
     public function rentalItem()
     {
-        return $this->belongsTo(RentalItem::class);
+        return $this->belongsTo(RentalItem::class, 'rental_item_id');
     }
 
     /**
@@ -159,4 +164,14 @@ class RentalBooking extends Model
     {
         return $query->whereNotIn('status', ['cancelled', 'completed']);
     }
+    // Tambahkan metode ini di class RentalBooking
+    public function fieldBooking()
+    {
+        return $this->belongsTo(FieldBooking::class, 'field_booking_id');
+    }
+
+public function membershipSession()
+{
+    return $this->belongsTo(MembershipSession::class, 'membership_session_id');
+}
 }

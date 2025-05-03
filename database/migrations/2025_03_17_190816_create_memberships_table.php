@@ -13,19 +13,21 @@ return new class extends Migration
     {
         Schema::create('memberships', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('field_id')->constrained('fields')->onDelete('cascade');
+            $table->foreignId('field_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->enum('type', ['bronze', 'silver', 'gold']);
-            $table->integer('price');
-            $table->text('description')->nullable();
-            $table->integer('sessions_per_week')->default(3);
-            $table->integer('session_duration')->default(1); // dalam jam
-            $table->boolean('includes_ball')->default(false);
-            $table->boolean('includes_water')->default(false);
-            $table->boolean('includes_photographer')->default(false);
-            $table->integer('photographer_duration')->default(0); // dalam jam
-            $table->string('image')->nullable();
+            $table->enum('type', ['bronze', 'silver', 'gold', 'platinum'])->default('bronze');
+            $table->decimal('price', 10, 2);
+            $table->text('description');
+            $table->integer('sessions_per_week');
+            $table->integer('session_duration');
+            $table->integer('photographer_duration')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('image')->nullable();
+            $table->boolean('includes_photographer')->default(false);
+            $table->foreignId('photographer_id')->nullable()->constrained()->nullOnDelete();
+            $table->boolean('includes_rental_item')->default(false);
+            $table->foreignId('rental_item_id')->nullable()->constrained('rental_items')->nullOnDelete();
+            $table->integer('rental_item_quantity')->nullable();
             $table->timestamps();
         });
     }

@@ -59,6 +59,25 @@ class DashboardController extends Controller
             ->limit(4)
             ->get();
 
-        return view('users.dashboard', compact('recentFieldBookings', 'recentRentalBookings', 'recentPayments', 'userReviews', 'testimonials', 'activeDiscounts'));
+// Stats data for counter
+$fieldCount = \App\Models\Field::count(); // Count of available fields
+
+// Count active members based on active membership subscriptions
+$activeMemberCount = \App\Models\MembershipSubscription::where('status', 'active')
+    ->whereDate('end_date', '>=', now())
+    ->distinct('user_id')
+    ->count('user_id');
+
+
+return view('users.dashboard', compact(
+    'recentFieldBookings',
+    'recentRentalBookings',
+    'recentPayments',
+    'userReviews',
+    'testimonials',
+    'activeDiscounts',
+    'fieldCount',
+    'activeMemberCount',
+));
     }
 }

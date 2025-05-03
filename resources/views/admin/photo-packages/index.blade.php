@@ -4,14 +4,14 @@
     <div class="page-title">
         <div class="row">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Daftar Paket Foto</h3>
-                <p class="text-subtitle text-muted">Manajemen paket foto untuk Alena Soccer.</p>
+                <h3>Data Paket Fotografer</h3>
+                <p class="text-subtitle text-muted">Kelola paket layanan fotografer untuk lapangan</p>
             </div>
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Paket Foto</li>
+                        <li class="breadcrumb-item active" aria-current="page">Data Paket Fotografer</li>
                     </ol>
                 </nav>
             </div>
@@ -25,23 +25,23 @@
             <div class="card-header">
                 <div class="card-tools">
                     <a href="{{ route('admin.photo-packages.create') }}" class="btn btn-primary btn-sm rounded-3">
-                        Tambah Paket Foto Baru
+                        <i class="bi bi-plus"></i> Tambah Paket Fotografer
                     </a>
                 </div>
             </div>
             <div class="card-body rounded-4">
                 <div class="table-responsive">
-                    <table id="photoPackagesTable" class="table table-striped">
+                    <table id="photographersTable" class="table table-striped">
                         <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Gambar</th>
+                                <th>Fotografer</th>
                                 <th>Nama Paket</th>
+                                <th>Jenis Paket</th>
                                 <th>Harga</th>
                                 <th>Durasi</th>
-                                <th>Jumlah Foto</th>
-                                <th>Termasuk Editing</th>
-                                <th>Dibuat Pada</th>
-                                <th>Diperbarui Pada</th>
+                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -69,7 +69,7 @@
             toastr.options = {
                 "closeButton": true,
                 "progressBar": true,
-                "positionClass": "toast-bottom-right", // Ubah posisi ke bottom-right
+                "positionClass": "toast-bottom-right",
                 "showDuration": "300",
                 "hideDuration": "1000",
                 "timeOut": "5000",
@@ -97,7 +97,7 @@
                 toastr.warning('{{ session('warning') }}', 'Peringatan');
             @endif
 
-            $('#photoPackagesTable').DataTable({
+            $('#photographersTable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: '{{ route('admin.photo-packages.index') }}',
@@ -106,33 +106,37 @@
                         name: 'id'
                     },
                     {
+                        data: 'image',
+                        name: 'image',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'photographer_name',
+                        name: 'photographer_name'
+                    },
+                    {
                         data: 'name',
                         name: 'name'
                     },
                     {
+                        data: 'package_type',
+                        name: 'package_type'
+                    },
+                    {
                         data: 'price',
-                        name: 'price',
-                        render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
+                        name: 'price'
                     },
                     {
-                        data: 'duration_minutes',
-                        name: 'duration_minutes'
+                        data: 'duration',
+                        name: 'duration',
+                        render: function(data) {
+                            return data + ' jam';
+                        }
                     },
                     {
-                        data: 'number_of_photos',
-                        name: 'number_of_photos'
-                    },
-                    {
-                        data: 'includes_editing',
-                        name: 'includes_editing'
-                    },
-                    {
-                        data: 'created_at',
-                        name: 'created_at'
-                    },
-                    {
-                        data: 'updated_at',
-                        name: 'updated_at'
+                        data: 'status',
+                        name: 'status'
                     },
                     {
                         data: 'action',
@@ -150,7 +154,7 @@
 
                 toastr.warning(
                     `<div>
-                        <p>Apakah Anda yakin ingin menghapus paket foto "<b>${packageName}</b>"?</p>
+                        <p>Apakah Anda yakin ingin menghapus paket fotografer "<b>${packageName}</b>"?</p>
                         <button class="btn btn-danger btn-sm" id="confirmDelete" data-id="${packageId}" style="margin-right:10px;">Ya, Hapus!</button>
                         <button class="btn btn-secondary btn-sm" id="cancelDelete">Batal</button>
                     </div>`,
@@ -160,7 +164,7 @@
                             // Event listener untuk tombol hapus
                             $('#confirmDelete').on('click', function() {
                                 var id = $(this).data('id');
-                                hapusPackage(id);
+                                hapusPaket(id);
                             });
 
                             // Event listener untuk tombol batal
@@ -171,8 +175,9 @@
                     }
                 );
             });
+
             // Fungsi untuk menghapus data
-            function hapusPackage(packageId) {
+            function hapusPaket(packageId) {
                 var form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '{{ route('admin.photo-packages.destroy', '') }}/' + packageId;
@@ -189,8 +194,6 @@
                 form.appendChild(methodField);
 
                 document.body.appendChild(form);
-
-                // Kirim form dan biarkan controller mengembalikan flash message
                 form.submit();
             }
         });

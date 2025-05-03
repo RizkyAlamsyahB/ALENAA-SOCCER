@@ -4,7 +4,9 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Field;
 use App\Models\Payment;
+use App\Models\RentalBooking;
 use App\Models\MembershipSession;
+use App\Models\PhotographerBooking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,18 +15,7 @@ class FieldBooking extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'field_id',
-        'start_time',
-        'end_time',
-        'total_price',
-        'status',
-        'payment_id',
-        'renewal_payment_id',
-        'is_membership',
-        'membership_session_id',
-    ];
+    protected $fillable = ['user_id', 'field_id', 'start_time', 'end_time', 'total_price', 'status', 'payment_id', 'is_membership', 'membership_session_id'];
 
     protected $casts = [
         'start_time' => 'datetime',
@@ -58,19 +49,21 @@ class FieldBooking extends Model
     }
 
     /**
-     * Get the renewal payment associated with this booking.
-     */
-    public function renewalPayment(): BelongsTo
-    {
-        return $this->belongsTo(Payment::class, 'renewal_payment_id');
-    }
-
-    /**
      * Get the membership session associated with this booking (if any).
      */
-    public function membershipSession(): BelongsTo
+    public function membershipSession()
     {
-        return $this->belongsTo(MembershipSession::class);
+        return $this->belongsTo(MembershipSession::class, 'membership_session_id');
+    }
+
+    public function photographerBookings()
+    {
+        return $this->hasMany(PhotographerBooking::class, 'field_booking_id');
+    }
+
+    public function rentalBookings()
+    {
+        return $this->hasMany(RentalBooking::class, 'field_booking_id');
     }
 
     /**
@@ -103,14 +96,6 @@ class FieldBooking extends Model
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
-    }
-
-    /**
-     * Check if booking is on hold.
-     */
-    public function isOnHold(): bool
-    {
-        return $this->status === 'on_hold';
     }
 
     /**
