@@ -143,14 +143,7 @@
                                 <a href="{{ route('admin.photo-packages.index') }}" class="submenu-link">Data
                                     Fotografer</a>
                             </li>
-                            {{-- <li
-                                class="submenu-item {{ request()->routeIs('admin.photo-packages.schedule') ? 'active' : '' }}">
-                                <a href="" class="submenu-link">Jadwal Fotografer</a>
-                            </li> --}}
-                            {{-- <li
-                                class="submenu-item {{ request()->routeIs('admin.photo-packages.booking') ? 'active' : '' }}">
-                                <a href="" class="submenu-link">Pemesanan Fotografer</a>
-                            </li> --}}
+
                         </ul>
                     </li>
 
