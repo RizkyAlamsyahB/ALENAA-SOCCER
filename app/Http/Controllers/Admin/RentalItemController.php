@@ -155,26 +155,38 @@ class RentalItemController extends Controller
         return redirect()->route('admin.rental-items.index')->with('success', 'Item sewa berhasil diperbarui');
     }
 
-    /**
-     * Menghapus item sewa
-     */
-    public function destroy(RentalItem $rentalItem)
-    {
-        try {
-            // Cek apakah item sedang disewa (stock_available tidak sama dengan stock_total)
-            if ($rentalItem->stock_available < $rentalItem->stock_total) {
-                return redirect()->route('admin.rental-items.index')->with('error', 'Tidak dapat menghapus item karena sedang disewa');
-            }
-
-            // Hapus gambar jika ada
-            if ($rentalItem->image && Storage::exists(str_replace('storage/', 'public/', $rentalItem->image))) {
-                Storage::delete(str_replace('storage/', 'public/', $rentalItem->image));
-            }
-
-            $rentalItem->delete();
-            return redirect()->route('admin.rental-items.index')->with('success', 'Item sewa berhasil dihapus');
-        } catch (\Exception $e) {
-            return redirect()->route('admin.rental-items.index')->with('error', 'Tidak dapat menghapus item sewa');
+/**
+ * Menghapus item sewa (soft delete)
+ */
+public function destroy(RentalItem $rentalItem)
+{
+    try {
+        // Cek apakah item sedang disewa (stock_available tidak sama dengan stock_total)
+        if ($rentalItem->stock_available < $rentalItem->stock_total) {
+            return redirect()->route('admin.rental-items.index')
+                ->with('error', 'Tidak dapat menghapus item karena sedang disewa');
         }
+
+        // Cek booking aktif
+        $activeBookings = $rentalItem->bookings()->where('status', '!=', 'cancelled')->where('end_time', '>', now())->exists();
+        if ($activeBookings) {
+            return redirect()->route('admin.rental-items.index')
+                ->with('error', 'Tidak dapat menghapus item karena masih ada booking aktif terkait.');
+        }
+
+        // Hapus gambar jika ada
+        if ($rentalItem->image && Storage::exists('public/' . $rentalItem->image)) {
+            Storage::delete('public/' . $rentalItem->image);
+        }
+
+        // Soft delete
+        $rentalItem->delete();
+
+        return redirect()->route('admin.rental-items.index')->with('success', 'Item sewa berhasil dihapus');
+    } catch (\Exception $e) {
+        Log::error('Error deleting rental item: ' . $e->getMessage());
+        return redirect()->route('admin.rental-items.index')
+            ->with('error', 'Tidak dapat menghapus item sewa: ' . $e->getMessage());
     }
+}
 }

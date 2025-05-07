@@ -137,20 +137,44 @@ class ProductController extends Controller
     }
 
     /**
-     * Menghapus produk
+     * Menghapus produk (soft delete)
      */
-    public function destroy(Product $product)
+    public function destroy($id)
     {
         try {
-            // Hapus gambar jika ada
-            if ($product->image && Storage::exists(str_replace('storage/', 'public/', $product->image))) {
-                Storage::delete(str_replace('storage/', 'public/', $product->image));
+            $product = Product::findOrFail($id);
+
+            // Cek apakah produk memiliki pending transactions
+            $pendingTransactions = $product
+                ->saleItems()
+                ->whereHas('payment', function ($query) {
+                    $query->where('transaction_status', 'pending');
+                })
+                ->exists();
+
+            if ($pendingTransactions) {
+                return redirect()->route('admin.products.index')->with('error', 'Tidak dapat menghapus produk karena masih ada transaksi pending terkait.');
             }
 
+            // Cek apakah stok produk ada yang tersedia
+            if ($product->current_stock <= 0 && $product->type == 'physical') {
+                return redirect()->route('admin.products.index')->with('error', 'Tidak dapat menghapus produk karena stok kosong atau negatif. Silakan periksa stok terlebih dahulu.');
+            }
+
+            // Hapus gambar jika ada
+            if ($product->image && Storage::exists('public/' . $product->image)) {
+                Storage::delete('public/' . $product->image);
+            }
+
+            // Soft delete
             $product->delete();
+
             return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->route('admin.products.index')->with('error', 'Tidak dapat menghapus produk');
+            Log::error('Error deleting product: ' . $e->getMessage());
+            return redirect()
+                ->route('admin.products.index')
+                ->with('error', 'Tidak dapat menghapus produk: ' . $e->getMessage());
         }
     }
 }

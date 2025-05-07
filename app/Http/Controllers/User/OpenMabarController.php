@@ -205,7 +205,23 @@ class OpenMabarController extends Controller
         if ($existingActiveParticipant) {
             return back()->with('info', 'Anda sudah terdaftar sebagai peserta Open Mabar ini.');
         }
+// Cek apakah user sudah terdaftar di mabar lain pada waktu yang sama
+$overlappingMabars = MabarParticipant::join('open_mabars', 'mabar_participants.open_mabar_id', '=', 'open_mabars.id')
+    ->where('mabar_participants.user_id', Auth::id())
+    ->where('mabar_participants.status', '!=', 'cancelled')
+    ->where(function ($query) use ($openMabar) {
+        // Cek overlap waktu
+        // Mabar 1 mulai sebelum Mabar 2 selesai DAN Mabar 1 selesai setelah Mabar 2 mulai
+        $query->where(function ($q) use ($openMabar) {
+            $q->where('open_mabars.start_time', '<', $openMabar->end_time)
+              ->where('open_mabars.end_time', '>', $openMabar->start_time);
+        });
+    })
+    ->first();
 
+if ($overlappingMabars) {
+    return back()->with('error', 'Anda sudah terdaftar pada Open Mabar lain yang jadwalnya bentrok.');
+}
         // Cek apakah user pernah bergabung sebelumnya dan membatalkan
         $previouslyCancelled = MabarParticipant::where('open_mabar_id', $id)->where('user_id', Auth::id())->where('status', 'cancelled')->first();
 

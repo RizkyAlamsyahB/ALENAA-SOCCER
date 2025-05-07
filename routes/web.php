@@ -209,6 +209,8 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::get('/redemption/{id}', [PointController::class, 'showRedemption'])->name('redemption-detail');
         });
 
+
+        
     Route::prefix('mabar')
         ->name('user.mabar.')
         ->middleware(['auth', 'verified', 'checkRole:user'])
@@ -247,10 +249,6 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::delete('/{id}/delete', [OpenMabarController::class, 'destroy'])->name('delete');
         });
 
-    // Other Features
-    // Route::get('/mabar', function () {
-    //     return view('users.mabar');
-    // })->name('mabar.index');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->json('features')->nullable(); // Fitur tambahan dalam bentuk JSON
+            $table->softDeletes();
             $table->timestamps();
         });
     }

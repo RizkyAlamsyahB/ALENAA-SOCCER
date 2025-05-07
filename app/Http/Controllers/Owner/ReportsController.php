@@ -316,7 +316,7 @@ public function revenueReport(Request $request)
         $endDateTime = Carbon::parse($endDate)->endOfDay();
 
         // Get fields with revenue
-        $fields = Field::all();
+        $fields = Field::withTrashed()->all(); // Ganti Field::all()
 
         // Calculate net revenue per field (hanya non-membership)
         foreach ($fields as $field) {
@@ -375,6 +375,8 @@ public function revenueReport(Request $request)
 
         // Get daily revenue data for chart
         $dailyRevenue = DB::table('field_bookings')
+        ->join('fields', 'field_bookings.field_id', '=', 'fields.id')
+        ->withTrashed()
             ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
             ->whereBetween('field_bookings.start_time', [$startDateTime, $endDateTime])
             ->where('field_bookings.status', 'confirmed')
@@ -422,6 +424,7 @@ public function revenueReport(Request $request)
         // Get rental net revenue by item (hanya non-membership)
         $rentalRevenueByItem = DB::table('rental_bookings')
             ->join('rental_items', 'rental_bookings.rental_item_id', '=', 'rental_items.id')
+            ->withTrashed()
             ->leftJoin('payments', 'rental_bookings.payment_id', '=', 'payments.id')
             ->where('rental_bookings.status', 'confirmed')
             ->where('rental_bookings.is_membership', 0)
@@ -483,6 +486,7 @@ public function revenueReport(Request $request)
         // Get photographer net revenue (hanya non-membership)
         $photographerRevenue = DB::table('photographer_bookings')
             ->join('photographers', 'photographer_bookings.photographer_id', '=', 'photographers.id')
+            ->withTrashed()
             ->leftJoin('payments', 'photographer_bookings.payment_id', '=', 'payments.id')
             ->where('photographer_bookings.status', 'confirmed')
             ->where('photographer_bookings.is_membership', 0)
@@ -600,8 +604,8 @@ public function dashboardStats()
 
     // Field type popularity (semua booking termasuk membership)
     $fieldPopularity = FieldBooking::join('fields', 'field_bookings.field_id', '=', 'fields.id')
-        ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
-        ->where('field_bookings.status', 'confirmed')
+    ->withTrashed() // Tambahkan di sini
+    ->leftJoin('payments', 'field_bookings.payment_id', '=', 'payments.id')
         ->select(
             'fields.type',
             DB::raw('COUNT(*) as bookings'),
@@ -820,8 +824,11 @@ public function productSalesRevenueReport(Request $request)
     $endDateTime = Carbon::parse($endDate)->endOfDay();
 
     // Get product net revenue by item using Eloquent models
-    $productRevenueByItem = ProductSaleItem::with('product')
+    $productRevenueByItem = ProductSaleItem::with(['product' => function($query) {
+            $query->withTrashed(); // Menambahkan withTrashed untuk eager loading
+        }])
         ->join('products', 'product_sale_items.product_id', '=', 'products.id')
+        ->withTrashed() // Menambahkan withTrashed untuk join
         ->leftJoin('payments', 'product_sale_items.payment_id', '=', 'payments.id')
         ->where(function($query) {
             $query->where('payments.transaction_status', 'settlement')
@@ -863,6 +870,7 @@ public function productSalesRevenueReport(Request $request)
 
     // Get product revenue by category
     $productRevenueByCategory = ProductSaleItem::join('products', 'product_sale_items.product_id', '=', 'products.id')
+        ->withTrashed() // Menambahkan withTrashed untuk join
         ->leftJoin('payments', 'product_sale_items.payment_id', '=', 'payments.id')
         ->where(function($query) {
             $query->where('payments.transaction_status', 'settlement')
@@ -881,8 +889,11 @@ public function productSalesRevenueReport(Request $request)
         ->get();
 
     // Get top selling products for this period
-    $topSellingProducts = ProductSaleItem::with('product')
+    $topSellingProducts = ProductSaleItem::with(['product' => function($query) {
+            $query->withTrashed(); // Menambahkan withTrashed untuk eager loading
+        }])
         ->join('products', 'product_sale_items.product_id', '=', 'products.id')
+        ->withTrashed() // Menambahkan withTrashed untuk join
         ->leftJoin('payments', 'product_sale_items.payment_id', '=', 'payments.id')
         ->where(function($query) {
             $query->where('payments.transaction_status', 'settlement')
@@ -912,4 +923,5 @@ public function productSalesRevenueReport(Request $request)
         'endDate'
     ));
 }
+
 }

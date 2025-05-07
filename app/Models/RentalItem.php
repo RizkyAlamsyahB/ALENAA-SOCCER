@@ -6,11 +6,12 @@ use App\Models\Review;
 use App\Models\CartItem;
 use App\Models\RentalBooking;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RentalItem extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * Atribut yang dapat diisi secara massal
@@ -31,6 +32,7 @@ class RentalItem extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     /**
      * Relasi ke model RentalBooking

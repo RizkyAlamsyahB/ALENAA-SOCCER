@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -85,7 +86,7 @@
 
         .social-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .form-check-input:checked {
@@ -126,11 +127,11 @@
                 display: none;
             }
         }
+
         html,
         body {
             overflow-x: hidden;
         }
-
     </style>
 </head>
 
@@ -138,12 +139,12 @@
     <!-- Background Shapes -->
     <div class="floating-shape" style="top: 10%; left: 5%;">
         <svg width="100" height="100" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" fill="var(--primary-color)"/>
+            <circle cx="50" cy="50" r="40" fill="var(--primary-color)" />
         </svg>
     </div>
     <div class="floating-shape" style="bottom: 10%; right: 5%;">
         <svg width="120" height="120" viewBox="0 0 100 100">
-            <rect width="80" height="80" fill="var(--primary-color)"/>
+            <rect width="80" height="80" fill="var(--primary-color)" />
         </svg>
     </div>
 
@@ -156,7 +157,8 @@
                     <!-- Login Sidebar -->
                     <div class="col-lg-5 login-sidebar">
                         <h2 class="h3 fw-bold mb-4">Selamat Datang Kembali!</h2>
-                        <p class="mb-4 opacity-75">Masuk untuk mengakses akun Anda dan nikmati fasilitas olahraga premium kami.</p>
+                        <p class="mb-4 opacity-75">Masuk untuk mengakses akun Anda dan nikmati fasilitas olahraga
+                            premium kami.</p>
                         <div class="d-flex gap-3 mb-4">
                             <div>
                                 <h4 class="h2 fw-bold mb-0">500+</h4>
@@ -183,8 +185,10 @@
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-envelope text-muted"></i>
                                         </span>
-                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                               placeholder="Masukkan email Anda" value="{{ old('email') }}" required autocomplete="email">
+                                        <input type="email" name="email"
+                                            class="form-control @error('email') is-invalid @enderror"
+                                            placeholder="Masukkan email Anda" value="{{ old('email') }}" required
+                                            autocomplete="email">
                                         @error('email')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -200,8 +204,10 @@
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
-                                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
-                                               placeholder="Masukkan kata sandi Anda" required autocomplete="current-password">
+                                        <input type="password" name="password"
+                                            class="form-control @error('password') is-invalid @enderror"
+                                            placeholder="Masukkan kata sandi Anda" required
+                                            autocomplete="current-password">
                                         @error('password')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -214,10 +220,11 @@
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" name="remember" id="remember"
-                                               {{ old('remember') ? 'checked' : '' }}>
+                                            {{ old('remember') ? 'checked' : '' }}>
                                         <label class="form-check-label" for="remember">Ingat saya</label>
                                     </div>
-                                    <a href="/forgot-password" class="text-danger text-decoration-none">Lupa Kata Sandi?</a>
+                                    <a href="/forgot-password" class="text-danger text-decoration-none">Lupa Kata
+                                        Sandi?</a>
                                 </div>
 
                                 <!-- Submit Button -->
@@ -259,4 +266,5 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
