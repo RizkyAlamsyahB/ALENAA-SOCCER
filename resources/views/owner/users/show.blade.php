@@ -28,7 +28,7 @@
                         </span>
 
                         <div class="d-flex justify-content-center gap-2 mt-3">
-                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning">
+                            <a href="{{ route('owner.users.edit', $user->id) }}" class="btn btn-warning">
                                 <i class="bi bi-pencil"></i> Edit
                             </a>
                             <button type="button" class="btn btn-danger delete-btn" data-id="{{ $user->id }}" data-name="{{ $user->name }}">
@@ -153,7 +153,7 @@
                             @else
                                 <div class="alert alert-info">
                                     Tidak ada data paket fotografer.
-                                    <a href="{{ route('admin.photo-packages.create') }}">Buat paket fotografer</a> untuk pengguna ini.
+                                    <a href="{{ route('owner.photo-packages.create') }}">Buat paket fotografer</a> untuk pengguna ini.
                                 </div>
                             @endif
                         </div>
@@ -162,7 +162,7 @@
                 </div>
 
                 <div class="mt-4">
-                    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('owner.users.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Kembali ke Daftar
                     </a>
                 </div>
@@ -226,7 +226,7 @@
         function hapusPengguna(userId) {
             var form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route('admin.users.destroy', '') }}/' + userId;
+            form.action = '{{ route('owner.users.destroy', '') }}/' + userId;
             form.style.display = 'none';
 
             var csrfToken = document.createElement('input');

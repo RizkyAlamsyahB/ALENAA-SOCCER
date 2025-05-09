@@ -1,11 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Owner;
 
 use App\Models\User;
+use App\Models\Field;
+use App\Models\Membership;
 use App\Models\Photographer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\PhotographerBooking;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -25,10 +29,10 @@ class UserManagementController extends Controller
                 ->addColumn('action', function ($user) {
                     return '<div class="d-flex gap-1">
                             <a href="' .
-                        route('admin.users.show', $user->id) .
+                        route('owner.users.show', $user->id) .
                         '" class="btn btn-sm btn-info">Detail</a>
                             <a href="' .
-                        route('admin.users.edit', $user->id) .
+                        route('owner.users.edit', $user->id) .
                         '" class="btn btn-sm btn-warning">Edit</a>
                             <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
                         $user->id .
@@ -67,7 +71,7 @@ class UserManagementController extends Controller
                 ->make(true);
         }
 
-        return view('admin.users.index');
+        return view('owner.users.index');
     }
 
     /**
@@ -75,7 +79,7 @@ class UserManagementController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        return view('owner.users.create');
     }
 
     /**
@@ -114,7 +118,7 @@ class UserManagementController extends Controller
 
         User::create($validatedData);
 
-        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil ditambahkan');
+        return redirect()->route('owner.users.index')->with('success', 'Pengguna berhasil ditambahkan');
     }
 
     /**
@@ -129,7 +133,7 @@ class UserManagementController extends Controller
             $photographerData = Photographer::where('user_id', $user->id)->get();
         }
 
-        return view('admin.users.show', compact('user', 'photographerData'));
+        return view('owner.users.show', compact('user', 'photographerData'));
     }
 
     /**
@@ -137,7 +141,7 @@ class UserManagementController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        return view('owner.users.edit', compact('user'));
     }
 
     /**
@@ -177,33 +181,89 @@ class UserManagementController extends Controller
 
         $user->update($validatedData);
 
-        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil diperbarui');
+        return redirect()->route('owner.users.index')->with('success', 'Pengguna berhasil diperbarui');
     }
 
-    /**
-     * Menghapus pengguna
-     */
-    public function destroy(User $user)
-    {
-        try {
-            // Cek jika user adalah owner atau admin terakhir
-            if ($user->role === 'owner' && User::where('role', 'owner')->count() <= 1) {
-                return redirect()->route('admin.users.index')->with('error', 'Tidak dapat menghapus owner terakhir');
-            }
-
-            if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
-                return redirect()->route('admin.users.index')->with('error', 'Tidak dapat menghapus admin terakhir');
-            }
-
-            // Hapus profile picture jika ada
-            if ($user->profile_picture && Storage::exists('public/' . $user->profile_picture)) {
-                Storage::delete('public/' . $user->profile_picture);
-            }
-
-            $user->delete();
-            return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus');
-        } catch (\Exception $e) {
-            return redirect()->route('admin.users.index')->with('error', 'Tidak dapat menghapus pengguna');
+/**
+ * Menghapus pengguna (hanya administrator dan fotografer)
+ */
+public function destroy(User $user)
+{
+    try {
+        // Cek apakah role user diizinkan untuk dihapus
+        if ($user->role === 'owner' || $user->role === 'user') {
+            return redirect()->route('owner.users.index')->with('error', 'Pengguna dengan role ' . $user->role . ' tidak dapat dihapus dari sistem');
         }
+
+        // Cek jika user adalah admin terakhir
+        if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+            return redirect()->route('owner.users.index')->with('error', 'Tidak dapat menghapus admin terakhir');
+        }
+
+        // Pengecekan khusus untuk fotografer
+        if ($user->role === 'photographer') {
+            // Cek jika fotografer sedang memiliki booking aktif atau masa depan
+            $photographer = Photographer::where('user_id', $user->id)->first();
+
+            if ($photographer) {
+                // Cek apakah fotografer memiliki booking yang belum selesai
+                $hasActiveBookings = PhotographerBooking::where('photographer_id', $photographer->id)
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->whereDate('end_time', '>=', now())
+                    ->exists();
+
+                if ($hasActiveBookings) {
+                    return redirect()->route('owner.users.index')->with('error', 'Tidak dapat menghapus fotografer. Fotografer memiliki booking yang masih aktif.');
+                }
+
+                // Cek apakah fotografer menangani lapangan
+                $hasAssignedFields = Field::where('photographer_id', $photographer->id)->exists();
+
+                if ($hasAssignedFields) {
+                    return redirect()->route('owner.users.index')->with('error', 'Tidak dapat menghapus fotografer. Fotografer masih ditugaskan ke satu atau lebih lapangan.');
+                }
+
+                // Cek jika fotografer digunakan dalam paket membership
+                $usedInMembership = Membership::where('photographer_id', $photographer->id)
+                    ->where('includes_photographer', true)
+                    ->exists();
+
+                if ($usedInMembership) {
+                    return redirect()->route('owner.users.index')->with('error', 'Tidak dapat menghapus fotografer. Fotografer masih digunakan dalam paket membership.');
+                }
+            }
+        }
+
+        // Hapus profile picture jika ada
+        if ($user->profile_picture && Storage::exists('public/' . $user->profile_picture)) {
+            Storage::delete('public/' . $user->profile_picture);
+        }
+
+        // Untuk fotografer, hapus juga data fotografer terkait
+        if ($user->role === 'photographer') {
+            $photographer = Photographer::where('user_id', $user->id)->first();
+            if ($photographer) {
+                // Hapus foto profil fotografer jika ada
+                if ($photographer->photo && Storage::exists('public/' . $photographer->photo)) {
+                    Storage::delete('public/' . $photographer->photo);
+                }
+
+                // Hapus data fotografer
+                $photographer->delete();
+            }
+        }
+
+        $user->delete();
+        return redirect()->route('owner.users.index')->with('success', 'Pengguna berhasil dihapus');
+    } catch (\Exception $e) {
+        Log::error('Error deleting user: ' . $e->getMessage(), [
+            'user_id' => $user->id,
+            'role' => $user->role,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return redirect()->route('owner.users.index')
+            ->with('error', 'Tidak dapat menghapus pengguna. Error: ' . $e->getMessage());
     }
+}
 }

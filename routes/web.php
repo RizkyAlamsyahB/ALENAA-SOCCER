@@ -13,7 +13,6 @@ use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Owner\ReportsController;
 use App\Http\Controllers\Owner\ReviewsController;
-use App\Http\Controllers\Admin\DiscountController;
 use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\OpenMabarController;
 use App\Http\Controllers\Admin\SchedulesController;
@@ -26,7 +25,7 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\User\PhotographerController;
 use App\Http\Controllers\Admin\PhotoPackageController;
 use App\Http\Controllers\Owner\PointVoucherController;
-use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Owner\UserManagementController;
 use App\Http\Controllers\Photographer\ScheduleController;
 use App\Http\Controllers\Photographer\PhotographerDashboardController;
 
@@ -209,8 +208,6 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::get('/redemption/{id}', [PointController::class, 'showRedemption'])->name('redemption-detail');
         });
 
-
-        
     Route::prefix('mabar')
         ->name('user.mabar.')
         ->middleware(['auth', 'verified', 'checkRole:user'])
@@ -248,7 +245,6 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
 
             Route::delete('/{id}/delete', [OpenMabarController::class, 'destroy'])->name('delete');
         });
-
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -374,12 +370,15 @@ Route::middleware(['auth', 'checkRole:owner'])
         Route::get('reports/photographer-revenue', [ReportsController::class, 'photographerRevenueReport'])->name('reports.photographer-revenue');
         Route::get('reports/dashboard-stats', [ReportsController::class, 'dashboardStats'])->name('reports.dashboard-stats');
         Route::get('reports/membership-revenue', [ReportsController::class, 'membershipRevenueReport'])->name('reports.membership-revenue');
-  // Riwayat transaksi POS
-Route::get('reports/transactions', [ReportsController::class, 'transactionHistory'])->name('reports.transactions');
+        // Riwayat transaksi POS
+        Route::get('reports/transactions', [ReportsController::class, 'transactionHistory'])->name('reports.transactions');
 
-Route::get('/reports/product-sales', [ReportsController::class, 'productSalesRevenueReport'])->name('reports.product-sales-revenue');
+        Route::get('/reports/product-sales', [ReportsController::class, 'productSalesRevenueReport'])->name('reports.product-sales-revenue');
 
-});
+        Route::resources([
+            'users' => UserManagementController::class,
+        ]);
+    });
 // Photographers Routes
 Route::middleware(['auth', 'checkRole:photographer'])
     ->prefix('photographers')
@@ -392,19 +391,13 @@ Route::middleware(['auth', 'checkRole:photographer'])
         Route::get('/schedule', [ScheduleController::class, 'schedule'])->name('schedule');
 
         // Route untuk booking details
-        Route::get('/booking-details/{bookingId}/{bookingType}',
-            [ScheduleController::class, 'getBookingDetails'])
-            ->name('booking-details');
+        Route::get('/booking-details/{bookingId}/{bookingType}', [ScheduleController::class, 'getBookingDetails'])->name('booking-details');
 
         // Route untuk confirm booking
-        Route::post('/confirm-booking/{bookingId}/{bookingType}',
-            [ScheduleController::class, 'confirmBooking'])
-            ->name('confirm-booking');
+        Route::post('/confirm-booking/{bookingId}/{bookingType}', [ScheduleController::class, 'confirmBooking'])->name('confirm-booking');
 
         // Route untuk cancel booking
-        Route::post('/cancel-booking/{bookingId}/{bookingType}',
-            [ScheduleController::class, 'cancelBooking'])
-            ->name('cancel-booking');
+        Route::post('/cancel-booking/{bookingId}/{bookingType}', [ScheduleController::class, 'cancelBooking'])->name('cancel-booking');
     });
 // Auth Routes
 require __DIR__ . '/auth.php';
