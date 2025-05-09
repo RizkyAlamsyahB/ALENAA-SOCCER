@@ -28,6 +28,7 @@ return new class extends Migration
             $table->boolean('includes_rental_item')->default(false);
             $table->foreignId('rental_item_id')->nullable()->constrained('rental_items')->nullOnDelete();
             $table->integer('rental_item_quantity')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

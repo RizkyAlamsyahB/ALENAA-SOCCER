@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Review extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -20,6 +21,8 @@ class Review extends Model
         'comment',
         'status',
     ];
+
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     // Relasi ke user
     public function user()
