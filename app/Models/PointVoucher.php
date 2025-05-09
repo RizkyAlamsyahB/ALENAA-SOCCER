@@ -6,11 +6,12 @@ use Carbon\Carbon;
 use App\Models\PointRedemption;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PointVoucher extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -49,6 +50,7 @@ class PointVoucher extends Model
         'end_date' => 'datetime',
     ];
 
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 
     /**

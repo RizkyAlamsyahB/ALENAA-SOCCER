@@ -7,11 +7,12 @@ use App\Models\RentalItem;
 use App\Models\Photographer;
 use App\Models\MembershipSubscription;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Membership extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'field_id',
@@ -43,6 +44,9 @@ class Membership extends Model
         'updated_at' => 'datetime',
     ];
 
+
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
+    
     public function field()
     {
         return $this->belongsTo(Field::class);
