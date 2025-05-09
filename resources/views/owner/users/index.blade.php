@@ -10,7 +10,7 @@
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('owner.dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Data Pengguna</li>
                     </ol>
                 </nav>
@@ -24,7 +24,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-tools">
-                    <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm rounded-3">
+                    <a href="{{ route('owner.users.create') }}" class="btn btn-primary btn-sm rounded-3">
                         <i class="bi bi-person-plus"></i> Tambah Pengguna Baru
                     </a>
                 </div>
@@ -100,7 +100,7 @@
             $('#usersTable').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: '{{ route('admin.users.index') }}',
+                ajax: '{{ route('owner.users.index') }}',
                 columns: [
                     {
                         data: 'id',
@@ -178,7 +178,7 @@
             function hapusPengguna(userId) {
                 var form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route('admin.users.destroy', '') }}/' + userId;
+                form.action = '{{ route('owner.users.destroy', '') }}/' + userId;
                 form.style.display = 'none';
 
                 var csrfToken = document.createElement('input');

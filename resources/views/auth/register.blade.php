@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -122,12 +123,12 @@
     <!-- Background Shapes -->
     <div class="floating-shape" style="top: 10%; left: 5%;">
         <svg width="100" height="100" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" fill="var(--primary-color)"/>
+            <circle cx="50" cy="50" r="40" fill="var(--primary-color)" />
         </svg>
     </div>
     <div class="floating-shape" style="bottom: 10%; right: 5%;">
         <svg width="120" height="120" viewBox="0 0 100 100">
-            <rect width="80" height="80" fill="var(--primary-color)"/>
+            <rect width="80" height="80" fill="var(--primary-color)" />
         </svg>
     </div>
 
@@ -152,8 +153,10 @@
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-user text-muted"></i>
                                         </span>
-                                        <input id="name" type="text" class="form-control @error('name') is-invalid @enderror"
-                                            name="name" value="{{ old('name') }}" placeholder="Masukkan nama lengkap Anda" required autocomplete="name" autofocus>
+                                        <input id="name" type="text"
+                                            class="form-control @error('name') is-invalid @enderror" name="name"
+                                            value="{{ old('name') }}" placeholder="Masukkan nama lengkap Anda"
+                                            required autocomplete="name" autofocus>
                                     </div>
                                     @error('name')
                                         <span class="invalid-feedback" role="alert">
@@ -169,8 +172,10 @@
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-phone text-muted"></i>
                                         </span>
-                                        <input id="phone" type="text" class="form-control @error('phone') is-invalid @enderror"
-                                            name="phone" value="{{ old('phone') }}" placeholder="Masukkan nomor telepon Anda" required autocomplete="phone">
+                                        <input id="phone" type="text"
+                                            class="form-control @error('phone') is-invalid @enderror" name="phone"
+                                            value="{{ old('phone') }}" placeholder="Masukkan nomor telepon Anda"
+                                            required autocomplete="phone">
                                     </div>
                                     @error('phone')
                                         <span class="invalid-feedback" role="alert">
@@ -187,8 +192,10 @@
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-envelope text-muted"></i>
                                         </span>
-                                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
-                                            name="email" value="{{ old('email') }}" placeholder="Masukkan email Anda" required autocomplete="email">
+                                        <input id="email" type="email"
+                                            class="form-control @error('email') is-invalid @enderror" name="email"
+                                            value="{{ old('email') }}" placeholder="Masukkan email Anda" required
+                                            autocomplete="email">
                                     </div>
                                     @error('email')
                                         <span class="invalid-feedback" role="alert">
@@ -204,12 +211,15 @@
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
-                                        <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
-                                            name="password" placeholder="Buat kata sandi" required autocomplete="new-password">
+                                        <input id="password" type="password"
+                                            class="form-control @error('password') is-invalid @enderror" name="password"
+                                            placeholder="Buat kata sandi" required autocomplete="new-password">
                                     </div>
                                     <div class="password-requirements mt-2">
-                                        <div><i id="min-char-check" class="fas fa-times-circle text-danger me-1"></i> Minimal 8 karakter</div>
-                                        <div><i id="symbol-check" class="fas fa-times-circle text-danger me-1"></i> Sertakan angka & simbol</div>
+                                        <div><i id="min-char-check" class="fas fa-times-circle text-danger me-1"></i>
+                                            Minimal 8 karakter</div>
+                                        <div><i id="symbol-check" class="fas fa-times-circle text-danger me-1"></i>
+                                            Sertakan angka & simbol</div>
                                     </div>
 
                                     @error('password')
@@ -218,26 +228,28 @@
                                         </span>
                                     @enderror
                                 </div>
-                                
+
 
                                 <!-- Confirm Password -->
                                 <div class="mb-4">
-                                    <label for="password-confirm" class="form-label fw-semibold">Konfirmasi Kata Sandi</label>
+                                    <label for="password-confirm" class="form-label fw-semibold">Konfirmasi Kata
+                                        Sandi</label>
                                     <div class="input-group">
                                         <span class="input-group-text border-0 bg-light">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
                                         <input id="password-confirm" type="password" class="form-control"
-                                            name="password_confirmation" placeholder="Konfirmasi kata sandi Anda" required autocomplete="new-password">
+                                            name="password_confirmation" placeholder="Konfirmasi kata sandi Anda"
+                                            required autocomplete="new-password">
                                     </div>
                                 </div>
                                 <script>
-                                    document.addEventListener("DOMContentLoaded", function () {
+                                    document.addEventListener("DOMContentLoaded", function() {
                                         const passwordInput = document.getElementById("password");
                                         const minCharCheck = document.getElementById("min-char-check");
                                         const symbolCheck = document.getElementById("symbol-check");
 
-                                        passwordInput.addEventListener("input", function () {
+                                        passwordInput.addEventListener("input", function() {
                                             const value = passwordInput.value;
 
                                             // Cek panjang minimal 8 karakter
@@ -273,7 +285,8 @@
                                 <!-- Login Link -->
                                 <p class="text-center mb-0">
                                     Sudah punya akun?
-                                    <a href="{{ route('login') }}" class="text-danger text-decoration-none fw-semibold">Masuk</a>
+                                    <a href="{{ route('login') }}"
+                                        class="text-danger text-decoration-none fw-semibold">Masuk</a>
                                 </p>
                             </form>
                         </div>
@@ -283,7 +296,8 @@
                     <div class="col-lg-5 register-sidebar">
                         <div>
                             <h2 class="h3 fw-bold mb-4">Bergabunglah dengan Komunitas Kami!</h2>
-                            <p class="mb-4 opacity-75">Dapatkan akses ke fitur premium dan bergabunglah dengan komunitas penggemar olahraga kami yang terus berkembang.</p>
+                            <p class="mb-4 opacity-75">Dapatkan akses ke fitur premium dan bergabunglah dengan
+                                komunitas penggemar olahraga kami yang terus berkembang.</p>
 
                             <ul class="benefits-list mb-4">
                                 <li>
@@ -325,4 +339,5 @@
         </div>
     </div>
 </body>
+
 </html>

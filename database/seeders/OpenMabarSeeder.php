@@ -52,8 +52,9 @@ class OpenMabarSeeder extends Seeder
             $startTime = Carbon::parse($booking->start_time);
             $endTime = Carbon::parse($booking->end_time);
 
-            $totalSlots = rand(5, 15);
-            $filledSlots = rand(0, $totalSlots - 1); // Memastikan masih ada slot tersedia
+            $totalSlots = 1;
+            $filledSlots = rand(0, 1); // 0 = belum ada peserta, 1 = sudah ada satu peserta
+
 
             $openMabars[] = [
                 'field_booking_id' => $booking->id,

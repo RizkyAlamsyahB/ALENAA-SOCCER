@@ -6,6 +6,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+
     <!-- Hero Section -->
     <div class="hero-section" style="margin-top: 50px;">
         <div class="container">
@@ -468,18 +469,6 @@
 </div>
 
     <style>
-        /* Base Styles */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
-        }
-
-        .container {
-            max-width: 1200px;
-            padding: 0 1.5rem;
-            margin: 0 auto;
-        }
 
       /* Hero Section */
       .hero-section {

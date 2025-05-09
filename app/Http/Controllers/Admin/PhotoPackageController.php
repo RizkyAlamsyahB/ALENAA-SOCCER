@@ -7,6 +7,7 @@ use App\Models\Field;
 use App\Models\Photographer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
@@ -192,22 +193,45 @@ class PhotoPackageController extends Controller
         return redirect()->route('admin.photo-packages.index')->with('success', 'Paket fotografer berhasil diperbarui');
     }
     /**
-     * Menghapus paket fotografer
+     * Menghapus paket fotografer (soft delete)
      */
     public function destroy($id)
     {
         try {
             $photographer = Photographer::findOrFail($id);
 
+            // Cek apakah fotografer memiliki booking aktif
+            $activeBookings = $photographer->bookings()->where('status', '!=', 'cancelled')->where('end_time', '>', now())->exists();
+            if ($activeBookings) {
+                return redirect()->route('admin.photo-packages.index')->with('error', 'Tidak dapat menghapus paket fotografer karena masih ada booking aktif terkait.');
+            }
+
+            // Cek apakah fotografer digunakan dalam membership aktif
+            $activeInMembership = $photographer
+                ->memberships()
+                ->whereHas('subscriptions', function ($query) {
+                    $query->where('status', 'active')->where('end_date', '>', now());
+                })
+                ->exists();
+
+            if ($activeInMembership) {
+                return redirect()->route('admin.photo-packages.index')->with('error', 'Tidak dapat menghapus paket fotografer karena masih digunakan dalam paket membership aktif.');
+            }
+
             // Hapus gambar jika ada
             if ($photographer->image && Storage::exists('public/' . $photographer->image)) {
                 Storage::delete('public/' . $photographer->image);
             }
 
+            // Soft delete
             $photographer->delete();
+
             return redirect()->route('admin.photo-packages.index')->with('success', 'Paket fotografer berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->route('admin.photo-packages.index')->with('error', 'Tidak dapat menghapus paket fotografer');
+            Log::error('Error deleting photographer package: ' . $e->getMessage());
+            return redirect()
+                ->route('admin.photo-packages.index')
+                ->with('error', 'Tidak dapat menghapus paket fotografer: ' . $e->getMessage());
         }
     }
 }

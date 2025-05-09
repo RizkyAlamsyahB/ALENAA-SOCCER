@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Owner;
 
+use Carbon\Carbon;
+use App\Models\Payment;
 use App\Models\PointVoucher;
 use Illuminate\Http\Request;
+use App\Models\PointRedemption;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Yajra\DataTables\Facades\DataTables;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\Facades\DataTables;
 
 class PointVoucherController extends Controller
 {
@@ -198,11 +200,26 @@ class PointVoucherController extends Controller
             ->with('success', "Voucher poin berhasil $status");
     }
 
-    /**
-     * Menghapus voucher poin
-     */
     public function destroy(PointVoucher $pointVoucher)
     {
+        // Cek apakah voucher poin sedang digunakan dalam transaksi pending
+        $isInUse = PointRedemption::where('point_voucher_id', $pointVoucher->id)
+                         ->where('status', 'active')
+                         ->exists();
+
+        // Atau cek di tabel Payment jika ada referensi ke point_voucher_id
+        $isUsedInPayment = Payment::where('point_redemption_id', function($query) use ($pointVoucher) {
+                              $query->select('id')
+                                    ->from('point_redemptions')
+                                    ->where('point_voucher_id', $pointVoucher->id);
+                          })
+                          ->where('transaction_status', 'pending')
+                          ->exists();
+
+        if ($isInUse || $isUsedInPayment) {
+            return redirect()->route('owner.point_vouchers.index')->with('error', 'Tidak dapat menghapus voucher poin. Voucher sedang digunakan dalam transaksi aktif.');
+        }
+
         try {
             $pointVoucher->delete();
             return redirect()->route('owner.point_vouchers.index')->with('success', 'Voucher poin berhasil dihapus');
