@@ -23,9 +23,9 @@ class DatabaseSeeder extends Seeder
             MembershipSeeder::class,       // 6. Keanggotaan (membutuhkan Field)
             PointVoucherSeeder::class,     // 7. Voucher Poin
             ProductSeeder::class,          // 11. Produk (membutuhkan User)
-            OpenMabarSeeder::class,        // 8. Data Mabar (membutuhkan User dan Field)
-            PaymentSeeder::class,          // 9. Pembayaran (membutuhkan User, Discount, PointVoucher)
-            TransactionSeeder::class,      // 10. Transaksi (membutuhkan User, Product, Payment)
-            ReviewSeeder::class,           // 12. Review (membutuhkan User, Payment, Field, RentalItem, Photographer)
+            // OpenMabarSeeder::class,        // 8. Data Mabar (membutuhkan User dan Field)
+            // PaymentSeeder::class,          // 9. Pembayaran (membutuhkan User, Discount, PointVoucher)
+            // TransactionSeeder::class,      // 10. Transaksi (membutuhkan User, Product, Payment)
+            // ReviewSeeder::class,           // 12. Review (membutuhkan User, Payment, Field, RentalItem, Photographer)
         ]);    }
 }
