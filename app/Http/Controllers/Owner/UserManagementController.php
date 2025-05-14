@@ -20,59 +20,42 @@ class UserManagementController extends Controller
     /**
      * Menampilkan daftar pengguna dengan server-side processing
      */
-    public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $users = User::select('*');
+public function index(Request $request)
+{
+    if ($request->ajax()) {
+        // Ambil semua user kecuali yang memiliki role 'user'
+        $users = User::where('role', '!=', 'user')->select('*');
 
-            return DataTables::of($users)
-                ->addColumn('action', function ($user) {
-                    return '<div class="d-flex gap-1">
-                            <a href="' .
-                        route('owner.users.show', $user->id) .
-                        '" class="btn btn-sm btn-info">Detail</a>
-                            <a href="' .
-                        route('owner.users.edit', $user->id) .
-                        '" class="btn btn-sm btn-warning">Edit</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
-                        $user->id .
-                        '" data-name="' .
-                        $user->name .
-                        '">Hapus</button>
-                        </div>';
-                })
-                ->editColumn('role', function ($user) {
-                    $badgeClass = '';
-                    switch ($user->role) {
-                        case 'owner':
-                            $badgeClass = 'bg-primary';
-                            break;
-                        case 'admin':
-                            $badgeClass = 'bg-success';
-                            break;
-                        case 'photographer':
-                            $badgeClass = 'bg-info';
-                            break;
-                        default:
-                            $badgeClass = 'bg-secondary';
-                    }
-                    return '<span class="badge ' . $badgeClass . '">' . ucfirst($user->role) . '</span>';
-                })
-                ->editColumn('created_at', function ($user) {
-                    return $user->created_at->format('d M Y H:i');
-                })
-                ->editColumn('profile_picture', function ($user) {
-                    if ($user->profile_picture) {
-                        return '<img src="' . asset('storage/' . $user->profile_picture) . '" alt="Profile" class="img-thumbnail" width="50">';
-                    }
-                    return '<span class="badge bg-secondary">No Image</span>';
-                })
-                ->rawColumns(['action', 'role', 'profile_picture'])
-                ->make(true);
-        }
-
-        return view('owner.users.index');
+        return DataTables::of($users)
+            ->addColumn('action', function ($user) {
+                return '<div class="d-flex gap-1">
+                        <a href="' . route('owner.users.show', $user->id) . '" class="btn btn-sm btn-info">Detail</a>
+                        <a href="' . route('owner.users.edit', $user->id) . '" class="btn btn-sm btn-warning">Edit</a>
+                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' . $user->id . '" data-name="' . $user->name . '">Hapus</button>
+                    </div>';
+            })
+            ->editColumn('role', function ($user) {
+                $badgeClass = match ($user->role) {
+                    'owner' => 'bg-primary',
+                    'admin' => 'bg-success',
+                    'photographer' => 'bg-info',
+                    default => 'bg-secondary',
+                };
+                return '<span class="badge ' . $badgeClass . '">' . ucfirst($user->role) . '</span>';
+            })
+            ->editColumn('created_at', fn($user) => $user->created_at->format('d M Y H:i'))
+            ->editColumn('profile_picture', function ($user) {
+                return $user->profile_picture
+                    ? '<img src="' . asset('storage/' . $user->profile_picture) . '" alt="Profile" class="img-thumbnail" width="50">'
+                    : '<span class="badge bg-secondary">No Image</span>';
+            })
+            ->rawColumns(['action', 'role', 'profile_picture'])
+            ->make(true);
     }
+
+    return view('owner.users.index');
+}
+
 
     /**
      * Menampilkan form tambah pengguna

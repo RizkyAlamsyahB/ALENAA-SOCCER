@@ -15,13 +15,14 @@
 
 
     <link rel="stylesheet" crossorigin href="{{ asset('assets/compiled/css/app.css') }}">
-    <link rel="stylesheet" crossorigin href="{{ asset('assets/compiled/css/app-dark.css') }}">
+        <link rel="stylesheet" crossorigin href="{{ asset('assets/compiled/css/app-dark.css') }}">
+
     <link rel="stylesheet" crossorigin href="{{ asset('assets/compiled/css/iconly.css') }}">
 
 </head>
 
 <body>
-    <script src="{{ asset('assets/static/js/initTheme.js') }}"></script>
+        <script src={{asset('assets/static/js/initTheme.js')}}></script>
     <div id="app">
        @include('layouts.partials.sidebar')
 
@@ -56,14 +57,12 @@
             </footer>
         </div>
     </div>
-    <script src="{{ asset('assets/static/js/components/dark.js') }}"></script>
     <script src="{{ asset('assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
+    <script src="{{ asset('assets/static/js/components/dark.js') }}"></script>
 
     <script src="{{ asset('assets/compiled/js/app.js') }}"></script>
 
-    <!-- Need: Apexcharts -->
-    {{-- <script src="{{ asset('assets/extensions/apexcharts/apexcharts.min.js') }}"></script>
-    <script src="{{ asset('assets/static/js/pages/dashboard.js') }}"></script> --}}
+
 
     <script src="{{ asset('assets/extensions/simple-datatables/umd/simple-datatables.js') }}"></script>
 
