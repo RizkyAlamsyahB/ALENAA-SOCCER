@@ -54,8 +54,9 @@
             <div class="card-body p-4">
                 <ul class="nav nav-tabs custom-tabs mb-4" id="pointsTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="transactions-tab" data-bs-toggle="tab" data-bs-target="#transactions"
-                            type="button" role="tab" aria-controls="transactions" aria-selected="true">
+                        <button class="nav-link active" id="transactions-tab" data-bs-toggle="tab"
+                            data-bs-target="#transactions" type="button" role="tab" aria-controls="transactions"
+                            aria-selected="true">
                             <i class="fas fa-exchange-alt me-2"></i>Transaksi Poin
                         </button>
                     </li>
@@ -69,8 +70,9 @@
 
                 <div class="tab-content" id="pointsTabContent">
                     <!-- Transactions Tab -->
-                    <div class="tab-pane fade show active" id="transactions" role="tabpanel" aria-labelledby="transactions-tab">
-                        @if($transactions->count() > 0)
+                    <div class="tab-pane fade show active" id="transactions" role="tabpanel"
+                        aria-labelledby="transactions-tab">
+                        @if ($transactions->count() > 0)
                             <div class="table-responsive">
                                 <table class="table table-hover custom-table">
                                     <thead>
@@ -82,34 +84,41 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($transactions as $transaction)
+                                        @foreach ($transactions as $transaction)
                                             <tr>
-                                                <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('d M Y H:i') }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('d M Y H:i') }}
+                                                </td>
                                                 <td>{{ $transaction->description }}</td>
                                                 <td>
-                                                    @if($transaction->type == 'earn')
-                                                        <span class="badge rounded-pill bg-success bg-opacity-10 text-white p-2">
+                                                    @if ($transaction->type == 'earn')
+                                                        <span
+                                                            class="badge rounded-pill bg-success bg-opacity-10 text-white p-2">
                                                             <i class="fas fa-plus-circle me-1"></i>Earn
                                                         </span>
                                                     @elseif($transaction->type == 'redeem')
-                                                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-white p-2">
+                                                        <span
+                                                            class="badge rounded-pill bg-primary bg-opacity-10 text-white p-2">
                                                             <i class="fas fa-minus-circle me-1"></i>Redeem
                                                         </span>
                                                     @elseif($transaction->type == 'expired')
-                                                        <span class="badge rounded-pill bg-danger bg-opacity-10 text-white p-2">
+                                                        <span
+                                                            class="badge rounded-pill bg-danger bg-opacity-10 text-white p-2">
                                                             <i class="fas fa-times-circle me-1"></i>Expired
                                                         </span>
                                                     @elseif($transaction->type == 'admin')
-                                                        <span class="badge rounded-pill bg-info bg-opacity-10 text-info p-2">
+                                                        <span
+                                                            class="badge rounded-pill bg-info bg-opacity-10 text-info p-2">
                                                             <i class="fas fa-user-shield me-1"></i>Admin
                                                         </span>
                                                     @else
-                                                        <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary p-2">
+                                                        <span
+                                                            class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary p-2">
                                                             <i class="fas fa-circle me-1"></i>{{ $transaction->type }}
                                                         </span>
                                                     @endif
                                                 </td>
-                                                <td class="text-end fw-bold {{ $transaction->amount > 0 ? 'text-success' : 'text-danger' }}">
+                                                <td
+                                                    class="text-end fw-bold {{ $transaction->amount > 0 ? 'text-success' : 'text-danger' }}">
                                                     {{ $transaction->amount > 0 ? '+' : '' }}{{ number_format($transaction->amount) }}
                                                 </td>
                                             </tr>
@@ -137,7 +146,7 @@
 
                     <!-- Redemptions Tab -->
                     <div class="tab-pane fade" id="redemptions" role="tabpanel" aria-labelledby="redemptions-tab">
-                        @if($redemptions->count() > 0)
+                        @if ($redemptions->count() > 0)
                             <div class="table-responsive">
                                 <table class="table table-hover custom-table">
                                     <thead>
@@ -151,40 +160,47 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($redemptions as $redemption)
+                                        @foreach ($redemptions as $redemption)
                                             <tr>
-                                                <td>{{ \Carbon\Carbon::parse($redemption->created_at)->format('d M Y H:i') }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($redemption->created_at)->format('d M Y H:i') }}
+                                                </td>
                                                 <td>{{ $redemption->pointVoucher->name }}</td>
                                                 <td><code class="voucher-code">{{ $redemption->discount_code }}</code></td>
                                                 <td>
-                                                    @if($redemption->status == 'active')
-                                                        @if($redemption->expires_at && \Carbon\Carbon::parse($redemption->expires_at)->isPast())
-                                                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger p-2">
+                                                    @if ($redemption->status == 'active')
+                                                        @if ($redemption->expires_at && \Carbon\Carbon::parse($redemption->expires_at)->isPast())
+                                                            <span
+                                                                class="badge rounded-pill bg-danger bg-opacity-10 text-danger p-2">
                                                                 <i class="fas fa-calendar-times me-1"></i>Kadaluarsa
                                                             </span>
                                                         @else
-                                                            <span class="badge rounded-pill bg-success bg-opacity-10 text-white p-2">
+                                                            <span
+                                                                class="badge rounded-pill bg-success bg-opacity-10 text-white p-2">
                                                                 <i class="fas fa-check-circle me-1"></i>Aktif
                                                             </span>
                                                         @endif
                                                     @elseif($redemption->status == 'used')
-                                                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-white p-2">
+                                                        <span
+                                                            class="badge rounded-pill bg-primary bg-opacity-10 text-white p-2">
                                                             <i class="fas fa-check-double me-1"></i>Digunakan
                                                         </span>
                                                     @elseif($redemption->status == 'expired')
-                                                        <span class="badge rounded-pill bg-danger bg-opacity-10 text-white p-2">
+                                                        <span
+                                                            class="badge rounded-pill bg-danger bg-opacity-10 text-white p-2">
                                                             <i class="fas fa-calendar-times me-1"></i>Kadaluarsa
                                                         </span>
                                                     @elseif($redemption->status == 'cancelled')
-                                                        <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary p-2">
+                                                        <span
+                                                            class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary p-2">
                                                             <i class="fas fa-ban me-1"></i>Dibatalkan
                                                         </span>
                                                     @endif
                                                 </td>
-                                                <td class="text-end text-danger">-{{ number_format($redemption->points_used) }}</td>
+                                                <td class="text-end text-danger">
+                                                    -{{ number_format($redemption->points_used) }}</td>
                                                 <td class="text-end">
                                                     <a href="{{ route('user.points.redemption-detail', $redemption->id) }}"
-                                                       class="btn btn-outline-primary btn-sm rounded-pill">
+                                                        class="btn btn-outline-primary btn-sm rounded-pill">
                                                         <i class="fas fa-eye me-1"></i>Detail
                                                     </a>
                                                 </td>
@@ -214,13 +230,11 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
+
     <style>
         /* Hero Section */
         .hero-section {
-    background: linear-gradient(to right, #9e0620, #bb2d3b);
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
             height: 220px;
             position: relative;
             display: flex;
@@ -362,7 +376,8 @@
             border-color: #9E0620;
         }
 
-        .btn-primary:hover, .btn-primary:focus {
+        .btn-primary:hover,
+        .btn-primary:focus {
             background-color: #850519;
             border-color: #850519;
         }
@@ -372,7 +387,8 @@
             border-color: #9E0620;
         }
 
-        .btn-outline-primary:hover, .btn-outline-primary:focus {
+        .btn-outline-primary:hover,
+        .btn-outline-primary:focus {
             background-color: #9E0620;
             border-color: #9E0620;
             color: white;
@@ -425,4 +441,8 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
 @endsection

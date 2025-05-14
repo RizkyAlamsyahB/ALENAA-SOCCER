@@ -59,10 +59,6 @@
                             <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
                             <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
 
-                                <span class="badge text-white" style="background-color: #9E0620;">
-                                    <i class="fas fa-crown me-1"></i> Premium Member
-                                </span>
-
                                 @if (Auth::user()->email_verified_at)
                                     <span class="badge bg-success">
                                         <i class="fas fa-check-circle me-1"></i> Verified
@@ -238,29 +234,7 @@
                             </div>
                         </div>
 
-                        <!-- Delete Account Section -->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="card-title mb-0">Delete Account</h5>
-                                    <span class="text-muted">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>Permanent Action
-                                    </span>
-                                </div>
-                                <p class="text-muted mb-4">Once your account is deleted, all of its resources and data will
-                                    be permanently deleted. Before deleting your account, please download any data or
-                                    information that you wish to retain.</p>
-                                <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-                                    @csrf
-                                    @method('delete')
 
-                                    <button type="submit" class="btn text-white" style="background-color: #9E0620;"
-                                        onclick="return confirm('Are you sure you want to delete your account?')">
-                                        Delete Account
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
                     </div>
                     @push('scripts')
                         <script>

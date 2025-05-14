@@ -78,59 +78,64 @@
                 </div>
             </div>
 
-<!-- Package Grid -->
-<div class="row g-4">
-    @if($photographers->isEmpty())
-        <div class="row">
-            <div class="col-12 text-center py-5">
-                <div class="empty-state">
-                    <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-                    <h4>Tidak Ada Paket Fotografer Ditemukan</h4>
-                    <p class="text-muted">Maaf, tidak ada paket fotografer yang sesuai dengan kriteria pencarian Anda.</p>
-                    <a href="{{ route('user.photographer.index') }}" class="btn btn-outline-danger rounded-pill mt-3">
-                        <i class="fas fa-sync-alt me-2"></i> Reset Filter
-                    </a>
-                </div>
-            </div>
-        </div>
-    @else
-        <!-- Loop berdasarkan jenis paket -->
-        @foreach(['exclusive', 'favorite', 'plus'] as $packageType)
-            <div class="mt-5 mb-4">
-                <h3 class="section-title">Paket {{ ucfirst($packageType) }}</h3>
-            </div>
-
+            <!-- Package Grid -->
             <div class="row g-4">
-                @forelse($photographersByType->get($packageType, collect()) as $photographer)
-                    <!-- Photographer Card -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card photographer-card border-0 shadow-sm rounded-4 h-100">
-                            <!-- Card content -->
-                            <div class="card-body p-3">
-                                <h5 class="card-title mb-2">{{ $photographer->name }}</h5>
-                                <p class="card-text mb-2">
-                                    <i class="fas fa-map-marker-alt text-danger"></i>
-                                    <span>Lapangan: {{ $photographer->assigned_field }}</span>
-                                </p>
-                                <!-- Harga dan Detail -->
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <div class="price-info">
-                                        <span class="h5 mb-0 text-danger">Rp{{ number_format($photographer->price, 0, ',', '.') }}</span>
-                                    </div>
-                                    <a href="{{ route('user.photographer.show', $photographer->id) }}" class="btn btn-outline-danger rounded-pill">Detail</a>
-                                </div>
+                @if ($photographers->isEmpty())
+                    <div class="row">
+                        <div class="col-12 text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                                <h4>Tidak Ada Paket Fotografer Ditemukan</h4>
+                                <p class="text-muted">Maaf, tidak ada paket fotografer yang sesuai dengan kriteria pencarian
+                                    Anda.</p>
+                                <a href="{{ route('user.photographer.index') }}"
+                                    class="btn btn-outline-danger rounded-pill mt-3">
+                                    <i class="fas fa-sync-alt me-2"></i> Reset Filter
+                                </a>
                             </div>
                         </div>
                     </div>
-                @empty
-                    <div class="col-12">
-                        <div class="alert alert-info">Tidak ada paket {{ ucfirst($packageType) }} tersedia.</div>
-                    </div>
-                @endforelse
+                @else
+                    <!-- Loop berdasarkan jenis paket -->
+                    @foreach (['exclusive', 'favorite', 'plus'] as $packageType)
+                        <div class="mt-5 mb-4">
+                            <h3 class="section-title">Paket {{ ucfirst($packageType) }}</h3>
+                        </div>
+
+                        <div class="row g-4">
+                            @forelse($photographersByType->get($packageType, collect()) as $photographer)
+                                <!-- Photographer Card -->
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card photographer-card border-0 shadow-sm rounded-4 h-100">
+                                        <!-- Card content -->
+                                        <div class="card-body p-3">
+                                            <h5 class="card-title mb-2">{{ $photographer->name }}</h5>
+                                            <p class="card-text mb-2">
+                                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                                <span>Lapangan: {{ $photographer->assigned_field }}</span>
+                                            </p>
+                                            <!-- Harga dan Detail -->
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <div class="price-info">
+                                                    <span
+                                                        class="h5 mb-0 text-danger">Rp{{ number_format($photographer->price, 0, ',', '.') }}</span>
+                                                </div>
+                                                <a href="{{ route('user.photographer.show', $photographer->id) }}"
+                                                    class="btn btn-outline-danger rounded-pill">Detail</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-12">
+                                    <div class="alert alert-info">Tidak ada paket {{ ucfirst($packageType) }} tersedia.
+                                    </div>
+                                </div>
+                            @endforelse
+                        </div>
+                    @endforeach
+                @endif
             </div>
-        @endforeach
-    @endif
-</div>
 
             <!-- Pagination -->
 

@@ -42,18 +42,20 @@
                             <h4 class="mb-0 fw-bold">Detail Voucher</h4>
 
                             <!-- Status Badge -->
-                            @if($redemption->status === 'used')
-                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success p-2">
-                                <i class="fas fa-check-double me-1"></i>Digunakan
-                            </span>
-                            @elseif($redemption->status === 'expired' || ($redemption->expires_at && \Carbon\Carbon::parse($redemption->expires_at)->isPast()))
-                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger p-2">
-                                <i class="fas fa-calendar-times me-1"></i>Kadaluarsa
-                            </span>
+                            @if ($redemption->status === 'used')
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success p-2">
+                                    <i class="fas fa-check-double me-1"></i>Digunakan
+                                </span>
+                            @elseif(
+                                $redemption->status === 'expired' ||
+                                    ($redemption->expires_at && \Carbon\Carbon::parse($redemption->expires_at)->isPast()))
+                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger p-2">
+                                    <i class="fas fa-calendar-times me-1"></i>Kadaluarsa
+                                </span>
                             @else
-                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success p-2">
-                                <i class="fas fa-check-circle me-1"></i>Aktif
-                            </span>
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success p-2">
+                                    <i class="fas fa-check-circle me-1"></i>Aktif
+                                </span>
                             @endif
                         </div>
                     </div>
@@ -69,10 +71,10 @@
 
                             <div class="d-flex justify-content-center mb-3">
                                 <div class="discount-badge">
-                                    @if($redemption->pointVoucher->discount_type === 'percentage')
-                                    {{ $redemption->pointVoucher->discount_value }}% OFF
+                                    @if ($redemption->pointVoucher->discount_type === 'percentage')
+                                        {{ $redemption->pointVoucher->discount_value }}% OFF
                                     @else
-                                    Rp {{ number_format($redemption->pointVoucher->discount_value) }} OFF
+                                        Rp {{ number_format($redemption->pointVoucher->discount_value) }} OFF
                                     @endif
                                 </div>
                             </div>
@@ -101,39 +103,46 @@
                                     <tbody>
                                         <tr>
                                             <td style="width: 40%;" class="text-muted">Tanggal Penukaran</td>
-                                            <td class="fw-medium">{{ \Carbon\Carbon::parse($redemption->created_at)->format('d M Y H:i') }}</td>
+                                            <td class="fw-medium">
+                                                {{ \Carbon\Carbon::parse($redemption->created_at)->format('d M Y H:i') }}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="text-muted">Poin Digunakan</td>
                                             <td class="fw-medium">
-                                                <span class="text-danger">-{{ number_format($redemption->points_used) }}</span> poin
+                                                <span
+                                                    class="text-danger">-{{ number_format($redemption->points_used) }}</span>
+                                                poin
                                             </td>
                                         </tr>
                                         <tr>
                                             <td class="text-muted">Masa Berlaku</td>
                                             <td class="fw-medium">
-                                                @if($redemption->expires_at)
-                                                {{ \Carbon\Carbon::parse($redemption->expires_at)->format('d M Y H:i') }}
+                                                @if ($redemption->expires_at)
+                                                    {{ \Carbon\Carbon::parse($redemption->expires_at)->format('d M Y H:i') }}
                                                 @else
-                                                Tidak ada batas waktu
+                                                    Tidak ada batas waktu
                                                 @endif
                                             </td>
                                         </tr>
-                                        @if($redemption->used_at)
-                                        <tr>
-                                            <td class="text-muted">Digunakan Pada</td>
-                                            <td class="fw-medium">{{ \Carbon\Carbon::parse($redemption->used_at)->format('d M Y H:i') }}</td>
-                                        </tr>
+                                        @if ($redemption->used_at)
+                                            <tr>
+                                                <td class="text-muted">Digunakan Pada</td>
+                                                <td class="fw-medium">
+                                                    {{ \Carbon\Carbon::parse($redemption->used_at)->format('d M Y H:i') }}
+                                                </td>
+                                            </tr>
                                         @endif
-                                        @if($redemption->payment_id)
-                                        <tr>
-                                            <td class="text-muted">Order ID</td>
-                                            <td class="fw-medium">
-                                                <a href="{{ route('user.payment.detail', $redemption->payment_id) }}" class="text-primary">
-                                                    {{ $redemption->payment->order_id }}
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        @if ($redemption->payment_id)
+                                            <tr>
+                                                <td class="text-muted">Order ID</td>
+                                                <td class="fw-medium">
+                                                    <a href="{{ route('user.payment.detail', $redemption->payment_id) }}"
+                                                        class="text-primary">
+                                                        {{ $redemption->payment->order_id }}
+                                                    </a>
+                                                </td>
+                                            </tr>
                                         @endif
                                     </tbody>
                                 </table>
@@ -146,37 +155,38 @@
                                 <i class="fas fa-list-ul me-2"></i>Syarat dan Ketentuan
                             </h5>
                             <ul class="terms-list">
-                                @if($redemption->pointVoucher->min_order > 0)
-                                <li class="mb-2">
-                                    <i class="fas fa-check me-2 text-success"></i>
-                                    Minimum pembelian Rp {{ number_format($redemption->pointVoucher->min_order) }}
-                                </li>
+                                @if ($redemption->pointVoucher->min_order > 0)
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2 text-success"></i>
+                                        Minimum pembelian Rp {{ number_format($redemption->pointVoucher->min_order) }}
+                                    </li>
                                 @endif
 
-                                @if($redemption->pointVoucher->max_discount)
-                                <li class="mb-2">
-                                    <i class="fas fa-check me-2 text-success"></i>
-                                    Maksimum diskon Rp {{ number_format($redemption->pointVoucher->max_discount) }}
-                                </li>
+                                @if ($redemption->pointVoucher->max_discount)
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2 text-success"></i>
+                                        Maksimum diskon Rp {{ number_format($redemption->pointVoucher->max_discount) }}
+                                    </li>
                                 @endif
 
-                                @if($redemption->pointVoucher->applicable_to !== 'all')
-                                <li class="mb-2">
-                                    <i class="fas fa-check me-2 text-success"></i>
-                                    Hanya berlaku untuk
-                                    @if($redemption->pointVoucher->applicable_to === 'field_booking')
-                                    booking lapangan
-                                    @elseif($redemption->pointVoucher->applicable_to === 'rental_item')
-                                    sewa peralatan
-                                    @else
-                                    {{ $redemption->pointVoucher->applicable_to }}
-                                    @endif
-                                </li>
+                                @if ($redemption->pointVoucher->applicable_to !== 'all')
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2 text-success"></i>
+                                        Hanya berlaku untuk
+                                        @if ($redemption->pointVoucher->applicable_to === 'field_booking')
+                                            booking lapangan
+                                        @elseif($redemption->pointVoucher->applicable_to === 'rental_item')
+                                            sewa peralatan
+                                        @else
+                                            {{ $redemption->pointVoucher->applicable_to }}
+                                        @endif
+                                    </li>
                                 @endif
 
                                 <li class="mb-2">
                                     <i class="fas fa-check me-2 text-success"></i>
-                                    Voucher berlaku {{ $redemption->expires_at ? 'hingga ' . \Carbon\Carbon::parse($redemption->expires_at)->format('d M Y') : 'tanpa batas waktu' }}
+                                    Voucher berlaku
+                                    {{ $redemption->expires_at ? 'hingga ' . \Carbon\Carbon::parse($redemption->expires_at)->format('d M Y') : 'tanpa batas waktu' }}
                                 </li>
                                 <li class="mb-2">
                                     <i class="fas fa-check me-2 text-success"></i>
@@ -192,18 +202,20 @@
 
                     <div class="card-footer bg-white border-top-0 pt-0 pb-4 px-4">
                         <div class="d-grid">
-                            @if($redemption->status === 'active' && (!$redemption->expires_at || !\Carbon\Carbon::parse($redemption->expires_at)->isPast()))
-                            <a href="{{ route('user.fields.index') }}" class="btn btn-primary rounded-pill">
-                                <i class="fas fa-shopping-cart me-2"></i>Gunakan Sekarang
-                            </a>
+                            @if (
+                                $redemption->status === 'active' &&
+                                    (!$redemption->expires_at || !\Carbon\Carbon::parse($redemption->expires_at)->isPast()))
+                                <a href="{{ route('user.fields.index') }}" class="btn btn-primary rounded-pill">
+                                    <i class="fas fa-shopping-cart me-2"></i>Gunakan Sekarang
+                                </a>
                             @elseif($redemption->status === 'used')
-                            <button class="btn btn-secondary rounded-pill" disabled>
-                                <i class="fas fa-ban me-2"></i>Voucher Sudah Digunakan
-                            </button>
+                                <button class="btn btn-secondary rounded-pill" disabled>
+                                    <i class="fas fa-ban me-2"></i>Voucher Sudah Digunakan
+                                </button>
                             @else
-                            <button class="btn btn-secondary rounded-pill" disabled>
-                                <i class="fas fa-ban me-2"></i>Voucher Sudah Tidak Berlaku
-                            </button>
+                                <button class="btn btn-secondary rounded-pill" disabled>
+                                    <i class="fas fa-ban me-2"></i>Voucher Sudah Tidak Berlaku
+                                </button>
                             @endif
                         </div>
                     </div>
@@ -211,13 +223,11 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
+
     <style>
         /* Hero Section */
         .hero-section {
-    background: linear-gradient(to right, #9e0620, #bb2d3b);
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
             height: 220px;
             position: relative;
             display: flex;
@@ -400,7 +410,8 @@
             border-color: #9E0620;
         }
 
-        .btn-primary:hover, .btn-primary:focus {
+        .btn-primary:hover,
+        .btn-primary:focus {
             background-color: #850519;
             border-color: #850519;
         }
@@ -410,7 +421,8 @@
             border-color: #9E0620;
         }
 
-        .btn-outline-primary:hover, .btn-outline-primary:focus {
+        .btn-outline-primary:hover,
+        .btn-outline-primary:focus {
             background-color: #9E0620;
             border-color: #9E0620;
             color: white;
@@ -477,4 +489,8 @@
             });
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
 @endsection

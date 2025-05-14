@@ -35,42 +35,14 @@
     <!-- Main Content -->
     <div class="container mt-3">
 
-<!-- Gallery Section -->
-<div class="row g-3 mb-5 d-none d-lg-flex mt-3">
-    <!-- Main Image -->
-    <div class="col-lg-8">
-        <div class="gallery-card main-gallery">
-            <div class="gallery-img">
-                @if ($field->image)
-                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
-                @else
-                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                        class="img-fluid w-100" alt="{{ $field->name }}">
-                @endif
-                <div class="gallery-overlay">
-                    <button class="view-btn">
-                        <i class="fas fa-expand-alt"></i>
-                        View Full Image
-                    </button>
-                </div>
-            </div>
-            <div class="status-badge">
-                <span class="badge-content">
-                    <i class="fas fa-check-circle me-1"></i>
-                    Available Now
-                </span>
-            </div>
-        </div>
-    </div>
-    <!-- Side Images -->
-    <div class="col-lg-4">
-        <div class="row g-3">
-            <div class="col-12">
-                <div class="gallery-card">
+        <!-- Gallery Section -->
+        <div class="row g-3 mb-5 d-none d-lg-flex mt-3">
+            <!-- Main Image -->
+            <div class="col-lg-8">
+                <div class="gallery-card main-gallery">
                     <div class="gallery-img">
                         @if ($field->image)
-                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
-                                alt="{{ $field->name }}">
+                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
                         @else
                             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
                                 class="img-fluid w-100" alt="{{ $field->name }}">
@@ -82,123 +54,151 @@
                             </button>
                         </div>
                     </div>
+                    <div class="status-badge">
+                        <span class="badge-content">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Available Now
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div class="col-12">
-                <div class="gallery-card">
-                    <div class="gallery-img">
-                        @if ($field->image)
-                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
-                                alt="{{ $field->name }}">
-                        @else
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="img-fluid w-100" alt="{{ $field->name }}">
-                        @endif
-                        <div class="gallery-overlay">
-                            <button class="view-btn">
-                                <i class="fas fa-expand-alt"></i>
-                                View Full Image
-                            </button>
+            <!-- Side Images -->
+            <div class="col-lg-4">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="gallery-card">
+                            <div class="gallery-img">
+                                @if ($field->image)
+                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
+                                @else
+                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                        class="img-fluid w-100" alt="{{ $field->name }}">
+                                @endif
+                                <div class="gallery-overlay">
+                                    <button class="view-btn">
+                                        <i class="fas fa-expand-alt"></i>
+                                        View Full Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="gallery-card">
+                            <div class="gallery-img">
+                                @if ($field->image)
+                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
+                                @else
+                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                        class="img-fluid w-100" alt="{{ $field->name }}">
+                                @endif
+                                <div class="gallery-overlay">
+                                    <button class="view-btn">
+                                        <i class="fas fa-expand-alt"></i>
+                                        View Full Image
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Mobile Gallery Carousel -->
-<div class="mobile-gallery d-lg-none">
-    <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
-        <!-- Carousel Inner -->
-        <div class="carousel-inner rounded-4 overflow-hidden">
-            <div class="carousel-item active">
-                <div class="carousel-img-wrapper">
-                    @if ($field->image)
-                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                            alt="{{ $field->name }}">
-                    @else
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                            class="d-block w-100" alt="{{ $field->name }}">
-                    @endif
-                    <div class="image-overlay"></div>
+        <!-- Mobile Gallery Carousel -->
+        <div class="mobile-gallery d-lg-none">
+            <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+                <!-- Carousel Inner -->
+                <div class="carousel-inner rounded-4 overflow-hidden">
+                    <div class="carousel-item active">
+                        <div class="carousel-img-wrapper">
+                            @if ($field->image)
+                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                                    alt="{{ $field->name }}">
+                            @else
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="d-block w-100" alt="{{ $field->name }}">
+                            @endif
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="carousel-caption">
+                            <span class="caption-badge">
+                                <i class="fas fa-image"></i>
+                                1/3
+                            </span>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-img-wrapper">
+                            @if ($field->image)
+                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                                    alt="{{ $field->name }}">
+                            @else
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="d-block w-100" alt="{{ $field->name }}">
+                            @endif
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="carousel-caption">
+                            <span class="caption-badge">
+                                <i class="fas fa-image"></i>
+                                2/3
+                            </span>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-img-wrapper">
+                            @if ($field->image)
+                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                                    alt="{{ $field->name }}">
+                            @else
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="d-block w-100" alt="{{ $field->name }}">
+                            @endif
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="carousel-caption">
+                            <span class="caption-badge">
+                                <i class="fas fa-image"></i>
+                                3/3
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="carousel-caption">
-                    <span class="caption-badge">
-                        <i class="fas fa-image"></i>
-                        1/3
+
+                <!-- Navigation Buttons -->
+                <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
+                    data-bs-slide="prev">
+                    <span class="control-icon">
+                        <i class="fas fa-chevron-left"></i>
                     </span>
-                </div>
-            </div>
-            <div class="carousel-item">
-                <div class="carousel-img-wrapper">
-                    @if ($field->image)
-                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                            alt="{{ $field->name }}">
-                    @else
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                            class="d-block w-100" alt="{{ $field->name }}">
-                    @endif
-                    <div class="image-overlay"></div>
-                </div>
-                <div class="carousel-caption">
-                    <span class="caption-badge">
-                        <i class="fas fa-image"></i>
-                        2/3
+                </button>
+                <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
+                    data-bs-slide="next">
+                    <span class="control-icon">
+                        <i class="fas fa-chevron-right"></i>
                     </span>
+                </button>
+
+                <!-- Indicators -->
+                <div class="carousel-indicators custom-indicators">
+                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
+                        aria-current="true"></button>
+                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
                 </div>
-            </div>
-            <div class="carousel-item">
-                <div class="carousel-img-wrapper">
-                    @if ($field->image)
-                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                            alt="{{ $field->name }}">
-                    @else
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                            class="d-block w-100" alt="{{ $field->name }}">
-                    @endif
-                    <div class="image-overlay"></div>
-                </div>
-                <div class="carousel-caption">
-                    <span class="caption-badge">
-                        <i class="fas fa-image"></i>
-                        3/3
+
+                <!-- Available Badge -->
+                <div class="available-badge">
+                    <span class="badge-content">
+                        <i class="fas fa-check-circle"></i>
+                        Available Now
                     </span>
                 </div>
             </div>
         </div>
-
-        <!-- Navigation Buttons -->
-        <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
-            data-bs-slide="prev">
-            <span class="control-icon">
-                <i class="fas fa-chevron-left"></i>
-            </span>
-        </button>
-        <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
-            data-bs-slide="next">
-            <span class="control-icon">
-                <i class="fas fa-chevron-right"></i>
-            </span>
-        </button>
-
-        <!-- Indicators -->
-        <div class="carousel-indicators custom-indicators">
-            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
-                aria-current="true"></button>
-            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
-        </div>
-
-        <!-- Available Badge -->
-        <div class="available-badge">
-            <span class="badge-content">
-                <i class="fas fa-check-circle"></i>
-                Available Now
-            </span>
-        </div>
-    </div>
-</div>
         <!-- Main Information -->
         <div class="row">
             <!-- Field Details Container -->
@@ -389,65 +389,65 @@
                             </div>
                         </div>
 
-                            <!-- Photographer Packages Card -->
-                            @if ($photographerPackages->count() > 0)
-                                <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                                    <div class="card-header bg-white py-3 border-0 px-4">
-                                        <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
-                                    </div>
-                                    <div class="card-body p-4">
-                                        <div class="row g-4">
-                                            @foreach ($photographerPackages as $photographer)
-                                                <div class="col-md-4">
-                                                    <div class="photographer-card {{ $photographer->package_type }}">
-                                                        <div class="package-header">
-                                                            <div class="package-info">
-                                                                <div class="package-icon">
-                                                                    <i class="fas fa-camera"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <h5 class="package-title">{{ $photographer->name }}
-                                                                    </h5>
-                                                                    <p class="package-subtitle">
-                                                                        {{ $photographer->duration }} jam</p>
-                                                                </div>
+                        <!-- Photographer Packages Card -->
+                        @if ($photographerPackages->count() > 0)
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                <div class="card-header bg-white py-3 border-0 px-4">
+                                    <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row g-4">
+                                        @foreach ($photographerPackages as $photographer)
+                                            <div class="col-md-4">
+                                                <div class="photographer-card {{ $photographer->package_type }}">
+                                                    <div class="package-header">
+                                                        <div class="package-info">
+                                                            <div class="package-icon">
+                                                                <i class="fas fa-camera"></i>
                                                             </div>
-                                                            <div class="badge {{ $photographer->package_type }}">
-                                                                {{ ucfirst($photographer->package_type) }}
+                                                            <div>
+                                                                <h5 class="package-title">{{ $photographer->name }}
+                                                                </h5>
+                                                                <p class="package-subtitle">
+                                                                    {{ $photographer->duration }} jam</p>
                                                             </div>
                                                         </div>
-
-                                                        <div class="package-features">
-                                                            <ul class="list-unstyled">
-                                                                @if (is_array(json_decode($photographer->features)))
-                                                                    @foreach (json_decode($photographer->features) as $feature)
-                                                                        <li><i
-                                                                                class="fas fa-check-circle text-success me-2"></i>
-                                                                            {{ $feature }}</li>
-                                                                    @endforeach
-                                                                @endif
-                                                            </ul>
-                                                        </div>
-
-                                                        <div class="package-footer">
-                                                            <div class="price-info">
-                                                                <span class="price">Rp
-                                                                    {{ number_format($photographer->price, 0, ',', '.') }}</span>
-                                                                <span class="duration">/sesi</span>
-                                                            </div>
-                                                            <a href="{{ route('user.photographer.show', $photographer->id) }}"
-                                                                class="select-btn {{ $photographer->package_type }}">
-                                                                <span>Detail Paket</span>
-                                                                <i class="fas fa-arrow-right"></i>
-                                                            </a>
+                                                        <div class="badge {{ $photographer->package_type }}">
+                                                            {{ ucfirst($photographer->package_type) }}
                                                         </div>
                                                     </div>
+
+                                                    <div class="package-features">
+                                                        <ul class="list-unstyled">
+                                                            @if (is_array(json_decode($photographer->features)))
+                                                                @foreach (json_decode($photographer->features) as $feature)
+                                                                    <li><i
+                                                                            class="fas fa-check-circle text-success me-2"></i>
+                                                                        {{ $feature }}</li>
+                                                                @endforeach
+                                                            @endif
+                                                        </ul>
+                                                    </div>
+
+                                                    <div class="package-footer">
+                                                        <div class="price-info">
+                                                            <span class="price">Rp
+                                                                {{ number_format($photographer->price, 0, ',', '.') }}</span>
+                                                            <span class="duration">/sesi</span>
+                                                        </div>
+                                                        <a href="{{ route('user.photographer.show', $photographer->id) }}"
+                                                            class="select-btn {{ $photographer->package_type }}">
+                                                            <span>Detail Paket</span>
+                                                            <i class="fas fa-arrow-right"></i>
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                            @endforeach
-                                        </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                            @endif
+                            </div>
+                        @endif
 
 
                         <!-- Booking Card -->
@@ -1470,159 +1470,160 @@
             }
         }
 
-/* Custom Flatpickr Theme - brand color #9e0620 */
-/* Base Calendar Container */
-.flatpickr-calendar {
-    width: 100% !important;
-    max-width: 320px !important;
-    box-sizing: border-box !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-    touch-action: manipulation;
-}
+        /* Custom Flatpickr Theme - brand color #9e0620 */
+        /* Base Calendar Container */
+        .flatpickr-calendar {
+            width: 100% !important;
+            max-width: 320px !important;
+            box-sizing: border-box !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
+            touch-action: manipulation;
+        }
 
-/* Month Navigation Section */
-.flatpickr-months {
-    background-color: #ffffff;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-}
+        /* Month Navigation Section */
+        .flatpickr-months {
+            background-color: #ffffff;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
 
-.flatpickr-month {
-    color: #fff;
-}
+        .flatpickr-month {
+            color: #fff;
+        }
 
-.flatpickr-current-month {
-    font-weight: 600;
-}
+        .flatpickr-current-month {
+            font-weight: 600;
+        }
 
-.flatpickr-monthDropdown-months,
-.numInputWrapper span.arrowUp,
-.numInputWrapper span.arrowDown {
-    color: #fff;
-}
+        .flatpickr-monthDropdown-months,
+        .numInputWrapper span.arrowUp,
+        .numInputWrapper span.arrowDown {
+            color: #fff;
+        }
 
-.flatpickr-prev-month,
-.flatpickr-next-month {
-    fill: #fff;
-}
+        .flatpickr-prev-month,
+        .flatpickr-next-month {
+            fill: #fff;
+        }
 
-.flatpickr-prev-month:hover svg,
-.flatpickr-next-month:hover svg {
-    fill: #e9ecef;
-}
+        .flatpickr-prev-month:hover svg,
+        .flatpickr-next-month:hover svg {
+            fill: #e9ecef;
+        }
 
-/* Weekday Headers */
-span.flatpickr-weekday {
-    color: #9e0620;
-    font-weight: 600;
-    width: 14.2857% !important;
-    max-width: 14.2857% !important;
-    flex-basis: 14.2857% !important;
-}
+        /* Weekday Headers */
+        span.flatpickr-weekday {
+            color: #9e0620;
+            font-weight: 600;
+            width: 14.2857% !important;
+            max-width: 14.2857% !important;
+            flex-basis: 14.2857% !important;
+        }
 
-/* Days Container */
-.flatpickr-days {
-    width: 100% !important;
-}
+        /* Days Container */
+        .flatpickr-days {
+            width: 100% !important;
+        }
 
-.dayContainer {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    display: flex;
-    flex-wrap: wrap;
-}
+        .dayContainer {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            display: flex;
+            flex-wrap: wrap;
+        }
 
-/* Day Cells */
-.flatpickr-day {
-    width: 14.2857% !important;
-    max-width: 14.2857% !important;
-    flex-basis: 14.2857% !important;
-    height: 40px !important;
-    line-height: 40px !important;
-    margin: 0 !important;
-    border-radius: 24px !important;
-}
+        /* Day Cells */
+        .flatpickr-day {
+            width: 14.2857% !important;
+            max-width: 14.2857% !important;
+            flex-basis: 14.2857% !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            margin: 0 !important;
+            border-radius: 24px !important;
+        }
 
-/* Day States: Hover */
-.flatpickr-day:hover {
-    background: #fff8f8;
-    border-color: #fff8f8;
-}
+        /* Day States: Hover */
+        .flatpickr-day:hover {
+            background: #fff8f8;
+            border-color: #fff8f8;
+        }
 
-/* Day States: Today */
-.flatpickr-day.today {
-    border-color: #9e0620;
-}
+        /* Day States: Today */
+        .flatpickr-day.today {
+            border-color: #9e0620;
+        }
 
-.flatpickr-day.today:hover {
-    background: #fff8f8;
-    color: #9e0620;
-}
+        .flatpickr-day.today:hover {
+            background: #fff8f8;
+            color: #9e0620;
+        }
 
-/* Day States: Selected */
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected.inRange,
-.flatpickr-day.startRange.inRange,
-.flatpickr-day.endRange.inRange,
-.flatpickr-day.selected:focus,
-.flatpickr-day.startRange:focus,
-.flatpickr-day.endRange:focus,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover,
-.flatpickr-day.selected.prevMonthDay,
-.flatpickr-day.startRange.prevMonthDay,
-.flatpickr-day.endRange.prevMonthDay,
-.flatpickr-day.selected.nextMonthDay,
-.flatpickr-day.startRange.nextMonthDay,
-.flatpickr-day.endRange.nextMonthDay {
-    background: #9e0620;
-    border-color: #9e0620;
-    color: #fff;
-}
+        /* Day States: Selected */
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange,
+        .flatpickr-day.selected.inRange,
+        .flatpickr-day.startRange.inRange,
+        .flatpickr-day.endRange.inRange,
+        .flatpickr-day.selected:focus,
+        .flatpickr-day.startRange:focus,
+        .flatpickr-day.endRange:focus,
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.startRange:hover,
+        .flatpickr-day.endRange:hover,
+        .flatpickr-day.selected.prevMonthDay,
+        .flatpickr-day.startRange.prevMonthDay,
+        .flatpickr-day.endRange.prevMonthDay,
+        .flatpickr-day.selected.nextMonthDay,
+        .flatpickr-day.startRange.nextMonthDay,
+        .flatpickr-day.endRange.nextMonthDay {
+            background: #9e0620;
+            border-color: #9e0620;
+            color: #fff;
+        }
 
-/* Range Selection */
-.flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
-.flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
-.flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
-    box-shadow: -10px 0 0 #9e0620;
-}
+        /* Range Selection */
+        .flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
+        .flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
+        .flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
+            box-shadow: -10px 0 0 #9e0620;
+        }
 
-/* Next Month Days (within booking window) */
-.flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
-    color: #393939 !important;
-    font-weight: normal !important;
-    background-color: transparent !important;
-    opacity: 1 !important;
-}
+        /* Next Month Days (within booking window) */
+        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
+            color: #393939 !important;
+            font-weight: normal !important;
+            background-color: transparent !important;
+            opacity: 1 !important;
+        }
 
-.flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
-    background-color: #fff8f8 !important;
-    border-color: #fff8f8 !important;
-    color: #9e0620 !important;
-}
+        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
+            background-color: #fff8f8 !important;
+            border-color: #fff8f8 !important;
+            color: #9e0620 !important;
+        }
 
-.flatpickr-day.nextMonthDay.selected {
-    background-color: #9e0620 !important;
-    border-color: #9e0620 !important;
-    color: #fff !important;
-}
+        .flatpickr-day.nextMonthDay.selected {
+            background-color: #9e0620 !important;
+            border-color: #9e0620 !important;
+            color: #fff !important;
+        }
 
-/* Mobile Adjustments */
-@media (max-width: 576px) {
-    .flatpickr-calendar {
-        max-width: 100%;
-    }
+        /* Mobile Adjustments */
+        @media (max-width: 576px) {
+            .flatpickr-calendar {
+                max-width: 100%;
+            }
 
-    .flatpickr-day {
-        height: 35px !important;
-        line-height: 35px !important;
-    }
-}
+            .flatpickr-day {
+                height: 35px !important;
+                line-height: 35px !important;
+            }
+        }
+
         .slot-membership {
             background-color: #ffeeba;
             /* Warna kuning lembut */
@@ -1798,7 +1799,9 @@ span.flatpickr-weekday {
         .photographer-card .select-btn:hover {
             transform: translateX(5px);
         }
-
-
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
 @endsection

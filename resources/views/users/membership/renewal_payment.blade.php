@@ -35,7 +35,8 @@
                     <div class="card-body p-0">
                         <!-- Header dengan ikon -->
                         <div class="text-center bg-light p-4 rounded-top-4">
-                            <div class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle p-3 mb-3" style="width: 70px; height: 70px;">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle p-3 mb-3"
+                                style="width: 70px; height: 70px;">
                                 <i class="fas fa-sync fa-2x"></i>
                             </div>
                             <h4 class="fw-bold mb-0">Detail Perpanjangan Membership</h4>
@@ -45,7 +46,8 @@
                         <div class="bg-warning-subtle p-3 border-top border-bottom">
                             <div class="d-flex align-items-center justify-content-center">
                                 <i class="fas fa-clock text-warning me-2"></i>
-                                <span>Mohon selesaikan pembayaran sebelum: <span id="countdown-timer" class="fw-bold">{{ \Carbon\Carbon::parse($payment->expires_at)->format('d M Y H:i') }}</span></span>
+                                <span>Mohon selesaikan pembayaran sebelum: <span id="countdown-timer"
+                                        class="fw-bold">{{ \Carbon\Carbon::parse($payment->expires_at)->format('d M Y H:i') }}</span></span>
                             </div>
                         </div>
 
@@ -66,11 +68,12 @@
                                             <div>{{ ucfirst($membership->type) }} Package</div>
                                         </div>
                                     </div>
-                                
+
                                 </div>
 
                                 <div class="position-absolute end-0 top-50 translate-middle-y pe-4">
-                                    <div class="fw-bold text-danger fs-5">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
+                                    <div class="fw-bold text-danger fs-5">Rp
+                                        {{ number_format($payment->amount, 0, ',', '.') }}</div>
                                 </div>
                             </div>
 
@@ -100,7 +103,8 @@
 
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>Total Pembayaran</div>
-                                    <div class="fw-bold text-danger fs-5">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
+                                    <div class="fw-bold text-danger fs-5">Rp
+                                        {{ number_format($payment->amount, 0, ',', '.') }}</div>
                                 </div>
                             </div>
 
@@ -123,7 +127,8 @@
     </div>
 
     <!-- Midtrans JS -->
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Countdown function
@@ -140,14 +145,17 @@
                 // If time has expired
                 if (distance < 0) {
                     clearInterval(countdownTimer);
-                    document.getElementById("countdown-timer").innerHTML = "<span class='text-danger'>Waktu Habis</span>";
+                    document.getElementById("countdown-timer").innerHTML =
+                        "<span class='text-danger'>Waktu Habis</span>";
 
                     // Disable payment button
                     document.getElementById("pay-button").disabled = true;
-                    document.getElementById("pay-button").innerHTML = "<i class='fas fa-times-circle me-2'></i>Waktu Pembayaran Habis";
+                    document.getElementById("pay-button").innerHTML =
+                        "<i class='fas fa-times-circle me-2'></i>Waktu Pembayaran Habis";
 
                     // Show alert
-                    alert("Waktu pembayaran telah habis. Silakan kembali ke halaman membership untuk proses perpanjangan baru.");
+                    alert(
+                        "Waktu pembayaran telah habis. Silakan kembali ke halaman membership untuk proses perpanjangan baru.");
 
                     // Redirect after 3 seconds
                     setTimeout(function() {
@@ -163,13 +171,16 @@
                 // Tampilkan snap payment page
                 snap.pay('{{ $snap_token }}', {
                     onSuccess: function(result) {
-                        window.location.href = '{{ route("user.payment.success") }}?order_id={{ $payment->order_id }}';
+                        window.location.href =
+                            '{{ route('user.payment.success') }}?order_id={{ $payment->order_id }}';
                     },
                     onPending: function(result) {
-                        window.location.href = '{{ route("user.payment.unfinish") }}?order_id={{ $payment->order_id }}';
+                        window.location.href =
+                            '{{ route('user.payment.unfinish') }}?order_id={{ $payment->order_id }}';
                     },
                     onError: function(result) {
-                        window.location.href = '{{ route("user.payment.error") }}?order_id={{ $payment->order_id }}';
+                        window.location.href =
+                            '{{ route('user.payment.error') }}?order_id={{ $payment->order_id }}';
                     },
                     onClose: function() {
                         // Jika user menutup popup tanpa menyelesaikan pembayaran
@@ -179,9 +190,7 @@
             });
         });
     </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-</script>
+
     <style>
         /* Modern Payment Styling */
 
@@ -579,4 +588,7 @@ integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIe
             animation: pulse 1.5s infinite;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection

@@ -156,7 +156,7 @@
                                     @endif
 
                                     <!-- Tambahkan informasi subtotal dan diskon jika ada -->
-                                    @if($payment->discount_id && $payment->discount_amount > 0)
+                                    @if ($payment->discount_id && $payment->discount_amount > 0)
                                         <div class="summary-item">
                                             <div class="item-label">
                                                 <i class="fas fa-receipt"></i>
@@ -174,7 +174,7 @@
                                             </div>
                                             <div class="item-value text-success">
                                                 - Rp {{ number_format($payment->discount_amount, 0, ',', '.') }}
-                                                @if($payment->discount)
+                                                @if ($payment->discount)
                                                     <div class="discount-code">{{ $payment->discount->code }}</div>
                                                 @endif
                                             </div>
@@ -184,7 +184,8 @@
 
                                     <div class="total-amount">
                                         <div class="amount-label">Total Pembayaran</div>
-                                        <div class="amount-value">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
+                                        <div class="amount-value">Rp {{ number_format($payment->amount, 0, ',', '.') }}
+                                        </div>
                                     </div>
 
                                     @if ($payment->transaction_status == 'success')
@@ -453,146 +454,151 @@
                         @endif
 
                         <!-- Photographer Bookings -->
-@if (count($payment->photographerBookings) > 0)
-<div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-    <div
-        class="card-header bg-white d-flex align-items-center justify-content-between py-3 px-4 border-0">
-        <h5 class="m-0 fw-bold">Fotografer</h5>
-        <span class="booking-count">{{ count($payment->photographerBookings) }} Item</span>
-    </div>
-    <div class="card-body p-0">
-        <div class="booking-list">
-            @foreach ($payment->photographerBookings as $booking)
-                <div class="booking-item">
-                    <div class="booking-item-header">
-                        <div class="booking-status">
-                            @if ($booking->status == 'confirmed')
-                                <span class="status-pill confirmed">
-                                    <i class="fas fa-check-circle me-1"></i> Terkonfirmasi
-                                </span>
-                            @elseif($booking->status == 'pending')
-                                <span class="status-pill pending">
-                                    <i class="fas fa-clock me-1"></i> Menunggu
-                                </span>
-                            @elseif($booking->status == 'cancelled')
-                                <span class="status-pill cancelled">
-                                    <i class="fas fa-times-circle me-1"></i> Dibatalkan
-                                </span>
-                            @else
-                                <span class="status-pill other">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    {{ ucfirst($booking->status) }}
-                                </span>
-                            @endif
-                        </div>
-                        <div class="booking-id">
-                            #{{ $booking->id }}
-                        </div>
-                    </div>
-
-                    <div class="booking-item-content">
-                        <div class="booking-image">
-                            @if (isset($booking->photographer->image))
-                                <img src="{{ Storage::url($booking->photographer->image) }}"
-                                    alt="{{ $booking->photographer->name ?? 'Fotografer' }}"
-                                    class="field-image">
-                            @else
-                                <div class="field-image-placeholder">
-                                    <i class="fas fa-camera"></i>
+                        @if (count($payment->photographerBookings) > 0)
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                <div
+                                    class="card-header bg-white d-flex align-items-center justify-content-between py-3 px-4 border-0">
+                                    <h5 class="m-0 fw-bold">Fotografer</h5>
+                                    <span class="booking-count">{{ count($payment->photographerBookings) }} Item</span>
                                 </div>
-                            @endif
-                            <div class="field-type">
-                                Fotografer
+                                <div class="card-body p-0">
+                                    <div class="booking-list">
+                                        @foreach ($payment->photographerBookings as $booking)
+                                            <div class="booking-item">
+                                                <div class="booking-item-header">
+                                                    <div class="booking-status">
+                                                        @if ($booking->status == 'confirmed')
+                                                            <span class="status-pill confirmed">
+                                                                <i class="fas fa-check-circle me-1"></i> Terkonfirmasi
+                                                            </span>
+                                                        @elseif($booking->status == 'pending')
+                                                            <span class="status-pill pending">
+                                                                <i class="fas fa-clock me-1"></i> Menunggu
+                                                            </span>
+                                                        @elseif($booking->status == 'cancelled')
+                                                            <span class="status-pill cancelled">
+                                                                <i class="fas fa-times-circle me-1"></i> Dibatalkan
+                                                            </span>
+                                                        @else
+                                                            <span class="status-pill other">
+                                                                <i class="fas fa-info-circle me-1"></i>
+                                                                {{ ucfirst($booking->status) }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="booking-id">
+                                                        #{{ $booking->id }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="booking-item-content">
+                                                    <div class="booking-image">
+                                                        @if (isset($booking->photographer->image))
+                                                            <img src="{{ Storage::url($booking->photographer->image) }}"
+                                                                alt="{{ $booking->photographer->name ?? 'Fotografer' }}"
+                                                                class="field-image">
+                                                        @else
+                                                            <div class="field-image-placeholder">
+                                                                <i class="fas fa-camera"></i>
+                                                            </div>
+                                                        @endif
+                                                        <div class="field-type">
+                                                            Fotografer
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="booking-details">
+                                                        <h5 class="field-name">
+                                                            {{ $booking->photographer->name ?? 'Fotografer' }}</h5>
+                                                        <div class="booking-info">
+                                                            <div class="info-item">
+                                                                <i class="far fa-calendar-alt"></i>
+                                                                <span>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="far fa-clock"></i>
+                                                                <span>
+                                                                    {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                                                                    -
+                                                                    {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="fas fa-camera-retro"></i>
+                                                                <span>{{ $booking->photographer->specialization ?? 'Umum' }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="booking-price">
+                                                        <div class="price-value">Rp
+                                                            {{ number_format($booking->price, 0, ',', '.') }}</div>
+                                                        <div class="price-duration">
+                                                            @php
+                                                                $startTime = \Carbon\Carbon::parse(
+                                                                    $booking->start_time,
+                                                                );
+                                                                $endTime = \Carbon\Carbon::parse($booking->end_time);
+                                                                $durationInHours = $startTime->diffInHours($endTime);
+                                                            @endphp
+                                                            {{ $durationInHours }} jam
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                @if ($booking->status == 'confirmed')
+                                                    <div class="booking-item-actions">
+                                                        <a href="#" class="btn-outline-action">
+                                                            <i class="fas fa-camera me-2"></i>
+                                                            <span>Lihat Detail</span>
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        @endif
+                        @if (strpos($payment->order_id, 'RENEW-MEM-') === 0)
+                            <div class="membership-renewal-info p-4 rounded-3 bg-light mt-3">
+                                <h5 class="mb-3 fw-bold">
+                                    <i class="fas fa-user-tag me-2 text-primary"></i>
+                                    Perpanjangan Membership
+                                </h5>
 
-                        <div class="booking-details">
-                            <h5 class="field-name">{{ $booking->photographer->name ?? 'Fotografer' }}</h5>
-                            <div class="booking-info">
-                                <div class="info-item">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <span>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="far fa-clock"></i>
-                                    <span>
-                                        {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
-                                        -
-                                        {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
-                                    </span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-camera-retro"></i>
-                                    <span>{{ $booking->photographer->specialization ?? 'Umum' }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="booking-price">
-                            <div class="price-value">Rp
-                                {{ number_format($booking->price, 0, ',', '.') }}</div>
-                            <div class="price-duration">
                                 @php
-                                    $startTime = \Carbon\Carbon::parse($booking->start_time);
-                                    $endTime = \Carbon\Carbon::parse($booking->end_time);
-                                    $durationInHours = $startTime->diffInHours($endTime);
+                                    // Cari subscription terkait
+                                    $subscription = \App\Models\MembershipSubscription::where('user_id', Auth::id())
+                                        ->where('status', 'active')
+                                        ->first();
                                 @endphp
-                                {{ $durationInHours }} jam
+
+                                @if ($subscription)
+                                    <div class="membership-item p-3 bg-white rounded shadow-sm">
+
+
+                                        <div class="membership-details">
+                                            <div class="detail-row">
+                                                <span class="detail-label">Lapangan:</span>
+                                                <span
+                                                    class="detail-value">{{ $subscription->membership->field->name }}</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span class="detail-label">Periode Baru:</span>
+                                                <span class="detail-value">
+                                                    {{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }}
+                                                    -
+                                                    {{ \Carbon\Carbon::parse($subscription->end_date)->addMonths($subscription->membership->duration)->format('d M Y') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <p class="text-muted">Informasi membership tidak ditemukan.</p>
+                                @endif
                             </div>
-                        </div>
-                    </div>
-
-                    @if ($booking->status == 'confirmed')
-                        <div class="booking-item-actions">
-                            <a href="#" class="btn-outline-action">
-                                <i class="fas fa-camera me-2"></i>
-                                <span>Lihat Detail</span>
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-@endif
-@if(strpos($payment->order_id, 'RENEW-MEM-') === 0)
-    <div class="membership-renewal-info p-4 rounded-3 bg-light mt-3">
-        <h5 class="mb-3 fw-bold">
-            <i class="fas fa-user-tag me-2 text-primary"></i>
-            Perpanjangan Membership
-        </h5>
-
-        @php
-            // Cari subscription terkait
-            $subscription = \App\Models\MembershipSubscription::where('user_id', Auth::id())
-                ->where('status', 'active')
-                ->first();
-        @endphp
-
-        @if($subscription)
-            <div class="membership-item p-3 bg-white rounded shadow-sm">
-
-
-                <div class="membership-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Lapangan:</span>
-                        <span class="detail-value">{{ $subscription->membership->field->name }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Periode Baru:</span>
-                        <span class="detail-value">
-                            {{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }} -
-                            {{ \Carbon\Carbon::parse($subscription->end_date)->addMonths($subscription->membership->duration)->format('d M Y') }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        @else
-            <p class="text-muted">Informasi membership tidak ditemukan.</p>
-        @endif
-    </div>
-@endif
+                        @endif
                     </div>
 
                 </div>
@@ -711,58 +717,61 @@
                                     @endforeach
 
                                     <!-- Photographer Bookings Reviews -->
-@foreach ($payment->photographerBookings as $booking)
-<div class="review-item">
-    <div class="review-item-content">
-        <div class="review-image">
-            @if (isset($booking->photographer->image))
-                <img src="{{ Storage::url($booking->photographer->image) }}"
-                    alt="{{ $booking->photographer->name ?? 'Fotografer' }}"
-                    class="field-image">
-            @else
-                <div class="field-image-placeholder">
-                    <i class="fas fa-camera"></i>
-                </div>
-            @endif
-            <div class="field-type">
-                Fotografer
-            </div>
-        </div>
+                                    @foreach ($payment->photographerBookings as $booking)
+                                        <div class="review-item">
+                                            <div class="review-item-content">
+                                                <div class="review-image">
+                                                    @if (isset($booking->photographer->image))
+                                                        <img src="{{ Storage::url($booking->photographer->image) }}"
+                                                            alt="{{ $booking->photographer->name ?? 'Fotografer' }}"
+                                                            class="field-image">
+                                                    @else
+                                                        <div class="field-image-placeholder">
+                                                            <i class="fas fa-camera"></i>
+                                                        </div>
+                                                    @endif
+                                                    <div class="field-type">
+                                                        Fotografer
+                                                    </div>
+                                                </div>
 
-        <div class="review-details">
-            <h5 class="field-name">{{ $booking->photographer->name ?? 'Fotografer' }}</h5>
-            <div class="booking-info">
-                <div class="info-item">
-                    <i class="far fa-calendar-alt"></i>
-                    <span>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</span>
-                </div>
-                <div class="info-item">
-                    <i class="far fa-clock"></i>
-                    <span>
-                        {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
-                        -
-                        {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
-                    </span>
-                </div>
-            </div>
-        </div>
+                                                <div class="review-details">
+                                                    <h5 class="field-name">
+                                                        {{ $booking->photographer->name ?? 'Fotografer' }}</h5>
+                                                    <div class="booking-info">
+                                                        <div class="info-item">
+                                                            <i class="far fa-calendar-alt"></i>
+                                                            <span>{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</span>
+                                                        </div>
+                                                        <div class="info-item">
+                                                            <i class="far fa-clock"></i>
+                                                            <span>
+                                                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                                                                -
+                                                                {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-        <div class="review-action">
-            @if (isset($reviewedItems['photographer_' . $booking->photographer_id]) && $reviewedItems['photographer_' . $booking->photographer_id])
-                <span class="review-status-pill">
-                    <i class="fas fa-check-circle me-1"></i> Sudah Direview
-                </span>
-            @else
-                <button class="btn-review"
-                    onclick="showReviewForm('photographer', {{ $booking->photographer_id }}, '{{ $booking->photographer->name }}')">
-                    <i class="fas fa-star me-2"></i>
-                    <span>Beri Ulasan</span>
-                </button>
-            @endif
-        </div>
-    </div>
-</div>
-@endforeach
+                                                <div class="review-action">
+                                                    @if (isset($reviewedItems['photographer_' . $booking->photographer_id]) &&
+                                                            $reviewedItems['photographer_' . $booking->photographer_id]
+                                                    )
+                                                        <span class="review-status-pill">
+                                                            <i class="fas fa-check-circle me-1"></i> Sudah Direview
+                                                        </span>
+                                                    @else
+                                                        <button class="btn-review"
+                                                            onclick="showReviewForm('photographer', {{ $booking->photographer_id }}, '{{ $booking->photographer->name }}')">
+                                                            <i class="fas fa-star me-2"></i>
+                                                            <span>Beri Ulasan</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -1168,25 +1177,26 @@
                 width: 100%;
             }
         }
+
         .discount-code {
-    display: inline-block;
-    background-color: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    margin-top: 4px;
-}
+            display: inline-block;
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
 
-.text-success {
-    color: #28a745 !important;
-}
+        .text-success {
+            color: #28a745 !important;
+        }
     </style>
-<!-- SweetAlert2 CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-<!-- SweetAlert2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Modern Payment Detail Styling */
 
@@ -1734,37 +1744,38 @@
                 align-items: center;
             }
         }
+
         .membership-renewal-info {
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
 
-.membership-item {
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .membership-item {
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
 
-.membership-details {
-    margin-top: 0.5rem;
-}
+        .membership-details {
+            margin-top: 0.5rem;
+        }
 
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
 
-.detail-label {
-    color: #6c757d;
-}
+        .detail-label {
+            color: #6c757d;
+        }
 
-.detail-value {
-    font-weight: 500;
-}
+        .detail-value {
+            font-weight: 500;
+        }
     </style>
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 @endsection

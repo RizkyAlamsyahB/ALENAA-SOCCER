@@ -10,7 +10,8 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i> Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('user.membership.my-memberships') }}">Membership Saya</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('user.membership.my-memberships') }}">Membership
+                                    Saya</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Detail Membership</li>
                         </ol>
                     </nav>
@@ -22,7 +23,7 @@
     <!-- Main Content -->
     <div class="container content-wrapper mt-4">
         <!-- Alerts Section -->
-        @if(session('error'))
+        @if (session('error'))
             <div class="alert alert-danger" role="alert">
                 <div class="alert-content">
                     <div class="alert-icon">
@@ -36,7 +37,7 @@
             </div>
         @endif
 
-        @if(session('success'))
+        @if (session('success'))
             <div class="alert alert-success" role="alert">
                 <div class="alert-content">
                     <div class="alert-icon">
@@ -59,16 +60,18 @@
                             <div class="membership-info">
                                 <h2 class="membership-name">{{ $subscription->membership->name }}</h2>
                                 <div class="membership-details">
-                                    <div class="membership-badge
-                                        @if($subscription->status === 'active') badge-active
+                                    <div
+                                        class="membership-badge
+                                        @if ($subscription->status === 'active') badge-active
                                         @elseif($subscription->status === 'expired') badge-expired
                                         @else badge-pending @endif">
                                         <i class="fas fa-circle"></i>
                                         <span>{{ ucfirst($subscription->status) }}</span>
                                     </div>
 
-                                    <div class="membership-type
-                                        @if($subscription->membership->type === 'bronze') badge-bronze
+                                    <div
+                                        class="membership-type
+                                        @if ($subscription->membership->type === 'bronze') badge-bronze
                                         @elseif($subscription->membership->type === 'silver') badge-silver
                                         @else badge-gold @endif">
                                         <i class="fas fa-crown"></i>
@@ -82,7 +85,9 @@
                                     <i class="fas fa-calendar-alt"></i>
                                     <div class="date-range">
                                         <span class="date-label">Periode Membership</span>
-                                        <span class="date-value">{{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }}</span>
+                                        <span
+                                            class="date-value">{{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }}
+                                            - {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -132,7 +137,8 @@
 
                         <div class="price-summary-section">
                             <div class="price-label">Biaya Membership</div>
-                            <div class="price-amount">Rp {{ number_format($subscription->price, 0, ',', '.') }} <span class="price-period">per minggu</span></div>
+                            <div class="price-amount">Rp {{ number_format($subscription->price, 0, ',', '.') }} <span
+                                    class="price-period">per minggu</span></div>
                         </div>
                     </div>
                 </div>
@@ -146,76 +152,81 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                        @if($subscription->sessions && $subscription->sessions->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Sesi</th>
-                                        <th>Tanggal</th>
-                                        <th>Waktu</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        // Sort sessions by date first, then by time
-                                        $sortedSessions = $subscription->sessions->sortBy([
-                                            ['start_time', 'asc']
-                                        ]);
-                                    @endphp
+                        @if ($subscription->sessions && $subscription->sessions->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sesi</th>
+                                            <th>Tanggal</th>
+                                            <th>Waktu</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            // Sort sessions by date first, then by time
+                                            $sortedSessions = $subscription->sessions->sortBy([['start_time', 'asc']]);
+                                        @endphp
 
-                                    @foreach($sortedSessions as $session)
-                                        <tr class="session-row">
-                                            <td class="session-number">{{ $session->session_number }}</td>
-                                            <td>
-                                                <div class="session-date">
-                                                    <div class="day-name">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
-                                                    <div class="date">{{ \Carbon\Carbon::parse($session->start_time)->format('d M Y') }}</div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="session-time">
-                                                    <i class="far fa-clock"></i>
-                                                    <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge
-@if($session->status === 'completed') badge-completed
+                                        @foreach ($sortedSessions as $session)
+                                            <tr class="session-row">
+                                                <td class="session-number">{{ $session->session_number }}</td>
+                                                <td>
+                                                    <div class="session-date">
+                                                        <div class="day-name">
+                                                            {{ \Carbon\Carbon::parse($session->start_time)->format('l') }}
+                                                        </div>
+                                                        <div class="date">
+                                                            {{ \Carbon\Carbon::parse($session->start_time)->format('d M Y') }}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="session-time">
+                                                        <i class="far fa-clock"></i>
+                                                        <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }}
+                                                            -
+                                                            {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class="status-badge
+@if ($session->status === 'completed') badge-completed
     @elseif($session->status === 'cancelled') badge-cancelled
     @elseif($session->status === 'upcoming') badge-upcoming
     @elseif($session->status === 'ongoing') badge-ongoing
     @else badge-scheduled @endif">
-    @if($session->status === 'completed')
-    <i class="fas fa-check-circle"></i>
-@elseif($session->status === 'cancelled')
-    <i class="fas fa-times-circle"></i>
-@elseif($session->status === 'upcoming')
-    <i class="fas fa-hourglass-start"></i>
-@elseif($session->status === 'ongoing')
-    <i class="fas fa-play-circle"></i>
-@else
-    <i class="far fa-calendar-alt"></i>
-@endif
+                                                        @if ($session->status === 'completed')
+                                                            <i class="fas fa-check-circle"></i>
+                                                        @elseif($session->status === 'cancelled')
+                                                            <i class="fas fa-times-circle"></i>
+                                                        @elseif($session->status === 'upcoming')
+                                                            <i class="fas fa-hourglass-start"></i>
+                                                        @elseif($session->status === 'ongoing')
+                                                            <i class="fas fa-play-circle"></i>
+                                                        @else
+                                                            <i class="far fa-calendar-alt"></i>
+                                                        @endif
 
-                                                    <span>{{ ucfirst($session->status) }}</span>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <i class="far fa-calendar-times"></i>
+                                                        <span>{{ ucfirst($session->status) }}</span>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
-                            <h4>Belum Ada Jadwal</h4>
-                            <p>Belum ada jadwal sesi untuk membership ini.</p>
-                        </div>
-                    @endif
+                        @else
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="far fa-calendar-times"></i>
+                                </div>
+                                <h4>Belum Ada Jadwal</h4>
+                                <p>Belum ada jadwal sesi untuk membership ini.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -232,11 +243,12 @@
                     </div>
                     <div class="card-body">
                         <div class="membership-status-info">
-                            <div class="status-icon
-                                @if($subscription->status === 'active') active
+                            <div
+                                class="status-icon
+                                @if ($subscription->status === 'active') active
                                 @elseif($subscription->status === 'expired') expired
                                 @else pending @endif">
-                                @if($subscription->status === 'active')
+                                @if ($subscription->status === 'active')
                                     <i class="fas fa-check-circle"></i>
                                 @elseif($subscription->status === 'expired')
                                     <i class="fas fa-times-circle"></i>
@@ -247,8 +259,9 @@
                             <div class="status-details">
                                 <h4>Status: {{ ucfirst($subscription->status) }}</h4>
                                 <p>
-                                    @if($subscription->status === 'active')
-                                        Membership Anda sedang aktif dan akan berakhir pada {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }}.
+                                    @if ($subscription->status === 'active')
+                                        Membership Anda sedang aktif dan akan berakhir pada
+                                        {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }}.
                                     @elseif($subscription->status === 'expired')
                                         Membership Anda telah berakhir. Silakan perpanjang untuk terus menikmati fasilitas.
                                     @else
@@ -272,52 +285,57 @@
                     </div>
                 </div>
 
-<!-- Upcoming Sessions Card -->
-<div class="card upcoming-card">
-    <div class="card-header">
-        <h3>
-            <i class="fas fa-calendar-day"></i>
-            Sesi Mendatang
-        </h3>
-    </div>
-    <div class="card-body">
-        @php
-            // Menggunakan scope upcoming atau filter manual
-            $upcomingSessions = $subscription->sessions()
-    ->whereIn('status', ['scheduled', 'ongoing'])
-    ->where('end_time', '>', now()) // Menyaring yang masih relevan (belum selesai)
-    ->orderBy('start_time', 'asc')
-    ->take(3)
-    ->get();
-
-        @endphp
-
-        @if($upcomingSessions->count() > 0)
-            @foreach($upcomingSessions as $session)
-                <div class="upcoming-session">
-                    <div class="session-day">
-                        <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}</div>
-                        <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->format('M') }}</div>
+                <!-- Upcoming Sessions Card -->
+                <div class="card upcoming-card">
+                    <div class="card-header">
+                        <h3>
+                            <i class="fas fa-calendar-day"></i>
+                            Sesi Mendatang
+                        </h3>
                     </div>
-                    <div class="session-details">
-                        <div class="time">
-                            <i class="far fa-clock"></i>
-                            <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
-                        </div>
-                        <div class="weekday">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
+                    <div class="card-body">
+                        @php
+                            // Menggunakan scope upcoming atau filter manual
+                            $upcomingSessions = $subscription
+                                ->sessions()
+                                ->whereIn('status', ['scheduled', 'ongoing'])
+                                ->where('end_time', '>', now()) // Menyaring yang masih relevan (belum selesai)
+                                ->orderBy('start_time', 'asc')
+                                ->take(3)
+                                ->get();
+
+                        @endphp
+
+                        @if ($upcomingSessions->count() > 0)
+                            @foreach ($upcomingSessions as $session)
+                                <div class="upcoming-session">
+                                    <div class="session-day">
+                                        <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}
+                                        </div>
+                                        <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->format('M') }}
+                                        </div>
+                                    </div>
+                                    <div class="session-details">
+                                        <div class="time">
+                                            <i class="far fa-clock"></i>
+                                            <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} -
+                                                {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
+                                        </div>
+                                        <div class="weekday">
+                                            {{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="empty-upcoming">
+                                <div class="empty-icon">
+                                    <i class="far fa-calendar"></i>
+                                </div>
+                                <p>Tidak ada sesi mendatang.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
-            @endforeach
-        @else
-            <div class="empty-upcoming">
-                <div class="empty-icon">
-                    <i class="far fa-calendar"></i>
-                </div>
-                <p>Tidak ada sesi mendatang.</p>
-            </div>
-        @endif
-    </div>
-</div>
             </div>
         </div>
     </div>
@@ -332,7 +350,7 @@
 
         /* Hero Section */
         .hero-section {
-    background: linear-gradient(to right, #9e0620, #bb2d3b);
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
             padding: 3.5rem 0;
             text-align: center;
             color: white;
@@ -526,7 +544,8 @@
             gap: 0.75rem;
         }
 
-        .membership-badge, .membership-type {
+        .membership-badge,
+        .membership-type {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -1144,4 +1163,8 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
 @endsection
