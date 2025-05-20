@@ -130,49 +130,52 @@
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        @elseif($item->type == 'membership')
-    <?php
-    $membership = App\Models\Membership::find($item->item_id);
-    $membershipName = $membership ? $membership->name : 'Keanggotaan';
-    $membershipType = $membership ? $membership->type : 'regular';
-    $sessionDuration = $membership ? $membership->session_duration : '1';
-    ?>
-    <h5 class="item-title fw-bold mb-1">{{ $membershipName }}</h5>
-    <div class="item-category mb-2">
-        <span class="type-badge">Keanggotaan</span>
-    </div>
-    <div class="item-info">
-        <div class="info-badge">
-            <i class="fas fa-user-tag"></i>
-            <span>{{ ucfirst($membershipType) }} Package</span>
-        </div>
+                                                    @elseif($item->type == 'membership')
+                                                        <?php
+                                                        $membership = App\Models\Membership::find($item->item_id);
+                                                        $membershipName = $membership ? $membership->name : 'Keanggotaan';
+                                                        $membershipType = $membership ? $membership->type : 'regular';
+                                                        $sessionDuration = $membership ? $membership->session_duration : '1';
+                                                        ?>
+                                                        <h5 class="item-title fw-bold mb-1">{{ $membershipName }}</h5>
+                                                        <div class="item-category mb-2">
+                                                            <span class="type-badge">Keanggotaan</span>
+                                                        </div>
+                                                        <div class="item-info">
+                                                            <div class="info-badge">
+                                                                <i class="fas fa-user-tag"></i>
+                                                                <span>{{ ucfirst($membershipType) }} Package</span>
+                                                            </div>
 
-       
-        @if(!empty($item->membership_sessions))
-            <?php $sessions = json_decode($item->membership_sessions, true); ?>
-            <div class="info-badge">
-                <i class="fas fa-list"></i>
-                <span>{{ count($sessions) }} jadwal tetap</span>
-            </div>
 
-            <!-- Tambahkan kode berikut untuk menampilkan detail jadwal -->
-            <div class="mt-2">
-                <small class="text-muted">Jadwal yang dipilih:</small>
-                <ul class="list-unstyled ms-3 small">
-                    @foreach($sessions as $index => $session)
-                        <li class="mt-1">
-                            <i class="fas fa-calendar-day text-primary"></i>
-                            {{ \Carbon\Carbon::parse($session['date'])->format('d M Y') }}
-                            <i class="fas fa-clock ms-1 text-primary"></i>
-                            {{ \Carbon\Carbon::parse($session['start_time'])->format('H:i') }} -
-                            {{ \Carbon\Carbon::parse($session['end_time'])->format('H:i') }}
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-    </div>
-                                                        @elseif($item->type == 'photographer')
+                                                            @if (!empty($item->membership_sessions))
+                                                                <?php $sessions = json_decode($item->membership_sessions, true); ?>
+                                                                <div class="info-badge">
+                                                                    <i class="fas fa-list"></i>
+                                                                    <span>{{ count($sessions) }} jadwal tetap</span>
+                                                                </div>
+
+                                                                <!-- Tambahkan kode berikut untuk menampilkan detail jadwal -->
+                                                                <div class="mt-2">
+                                                                    <small class="text-muted">Jadwal yang dipilih:</small>
+                                                                    <ul class="list-unstyled ms-3 small">
+                                                                        @foreach ($sessions as $index => $session)
+                                                                            <li class="mt-1">
+                                                                                <i
+                                                                                    class="fas fa-calendar-day text-primary"></i>
+                                                                                {{ \Carbon\Carbon::parse($session['date'])->format('d M Y') }}
+                                                                                <i
+                                                                                    class="fas fa-clock ms-1 text-primary"></i>
+                                                                                {{ \Carbon\Carbon::parse($session['start_time'])->format('H:i') }}
+                                                                                -
+                                                                                {{ \Carbon\Carbon::parse($session['end_time'])->format('H:i') }}
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @elseif($item->type == 'photographer')
                                                         <?php
                                                         $photographer = App\Models\Photographer::find($item->item_id);
                                                         $photographerName = $photographer ? $photographer->name : 'Jasa Fotografer';
@@ -299,14 +302,16 @@
                                             <div class="row align-items-center">
                                                 <div class="col-md-8 col-sm-7 mb-2 mb-md-0">
                                                     <div class="item-details">
-                                                        <h5 class="item-title fw-bold mb-1">{{ $subscription->membership->name }}</h5>
+                                                        <h5 class="item-title fw-bold mb-1">
+                                                            {{ $subscription->membership->name }}</h5>
                                                         <div class="item-category mb-2">
                                                             <span class="type-badge">Keanggotaan</span>
                                                         </div>
                                                         <div class="item-info">
                                                             <div class="info-badge">
                                                                 <i class="fas fa-user-tag"></i>
-                                                                <span>{{ ucfirst($subscription->membership->type) }} Package</span>
+                                                                <span>{{ ucfirst($subscription->membership->type) }}
+                                                                    Package</span>
                                                             </div>
                                                             <div class="info-badge">
                                                                 <i class="fas fa-calendar-week"></i>
@@ -314,14 +319,16 @@
                                                             </div>
                                                             <div class="info-badge">
                                                                 <i class="fas fa-clock"></i>
-                                                                <span>{{ $subscription->membership->session_duration }} jam/sesi</span>
+                                                                <span>{{ $subscription->membership->session_duration }}
+                                                                    jam/sesi</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 col-sm-5 text-end">
                                                     <div class="item-price">
-                                                        <span class="price">Rp {{ number_format($subscription->price, 0, ',', '.') }}</span>
+                                                        <span class="price">Rp
+                                                            {{ number_format($subscription->price, 0, ',', '.') }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -560,395 +567,402 @@
     <style>
         /* Modern Payment Styling */
 
-/* Breadcrumb */
-.breadcrumb-wrapper {
-    background: linear-gradient(to right, #9e0620, #bb2d3b);
-    position: relative;
-    overflow: hidden;
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        /* Breadcrumb */
+        .breadcrumb-wrapper {
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.custom-breadcrumb {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    align-items: center;
-    justify-content: center;
-}
+        .custom-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            align-items: center;
+            justify-content: center;
+        }
 
-.breadcrumb-item {
-    display: flex;
-    align-items: center;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 700;
-    font-size: 1.3rem;
-}
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
 
-.breadcrumb-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 50px;
-    transition: all 0.3s ease;
-    font-weight: 700;
-    font-size: 1.3rem;
-}
+        .breadcrumb-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
 
-.breadcrumb-link:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-}
+        .breadcrumb-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
 
-.breadcrumb-item.active {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.15);
-    font-weight: 700;
-    font-size: 1.3rem;
-}
+        .breadcrumb-item.active {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
 
-/* Card Styling */
-.card {
-    border-radius: 16px !important;
-    border: none !important;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
+        /* Card Styling */
+        .card {
+            border-radius: 16px !important;
+            border: none !important;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
 
-.hover-shadow:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-}
+        .hover-shadow:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+        }
 
-.card-header {
-    background-color: transparent;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-}
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        }
 
-/* Order Badge */
-.order-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 16px;
-    background-color: #f8f9fa;
-    color: #6c757d;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
+        /* Order Badge */
+        .order-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
 
-/* Payment Header */
-.payment-header {
-    padding: 20px 0;
-}
+        /* Payment Header */
+        .payment-header {
+            padding: 20px 0;
+        }
 
-.payment-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-color: #9e0620;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    font-size: 2rem;
-    box-shadow: 0 10px 20px rgba(158, 6, 32, 0.2);
-}
+        .payment-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #9e0620;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 2rem;
+            box-shadow: 0 10px 20px rgba(158, 6, 32, 0.2);
+        }
 
-/* Detail Items */
-.detail-title {
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    margin-bottom: 16px;
-}
+        /* Detail Items */
+        .detail-title {
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+        }
 
-.detail-item {
-    padding: 16px;
-    background-color: #fff;
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    margin-bottom: 12px;
-    transition: all 0.3s ease;
-}
+        .detail-item {
+            padding: 16px;
+            background-color: #fff;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
 
-.detail-item:hover {
-    background-color: #f8f9fa;
-    transform: translateX(5px);
-}
+        .detail-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
 
-.item-title {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    color: #212529;
-}
+        .item-title {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #212529;
+        }
 
-.item-category {
-    margin-bottom: 8px;
-}
+        .item-category {
+            margin-bottom: 8px;
+        }
 
-.type-badge {
-    display: inline-block;
-    padding: 5px 12px;
-    background-color: #f8f9fa;
-    color: #6c757d;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+        .type-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
 
-.item-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
-}
+        .item-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
 
-.info-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    background-color: #f8f9fa;
-    color: #495057;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background-color: #f8f9fa;
+            color: #495057;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
 
-.info-badge i {
-    color: #9e0620;
-}
+        .info-badge i {
+            color: #9e0620;
+        }
 
-.detail-item:hover .info-badge {
-    background-color: #e9ecef;
-}
+        .detail-item:hover .info-badge {
+            background-color: #e9ecef;
+        }
 
-.detail-item:hover .type-badge {
-    background-color: #e9ecef;
-}
+        .detail-item:hover .type-badge {
+            background-color: #e9ecef;
+        }
 
-.item-price {
-    font-weight: 700;
-    color: #9e0620;
-    font-size: 1.1rem;
-}
+        .item-price {
+            font-weight: 700;
+            color: #9e0620;
+            font-size: 1.1rem;
+        }
 
-/* Payment Summary */
-.payment-summary {
-    background-color: #fff8f8;
-    border: 1px dashed rgba(158, 6, 32, 0.2);
-}
+        /* Payment Summary */
+        .payment-summary {
+            background-color: #fff8f8;
+            border: 1px dashed rgba(158, 6, 32, 0.2);
+        }
 
-.total-price {
-    font-size: 1.25rem;
-    color: #9e0620;
-}
+        .total-price {
+            font-size: 1.25rem;
+            color: #9e0620;
+        }
 
-/* Payment Button */
-.btn-payment {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px 36px;
-    background-color: #9e0620;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(158, 6, 32, 0.2);
-}
+        /* Payment Button */
+        .btn-payment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 36px;
+            background-color: #9e0620;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(158, 6, 32, 0.2);
+        }
 
-.btn-payment:hover {
-    background-color: #7d0318;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(158, 6, 32, 0.25);
-}
+        .btn-payment:hover {
+            background-color: #7d0318;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(158, 6, 32, 0.25);
+        }
 
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    color: #6c757d;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: #6c757d;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
 
-.back-link:hover {
-    color: #9e0620;
-    transform: translateX(-5px);
-}
+        .back-link:hover {
+            color: #9e0620;
+            transform: translateX(-5px);
+        }
 
-/* Payment Expires Styling */
-.payment-expires-wrapper {
-    text-align: center;
-    padding: 8px;
-    background-color: #fff8e1;
-    border-radius: 8px;
-}
+        /* Payment Expires Styling */
+        .payment-expires-wrapper {
+            text-align: center;
+            padding: 8px;
+            background-color: #fff8e1;
+            border-radius: 8px;
+        }
 
-.payment-expire-notice {
-    font-size: 14px;
-    color: #555;
-}
+        .payment-expire-notice {
+            font-size: 14px;
+            color: #555;
+        }
 
-.payment-countdown {
-    font-weight: bold;
-    font-size: 16px;
-    color: #FF5722;
-}
+        .payment-countdown {
+            font-weight: bold;
+            font-size: 16px;
+            color: #FF5722;
+        }
 
-/* Alert Styling */
-.alert {
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    margin-bottom: 1.5rem;
-}
+        /* Alert Styling */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
 
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
 
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-}
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
 
-.alert-warning {
-    background-color: #fff3cd;
-    color: #856404;
-}
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
 
-.alert-info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-}
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
 
-.btn-close {
-    font-size: 0.8rem;
-}
+        .btn-close {
+            font-size: 0.8rem;
+        }
 
-/* Summary Items */
-.summary-label {
-    color: #6c757d;
-    font-weight: 500;
-}
+        /* Summary Items */
+        .summary-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
 
-.summary-value {
-    font-weight: 600;
-    color: #212529;
-}
+        .summary-value {
+            font-weight: 600;
+            color: #212529;
+        }
 
-/* Membership Sessions */
-.membership-sessions {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    border: 1px dashed #dee2e6;
-}
+        /* Membership Sessions */
+        .membership-sessions {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #dee2e6;
+        }
 
-.membership-sessions .info-badge {
-    margin-bottom: 5px;
-}
+        .membership-sessions .info-badge {
+            margin-bottom: 5px;
+        }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .breadcrumb-link,
-    .breadcrumb-item.active {
-        padding: 6px;
-        font-size: 1rem;
-    }
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
 
-    .breadcrumb-item i {
-        font-size: 1rem;
-    }
+            .breadcrumb-link,
+            .breadcrumb-item.active {
+                padding: 6px;
+                font-size: 1rem;
+            }
 
-    .item-price {
-        text-align: left;
-        margin-top: 10px;
-    }
+            .breadcrumb-item i {
+                font-size: 1rem;
+            }
 
-    .payment-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-    }
+            .item-price {
+                text-align: left;
+                margin-top: 10px;
+            }
 
-    .item-info {
-        flex-direction: column;
-        gap: 5px;
-    }
+            .payment-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
 
-    .info-badge {
-        width: 100%;
-    }
+            .item-info {
+                flex-direction: column;
+                gap: 5px;
+            }
 
-    .detail-item {
-        padding: 12px;
-    }
+            .info-badge {
+                width: 100%;
+            }
 
-    .payment-summary {
-        padding: 12px !important;
-    }
+            .detail-item {
+                padding: 12px;
+            }
 
-    .btn-payment {
-        width: 100%;
-    }
-}
+            .payment-summary {
+                padding: 12px !important;
+            }
 
-/* Membership Type Colors */
-.badge-bronze {
-    background-color: #cd7f32 !important;
-    color: white !important;
-}
+            .btn-payment {
+                width: 100%;
+            }
+        }
 
-.badge-silver {
-    background-color: #c0c0c0 !important;
-    color: white !important;
-}
+        /* Membership Type Colors */
+        .badge-bronze {
+            background-color: #cd7f32 !important;
+            color: white !important;
+        }
 
-.badge-gold {
-    background-color: #ffd700 !important;
-    color: #212529 !important;
-}
+        .badge-silver {
+            background-color: #c0c0c0 !important;
+            color: white !important;
+        }
 
-/* Animation for Selected Items */
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(158, 6, 32, 0.4);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(158, 6, 32, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(158, 6, 32, 0);
-    }
-}
+        .badge-gold {
+            background-color: #ffd700 !important;
+            color: #212529 !important;
+        }
 
-.detail-item:hover {
-    animation: pulse 1.5s infinite;
-}
+        /* Animation for Selected Items */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(158, 6, 32, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(158, 6, 32, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(158, 6, 32, 0);
+            }
+        }
+
+        .detail-item:hover {
+            animation: pulse 1.5s infinite;
+        }
     </style>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection

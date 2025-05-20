@@ -37,370 +37,355 @@
 
         <!-- Gallery Section -->
         <div class="row g-3 mb-5 d-none d-lg-flex mt-3">
-            <!-- Main Image -->
-            <div class="col-lg-8">
-                <div class="gallery-card main-gallery">
-                    <div class="gallery-img">
-                        @if ($photographer->image)
-                            <img src="{{ Storage::url($photographer->image) }}" class="img-fluid w-100"
-                                alt="{{ $photographer->name }}">
-                        @else
-                            <img src="/api/placeholder/800/500" class="img-fluid w-100" alt="{{ $photographer->name }}">
-                        @endif
-                        <div class="gallery-overlay">
-                            <button class="view-btn">
-                                <i class="fas fa-expand-alt"></i>
-                                View Full Image
-                            </button>
+            <!-- Desktop Gallery -->
+            <div class="row d-none d-lg-flex">
+                <!-- Main Image -->
+                <div class="col-lg-8">
+                    <div class="gallery-card main-gallery">
+                        <div class="gallery-img">
+                            @if ($photographer->image)
+                                <img src="{{ Storage::url($photographer->image) }}" class="img-fluid w-100"
+                                    alt="{{ $photographer->name }}">
+                            @else
+                                <img src="/api/placeholder/800/500" class="img-fluid w-100" alt="{{ $photographer->name }}">
+                            @endif
+                            <div class="gallery-overlay">
+                                <button class="view-btn">
+                                    <i class="fas fa-expand-alt"></i>
+                                    View Full Image
+                                </button>
+                            </div>
+                        </div>
+                        <div class="status-badge">
+                            <span class="badge-content">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Available Now
+                            </span>
                         </div>
                     </div>
-                    <div class="status-badge">
+                </div>
+
+                <!-- Side Images -->
+                <div class="col-lg-4">
+                    <div class="row g-3">
+                        @for ($i = 1; $i <= 2; $i++)
+                            <div class="col-12">
+                                <div class="gallery-card">
+                                    <div class="gallery-img">
+                                        @if ($photographer->image)
+                                            <img src="{{ Storage::url($photographer->image) }}" class="img-fluid w-100"
+                                                alt="Sample Photo {{ $i }}">
+                                        @else
+                                            <img src="/api/placeholder/400/250" class="img-fluid w-100"
+                                                alt="Sample Photo {{ $i }}">
+                                        @endif
+                                        <div class="gallery-overlay">
+                                            <button class="view-btn">
+                                                <i class="fas fa-expand-alt"></i>
+                                                View Full Image
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Gallery Carousel -->
+            <div class="mobile-gallery d-lg-none">
+                <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <!-- Carousel Inner -->
+                    <div class="carousel-inner rounded-4 overflow-hidden">
+                        @for ($i = 1; $i <= 3; $i++)
+                            <div class="carousel-item @if ($i === 1) active @endif">
+                                <div class="carousel-img-wrapper">
+                                    @if ($photographer->image)
+                                        <img src="{{ Storage::url($photographer->image) }}" class="d-block w-100"
+                                            alt="Photographer Sample {{ $i }}">
+                                    @else
+                                        <img src="/api/placeholder/800/500" class="d-block w-100"
+                                            alt="Photographer Sample {{ $i }}">
+                                    @endif
+                                    <div class="image-overlay"></div>
+                                </div>
+                                <div class="carousel-caption">
+                                    <span class="caption-badge">
+                                        <i class="fas fa-image"></i>
+                                        {{ $i }}/3
+                                    </span>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
+                        data-bs-slide="prev">
+                        <span class="control-icon">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    </button>
+                    <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
+                        data-bs-slide="next">
+                        <span class="control-icon">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    </button>
+
+                    <!-- Indicators -->
+                    <div class="carousel-indicators custom-indicators">
+                        @for ($i = 0; $i < 3; $i++)
+                            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="{{ $i }}"
+                                @if ($i === 0) class="active" aria-current="true" @endif></button>
+                        @endfor
+                    </div>
+
+                    <!-- Available Badge -->
+                    <div class="available-badge">
                         <span class="badge-content">
-                            <i class="fas fa-check-circle me-1"></i>
+                            <i class="fas fa-check-circle"></i>
                             Available Now
                         </span>
                     </div>
                 </div>
             </div>
-            <!-- Side Images -->
-            <div class="col-lg-4">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <div class="gallery-card">
-                            <div class="gallery-img">
-                                <img src="/api/placeholder/400/250" class="img-fluid w-100" alt="Sample Photo 1">
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="gallery-card">
-                            <div class="gallery-img">
-                                <img src="/api/placeholder/400/250" class="img-fluid w-100" alt="Sample Photo 2">
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Gallery Carousel -->
-        <div class="mobile-gallery d-lg-none">
-            <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
-                <!-- Carousel Inner -->
-                <div class="carousel-inner rounded-4 overflow-hidden">
-                    <div class="carousel-item active">
-                        <div class="carousel-img-wrapper">
-                            @if ($photographer->image)
-                                <img src="{{ Storage::url($photographer->image) }}" class="d-block w-100"
-                                    alt="{{ $photographer->name }}">
-                            @else
-                                <img src="/api/placeholder/800/500" class="d-block w-100" alt="{{ $photographer->name }}">
-                            @endif
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                1/3
-                            </span>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="carousel-img-wrapper">
-                            <img src="/api/placeholder/800/500" class="d-block w-100" alt="Photographer Sample 2">
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                2/3
-                            </span>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="carousel-img-wrapper">
-                            <img src="/api/placeholder/800/500" class="d-block w-100" alt="Photographer Sample 3">
-                            <div class="image-overlay"></div>
-                        </div>
-                        <div class="carousel-caption">
-                            <span class="caption-badge">
-                                <i class="fas fa-image"></i>
-                                3/3
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation Buttons -->
-                <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
-                    data-bs-slide="prev">
-                    <span class="control-icon">
-                        <i class="fas fa-chevron-left"></i>
-                    </span>
-                </button>
-                <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
-                    data-bs-slide="next">
-                    <span class="control-icon">
-                        <i class="fas fa-chevron-right"></i>
-                    </span>
-                </button>
-
-                <!-- Indicators -->
-                <div class="carousel-indicators custom-indicators">
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
-                        aria-current="true"></button>
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
-                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
-                </div>
-
-                <!-- Available Badge -->
-                <div class="available-badge">
-                    <span class="badge-content">
-                        <i class="fas fa-check-circle"></i>
-                        Available Now
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Information -->
-        <div class="row">
-            <!-- Photographer Details Container -->
-            <div class="container py-4">
-                <div class="row">
-                    <div class="col">
-                        <!-- Basic Information Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3 flex-column flex-md-row">
-                                    <div>
-                                        <div class="d-flex align-items-center mb-2">
-                                            <h1 class="h4 mb-0 text-md-start fw-bold me-3">{{ $photographer->name }}</h1>
-                                            <div class="rating-badge">
-                                                <i class="fas fa-star text-warning me-1"></i>
-                                                <span
-                                                    class="text-secondary">{{ number_format($photographer->rating ?? 0, 1) }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex flex-column flex-md-row align-items-center gap-3 text-md-start">
-                                            <div class="d-flex align-items-center package-badge">
-                                                <i class="fas fa-camera text-danger me-2"></i>
-                                                <span class="text-secondary">{{ ucfirst($photographer->package_type) }}
-                                                    Package</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-md-end text-center price-tag">
-                                        <div class="h3 text-danger fw-bold mb-0">Rp
-                                            {{ number_format($photographer->price, 0, ',', '.') }}</div>
-                                        <small class="text-muted">/sesi</small>
-                                    </div>
-                                </div>
-                                <p class="mt-3">{{ $photographer->description }}</p>
-                            </div>
-                        </div>
 
 
-
-                        <!-- Booking Card -->
-                        <!-- Booking Wizard Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Pilih Jadwal Booking Fotografer</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <!-- Hidden field ID -->
-                                <input type="hidden" id="photographerId" value="{{ $photographer->id }}">
-
-                                <!-- Booking Wizard Process -->
-                                <div class="booking-wizard">
-                                    <!-- Progress Steps -->
-                                    <div class="wizard-progress">
-                                        <!-- Progress Bar -->
-                                        <div class="wizard-progress-bar" id="wizard-progress-bar"></div>
-
-                                        <!-- Step 1: Date Selection -->
-                                        <div class="wizard-step" id="wizard-step-1">
-                                            <div class="step-circle">
-                                                <span>1</span>
-                                                <i class="fas fa-check"></i>
-                                            </div>
-                                            <div class="step-label">Tanggal</div>
-                                            <div class="step-desc">Pilih tanggal booking</div>
-                                        </div>
-
-                                        <!-- Step 2: Time Selection -->
-                                        <div class="wizard-step" id="wizard-step-2">
-                                            <div class="step-circle">
-                                                <span>2</span>
-                                                <i class="fas fa-check"></i>
-                                            </div>
-                                            <div class="step-label">Waktu</div>
-                                            <div class="step-desc">Pilih slot waktu</div>
-                                        </div>
-
-                                        <!-- Step 3: Confirmation -->
-                                        <div class="wizard-step" id="wizard-step-3">
-                                            <div class="step-circle">
-                                                <span>3</span>
-                                                <i class="fas fa-check"></i>
-                                            </div>
-                                            <div class="step-label">Konfirmasi</div>
-                                            <div class="step-desc">Konfirmasi booking</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Wizard Content -->
-                                    <div class="wizard-content">
-                                        <!-- Panel 1: Date Selection -->
-                                        <div class="wizard-panel" id="panel-date">
-                                            <h6 class="fw-semibold mb-3">Pilih Tanggal Booking</h6>
-                                            <div class="date-picker-container">
-                                                <div id="inline-calendar" class="inline-calendar-container"></div>
-                                                <input type="hidden" id="selectedDate" name="selected_date">
-                                            </div>
-                                        </div>
-
-                                        <!-- Panel 2: Time Slot Selection -->
-                                        <div class="wizard-panel" id="panel-time">
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                                    <h6 class="fw-semibold mb-0">
-                                                        Slot Waktu Tersedia (<span id="selected-date-display"></span>)
-                                                    </h6>
-                                                    <span class="badge bg-secondary" id="available-slots-count">0
-                                                        slot</span>
+            <!-- Main Information -->
+            <div class="row">
+                <!-- Photographer Details Container -->
+                <div class="container py-4">
+                    <div class="row">
+                        <div class="col">
+                            <!-- Basic Information Card -->
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                <div class="card-body p-4">
+                                    <div
+                                        class="d-flex justify-content-between align-items-start mb-3 flex-column flex-md-row">
+                                        <div>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <h1 class="h4 mb-0 text-md-start fw-bold me-3">{{ $photographer->name }}
+                                                </h1>
+                                                <div class="rating-badge">
+                                                    <i class="fas fa-star text-warning me-1"></i>
+                                                    <span
+                                                        class="text-secondary">{{ number_format($photographer->rating ?? 0, 1) }}</span>
                                                 </div>
-                                                <div id="time-slots-wrapper" class="time-slots-container">
-                                                    <div class="text-center py-4 slot-placeholder">
-                                                        <div class="spinner-border text-danger" role="status">
-                                                            <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <div
+                                                class="d-flex flex-column flex-md-row align-items-center gap-3 text-md-start">
+                                                <div class="d-flex align-items-center package-badge">
+                                                    <i class="fas fa-camera text-danger me-2"></i>
+                                                    <span
+                                                        class="text-secondary">{{ ucfirst($photographer->package_type) }}
+                                                        Package</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-md-end text-center price-tag">
+                                            <div class="h3 text-danger fw-bold mb-0">Rp
+                                                {{ number_format($photographer->price, 0, ',', '.') }}</div>
+                                            <small class="text-muted">/sesi</small>
+                                        </div>
+                                    </div>
+                                    <p class="mt-3">{{ $photographer->description }}</p>
+                                </div>
+                            </div>
+
+
+
+                            <!-- Booking Card -->
+                            <!-- Booking Wizard Card -->
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                <div class="card-header bg-white py-3 border-0 px-4">
+                                    <h5 class="mb-0 fw-bold">Pilih Jadwal Booking Fotografer</h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <!-- Hidden field ID -->
+                                    <input type="hidden" id="photographerId" value="{{ $photographer->id }}">
+
+                                    <!-- Booking Wizard Process -->
+                                    <div class="booking-wizard">
+                                        <!-- Progress Steps -->
+                                        <div class="wizard-progress">
+                                            <!-- Progress Bar -->
+                                            <div class="wizard-progress-bar" id="wizard-progress-bar"></div>
+
+                                            <!-- Step 1: Date Selection -->
+                                            <div class="wizard-step" id="wizard-step-1">
+                                                <div class="step-circle">
+                                                    <span>1</span>
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                                <div class="step-label">Tanggal</div>
+                                                <div class="step-desc">Pilih tanggal booking</div>
+                                            </div>
+
+                                            <!-- Step 2: Time Selection -->
+                                            <div class="wizard-step" id="wizard-step-2">
+                                                <div class="step-circle">
+                                                    <span>2</span>
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                                <div class="step-label">Waktu</div>
+                                                <div class="step-desc">Pilih slot waktu</div>
+                                            </div>
+
+                                            <!-- Step 3: Confirmation -->
+                                            <div class="wizard-step" id="wizard-step-3">
+                                                <div class="step-circle">
+                                                    <span>3</span>
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                                <div class="step-label">Konfirmasi</div>
+                                                <div class="step-desc">Konfirmasi booking</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Wizard Content -->
+                                        <div class="wizard-content">
+                                            <!-- Panel 1: Date Selection -->
+                                            <div class="wizard-panel" id="panel-date">
+                                                <h6 class="fw-semibold mb-3">Pilih Tanggal Booking</h6>
+                                                <div class="date-picker-container">
+                                                    <div id="inline-calendar" class="inline-calendar-container"></div>
+                                                    <input type="hidden" id="selectedDate" name="selected_date">
+                                                </div>
+                                            </div>
+
+                                            <!-- Panel 2: Time Slot Selection -->
+                                            <div class="wizard-panel" id="panel-time">
+                                                <div class="mb-3">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6 class="fw-semibold mb-0">
+                                                            Slot Waktu Tersedia (<span id="selected-date-display"></span>)
+                                                        </h6>
+                                                        <span class="badge bg-secondary" id="available-slots-count">0
+                                                            slot</span>
+                                                    </div>
+                                                    <div id="time-slots-wrapper" class="time-slots-container">
+                                                        <div class="text-center py-4 slot-placeholder">
+                                                            <div class="spinner-border text-danger" role="status">
+                                                                <span class="visually-hidden">Loading...</span>
+                                                            </div>
+                                                            <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
                                                         </div>
-                                                        <p class="mt-2">Mengambil slot waktu yang tersedia...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Panel 3: Confirmation -->
+                                            <div class="wizard-panel" id="panel-confirm">
+                                                <div class="mb-3">
+                                                    <h6 class="fw-semibold mb-3">Detail Booking</h6>
+                                                    <div class="confirmation-details mb-3">
+                                                        <div class="confirmation-item">
+                                                            <span class="label">Paket Fotografer:</span>
+                                                            <span class="value">{{ $photographer->name }}</span>
+                                                        </div>
+                                                        <div class="confirmation-item">
+                                                            <span class="label">Tanggal:</span>
+                                                            <span class="value" id="confirm-date"></span>
+                                                        </div>
+                                                        <div class="confirmation-item">
+                                                            <span class="label">Durasi:</span>
+                                                            <span class="value">{{ $photographer->duration }} Jam</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <h6 class="fw-semibold mb-3">Waktu Terpilih</h6>
+                                                    <div class="selected-slots-list mb-3">
+                                                        <div id="selected-time-display" class="alert  mb-3">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            Belum ada waktu yang dipilih
+                                                        </div>
+                                                        <div
+                                                            class="d-flex justify-content-between align-items-center mt-3 p-3  rounded">
+                                                            <span class="fw-bold">Total:</span>
+                                                            <span id="total-price" class="text-danger fw-bold fs-5">Rp
+                                                                {{ number_format($photographer->price, 0, ',', '.') }}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <!-- Panel 3: Confirmation -->
-                                        <div class="wizard-panel" id="panel-confirm">
-                                            <div class="mb-3">
-                                                <h6 class="fw-semibold mb-3">Detail Booking</h6>
-                                                <div class="confirmation-details mb-3">
-                                                    <div class="confirmation-item">
-                                                        <span class="label">Paket Fotografer:</span>
-                                                        <span class="value">{{ $photographer->name }}</span>
-                                                    </div>
-                                                    <div class="confirmation-item">
-                                                        <span class="label">Tanggal:</span>
-                                                        <span class="value" id="confirm-date"></span>
-                                                    </div>
-                                                    <div class="confirmation-item">
-                                                        <span class="label">Durasi:</span>
-                                                        <span class="value">{{ $photographer->duration }} Jam</span>
-                                                    </div>
-                                                </div>
-
-                                                <h6 class="fw-semibold mb-3">Waktu Terpilih</h6>
-                                                <div class="selected-slots-list mb-3">
-                                                    <div id="selected-time-display" class="alert  mb-3">
-                                                        <i class="fas fa-info-circle me-2"></i>
-                                                        Belum ada waktu yang dipilih
-                                                    </div>
-                                                    <div
-                                                        class="d-flex justify-content-between align-items-center mt-3 p-3  rounded">
-                                                        <span class="fw-bold">Total:</span>
-                                                        <span id="total-price" class="text-danger fw-bold fs-5">Rp
-                                                            {{ number_format($photographer->price, 0, ',', '.') }}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <!-- Wizard Navigation Buttons -->
+                                        <div class="wizard-buttons">
+                                            <button id="wizard-prev-btn" class="wizard-btn wizard-btn-prev">
+                                                <i class="fas fa-arrow-left"></i>
+                                                Kembali
+                                            </button>
+                                            <button id="wizard-next-btn" class="wizard-btn wizard-btn-next" disabled>
+                                                Lanjutkan
+                                                <i class="fas fa-arrow-right"></i>
+                                            </button>
+                                            <button id="wizard-submit-btn" class="wizard-btn wizard-btn-submit">
+                                                <i class="fas fa-cart-plus me-2"></i>
+                                                Tambahkan ke Keranjang
+                                            </button>
                                         </div>
-                                    </div>
-                                    <!-- Wizard Navigation Buttons -->
-                                    <div class="wizard-buttons">
-                                        <button id="wizard-prev-btn" class="wizard-btn wizard-btn-prev">
-                                            <i class="fas fa-arrow-left"></i>
-                                            Kembali
-                                        </button>
-                                        <button id="wizard-next-btn" class="wizard-btn wizard-btn-next" disabled>
-                                            Lanjutkan
-                                            <i class="fas fa-arrow-right"></i>
-                                        </button>
-                                        <button id="wizard-submit-btn" class="wizard-btn wizard-btn-submit">
-                                            <i class="fas fa-cart-plus me-2"></i>
-                                            Tambahkan ke Keranjang
-                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Testimonials Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Testimonial Klien</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="testimonial-card p-3 border rounded-3">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <div class="avatar me-3">
-                                                    <img src="/api/placeholder/40/40" class="rounded-circle"
-                                                        alt="User">
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">Ahmad Fauzi</h6>
-                                                    <div class="rating">
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
+                            <!-- Testimonials Card -->
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                <div class="card-header bg-white py-3 border-0 px-4">
+                                    <h5 class="mb-0 fw-bold">Testimonial Klien</h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="testimonial-card p-3 border rounded-3">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="avatar me-3">
+                                                        <img src="/api/placeholder/40/40" class="rounded-circle"
+                                                            alt="User">
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">Ahmad Fauzi</h6>
+                                                        <div class="rating">
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="fas fa-star text-warning"></i>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <p class="testimonial-text">
+                                                    "Fotografer sangat profesional. Hasil fotonya bagus dan dikirim tepat
+                                                    waktu
+                                                    sesuai janji."
+                                                </p>
                                             </div>
-                                            <p class="testimonial-text">
-                                                "Fotografer sangat profesional. Hasil fotonya bagus dan dikirim tepat waktu
-                                                sesuai janji."
-                                            </p>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="testimonial-card p-3 border rounded-3">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <div class="avatar me-3">
-                                                    <img src="/api/placeholder/40/40" class="rounded-circle"
-                                                        alt="User">
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">Budi Santoso</h6>
-                                                    <div class="rating">
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="far fa-star text-warning"></i>
+                                        <div class="col-md-6">
+                                            <div class="testimonial-card p-3 border rounded-3">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="avatar me-3">
+                                                        <img src="/api/placeholder/40/40" class="rounded-circle"
+                                                            alt="User">
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">Budi Santoso</h6>
+                                                        <div class="rating">
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="fas fa-star text-warning"></i>
+                                                            <i class="far fa-star text-warning"></i>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <p class="testimonial-text">
+                                                    "Pelayanan memuaskan, fotografer datang tepat waktu dan hasil foto
+                                                    sangat
+                                                    bagus."
+                                                </p>
                                             </div>
-                                            <p class="testimonial-text">
-                                                "Pelayanan memuaskan, fotografer datang tepat waktu dan hasil foto sangat
-                                                bagus."
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -410,309 +395,308 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Include Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+        <!-- Include Flatpickr JS -->
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 
-    <!-- JavaScript untuk Booking Fotografer -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            const photographerId = document.getElementById('photographerId').value;
-            let selectedDate = '';
-            let currentStep = 1;
-            const totalSteps = 3;
-            const duration = parseInt(document.querySelector('[data-duration]')?.dataset.duration ||
-            1); // Durasi dalam jam dari model
+        <!-- JavaScript untuk Booking Fotografer -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize variables
+                const photographerId = document.getElementById('photographerId').value;
+                let selectedDate = '';
+                let currentStep = 1;
+                const totalSteps = 3;
+                const duration = parseInt(document.querySelector('[data-duration]')?.dataset.duration ||
+                    1); // Durasi dalam jam dari model
 
-            // Store selected time slots in an array
-            window.selectedTimeSlots = [];
-
-            // DOM Elements
-            const progressBar = document.getElementById('wizard-progress-bar');
-            const wizardSteps = document.querySelectorAll('.wizard-step');
-            const wizardPanels = document.querySelectorAll('.wizard-panel');
-
-            const prevBtn = document.getElementById('wizard-prev-btn');
-            const nextBtn = document.getElementById('wizard-next-btn');
-            const submitBtn = document.getElementById('wizard-submit-btn');
-
-            // Initialize Flatpickr inline calendar
-            const calendar = flatpickr("#inline-calendar", {
-                inline: true,
-                locale: 'id',
-                dateFormat: 'Y-m-d',
-                minDate: 'today',
-                maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
-                responsive: true, // Enable responsive mode
-                onChange: function(selectedDates, dateStr) {
-                    selectedDate = dateStr;
-                    document.getElementById('selectedDate').value = dateStr;
-
-                    // Enable next button
-                    nextBtn.disabled = false;
-                }
-            });
-
-            // Update progress bar
-            function updateProgressBar() {
-                const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-                progressBar.style.width = `${progressPercentage}%`;
-            }
-
-            // Update step states
-            function updateSteps() {
-                wizardSteps.forEach((step, index) => {
-                    const stepNumber = index + 1;
-
-                    // Remove all states
-                    step.classList.remove('active', 'completed');
-
-                    // Set appropriate state
-                    if (stepNumber === currentStep) {
-                        step.classList.add('active');
-                    } else if (stepNumber < currentStep) {
-                        step.classList.add('completed');
-                    }
-                });
-            }
-
-            // Show/hide panels
-            function showPanel() {
-                wizardPanels.forEach((panel, index) => {
-                    const panelNumber = index + 1;
-
-                    if (panelNumber === currentStep) {
-                        panel.classList.add('active');
-                    } else {
-                        panel.classList.remove('active');
-                    }
-                });
-            }
-
-            // Update buttons
-            function updateButtons() {
-                prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
-                nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
-                submitBtn.style.display = currentStep === totalSteps ? 'flex' : 'none';
-
-                // Disable next button on date selection step if no date is selected
-                if (currentStep === 1) {
-                    nextBtn.disabled = !selectedDate;
-                }
-
-                // Disable next button on time selection step if no time is selected
-                if (currentStep === 2) {
-                    nextBtn.disabled = window.selectedTimeSlots.length === 0;
-                }
-            }
-
-            // Function to update selected time slots
-            function updateSelectedTimeSlots() {
-                // Clear previous selection
+                // Store selected time slots in an array
                 window.selectedTimeSlots = [];
 
-                // Collect all selected slots
-                document.querySelectorAll('.time-slot.slot-selected').forEach(slot => {
-                    window.selectedTimeSlots.push({
-                        startTime: slot.dataset.startTime,
-                        endTime: slot.dataset.endTime,
-                        display: slot.dataset.display
-                    });
+                // DOM Elements
+                const progressBar = document.getElementById('wizard-progress-bar');
+                const wizardSteps = document.querySelectorAll('.wizard-step');
+                const wizardPanels = document.querySelectorAll('.wizard-panel');
+
+                const prevBtn = document.getElementById('wizard-prev-btn');
+                const nextBtn = document.getElementById('wizard-next-btn');
+                const submitBtn = document.getElementById('wizard-submit-btn');
+
+                // Initialize Flatpickr inline calendar
+                const calendar = flatpickr("#inline-calendar", {
+                    inline: true,
+                    locale: 'id',
+                    dateFormat: 'Y-m-d',
+                    minDate: 'today',
+                    maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
+                    responsive: true, // Enable responsive mode
+                    onChange: function(selectedDates, dateStr) {
+                        selectedDate = dateStr;
+                        document.getElementById('selectedDate').value = dateStr;
+
+                        // Enable next button
+                        nextBtn.disabled = false;
+                    }
                 });
 
-                // Sort them by start time
-                window.selectedTimeSlots.sort((a, b) => {
-                    return a.startTime.localeCompare(b.startTime);
-                });
-            }
-
-            // Navigate to step
-            function goToStep(step) {
-                currentStep = step;
-                updateProgressBar();
-                updateSteps();
-                showPanel();
-                updateButtons();
-
-                // Additional actions based on step
-                if (step === 2 && selectedDate) {
-                    // Format date for display
-                    const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-                    document.getElementById('selected-date-display').textContent = formattedDate;
-
-                    // Load available time slots
-                    loadAvailableSlots(selectedDate);
+                // Update progress bar
+                function updateProgressBar() {
+                    const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+                    progressBar.style.width = `${progressPercentage}%`;
                 }
 
-                if (step === 3) {
-                    // Update confirmation details
-                    const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
+                // Update step states
+                function updateSteps() {
+                    wizardSteps.forEach((step, index) => {
+                        const stepNumber = index + 1;
+
+                        // Remove all states
+                        step.classList.remove('active', 'completed');
+
+                        // Set appropriate state
+                        if (stepNumber === currentStep) {
+                            step.classList.add('active');
+                        } else if (stepNumber < currentStep) {
+                            step.classList.add('completed');
+                        }
                     });
-                    document.getElementById('confirm-date').textContent = formattedDate;
+                }
 
-                    // Update selected time display
-                    const selectedTimeDisplay = document.getElementById('selected-time-display');
+                // Show/hide panels
+                function showPanel() {
+                    wizardPanels.forEach((panel, index) => {
+                        const panelNumber = index + 1;
 
-                    if (window.selectedTimeSlots && window.selectedTimeSlots.length > 0) {
-                        // Create HTML for all selected time slots
-                        let timeSlotHTML = '<div class="selected-slots">';
+                        if (panelNumber === currentStep) {
+                            panel.classList.add('active');
+                        } else {
+                            panel.classList.remove('active');
+                        }
+                    });
+                }
 
-                        window.selectedTimeSlots.forEach((slot, index) => {
-                            timeSlotHTML += `
+                // Update buttons
+                function updateButtons() {
+                    prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
+                    nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
+                    submitBtn.style.display = currentStep === totalSteps ? 'flex' : 'none';
+
+                    // Disable next button on date selection step if no date is selected
+                    if (currentStep === 1) {
+                        nextBtn.disabled = !selectedDate;
+                    }
+
+                    // Disable next button on time selection step if no time is selected
+                    if (currentStep === 2) {
+                        nextBtn.disabled = window.selectedTimeSlots.length === 0;
+                    }
+                }
+
+                // Function to update selected time slots
+                function updateSelectedTimeSlots() {
+                    // Clear previous selection
+                    window.selectedTimeSlots = [];
+
+                    // Collect all selected slots
+                    document.querySelectorAll('.time-slot.slot-selected').forEach(slot => {
+                        window.selectedTimeSlots.push({
+                            startTime: slot.dataset.startTime,
+                            endTime: slot.dataset.endTime,
+                            display: slot.dataset.display
+                        });
+                    });
+
+                    // Sort them by start time
+                    window.selectedTimeSlots.sort((a, b) => {
+                        return a.startTime.localeCompare(b.startTime);
+                    });
+                }
+
+                // Navigate to step
+                function goToStep(step) {
+                    currentStep = step;
+                    updateProgressBar();
+                    updateSteps();
+                    showPanel();
+                    updateButtons();
+
+                    // Additional actions based on step
+                    if (step === 2 && selectedDate) {
+                        // Format date for display
+                        const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        });
+                        document.getElementById('selected-date-display').textContent = formattedDate;
+
+                        // Load available time slots
+                        loadAvailableSlots(selectedDate);
+                    }
+
+                    if (step === 3) {
+                        // Update confirmation details
+                        const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        });
+                        document.getElementById('confirm-date').textContent = formattedDate;
+
+                        // Update selected time display
+                        const selectedTimeDisplay = document.getElementById('selected-time-display');
+
+                        if (window.selectedTimeSlots && window.selectedTimeSlots.length > 0) {
+                            // Create HTML for all selected time slots
+                            let timeSlotHTML = '<div class="selected-slots">';
+
+                            window.selectedTimeSlots.forEach((slot, index) => {
+                                timeSlotHTML += `
                         <div class="selected-slot-item mb-2 p-2  ">
                             <i class="fas fa-clock me-2"></i>
                             <strong>Slot ${index + 1}:</strong> ${slot.display}
                         </div>
                     `;
-                        });
+                            });
 
-                        timeSlotHTML += '</div>';
-                        selectedTimeDisplay.innerHTML = timeSlotHTML;
+                            timeSlotHTML += '</div>';
+                            selectedTimeDisplay.innerHTML = timeSlotHTML;
 
-                        // Get the base price per hour
-                        const basePrice = document.querySelector('.price-tag .h3')?.textContent || '';
-                        let pricePerHour = 0;
+                            // Get the base price per hour
+                            const basePrice = document.querySelector('.price-tag .h3')?.textContent || '';
+                            let pricePerHour = 0;
 
-                        // Extract the numeric value from "Rp 300.000" format
-                        const priceMatch = basePrice.match(/\d+(\.\d+)*/);
-                        if (priceMatch) {
-                            pricePerHour = parseInt(priceMatch[0].replace(/\./g, ''));
-                        }
+                            // Extract the numeric value from "Rp 300.000" format
+                            const priceMatch = basePrice.match(/\d+(\.\d+)*/);
+                            if (priceMatch) {
+                                pricePerHour = parseInt(priceMatch[0].replace(/\./g, ''));
+                            }
 
-                        // Calculate total price (price per hour * number of selected slots)
-                        const totalPrice = pricePerHour * window.selectedTimeSlots.length;
-                        document.getElementById('total-price').textContent = 'Rp ' + numberWithCommas(totalPrice);
-                    } else {
-                        selectedTimeDisplay.innerHTML = `
+                            // Calculate total price (price per hour * number of selected slots)
+                            const totalPrice = pricePerHour * window.selectedTimeSlots.length;
+                            document.getElementById('total-price').textContent = 'Rp ' + numberWithCommas(totalPrice);
+                        } else {
+                            selectedTimeDisplay.innerHTML = `
                     <i class="fas fa-info-circle me-2"></i>
                     Belum ada waktu yang dipilih
                 `;
+                        }
                     }
                 }
-            }
 
-            // Helper function for formatting numbers with commas
-            function numberWithCommas(x) {
-                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
-
-            // Next button click handler
-            nextBtn.addEventListener('click', function() {
-                if (currentStep < totalSteps) {
-                    goToStep(currentStep + 1);
-                }
-            });
-
-            // Previous button click handler
-            prevBtn.addEventListener('click', function() {
-                if (currentStep > 1) {
-                    goToStep(currentStep - 1);
-                }
-            });
-
-            // Submit button click handler (Add to Cart)
-            submitBtn.addEventListener('click', function() {
-                // Check if we have selected time slots
-                if (!window.selectedTimeSlots || window.selectedTimeSlots.length === 0) {
-                    showToast('Error', 'Silakan pilih setidaknya satu slot waktu', 'error');
-                    return;
+                // Helper function for formatting numbers with commas
+                function numberWithCommas(x) {
+                    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 }
 
-                // Disable button and show loading state
-                this.disabled = true;
-                const originalText = this.innerHTML;
-                this.innerHTML = `
+                // Next button click handler
+                nextBtn.addEventListener('click', function() {
+                    if (currentStep < totalSteps) {
+                        goToStep(currentStep + 1);
+                    }
+                });
+
+                // Previous button click handler
+                prevBtn.addEventListener('click', function() {
+                    if (currentStep > 1) {
+                        goToStep(currentStep - 1);
+                    }
+                });
+
+                // Submit button click handler (Add to Cart)
+                submitBtn.addEventListener('click', function() {
+                    // Check if we have selected time slots
+                    if (!window.selectedTimeSlots || window.selectedTimeSlots.length === 0) {
+                        showToast('Error', 'Silakan pilih setidaknya satu slot waktu', 'error');
+                        return;
+                    }
+
+                    // Disable button and show loading state
+                    this.disabled = true;
+                    const originalText = this.innerHTML;
+                    this.innerHTML = `
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             <span class="ms-2">Menambahkan...</span>
         `;
 
-                // Prepare data for API request
-                const requestData = {
-                    type: 'photographer',
-                    photographer_id: parseInt(photographerId),
-                    date: selectedDate,
-                    time_slots: window.selectedTimeSlots
-                };
+                    // Prepare data for API request
+                    const requestData = {
+                        type: 'photographer',
+                        photographer_id: parseInt(photographerId),
+                        date: selectedDate,
+                        time_slots: window.selectedTimeSlots
+                    };
 
-                // Log data yang akan dikirim (untuk debugging)
-                console.log('Sending data:', requestData);
+                    // Log data yang akan dikirim (untuk debugging)
+                    console.log('Sending data:', requestData);
 
-                // Get CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    // Get CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                // Send request to add to cart
-                fetch('/cart/add', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(requestData)
-                    })
-                    .then(response => {
-                        // Log response status (untuk debugging)
-                        console.log('Response status:', response.status);
+                    // Send request to add to cart
+                    fetch('/cart/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(requestData)
+                        })
+                        .then(response => {
+                            // Log response status (untuk debugging)
+                            console.log('Response status:', response.status);
 
-                        return response.json().then(data => {
-                            if (!response.ok) {
-                                throw new Error(data.message || 'Error: ' + response
-                                .statusText);
+                            return response.json().then(data => {
+                                if (!response.ok) {
+                                    throw new Error(data.message || 'Error: ' + response
+                                        .statusText);
+                                }
+                                return data;
+                            });
+                        })
+                        .then(data => {
+                            // Log response data (untuk debugging)
+                            console.log('Response data:', data);
+
+                            if (data.success) {
+                                // Show success message
+                                showToast('Success', data.message, 'success');
+
+                                // Update cart count in navbar if exists
+                                const cartCountElement = document.querySelector('.cart-count');
+                                if (cartCountElement) {
+                                    cartCountElement.textContent = data.cart_count;
+                                }
+
+                                // Redirect to cart page or stay on current page based on preference
+                                setTimeout(() => {
+                                    window.location.href = '/cart';
+                                }, 1500);
+                            } else {
+                                throw new Error(data.message || 'Failed to add to cart');
                             }
-                            return data;
+                        })
+                        .catch(error => {
+                            console.error('Error adding to cart:', error);
+                            showToast('Error', error.message ||
+                                'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+
+                            // Restore button state
+                            this.disabled = false;
+                            this.innerHTML = originalText;
                         });
-                    })
-                    .then(data => {
-                        // Log response data (untuk debugging)
-                        console.log('Response data:', data);
+                });
 
-                        if (data.success) {
-                            // Show success message
-                            showToast('Success', data.message, 'success');
+                // Function to load available slots
+                function loadAvailableSlots(date) {
+                    const slotsWrapper = document.getElementById('time-slots-wrapper');
 
-                            // Update cart count in navbar if exists
-                            const cartCountElement = document.querySelector('.cart-count');
-                            if (cartCountElement) {
-                                cartCountElement.textContent = data.cart_count;
-                            }
-
-                            // Redirect to cart page or stay on current page based on preference
-                            setTimeout(() => {
-                                window.location.href = '/cart';
-                            }, 1500);
-                        } else {
-                            throw new Error(data.message || 'Failed to add to cart');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error adding to cart:', error);
-                        showToast('Error', error.message ||
-                            'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
-
-                        // Restore button state
-                        this.disabled = false;
-                        this.innerHTML = originalText;
-                    });
-            });
-
-            // Function to load available slots
-            function loadAvailableSlots(date) {
-                const slotsWrapper = document.getElementById('time-slots-wrapper');
-
-                // Show loading state
-                slotsWrapper.innerHTML = `
+                    // Show loading state
+                    slotsWrapper.innerHTML = `
             <div class="text-center py-4 slot-placeholder">
                 <div class="spinner-border text-danger" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -721,73 +705,73 @@
             </div>
         `;
 
-                // Clear selected time slots when loading new date
-                window.selectedTimeSlots = [];
+                    // Clear selected time slots when loading new date
+                    window.selectedTimeSlots = [];
 
-                // Fetch available slots from the server
-                fetch(`/photographer/${photographerId}/available-slots?date=${date}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        renderTimeSlots(data);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching available slots:', error);
-                        slotsWrapper.innerHTML = `
+                    // Fetch available slots from the server
+                    fetch(`/photographer/${photographerId}/available-slots?date=${date}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            renderTimeSlots(data);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching available slots:', error);
+                            slotsWrapper.innerHTML = `
                     <div class="alert alert-danger" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i>
                         Gagal memuat slot waktu. Silakan coba lagi nanti.
                     </div>
                 `;
-                    });
-            }
+                        });
+                }
 
-            // Function to render time slots
-            function renderTimeSlots(slots) {
-                const slotsWrapper = document.getElementById('time-slots-wrapper');
-                const availableSlotsCount = document.getElementById('available-slots-count');
+                // Function to render time slots
+                function renderTimeSlots(slots) {
+                    const slotsWrapper = document.getElementById('time-slots-wrapper');
+                    const availableSlotsCount = document.getElementById('available-slots-count');
 
-                // Clear previous content
-                slotsWrapper.innerHTML = '';
+                    // Clear previous content
+                    slotsWrapper.innerHTML = '';
 
-                // Count available slots
-                const availableCount = slots.filter(slot => slot.is_available).length;
-                availableSlotsCount.textContent = `${availableCount} slot`;
+                    // Count available slots
+                    const availableCount = slots.filter(slot => slot.is_available).length;
+                    availableSlotsCount.textContent = `${availableCount} slot`;
 
-                // If no available slots
-                if (availableCount === 0) {
-                    slotsWrapper.innerHTML = `
+                    // If no available slots
+                    if (availableCount === 0) {
+                        slotsWrapper.innerHTML = `
                 <div class="alert alert-warning" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
                 </div>
             `;
-                    return;
-                }
+                        return;
+                    }
 
-                // Create grid for slots
-                const slotGrid = document.createElement('div');
-                slotGrid.classList.add('time-slots-grid');
+                    // Create grid for slots
+                    const slotGrid = document.createElement('div');
+                    slotGrid.classList.add('time-slots-grid');
 
-                // Add available slots to grid
-                slots.forEach(slot => {
-                    if (slot.is_available) {
-                        const slotDiv = document.createElement('div');
-                        slotDiv.className = 'time-slot slot-available';
-                        if (slot.in_cart) {
-                            slotDiv.classList.add('slot-in-cart');
-                        }
+                    // Add available slots to grid
+                    slots.forEach(slot => {
+                        if (slot.is_available) {
+                            const slotDiv = document.createElement('div');
+                            slotDiv.className = 'time-slot slot-available';
+                            if (slot.in_cart) {
+                                slotDiv.classList.add('slot-in-cart');
+                            }
 
-                        slotDiv.dataset.startTime = slot.start;
-                        slotDiv.dataset.endTime = slot.end;
-                        slotDiv.dataset.display = slot.display;
-                        slotDiv.dataset.price = slot.price;
+                            slotDiv.dataset.startTime = slot.start;
+                            slotDiv.dataset.endTime = slot.end;
+                            slotDiv.dataset.display = slot.display;
+                            slotDiv.dataset.price = slot.price;
 
-                        slotDiv.innerHTML = `
+                            slotDiv.innerHTML = `
                     <div class="slot-time">
                         <i class="fas fa-clock"></i>
                         <span>${slot.display}</span>
@@ -795,53 +779,53 @@
                     <div class="slot-duration">1 Jam</div>
                 `;
 
-                        slotGrid.appendChild(slotDiv);
-                    }
-                });
-
-                slotsWrapper.appendChild(slotGrid);
-
-                // Add slot click event listeners
-                document.querySelectorAll('.time-slot').forEach(slotElement => {
-                    slotElement.addEventListener('click', function() {
-                        // Toggle selection for this slot
-                        this.classList.toggle('slot-selected');
-                        const icon = this.querySelector('.slot-time i');
-
-                        if (this.classList.contains('slot-selected')) {
-                            // If selected
-                            icon.className = 'fas fa-check';
-                        } else {
-                            // If deselected
-                            icon.className = 'fas fa-clock';
+                            slotGrid.appendChild(slotDiv);
                         }
-
-                        // Update the selected time slots array
-                        updateSelectedTimeSlots();
-
-                        // Enable next button if at least one slot is selected
-                        nextBtn.disabled = window.selectedTimeSlots.length === 0;
                     });
-                });
-            }
 
-            // Helper function to show toast notifications
-            function showToast(title, message, type) {
-                // Check if toastr is available
-                if (typeof toastr !== 'undefined') {
-                    toastr[type](message, title);
-                } else {
-                    // Use Bootstrap toast if available
-                    if (typeof bootstrap !== 'undefined') {
-                        // Create toast element
-                        const toastEl = document.createElement('div');
-                        toastEl.className =
-                            `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
-                        toastEl.setAttribute('role', 'alert');
-                        toastEl.setAttribute('aria-live', 'assertive');
-                        toastEl.setAttribute('aria-atomic', 'true');
+                    slotsWrapper.appendChild(slotGrid);
 
-                        toastEl.innerHTML = `
+                    // Add slot click event listeners
+                    document.querySelectorAll('.time-slot').forEach(slotElement => {
+                        slotElement.addEventListener('click', function() {
+                            // Toggle selection for this slot
+                            this.classList.toggle('slot-selected');
+                            const icon = this.querySelector('.slot-time i');
+
+                            if (this.classList.contains('slot-selected')) {
+                                // If selected
+                                icon.className = 'fas fa-check';
+                            } else {
+                                // If deselected
+                                icon.className = 'fas fa-clock';
+                            }
+
+                            // Update the selected time slots array
+                            updateSelectedTimeSlots();
+
+                            // Enable next button if at least one slot is selected
+                            nextBtn.disabled = window.selectedTimeSlots.length === 0;
+                        });
+                    });
+                }
+
+                // Helper function to show toast notifications
+                function showToast(title, message, type) {
+                    // Check if toastr is available
+                    if (typeof toastr !== 'undefined') {
+                        toastr[type](message, title);
+                    } else {
+                        // Use Bootstrap toast if available
+                        if (typeof bootstrap !== 'undefined') {
+                            // Create toast element
+                            const toastEl = document.createElement('div');
+                            toastEl.className =
+                                `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
+                            toastEl.setAttribute('role', 'alert');
+                            toastEl.setAttribute('aria-live', 'assertive');
+                            toastEl.setAttribute('aria-atomic', 'true');
+
+                            toastEl.innerHTML = `
                     <div class="d-flex">
                         <div class="toast-body">
                             <strong>${title}:</strong> ${message}
@@ -850,599 +834,599 @@
                     </div>
                 `;
 
-                        // Add to container
-                        const toastContainer = document.querySelector('.toast-container');
-                        if (!toastContainer) {
-                            const container = document.createElement('div');
-                            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-                            document.body.appendChild(container);
-                            container.appendChild(toastEl);
-                        } else {
-                            toastContainer.appendChild(toastEl);
-                        }
+                            // Add to container
+                            const toastContainer = document.querySelector('.toast-container');
+                            if (!toastContainer) {
+                                const container = document.createElement('div');
+                                container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                                document.body.appendChild(container);
+                                container.appendChild(toastEl);
+                            } else {
+                                toastContainer.appendChild(toastEl);
+                            }
 
-                        // Show toast
-                        const toast = new bootstrap.Toast(toastEl);
-                        toast.show();
-                    } else {
-                        // Fallback to alert
-                        alert(`${title}: ${message}`);
+                            // Show toast
+                            const toast = new bootstrap.Toast(toastEl);
+                            toast.show();
+                        } else {
+                            // Fallback to alert
+                            alert(`${title}: ${message}`);
+                        }
                     }
                 }
+
+                // Initialize the wizard
+                goToStep(1);
+            });
+        </script>
+        <style>
+            /* Wizard Booking Process Styling */
+            .booking-wizard {
+                position: relative;
+                margin-bottom: 2.5rem;
             }
 
-            // Initialize the wizard
-            goToStep(1);
-        });
-    </script>
-    <style>
-        /* Wizard Booking Process Styling */
-        .booking-wizard {
-            position: relative;
-            margin-bottom: 2.5rem;
-        }
-
-        /* Progress Bar Container */
-        .wizard-progress {
-            display: flex;
-            position: relative;
-            margin-bottom: 2rem;
-            padding: 0 10px;
-        }
-
-        .wizard-progress::before {
-            content: "";
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background-color: #e9ecef;
-            z-index: 1;
-        }
-
-        /* Progress Bar Active Line */
-        .wizard-progress-bar {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            height: 4px;
-            background-color: #9e0620;
-            transition: width 0.5s ease;
-            z-index: 2;
-        }
-
-        /* Step Item Styling */
-        .wizard-step {
-            flex: 1;
-            position: relative;
-            z-index: 3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        /* Step Circle */
-        .step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #fff;
-            border: 2px solid #e9ecef;
-            color: #6c757d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 0.75rem;
-            position: relative;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Circle Icon */
-        .step-circle i {
-            font-size: 1rem;
-            display: none;
-        }
-
-        /* Step Status Classes */
-        .wizard-step.active .step-circle {
-            border-color: #9e0620;
-            background-color: #9e0620;
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
-        }
-
-        .wizard-step.completed .step-circle {
-            border-color: #9e0620;
-            background-color: #9e0620;
-            color: white;
-        }
-
-        .wizard-step.completed .step-circle span {
-            display: none;
-        }
-
-        .wizard-step.completed .step-circle i {
-            display: inline;
-        }
-
-        /* Step Label Text */
-        .step-label {
-            color: #6c757d;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            transition: color 0.3s ease;
-        }
-
-        .wizard-step.active .step-label,
-        .wizard-step.completed .step-label {
-            color: #212529;
-        }
-
-        /* Step Description */
-        .step-desc {
-            color: #adb5bd;
-            font-size: 0.8rem;
-            display: none;
-        }
-
-        .wizard-step.active .step-desc {
-            color: #9e0620;
-            display: block;
-        }
-
-        /* Wizard Content Container */
-        .wizard-content {
-            position: relative;
-            overflow: hidden;
-            min-height: 300px;
-        }
-
-        /* Step Panels */
-        .wizard-panel {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .wizard-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Navigation Buttons */
-        .wizard-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .wizard-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .wizard-btn-prev {
-            background-color: #f8f9fa;
-            color: #495057;
-        }
-
-        .wizard-btn-prev:hover {
-            background-color: #e9ecef;
-            transform: translateX(-5px);
-        }
-
-        .wizard-btn-next {
-            background-color: #9e0620;
-            color: white;
-        }
-
-        .wizard-btn-next:hover {
-            background-color: #bb2d3b;
-            transform: translateX(5px);
-        }
-
-        .wizard-btn-submit {
-            background-color: #9e0620;
-            color: white;
-        }
-
-        .wizard-btn-submit:hover {
-            background-color: #bb2d3b;
-            transform: scale(1.05);
-        }
-
-        .wizard-btn i {
-            transition: transform 0.3s ease;
-        }
-
-        .wizard-btn-prev:hover i {
-            transform: translateX(-3px);
-        }
-
-        .wizard-btn-next:hover i {
-            transform: translateX(3px);
-        }
-
-        .wizard-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        /* Calendar and Time Slot Specific Styling */
-
-        /* Time Slots */
-        .time-slots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
-            width: 100%;
-        }
-
-        .time-slot {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid #e9ecef;
-        }
-
-        .time-slot:not(.disabled):hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-color: #9e0620;
-        }
-
-        .slot-time {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 50px;
-            text-align: center;
-            padding: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .slot-time i {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-right: 5px;
-        }
-
-        .slot-price {
-            background-color: #f8f9fa;
-            padding: 0.5rem;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
-        }
-
-        /* Time Slot States */
-        .time-slot.slot-available:hover {
-            border-color: #28a745;
-        }
-
-        .time-slot.slot-selected {
-            border-color: #9e0620;
-            background-color: #fff8f8;
-        }
-
-        .time-slot.slot-selected .slot-time {
-            color: #9e0620;
-        }
-
-        .time-slot.slot-selected .slot-time i {
-            color: #9e0620;
-        }
-
-        .time-slot.slot-booked {
-            border-color: #6c757d;
-            background-color: #f8f9fa;
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .time-slot.slot-in-cart {
-            border-color: #fd7e14;
-            background-color: #fff8f1;
-        }
-
-        .time-slot.slot-in-cart .slot-time i {
-            color: #fd7e14;
-        }
-
-        /* Selected Slots List */
-        .selected-slots-list {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-            width: 100%;
-        }
-
-        .selected-slots-list .list-group-item {
-            background-color: transparent;
-            border-color: #e9ecef;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .selected-slots-list .list-group-item:hover {
-            background-color: #fff;
-            transform: translateX(5px);
-        }
-
-        /* Confirmation Details */
-        .confirmation-details {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-        }
-
-        .confirmation-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .confirmation-item:last-child {
-            border-bottom: none;
-        }
-
-        .confirmation-item .label {
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .confirmation-item .value {
-            color: #212529;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .step-desc {
-                display: none !important;
+            /* Progress Bar Container */
+            .wizard-progress {
+                display: flex;
+                position: relative;
+                margin-bottom: 2rem;
+                padding: 0 10px;
             }
 
             .wizard-progress::before {
-                top: 15px;
+                content: "";
+                position: absolute;
+                top: 20px;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background-color: #e9ecef;
+                z-index: 1;
             }
 
+            /* Progress Bar Active Line */
             .wizard-progress-bar {
-                top: 15px;
+                position: absolute;
+                top: 20px;
+                left: 0;
+                height: 4px;
+                background-color: #9e0620;
+                transition: width 0.5s ease;
+                z-index: 2;
             }
 
-            .step-circle {
-                width: 30px;
-                height: 30px;
-                font-size: 0.9rem;
-            }
-
-            .step-label {
-                font-size: 0.8rem;
-            }
-
-            .time-slots-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .wizard-buttons {
+            /* Step Item Styling */
+            .wizard-step {
+                flex: 1;
+                position: relative;
+                z-index: 3;
+                display: flex;
                 flex-direction: column;
-                gap: 1rem;
+                align-items: center;
+                text-align: center;
+            }
+
+            /* Step Circle */
+            .step-circle {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: #fff;
+                border: 2px solid #e9ecef;
+                color: #6c757d;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 1.1rem;
+                margin-bottom: 0.75rem;
+                position: relative;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Circle Icon */
+            .step-circle i {
+                font-size: 1rem;
+                display: none;
+            }
+
+            /* Step Status Classes */
+            .wizard-step.active .step-circle {
+                border-color: #9e0620;
+                background-color: #9e0620;
+                color: white;
+                transform: scale(1.1);
+                box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            }
+
+            .wizard-step.completed .step-circle {
+                border-color: #9e0620;
+                background-color: #9e0620;
+                color: white;
+            }
+
+            .wizard-step.completed .step-circle span {
+                display: none;
+            }
+
+            .wizard-step.completed .step-circle i {
+                display: inline;
+            }
+
+            /* Step Label Text */
+            .step-label {
+                color: #6c757d;
+                font-weight: 600;
+                font-size: 0.9rem;
+                margin-bottom: 0.25rem;
+                transition: color 0.3s ease;
+            }
+
+            .wizard-step.active .step-label,
+            .wizard-step.completed .step-label {
+                color: #212529;
+            }
+
+            /* Step Description */
+            .step-desc {
+                color: #adb5bd;
+                font-size: 0.8rem;
+                display: none;
+            }
+
+            .wizard-step.active .step-desc {
+                color: #9e0620;
+                display: block;
+            }
+
+            /* Wizard Content Container */
+            .wizard-content {
+                position: relative;
+                overflow: hidden;
+                min-height: 300px;
+            }
+
+            /* Step Panels */
+            .wizard-panel {
+                display: none;
+                animation: fadeIn 0.5s ease;
+            }
+
+            .wizard-panel.active {
+                display: block;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Navigation Buttons */
+            .wizard-buttons {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 2rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid #e9ecef;
             }
 
             .wizard-btn {
-                width: 100%;
-                justify-content: center;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.625rem 1.25rem;
+                border-radius: 50px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                border: none;
+                cursor: pointer;
             }
 
             .wizard-btn-prev {
-                order: 2;
+                background-color: #f8f9fa;
+                color: #495057;
             }
 
-            .wizard-btn-next,
+            .wizard-btn-prev:hover {
+                background-color: #e9ecef;
+                transform: translateX(-5px);
+            }
+
+            .wizard-btn-next {
+                background-color: #9e0620;
+                color: white;
+            }
+
+            .wizard-btn-next:hover {
+                background-color: #bb2d3b;
+                transform: translateX(5px);
+            }
+
             .wizard-btn-submit {
-                order: 1;
+                background-color: #9e0620;
+                color: white;
             }
-        }
 
-        /* Custom Flatpickr Theme - brand color #9e0620 */
-        /* Base Calendar Container */
-        .flatpickr-calendar {
-            width: 100% !important;
-            max-width: 320px !important;
-            box-sizing: border-box !important;
-            padding: 0 !important;
-            margin: 0 auto !important;
-            touch-action: manipulation;
-        }
+            .wizard-btn-submit:hover {
+                background-color: #bb2d3b;
+                transform: scale(1.05);
+            }
 
-        /* Month Navigation Section */
-        .flatpickr-months {
-            background-color: #ffffff;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
+            .wizard-btn i {
+                transition: transform 0.3s ease;
+            }
 
-        .flatpickr-month {
-            color: #fff;
-        }
+            .wizard-btn-prev:hover i {
+                transform: translateX(-3px);
+            }
 
-        .flatpickr-current-month {
-            font-weight: 600;
-        }
+            .wizard-btn-next:hover i {
+                transform: translateX(3px);
+            }
 
-        .flatpickr-monthDropdown-months,
-        .numInputWrapper span.arrowUp,
-        .numInputWrapper span.arrowDown {
-            color: #fff;
-        }
+            .wizard-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none !important;
+            }
 
-        .flatpickr-prev-month,
-        .flatpickr-next-month {
-            fill: #fff;
-        }
+            /* Calendar and Time Slot Specific Styling */
 
-        .flatpickr-prev-month:hover svg,
-        .flatpickr-next-month:hover svg {
-            fill: #e9ecef;
-        }
+            /* Time Slots */
+            .time-slots-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 8px;
+                width: 100%;
+            }
 
-        /* Weekday Headers */
-        span.flatpickr-weekday {
-            color: #9e0620;
-            font-weight: 600;
-            width: 14.2857% !important;
-            max-width: 14.2857% !important;
-            flex-basis: 14.2857% !important;
-        }
+            .time-slot {
+                position: relative;
+                border-radius: 8px;
+                overflow: hidden;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                border: 2px solid #e9ecef;
+            }
 
-        /* Days Container */
-        .flatpickr-days {
-            width: 100% !important;
-        }
+            .time-slot:not(.disabled):hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                border-color: #9e0620;
+            }
 
-        .dayContainer {
-            width: 100% !important;
-            min-width: 100% !important;
-            max-width: 100% !important;
-            display: flex;
-            flex-wrap: wrap;
-        }
+            .slot-time {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 50px;
+                text-align: center;
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
 
-        /* Day Cells */
-        .flatpickr-day {
-            width: 14.2857% !important;
-            max-width: 14.2857% !important;
-            flex-basis: 14.2857% !important;
-            height: 40px !important;
-            line-height: 40px !important;
-            margin: 0 !important;
-            border-radius: 24px !important;
-        }
+            .slot-time i {
+                font-size: 0.85rem;
+                color: #6c757d;
+                margin-right: 5px;
+            }
 
-        /* Day States: Hover */
-        .flatpickr-day:hover {
-            background: #fff8f8;
-            border-color: #fff8f8;
-        }
+            .slot-price {
+                background-color: #f8f9fa;
+                padding: 0.5rem;
+                text-align: center;
+                font-size: 0.8rem;
+                color: #6c757d;
+                border-top: 1px solid #e9ecef;
+            }
 
-        /* Day States: Today */
-        .flatpickr-day.today {
-            border-color: #9e0620;
-        }
+            /* Time Slot States */
+            .time-slot.slot-available:hover {
+                border-color: #28a745;
+            }
 
-        .flatpickr-day.today:hover {
-            background: #fff8f8;
-            color: #9e0620;
-        }
+            .time-slot.slot-selected {
+                border-color: #9e0620;
+                background-color: #fff8f8;
+            }
 
-        /* Day States: Selected */
-        .flatpickr-day.selected,
-        .flatpickr-day.startRange,
-        .flatpickr-day.endRange,
-        .flatpickr-day.selected.inRange,
-        .flatpickr-day.startRange.inRange,
-        .flatpickr-day.endRange.inRange,
-        .flatpickr-day.selected:focus,
-        .flatpickr-day.startRange:focus,
-        .flatpickr-day.endRange:focus,
-        .flatpickr-day.selected:hover,
-        .flatpickr-day.startRange:hover,
-        .flatpickr-day.endRange:hover,
-        .flatpickr-day.selected.prevMonthDay,
-        .flatpickr-day.startRange.prevMonthDay,
-        .flatpickr-day.endRange.prevMonthDay,
-        .flatpickr-day.selected.nextMonthDay,
-        .flatpickr-day.startRange.nextMonthDay,
-        .flatpickr-day.endRange.nextMonthDay {
-            background: #9e0620;
-            border-color: #9e0620;
-            color: #fff;
-        }
+            .time-slot.slot-selected .slot-time {
+                color: #9e0620;
+            }
 
-        /* Range Selection */
-        .flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
-        .flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
-        .flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
-            box-shadow: -10px 0 0 #9e0620;
-        }
+            .time-slot.slot-selected .slot-time i {
+                color: #9e0620;
+            }
 
-        /* Next Month Days (within booking window) */
-        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
-            color: #393939 !important;
-            font-weight: normal !important;
-            background-color: transparent !important;
-            opacity: 1 !important;
-        }
+            .time-slot.slot-booked {
+                border-color: #6c757d;
+                background-color: #f8f9fa;
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
 
-        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
-            background-color: #fff8f8 !important;
-            border-color: #fff8f8 !important;
-            color: #9e0620 !important;
-        }
+            .time-slot.slot-in-cart {
+                border-color: #fd7e14;
+                background-color: #fff8f1;
+            }
 
-        .flatpickr-day.nextMonthDay.selected {
-            background-color: #9e0620 !important;
-            border-color: #9e0620 !important;
-            color: #fff !important;
-        }
+            .time-slot.slot-in-cart .slot-time i {
+                color: #fd7e14;
+            }
 
-        /* Mobile Adjustments */
-        @media (max-width: 576px) {
+            /* Selected Slots List */
+            .selected-slots-list {
+                background-color: #f8f9fa;
+                border-radius: 10px;
+                padding: 1rem;
+                width: 100%;
+            }
+
+            .selected-slots-list .list-group-item {
+                background-color: transparent;
+                border-color: #e9ecef;
+                padding: 0.75rem 1rem;
+                margin-bottom: 0.5rem;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+
+            .selected-slots-list .list-group-item:hover {
+                background-color: #fff;
+                transform: translateX(5px);
+            }
+
+            /* Confirmation Details */
+            .confirmation-details {
+                background-color: #f8f9fa;
+                border-radius: 10px;
+                padding: 1rem;
+            }
+
+            .confirmation-item {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .confirmation-item:last-child {
+                border-bottom: none;
+            }
+
+            .confirmation-item .label {
+                font-weight: 600;
+                color: #495057;
+            }
+
+            .confirmation-item .value {
+                color: #212529;
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .step-desc {
+                    display: none !important;
+                }
+
+                .wizard-progress::before {
+                    top: 15px;
+                }
+
+                .wizard-progress-bar {
+                    top: 15px;
+                }
+
+                .step-circle {
+                    width: 30px;
+                    height: 30px;
+                    font-size: 0.9rem;
+                }
+
+                .step-label {
+                    font-size: 0.8rem;
+                }
+
+                .time-slots-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+
+                .wizard-buttons {
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+
+                .wizard-btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                .wizard-btn-prev {
+                    order: 2;
+                }
+
+                .wizard-btn-next,
+                .wizard-btn-submit {
+                    order: 1;
+                }
+            }
+
+            /* Custom Flatpickr Theme - brand color #9e0620 */
+            /* Base Calendar Container */
             .flatpickr-calendar {
-                max-width: 100%;
+                width: 100% !important;
+                max-width: 320px !important;
+                box-sizing: border-box !important;
+                padding: 0 !important;
+                margin: 0 auto !important;
+                touch-action: manipulation;
             }
 
+            /* Month Navigation Section */
+            .flatpickr-months {
+                background-color: #ffffff;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }
+
+            .flatpickr-month {
+                color: #fff;
+            }
+
+            .flatpickr-current-month {
+                font-weight: 600;
+            }
+
+            .flatpickr-monthDropdown-months,
+            .numInputWrapper span.arrowUp,
+            .numInputWrapper span.arrowDown {
+                color: #fff;
+            }
+
+            .flatpickr-prev-month,
+            .flatpickr-next-month {
+                fill: #fff;
+            }
+
+            .flatpickr-prev-month:hover svg,
+            .flatpickr-next-month:hover svg {
+                fill: #e9ecef;
+            }
+
+            /* Weekday Headers */
+            span.flatpickr-weekday {
+                color: #9e0620;
+                font-weight: 600;
+                width: 14.2857% !important;
+                max-width: 14.2857% !important;
+                flex-basis: 14.2857% !important;
+            }
+
+            /* Days Container */
+            .flatpickr-days {
+                width: 100% !important;
+            }
+
+            .dayContainer {
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            /* Day Cells */
             .flatpickr-day {
-                height: 35px !important;
-                line-height: 35px !important;
+                width: 14.2857% !important;
+                max-width: 14.2857% !important;
+                flex-basis: 14.2857% !important;
+                height: 40px !important;
+                line-height: 40px !important;
+                margin: 0 !important;
+                border-radius: 24px !important;
             }
-        }
 
-        .slot-membership {
-            background-color: #ffeeba;
-            /* Warna kuning lembut */
-            border-color: #ffdf7e;
-            cursor: not-allowed;
-        }
+            /* Day States: Hover */
+            .flatpickr-day:hover {
+                background: #fff8f8;
+                border-color: #fff8f8;
+            }
 
-        .slot-membership .slot-time {
-            color: #856404;
-            /* Warna text kuning gelap */
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
-@endsection
+            /* Day States: Today */
+            .flatpickr-day.today {
+                border-color: #9e0620;
+            }
+
+            .flatpickr-day.today:hover {
+                background: #fff8f8;
+                color: #9e0620;
+            }
+
+            /* Day States: Selected */
+            .flatpickr-day.selected,
+            .flatpickr-day.startRange,
+            .flatpickr-day.endRange,
+            .flatpickr-day.selected.inRange,
+            .flatpickr-day.startRange.inRange,
+            .flatpickr-day.endRange.inRange,
+            .flatpickr-day.selected:focus,
+            .flatpickr-day.startRange:focus,
+            .flatpickr-day.endRange:focus,
+            .flatpickr-day.selected:hover,
+            .flatpickr-day.startRange:hover,
+            .flatpickr-day.endRange:hover,
+            .flatpickr-day.selected.prevMonthDay,
+            .flatpickr-day.startRange.prevMonthDay,
+            .flatpickr-day.endRange.prevMonthDay,
+            .flatpickr-day.selected.nextMonthDay,
+            .flatpickr-day.startRange.nextMonthDay,
+            .flatpickr-day.endRange.nextMonthDay {
+                background: #9e0620;
+                border-color: #9e0620;
+                color: #fff;
+            }
+
+            /* Range Selection */
+            .flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
+            .flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
+            .flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
+                box-shadow: -10px 0 0 #9e0620;
+            }
+
+            /* Next Month Days (within booking window) */
+            .flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
+                color: #393939 !important;
+                font-weight: normal !important;
+                background-color: transparent !important;
+                opacity: 1 !important;
+            }
+
+            .flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
+                background-color: #fff8f8 !important;
+                border-color: #fff8f8 !important;
+                color: #9e0620 !important;
+            }
+
+            .flatpickr-day.nextMonthDay.selected {
+                background-color: #9e0620 !important;
+                border-color: #9e0620 !important;
+                color: #fff !important;
+            }
+
+            /* Mobile Adjustments */
+            @media (max-width: 576px) {
+                .flatpickr-calendar {
+                    max-width: 100%;
+                }
+
+                .flatpickr-day {
+                    height: 35px !important;
+                    line-height: 35px !important;
+                }
+            }
+
+            .slot-membership {
+                background-color: #ffeeba;
+                /* Warna kuning lembut */
+                border-color: #ffdf7e;
+                cursor: not-allowed;
+            }
+
+            .slot-membership .slot-time {
+                color: #856404;
+                /* Warna text kuning gelap */
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+        </script>
+    @endsection

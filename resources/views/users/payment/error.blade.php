@@ -36,17 +36,18 @@
                                 <i class="fas fa-times-circle"></i>
                             </div>
                             <h2 class="fw-bold mb-3">Pembayaran Gagal</h2>
-                            <p class="lead text-muted">Maaf, pembayaran Anda tidak dapat diproses. Terjadi kesalahan selama proses pembayaran.</p>
+                            <p class="lead text-muted">Maaf, pembayaran Anda tidak dapat diproses. Terjadi kesalahan selama
+                                proses pembayaran.</p>
                         </div>
 
-                        @if(isset($errorMessage))
-                        <div class="error-message p-4 rounded-3 mb-4">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-                                <h5 class="fw-bold mb-0">Pesan Error</h5>
+                        @if (isset($errorMessage))
+                            <div class="error-message p-4 rounded-3 mb-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                    <h5 class="fw-bold mb-0">Pesan Error</h5>
+                                </div>
+                                <p class="mb-0">{{ $errorMessage }}</p>
                             </div>
-                            <p class="mb-0">{{ $errorMessage }}</p>
-                        </div>
                         @endif
 
                         <div class="failure-reasons p-4 rounded-3 mb-4">
@@ -92,7 +93,9 @@
                                 <i class="fas fa-lightbulb text-warning me-2"></i>
                                 <h5 class="fw-bold mb-0">Apa yang bisa Anda lakukan?</h5>
                             </div>
-                            <p class="mb-0">Anda dapat mencoba pembayaran kembali dengan metode pembayaran yang sama atau berbeda. Pastikan Anda memiliki koneksi internet yang stabil dan saldo yang mencukupi sebelum melakukan pembayaran ulang.</p>
+                            <p class="mb-0">Anda dapat mencoba pembayaran kembali dengan metode pembayaran yang sama atau
+                                berbeda. Pastikan Anda memiliki koneksi internet yang stabil dan saldo yang mencukupi
+                                sebelum melakukan pembayaran ulang.</p>
                         </div>
 
                         <div class="action-buttons text-center">
@@ -323,6 +326,7 @@
 
         /* Responsive Adjustments */
         @media (max-width: 768px) {
+
             .breadcrumb-link,
             .breadcrumb-item.active {
                 padding: 6px;
@@ -343,13 +347,14 @@
                 flex-direction: column;
             }
 
-            .btn-outline, .btn-primary {
+            .btn-outline,
+            .btn-primary {
                 width: 100%;
             }
         }
     </style>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
 @endsection

@@ -30,9 +30,9 @@ public function handle(Request $request, Closure $next, ...$roles)
         case 'admin':
             return redirect()->route('admin.pos.index')->with('error', 'Anda tidak memiliki akses');
         case 'owner':
-            return redirect()->route('owner.dashboard')->with('error', 'Anda tidak memiliki akses');
+            return redirect()->route('owner.reports.index')->with('error', 'Anda tidak memiliki akses');
         case 'photographer':
-            return redirect()->route('photographers.dashboard')->with('error', 'Anda tidak memiliki akses');
+            return redirect()->route('photographers.schedule')->with('error', 'Anda tidak memiliki akses');
         default:
             return redirect()->route('welcome')->with('error', 'Anda tidak memiliki akses');
     }

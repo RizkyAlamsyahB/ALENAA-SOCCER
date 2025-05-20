@@ -350,9 +350,7 @@
                                         <i class="bi bi-cart-check"></i> Proses Pembayaran
                                     </button>
 
-                                    <a href="{{ route('admin.pos.history') }}" class="btn btn-secondary">
-                                        <i class="bi bi-clock-history"></i> Riwayat Transaksi
-                                    </a>
+                                   
                                 </div>
                             </form>
                         </div>

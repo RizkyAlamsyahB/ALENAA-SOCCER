@@ -84,19 +84,17 @@
             <div class="dropdown-header px-4 py-3 border-bottom border-secondary">
                 <div class="fw-bold">{{ Auth::user()->name }}</div>
                 <div class="text-light-50 small">{{ Auth::user()->email }}</div>
-                <div class="text-light-50 small">
-                    Role: {{ ucfirst(Auth::user()->role ?? 'user') }}
-                </div>
+
             </div>
         </li>
         <li><a class="dropdown-item px-4 py-3 text-dark" href="{{ route('profile.edit') }}">
-                <i class="fas fa-user me-2"></i>My Profile
+                <i class="fas fa-user me-2"></i>Profil
             </a></li>
         <li><a class="dropdown-item px-4 py-3 text-dark" href="{{ route('user.membership.my-memberships') }}">
-                <i class="fas fa-user-tag me-2"></i>My Membership
+                <i class="fas fa-user-tag me-2"></i>Membership Saya
             </a></li>
         <li><a class="dropdown-item px-4 py-3 text-dark" href="{{ route('user.payment.history') }}">
-                <i class="fas fa-receipt me-2"></i>Payment History
+                <i class="fas fa-receipt me-2"></i>Riwayat Pembayaran
             </a></li>
         <li>
             <hr class="dropdown-divider border-secondary m-0">

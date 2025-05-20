@@ -36,8 +36,10 @@ class ProfileController extends Controller
             ->first();
 
         // Default tipe membership jika tidak memiliki membership aktif
-        $membershipType = 'bronze';
-        $membershipName = 'Belum Memiliki Membership';
+// Default jika tidak memiliki membership aktif
+$membershipType = null;
+$membershipName = 'Belum Memiliki Membership';
+
 
         if ($activeMembership && $activeMembership->membership) {
             $membershipType = $activeMembership->membership->type ?? 'bronze';

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Field;
 use App\Models\Review;
+use App\Models\Membership;
 use App\Models\PhotographerBooking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -82,6 +83,12 @@ public function user()
 {
     return $this->belongsTo(User::class);
 }
-
+/**
+ * Get the memberships that use this photographer
+ */
+public function memberships()
+{
+    return $this->hasMany(Membership::class);
+}
 
 }

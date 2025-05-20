@@ -49,7 +49,8 @@
                     <div class="card-body p-4">
                         <!-- Voucher Info Box -->
                         <div class="text-center mb-4 p-4 rounded-4" style="background-color: #f8f9fa;">
-                            <div class="rounded-circle mx-auto mb-3 p-3 d-inline-flex justify-content-center align-items-center" style="background-color: rgba(158, 6, 32, 0.1); width: 80px; height: 80px;">
+                            <div class="rounded-circle mx-auto mb-3 p-3 d-inline-flex justify-content-center align-items-center"
+                                style="background-color: rgba(158, 6, 32, 0.1); width: 80px; height: 80px;">
                                 <i class="fas fa-tag fa-2x" style="color: #9E0620;"></i>
                             </div>
 
@@ -58,18 +59,19 @@
 
                             <div class="mb-2">
                                 <span class="fs-2 fw-bold text-danger">
-                                    @if($voucher->discount_type === 'percentage')
-                                    {{ $voucher->discount_value }}% OFF
+                                    @if ($voucher->discount_type === 'percentage')
+                                        {{ $voucher->discount_value }}% OFF
                                     @else
-                                    Rp {{ number_format($voucher->discount_value) }} OFF
+                                        Rp {{ number_format($voucher->discount_value) }} OFF
                                     @endif
                                 </span>
                             </div>
 
-                            @if($voucher->min_order > 0)
-                            <div class="badge bg-light text-dark p-2">
-                                <i class="fas fa-info-circle me-1"></i> Min. pembelian Rp {{ number_format($voucher->min_order) }}
-                            </div>
+                            @if ($voucher->min_order > 0)
+                                <div class="badge bg-light text-dark p-2">
+                                    <i class="fas fa-info-circle me-1"></i> Min. pembelian Rp
+                                    {{ number_format($voucher->min_order) }}
+                                </div>
                             @endif
                         </div>
 
@@ -82,20 +84,22 @@
                                         <tr>
                                             <td style="width: 40%;" class="text-muted border-0">Jenis Diskon</td>
                                             <td class="fw-medium border-0">
-                                                @if($voucher->discount_type === 'percentage')
-                                                <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle me-2 p-2" style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                                                        <i class="fas fa-percent" style="color: #9E0620;"></i>
+                                                @if ($voucher->discount_type === 'percentage')
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="rounded-circle me-2 p-2"
+                                                            style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                            <i class="fas fa-percent" style="color: #9E0620;"></i>
+                                                        </div>
+                                                        Persentase ({{ $voucher->discount_value }}%)
                                                     </div>
-                                                    Persentase ({{ $voucher->discount_value }}%)
-                                                </div>
                                                 @else
-                                                <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle me-2 p-2" style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                                                        <i class="fas fa-money-bill" style="color: #9E0620;"></i>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="rounded-circle me-2 p-2"
+                                                            style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                            <i class="fas fa-money-bill" style="color: #9E0620;"></i>
+                                                        </div>
+                                                        Nominal (Rp {{ number_format($voucher->discount_value) }})
                                                     </div>
-                                                    Nominal (Rp {{ number_format($voucher->discount_value) }})
-                                                </div>
                                                 @endif
                                             </td>
                                         </tr>
@@ -103,7 +107,8 @@
                                             <td class="text-muted border-0">Poin Dibutuhkan</td>
                                             <td class="fw-medium border-0">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle me-2 p-2" style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <div class="rounded-circle me-2 p-2"
+                                                        style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                         <i class="fas fa-coins" style="color: #9E0620;"></i>
                                                     </div>
                                                     {{ number_format($voucher->points_required) }} poin
@@ -114,13 +119,14 @@
                                             <td class="text-muted border-0">Minimum Pembelian</td>
                                             <td class="fw-medium border-0">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle me-2 p-2" style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <div class="rounded-circle me-2 p-2"
+                                                        style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                         <i class="fas fa-cart-shopping" style="color: #9E0620;"></i>
                                                     </div>
-                                                    @if($voucher->min_order > 0)
-                                                    Rp {{ number_format($voucher->min_order) }}
+                                                    @if ($voucher->min_order > 0)
+                                                        Rp {{ number_format($voucher->min_order) }}
                                                     @else
-                                                    Tidak ada minimum
+                                                        Tidak ada minimum
                                                     @endif
                                                 </div>
                                             </td>
@@ -129,13 +135,14 @@
                                             <td class="text-muted border-0">Maksimum Diskon</td>
                                             <td class="fw-medium border-0">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle me-2 p-2" style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <div class="rounded-circle me-2 p-2"
+                                                        style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                         <i class="fas fa-tag" style="color: #9E0620;"></i>
                                                     </div>
-                                                    @if($voucher->max_discount)
-                                                    Rp {{ number_format($voucher->max_discount) }}
+                                                    @if ($voucher->max_discount)
+                                                        Rp {{ number_format($voucher->max_discount) }}
                                                     @else
-                                                    Tidak ada batas
+                                                        Tidak ada batas
                                                     @endif
                                                 </div>
                                             </td>
@@ -144,17 +151,18 @@
                                             <td class="text-muted border-0">Berlaku Untuk</td>
                                             <td class="fw-medium border-0">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle me-2 p-2" style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <div class="rounded-circle me-2 p-2"
+                                                        style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                         <i class="fas fa-check-circle" style="color: #9E0620;"></i>
                                                     </div>
-                                                    @if($voucher->applicable_to === 'all')
-                                                    Semua jenis layanan
+                                                    @if ($voucher->applicable_to === 'all')
+                                                        Semua jenis layanan
                                                     @elseif($voucher->applicable_to === 'field_booking')
-                                                    Booking lapangan
+                                                        Booking lapangan
                                                     @elseif($voucher->applicable_to === 'rental_item')
-                                                    Sewa peralatan
+                                                        Sewa peralatan
                                                     @else
-                                                    {{ ucfirst($voucher->applicable_to) }}
+                                                        {{ ucfirst($voucher->applicable_to) }}
                                                     @endif
                                                 </div>
                                             </td>
@@ -163,18 +171,22 @@
                                             <td class="text-muted border-0">Periode Berlaku</td>
                                             <td class="fw-medium border-0">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle me-2 p-2" style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <div class="rounded-circle me-2 p-2"
+                                                        style="background-color: rgba(158, 6, 32, 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                         <i class="fas fa-calendar-alt" style="color: #9E0620;"></i>
                                                     </div>
-                                                    @if($voucher->start_date && $voucher->end_date)
-                                                    {{ \Carbon\Carbon::parse($voucher->start_date)->format('d M Y') }} s/d
-                                                    {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
+                                                    @if ($voucher->start_date && $voucher->end_date)
+                                                        {{ \Carbon\Carbon::parse($voucher->start_date)->format('d M Y') }}
+                                                        s/d
+                                                        {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
                                                     @elseif($voucher->end_date)
-                                                    Hingga {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
+                                                        Hingga
+                                                        {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
                                                     @elseif($voucher->start_date)
-                                                    Mulai {{ \Carbon\Carbon::parse($voucher->start_date)->format('d M Y') }}
+                                                        Mulai
+                                                        {{ \Carbon\Carbon::parse($voucher->start_date)->format('d M Y') }}
                                                     @else
-                                                    Tidak ada batas waktu
+                                                        Tidak ada batas waktu
                                                     @endif
                                                 </div>
                                             </td>
@@ -191,35 +203,36 @@
                                 <li class="mb-2">
                                     Voucher dapat ditukarkan dengan {{ number_format($voucher->points_required) }} poin
                                 </li>
-                                @if($voucher->min_order > 0)
-                                <li class="mb-2">
-                                    Minimum pembelian Rp {{ number_format($voucher->min_order) }}
-                                </li>
+                                @if ($voucher->min_order > 0)
+                                    <li class="mb-2">
+                                        Minimum pembelian Rp {{ number_format($voucher->min_order) }}
+                                    </li>
                                 @endif
 
-                                @if($voucher->max_discount)
-                                <li class="mb-2">
-                                    Maksimum diskon Rp {{ number_format($voucher->max_discount) }}
-                                </li>
+                                @if ($voucher->max_discount)
+                                    <li class="mb-2">
+                                        Maksimum diskon Rp {{ number_format($voucher->max_discount) }}
+                                    </li>
                                 @endif
 
-                                @if($voucher->applicable_to !== 'all')
-                                <li class="mb-2">
-                                    Hanya berlaku untuk
-                                    @if($voucher->applicable_to === 'field_booking')
-                                    booking lapangan
-                                    @elseif($voucher->applicable_to === 'rental_item')
-                                    sewa peralatan
-                                    @else
-                                    {{ $voucher->applicable_to }}
-                                    @endif
-                                </li>
+                                @if ($voucher->applicable_to !== 'all')
+                                    <li class="mb-2">
+                                        Hanya berlaku untuk
+                                        @if ($voucher->applicable_to === 'field_booking')
+                                            booking lapangan
+                                        @elseif($voucher->applicable_to === 'rental_item')
+                                            sewa peralatan
+                                        @else
+                                            {{ $voucher->applicable_to }}
+                                        @endif
+                                    </li>
                                 @endif
 
-                                @if($voucher->end_date)
-                                <li class="mb-2">
-                                    Voucher berlaku hingga {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
-                                </li>
+                                @if ($voucher->end_date)
+                                    <li class="mb-2">
+                                        Voucher berlaku hingga
+                                        {{ \Carbon\Carbon::parse($voucher->end_date)->format('d M Y') }}
+                                    </li>
                                 @endif
 
                                 <li class="mb-2">
@@ -244,14 +257,14 @@
                                         <span class="fs-5 fw-bold text-danger">{{ number_format($user->points) }}</span>
                                     </div>
                                     <div>
-                                        @if($user->points >= $voucher->points_required)
-                                        <div class="badge bg-success bg-opacity-10 text-success p-2">
-                                            <i class="fas fa-check-circle me-1"></i>Cukup
-                                        </div>
+                                        @if ($user->points >= $voucher->points_required)
+                                            <div class="badge bg-success bg-opacity-10 text-success p-2">
+                                                <i class="fas fa-check-circle me-1"></i>Cukup
+                                            </div>
                                         @else
-                                        <div class="badge bg-danger bg-opacity-10 text-danger p-2">
-                                            <i class="fas fa-times-circle me-1"></i>Tidak Cukup
-                                        </div>
+                                            <div class="badge bg-danger bg-opacity-10 text-danger p-2">
+                                                <i class="fas fa-times-circle me-1"></i>Tidak Cukup
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -259,17 +272,18 @@
 
                             <div class="col-md-6">
                                 <div class="d-grid">
-                                    @if($user->points >= $voucher->points_required)
-                                    <form action="{{ route('user.points.redeem', $voucher->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-primary rounded-pill w-100" style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
-                                            Tukarkan Sekarang <i class="fas fa-arrow-right ms-2"></i>
-                                        </button>
-                                    </form>
+                                    @if ($user->points >= $voucher->points_required)
+                                        <form action="{{ route('user.points.redeem', $voucher->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary rounded-pill w-100"
+                                                style="background: linear-gradient(135deg, #d00f25 0%, #9e0620 100%); border: none;">
+                                                Tukarkan Sekarang <i class="fas fa-arrow-right ms-2"></i>
+                                            </button>
+                                        </form>
                                     @else
-                                    <button class="btn btn-secondary rounded-pill w-100" disabled>
-                                        Poin Tidak Cukup <i class="fas fa-lock ms-2"></i>
-                                    </button>
+                                        <button class="btn btn-secondary rounded-pill w-100" disabled>
+                                            Poin Tidak Cukup <i class="fas fa-lock ms-2"></i>
+                                        </button>
                                     @endif
                                 </div>
                             </div>
@@ -279,13 +293,11 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
+
     <style>
         /* Hero Section */
         .hero-section {
-    background: linear-gradient(to right, #9e0620, #bb2d3b);
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
             height: 220px;
             position: relative;
             display: flex;
@@ -417,7 +429,12 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Poppins', sans-serif;
         }
 
@@ -429,4 +446,8 @@
             border-radius: 50rem !important;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
 @endsection
