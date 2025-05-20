@@ -155,7 +155,8 @@
 
                     // Show alert
                     alert(
-                        "Waktu pembayaran telah habis. Silakan kembali ke halaman membership untuk proses perpanjangan baru.");
+                        "Waktu pembayaran telah habis. Silakan kembali ke halaman membership untuk proses perpanjangan baru."
+                        );
 
                     // Redirect after 3 seconds
                     setTimeout(function() {

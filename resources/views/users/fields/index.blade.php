@@ -74,16 +74,16 @@
                                 <div class="price-tag">
                                     <span class="text-danger fw-bold">Rp
                                         {{ number_format($field->price, 0, ',', '.') }}</span>
-                                    <small class="text-muted">/hour</small>
+                                    <small class="text-muted">/jam</small>
                                 </div>
                             </div>
                             <div class="mt-3 d-flex justify-content-between">
                                 <div class="badge bg-success bg-opacity-10 text-success p-2">
-                                    <i class="fas fa-check-circle me-1"></i>Available
+                                    <i class="fas fa-check-circle me-1"></i>Tersedia
                                 </div>
                                 <a href="{{ route('user.fields.show', $field->id) }}"
                                     class="btn btn-primary btn-sm rounded-pill">
-                                    Book Now
+                                    Booking
                                     <i class="fas fa-arrow-right ms-2"></i>
                                 </a>
                             </div>

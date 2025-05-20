@@ -11,7 +11,7 @@
     <div class="hero-section" style="margin-top: 50px;">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Membership Program</h1>
+                <h1 class="hero-title">Paket Membership</h1>
                 <div class="breadcrumb-wrapper">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
@@ -31,7 +31,7 @@
     <!-- Intro Section -->
     <section class="intro-section">
         <div class="intro-content">
-            <span class="section-tag">Benefits</span>
+            <span class="section-tag mt-3">Benefits</span>
             <h2>Keuntungan Menjadi Member</h2>
             <p>Nikmati berbagai keuntungan eksklusif dengan bergabung sebagai member kami</p>
 
@@ -73,7 +73,7 @@
     @foreach ($fields as $field)
         <section class="membership-plans-section" id="membership-plans-{{ $field->id }}">
             <div class="section-header">
-                <span class="section-tag">Packages</span>
+                <span class="section-tag">Paket</span>
                 <h2>Paket Membership {{ $field->name }}</h2>
                 <p>Pilih paket membership yang sesuai dengan kebutuhan Anda</p>
             </div>
@@ -378,7 +378,7 @@
     <!-- FAQ Section -->
     <section class="faq-section">
         <div class="section-header">
-            <span class="section-tag">Information</span>
+            <span class="section-tag">Informasi</span>
             <h2>Pertanyaan Umum</h2>
             <p>Temukan jawaban dari pertanyaan yang sering diajukan</p>
         </div>

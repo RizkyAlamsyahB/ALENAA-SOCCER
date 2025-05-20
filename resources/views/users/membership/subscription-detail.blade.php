@@ -85,9 +85,12 @@
                                     <i class="fas fa-calendar-alt"></i>
                                     <div class="date-range">
                                         <span class="date-label">Periode Membership</span>
-                                        <span
-                                            class="date-value">{{ \Carbon\Carbon::parse($subscription->start_date)->format('d M Y') }}
-                                            - {{ \Carbon\Carbon::parse($subscription->end_date)->format('d M Y') }}</span>
+                                       <span class="date-value">
+    {{ \Carbon\Carbon::parse($subscription->start_date)->locale('id')->isoFormat('D MMMM YYYY') }}
+    -
+    {{ \Carbon\Carbon::parse($subscription->end_date)->locale('id')->isoFormat('D MMMM YYYY') }}
+</span>
+
                                     </div>
                                 </div>
                             </div>
@@ -175,11 +178,11 @@
                                                 <td>
                                                     <div class="session-date">
                                                         <div class="day-name">
-                                                            {{ \Carbon\Carbon::parse($session->start_time)->format('l') }}
+                                                            {{ \Carbon\Carbon::parse($session->start_time)->locale('id')->isoFormat('dddd') }}
                                                         </div>
                                                         <div class="date">
-                                                            {{ \Carbon\Carbon::parse($session->start_time)->format('d M Y') }}
-                                                        </div>
+    {{ \Carbon\Carbon::parse($session->start_time)->locale('id')->isoFormat('D MMM YYYY') }}
+</div>
                                                     </div>
                                                 </td>
                                                 <td>
@@ -193,11 +196,11 @@
                                                 <td>
                                                     <span
                                                         class="status-badge
-@if ($session->status === 'completed') badge-completed
-    @elseif($session->status === 'cancelled') badge-cancelled
-    @elseif($session->status === 'upcoming') badge-upcoming
-    @elseif($session->status === 'ongoing') badge-ongoing
-    @else badge-scheduled @endif">
+                                                            @if ($session->status === 'completed') badge-completed
+                                                         @elseif($session->status === 'cancelled') badge-cancelled
+                                                        @elseif($session->status === 'upcoming') badge-upcoming
+                                                        @elseif($session->status === 'ongoing') badge-ongoing
+                                                        @else badge-scheduled @endif">
                                                         @if ($session->status === 'completed')
                                                             <i class="fas fa-check-circle"></i>
                                                         @elseif($session->status === 'cancelled')
@@ -306,34 +309,34 @@
 
                         @endphp
 
-                        @if ($upcomingSessions->count() > 0)
-                            @foreach ($upcomingSessions as $session)
-                                <div class="upcoming-session">
-                                    <div class="session-day">
-                                        <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}
-                                        </div>
-                                        <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->format('M') }}
-                                        </div>
-                                    </div>
-                                    <div class="session-details">
-                                        <div class="time">
-                                            <i class="far fa-clock"></i>
-                                            <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} -
-                                                {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
-                                        </div>
-                                        <div class="weekday">
-                                            {{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="empty-upcoming">
-                                <div class="empty-icon">
-                                    <i class="far fa-calendar"></i>
-                                </div>
-                                <p>Tidak ada sesi mendatang.</p>
-                            </div>
-                        @endif
+@if ($upcomingSessions->count() > 0)
+    @foreach ($upcomingSessions as $session)
+        <div class="upcoming-session">
+            <div class="session-day">
+                <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}
+                </div>
+                <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->locale('id')->isoFormat('MMM') }}
+                </div>
+            </div>
+            <div class="session-details">
+                <div class="time">
+                    <i class="far fa-clock"></i>
+                    <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} -
+                        {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
+                </div>
+                <div class="weekday">
+                    {{ \Carbon\Carbon::parse($session->start_time)->locale('id')->isoFormat('dddd') }}</div>
+            </div>
+        </div>
+    @endforeach
+@else
+    <div class="empty-upcoming">
+        <div class="empty-icon">
+            <i class="far fa-calendar"></i>
+        </div>
+        <p>Tidak ada sesi mendatang.</p>
+    </div>
+@endif
                     </div>
                 </div>
             </div>

@@ -21,7 +21,7 @@
                 <li class="breadcrumb-item">
                     <a href="{{ route('user.fields.index') }}" class="breadcrumb-link">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>Venues</span>
+                        <span>Lapangan</span>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">
@@ -57,7 +57,7 @@
                     <div class="status-badge">
                         <span class="badge-content">
                             <i class="fas fa-check-circle me-1"></i>
-                            Available Now
+                             Tersedia
                         </span>
                     </div>
                 </div>
@@ -227,7 +227,7 @@
                                     <div class="text-md-end text-center price-tag">
                                         <div class="h3 text-danger fw-bold mb-0">Rp
                                             {{ number_format($field->price, 0, ',', '.') }}</div>
-                                        <small class="text-muted">/hour</small>
+                                        <small class="text-muted">/Jam</small>
                                     </div>
                                 </div>
                             </div>
@@ -236,7 +236,7 @@
                         <!-- Membership Packages Card -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
                             <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Membership Packages</h5>
+                                <h5 class="mb-0 fw-bold">Paket Membership</h5>
                             </div>
                             <div class="card-body p-4">
                                 <div class="row g-4">

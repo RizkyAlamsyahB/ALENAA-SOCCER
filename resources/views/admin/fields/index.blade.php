@@ -123,7 +123,7 @@
                     {
                         data: 'price',
                         name: 'price',
-                        render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
+render: $.fn.dataTable.render.number(',', '.', 3, 'Rp ')
                     },
                     {
                         data: 'image',

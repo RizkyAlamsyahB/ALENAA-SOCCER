@@ -41,7 +41,7 @@
                                     <div class="badge-item">
                                         <i
                                             class="fas fa-trophy {{ $membership->type == 'bronze' ? 'text-bronze' : ($membership->type == 'silver' ? 'text-silver' : 'text-gold') }}"></i>
-                                        <span>{{ ucfirst($membership->type) }} Package</span>
+                                        <span>Paket {{ ucfirst($membership->type) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -81,92 +81,92 @@
                             {{ $membership->description ?? 'Nikmati keuntungan menjadi member Alena Soccer dengan jadwal main tetap 3x seminggu. Paket ini memberikan Anda akses ke lapangan premium dengan berbagai fasilitas menarik.' }}
                         </p>
 
-                        <div class="features-grid">
-                            <div class="feature-card">
-                                <div class="feature-icon">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="feature-content">
-                                    <h4>Durasi Sesi</h4>
-                                    <p>{{ $membership->session_duration }} jam per sesi</p>
-                                </div>
-                            </div>
+<div class="features-grid">
+    <div class="feature-card">
+        <div class="feature-icon active">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="feature-content">
+            <h4>Durasi Sesi</h4>
+            <p>{{ $membership->session_duration }} jam per sesi</p>
+        </div>
+    </div>
 
-                            <div class="feature-card">
-                                <div class="feature-icon">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
-                                <div class="feature-content">
-                                    <h4>Permainan per Minggu</h4>
-                                    <p>{{ $membership->sessions_per_week }} sesi</p>
-                                </div>
-                            </div>
+    <div class="feature-card">
+        <div class="feature-icon active">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="feature-content">
+            <h4>Permainan per Minggu</h4>
+            <p>{{ $membership->sessions_per_week }} sesi</p>
+        </div>
+    </div>
 
-                            <div class="feature-card">
-                                <div class="feature-icon {{ $membership->includes_ball ? 'active' : 'inactive' }}">
-                                    <i class="fas fa-futbol"></i>
-                                </div>
-                                <div class="feature-content">
-                                    <h4>Sewa Bola Gratis</h4>
-                                    <p>{{ $membership->includes_ball ? 'Tersedia' : 'Tidak tersedia' }}</p>
-                                </div>
-                            </div>
+    <div class="feature-card">
+        <div class="feature-icon active">
+            <i class="fas fa-futbol"></i>
+        </div>
+        <div class="feature-content">
+            <h4>Sewa Bola Gratis</h4>
+            <p>{{ $membership->includes_ball ? 'Tersedia' : 'Tidak tersedia' }}</p>
+        </div>
+    </div>
 
-                            <div class="feature-card">
-                                <div class="feature-icon {{ $membership->includes_water ? 'active' : 'inactive' }}">
-                                    <i class="fas fa-tint"></i>
-                                </div>
-                                <div class="feature-content">
-                                    <h4>Air Mineral Galon</h4>
-                                    <p>{{ $membership->includes_water ? 'Tersedia' : 'Tidak tersedia' }}</p>
-                                </div>
-                            </div>
+    <div class="feature-card">
+        <div class="feature-icon active">
+            <i class="fas fa-tint"></i>
+        </div>
+        <div class="feature-content">
+            <h4>Air Mineral Galon</h4>
+            <p>{{ $membership->includes_water ? 'Tersedia' : 'Tidak tersedia' }}</p>
+        </div>
+    </div>
 
-                            <div class="feature-card">
-                                <div class="feature-icon {{ $membership->includes_photographer ? 'active' : 'inactive' }}">
-                                    <i class="fas fa-camera"></i>
-                                </div>
-                                <div class="feature-content">
-                                    <h4>Jasa Fotografer</h4>
-                                    <p>{{ $membership->includes_photographer ? $membership->photographer_duration . ' jam' : 'Tidak tersedia' }}
-                                    </p>
-                                </div>
-                            </div>
+    <div class="feature-card">
+        <div class="feature-icon active">
+            <i class="fas fa-camera"></i>
+        </div>
+        <div class="feature-content">
+            <h4>Jasa Fotografer</h4>
+            <p>{{ $membership->includes_photographer ? $membership->photographer_duration . ' jam' : 'Tidak tersedia' }}</p>
+        </div>
+    </div>
 
-                            <div class="feature-card">
-                                <div class="feature-icon active">
-                                    <i class="fas fa-lock"></i>
-                                </div>
-                                <div class="feature-content">
-                                    <h4>Loker Pribadi</h4>
-                                    <p>Tersedia</p>
-                                </div>
-                            </div>
+    <div class="feature-card">
+        <div class="feature-icon active">
+            <i class="fas fa-lock"></i>
+        </div>
+        <div class="feature-content">
+            <h4>Loker Pribadi</h4>
+            <p>Tersedia</p>
+        </div>
+    </div>
 
-                            @if ($membership->type == 'silver' || $membership->type == 'gold')
-                                <div class="feature-card">
-                                    <div class="feature-icon active">
-                                        <i class="fas fa-tshirt"></i>
-                                    </div>
-                                    <div class="feature-content">
-                                        <h4>Jersey Latihan</h4>
-                                        <p>{{ $membership->type == 'gold' ? 'Premium' : 'Standar' }}</p>
-                                    </div>
-                                </div>
-                            @endif
+    @if ($membership->type == 'silver' || $membership->type == 'gold')
+        <div class="feature-card">
+            <div class="feature-icon active">
+                <i class="fas fa-tshirt"></i>
+            </div>
+            <div class="feature-content">
+                <h4>Jersey Latihan</h4>
+                <p>{{ $membership->type == 'gold' ? 'Premium' : 'Standar' }}</p>
+            </div>
+        </div>
+    @endif
 
-                            @if ($membership->type == 'gold')
-                                <div class="feature-card">
-                                    <div class="feature-icon active">
-                                        <i class="fas fa-user-tie"></i>
-                                    </div>
-                                    <div class="feature-content">
-                                        <h4>Pelatih Pribadi</h4>
-                                        <p>1x per bulan</p>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
+    @if ($membership->type == 'gold')
+        <div class="feature-card">
+            <div class="feature-icon active">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="feature-content">
+                <h4>Pelatih Pribadi</h4>
+                <p>1x per bulan</p>
+            </div>
+        </div>
+    @endif
+</div>
+
                     </div>
                 </div>
 
