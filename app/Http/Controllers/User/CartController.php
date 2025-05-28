@@ -1295,259 +1295,340 @@ public function removeDiscount(Request $request)
         // Cek ketersediaan item
         $unavailableItems = [];
 
-        foreach ($cartItems as $item) {
-            if ($item->type == 'field_booking') {
-                // Cek apakah masih tersedia
-                $field = Field::find($item->item_id);
-                if ($field) {
-                    $isBooked = FieldBooking::where('field_id', $item->item_id)
-                        ->whereDate('start_time', Carbon::parse($item->start_time)->toDateString())
-                        ->where(function ($query) use ($item) {
-                            // Logika pengecekan overlap waktu
-                            $query
-                                ->where(function ($q) use ($item) {
-                                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
-                                });
-                        })
-                        ->where('status', '!=', 'cancelled')
-                        ->exists();
+// Tambahkan pengecekan past time dalam method checkout() di CartController
+// Setelah bagian "Cek ketersediaan item" dan sebelum "if (!empty($unavailableItems))"
 
-                    if ($isBooked) {
-                        $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
-                        $endTime = Carbon::parse($item->end_time)->format('H:i');
-                        $unavailableItems[] = $field->name . ' (' . $startTime . ' - ' . $endTime . ')';
+// Cek ketersediaan item dan PAST TIME
+$unavailableItems = [];
+$pastTimeItems = []; // Array baru untuk item yang sudah lewat
+
+$now = Carbon::now();
+
+foreach ($cartItems as $item) {
+    // Cek past time untuk semua item yang memiliki waktu
+    if (in_array($item->type, ['field_booking', 'rental_item', 'photographer'])) {
+        $endTime = Carbon::parse($item->end_time);
+
+        // Jika waktu akhir slot sudah lewat, tandai sebagai past time
+        if ($endTime <= $now) {
+            $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+            $endTimeFormatted = $endTime->format('H:i');
+
+            switch ($item->type) {
+                case 'field_booking':
+                    $field = Field::find($item->item_id);
+                    $itemName = $field ? $field->name : 'Booking Lapangan';
+                    break;
+                case 'rental_item':
+                    $rentalItem = RentalItem::find($item->item_id);
+                    $itemName = $rentalItem ? $rentalItem->name : 'Rental Item';
+                    break;
+                case 'photographer':
+                    $photographer = Photographer::find($item->item_id);
+                    $itemName = $photographer ? $photographer->name : 'Fotografer';
+                    break;
+            }
+
+            $pastTimeItems[] = $itemName . ' (' . $startTime . ' - ' . $endTimeFormatted . ')';
+            continue; // Skip pengecekan lainnya karena sudah past time
+        }
+    }
+
+    // Existing availability checks (field_booking, rental_item, photographer, membership)
+    if ($item->type == 'field_booking') {
+        // Cek apakah masih tersedia
+        $field = Field::find($item->item_id);
+        if ($field) {
+            $isBooked = FieldBooking::where('field_id', $item->item_id)
+                ->whereDate('start_time', Carbon::parse($item->start_time)->toDateString())
+                ->where(function ($query) use ($item) {
+                    // Logika pengecekan overlap waktu
+                    $query
+                        ->where(function ($q) use ($item) {
+                            $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
+                        })
+                        ->orWhere(function ($q) use ($item) {
+                            $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
+                        })
+                        ->orWhere(function ($q) use ($item) {
+                            $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
+                        });
+                })
+                ->where('status', '!=', 'cancelled')
+                ->exists();
+
+            if ($isBooked) {
+                $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+                $endTime = Carbon::parse($item->end_time)->format('H:i');
+                $unavailableItems[] = $field->name . ' (' . $startTime . ' - ' . $endTime . ')';
+            }
+        }
+    } elseif ($item->type == 'rental_item') {
+        // Cek ketersediaan rental item
+        $rentalItem = RentalItem::find($item->item_id);
+        if ($rentalItem) {
+            // Hanya memeriksa booking yang sudah dikonfirmasi, abaikan item di keranjang
+            $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+                ->whereNotIn('status', ['cancelled'])
+                ->where(function ($query) use ($item) {
+                    $query
+                        ->where(function ($q) use ($item) {
+                            $q->where('start_time', '>=', $item->start_time)->where('start_time', '<', $item->end_time);
+                        })
+                        ->orWhere(function ($q) use ($item) {
+                            $q->where('end_time', '>', $item->start_time)->where('end_time', '<=', $item->end_time);
+                        })
+                        ->orWhere(function ($q) use ($item) {
+                            $q->where('start_time', '<=', $item->start_time)->where('end_time', '>=', $item->end_time);
+                        });
+                })
+                ->sum('quantity');
+
+            $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+
+            if ($item->quantity > $availableQuantity) {
+                $unavailableItems[] = $rentalItem->name . ' (Tersedia: ' . $availableQuantity . ', Diminta: ' . $item->quantity . ')';
+            }
+        }
+    } elseif ($item->type == 'photographer') {
+        // Cek ketersediaan fotografer
+        $photographer = Photographer::find($item->item_id);
+        if ($photographer) {
+            $isBooked = PhotographerBooking::where('photographer_id', $item->item_id)
+                ->where(function ($query) use ($item) {
+                    // Logika pengecekan overlap waktu
+                    $query
+                        ->where(function ($q) use ($item) {
+                            $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
+                        })
+                        ->orWhere(function ($q) use ($item) {
+                            $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
+                        })
+                        ->orWhere(function ($q) use ($item) {
+                            $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
+                        });
+                })
+                ->where('status', '!=', 'cancelled')
+                ->exists();
+
+            if ($isBooked) {
+                $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+                $endTime = Carbon::parse($item->end_time)->format('H:i');
+                $unavailableItems[] = $photographer->name . ' (' . $startTime . ' - ' . $endTime . ')';
+            }
+        }
+    } elseif ($item->type == 'membership') {
+        // Cek ketersediaan jadwal membership jika ada
+        if (!empty($item->membership_sessions)) {
+            $sessions = json_decode($item->membership_sessions, true);
+            $membership = Membership::find($item->item_id);
+            $paymentPeriod = $item->payment_period ?? 'weekly';
+
+            if ($membership) {
+                // Cek ketersediaan lapangan
+                $fieldId = $membership->field_id;
+
+                // Cek apakah membership include fotografer dan rental item
+                $includesPhotographer = $membership->includes_photographer && $membership->photographer_id;
+                $includesRentalItem = $membership->includes_rental_item && $membership->rental_item_id;
+
+                $photographer = null;
+                $rentalItem = null;
+                $requiredRentalQuantity = 0;
+
+                if ($includesPhotographer) {
+                    $photographer = Photographer::find($membership->photographer_id);
+                    if (!$photographer) {
+                        $unavailableItems[] = $membership->name . ' (Fotografer tidak ditemukan)';
+                        continue;
                     }
                 }
-            } elseif ($item->type == 'rental_item') {
-                // Cek ketersediaan rental item
-                $rentalItem = RentalItem::find($item->item_id);
-                if ($rentalItem) {
-                    // Hanya memeriksa booking yang sudah dikonfirmasi, abaikan item di keranjang
-                    $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
-                        ->whereNotIn('status', ['cancelled'])
-                        ->where(function ($query) use ($item) {
-                            $query
-                                ->where(function ($q) use ($item) {
-                                    $q->where('start_time', '>=', $item->start_time)->where('start_time', '<', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('end_time', '>', $item->start_time)->where('end_time', '<=', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>=', $item->end_time);
-                                });
-                        })
-                        ->sum('quantity');
 
-                    $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
-
-                    if ($item->quantity > $availableQuantity) {
-                        $unavailableItems[] = $rentalItem->name . ' (Tersedia: ' . $availableQuantity . ', Diminta: ' . $item->quantity . ')';
+                if ($includesRentalItem) {
+                    $rentalItem = RentalItem::find($membership->rental_item_id);
+                    if (!$rentalItem) {
+                        $unavailableItems[] = $membership->name . ' (Item rental tidak ditemukan)';
+                        continue;
                     }
+                    $requiredRentalQuantity = $membership->rental_item_quantity ?? 1;
                 }
-            } elseif ($item->type == 'photographer') {
-                // Cek ketersediaan fotografer
-                $photographer = Photographer::find($item->item_id);
-                if ($photographer) {
-                    $isBooked = PhotographerBooking::where('photographer_id', $item->item_id)
-                        ->where(function ($query) use ($item) {
-                            // Logika pengecekan overlap waktu
-                            $query
-                                ->where(function ($q) use ($item) {
-                                    $q->where('start_time', '<=', $item->start_time)->where('end_time', '>', $item->start_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '<', $item->end_time)->where('end_time', '>=', $item->end_time);
-                                })
-                                ->orWhere(function ($q) use ($item) {
-                                    $q->where('start_time', '>=', $item->start_time)->where('end_time', '<=', $item->end_time);
-                                });
-                        })
-                        ->where('status', '!=', 'cancelled')
-                        ->exists();
 
-                    if ($isBooked) {
-                        $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
-                        $endTime = Carbon::parse($item->end_time)->format('H:i');
-                        $unavailableItems[] = $photographer->name . ' (' . $startTime . ' - ' . $endTime . ')';
+                // Prepare sessions for checking
+                $allSessions = [];
+                if ($paymentPeriod === 'monthly') {
+                    for ($week = 0; $week < 4; $week++) {
+                        foreach ($sessions as $session) {
+                            $sessionDate = Carbon::parse($session['date']);
+                            if ($week > 0) {
+                                $sessionDate->addDays(7 * $week);
+                            }
+                            $allSessions[] = [
+                                'date' => $sessionDate->format('Y-m-d'),
+                                'start_time' => $session['start_time'],
+                                'end_time' => $session['end_time'],
+                            ];
+                        }
                     }
+                    $sessionsToCheck = $allSessions;
+                } else {
+                    $sessionsToCheck = $sessions;
                 }
-            } elseif ($item->type == 'membership') {
-                // Cek ketersediaan jadwal membership jika ada
-                if (!empty($item->membership_sessions)) {
-                    $sessions = json_decode($item->membership_sessions, true);
-                    $membership = Membership::find($item->item_id);
-                    $paymentPeriod = $item->payment_period ?? 'weekly';
 
-                    if ($membership) {
-                        // Cek ketersediaan lapangan
-                        $fieldId = $membership->field_id;
+                // Check each session
+                foreach ($sessionsToCheck as $session) {
+                    $sessionDate = is_string($session['date']) ? $session['date'] : Carbon::parse($session['date'])->toDateString();
+                    $startTimeStr = $session['start_time'];
+                    $endTimeStr = $session['end_time'];
 
-                        // Cek apakah membership include fotografer dan rental item
-                        $includesPhotographer = $membership->includes_photographer && $membership->photographer_id;
-                        $includesRentalItem = $membership->includes_rental_item && $membership->rental_item_id;
-
-                        $photographer = null;
-                        $rentalItem = null;
-                        $requiredRentalQuantity = 0;
-
-                        if ($includesPhotographer) {
-                            $photographer = Photographer::find($membership->photographer_id);
-                            if (!$photographer) {
-                                $unavailableItems[] = $membership->name . ' (Fotografer tidak ditemukan)';
-                                continue;
-                            }
+                    try {
+                        // Format time consistently
+                        if (strpos($startTimeStr, ' ') !== false && strpos($startTimeStr, '-') !== false) {
+                            $tempDateTime = Carbon::parse($startTimeStr);
+                            $startTimeStr = $tempDateTime->format('H:i:s');
+                        }
+                        if (strpos($endTimeStr, ' ') !== false && strpos($endTimeStr, '-') !== false) {
+                            $tempDateTime = Carbon::parse($endTimeStr);
+                            $endTimeStr = $tempDateTime->format('H:i:s');
                         }
 
-                        if ($includesRentalItem) {
-                            $rentalItem = RentalItem::find($membership->rental_item_id);
-                            if (!$rentalItem) {
-                                $unavailableItems[] = $membership->name . ' (Item rental tidak ditemukan)';
-                                continue;
-                            }
-                            $requiredRentalQuantity = $membership->rental_item_quantity ?? 1;
+                        // Create datetime objects
+                        $startDateTime = Carbon::parse($sessionDate . ' ' . $startTimeStr);
+                        $endDateTime = Carbon::parse($sessionDate . ' ' . $endTimeStr);
+
+                        // *** TAMBAHAN BARU: Cek past time untuk membership sessions ***
+                        if ($endDateTime <= $now) {
+                            $startTimeFormat = $startDateTime->format('d M Y H:i');
+                            $endTimeFormat = $endDateTime->format('H:i');
+                            $pastTimeItems[] = $membership->name . ' - Sesi pada ' . $startTimeFormat . ' - ' . $endTimeFormat . ' (Waktu sudah lewat)';
+                            continue;
                         }
 
-                        // Prepare sessions for checking
-                        $allSessions = [];
-                        if ($paymentPeriod === 'monthly') {
-                            for ($week = 0; $week < 4; $week++) {
-                                foreach ($sessions as $session) {
-                                    $sessionDate = Carbon::parse($session['date']);
-                                    if ($week > 0) {
-                                        $sessionDate->addDays(7 * $week);
-                                    }
-                                    $allSessions[] = [
-                                        'date' => $sessionDate->format('Y-m-d'),
-                                        'start_time' => $session['start_time'],
-                                        'end_time' => $session['end_time'],
-                                    ];
-                                }
-                            }
-                            $sessionsToCheck = $allSessions;
-                        } else {
-                            $sessionsToCheck = $sessions;
-                        }
-
-                        // Check each session
-                        foreach ($sessionsToCheck as $session) {
-                            $sessionDate = is_string($session['date']) ? $session['date'] : Carbon::parse($session['date'])->toDateString();
-                            $startTimeStr = $session['start_time'];
-                            $endTimeStr = $session['end_time'];
-
-                            try {
-                                // Format time consistently
-                                if (strpos($startTimeStr, ' ') !== false && strpos($startTimeStr, '-') !== false) {
-                                    $tempDateTime = Carbon::parse($startTimeStr);
-                                    $startTimeStr = $tempDateTime->format('H:i:s');
-                                }
-                                if (strpos($endTimeStr, ' ') !== false && strpos($endTimeStr, '-') !== false) {
-                                    $tempDateTime = Carbon::parse($endTimeStr);
-                                    $endTimeStr = $tempDateTime->format('H:i:s');
-                                }
-
-                                // Create datetime objects
-                                $startDateTime = Carbon::parse($sessionDate . ' ' . $startTimeStr);
-                                $endDateTime = Carbon::parse($sessionDate . ' ' . $endTimeStr);
-
-                                // Check field availability
-                                $isBooked = FieldBooking::where('field_id', $fieldId)
-                                    ->where(function ($query) use ($startDateTime, $endDateTime) {
-                                        $query
-                                            ->where(function ($q) use ($startDateTime, $endDateTime) {
-                                                $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
-                                            })
-                                            ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                                $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
-                                            })
-                                            ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                                $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
-                                            });
+                        // Check field availability
+                        $isBooked = FieldBooking::where('field_id', $fieldId)
+                            ->where(function ($query) use ($startDateTime, $endDateTime) {
+                                $query
+                                    ->where(function ($q) use ($startDateTime, $endDateTime) {
+                                        $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
                                     })
-                                    ->where('status', '!=', 'cancelled')
-                                    ->exists();
+                                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                                        $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
+                                    })
+                                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                                        $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
+                                    });
+                            })
+                            ->where('status', '!=', 'cancelled')
+                            ->exists();
 
-                                if ($isBooked) {
-                                    $startTimeFormat = $startDateTime->format('d M Y H:i');
-                                    $endTimeFormat = $endDateTime->format('H:i');
-                                    $unavailableItems[] = $membership->name . ' - Sesi pada ' . $startTimeFormat . ' - ' . $endTimeFormat;
-                                    continue;
-                                }
+                        if ($isBooked) {
+                            $startTimeFormat = $startDateTime->format('d M Y H:i');
+                            $endTimeFormat = $endDateTime->format('H:i');
+                            $unavailableItems[] = $membership->name . ' - Sesi pada ' . $startTimeFormat . ' - ' . $endTimeFormat;
+                            continue;
+                        }
 
-                                // Check photographer availability if included
-                                if ($includesPhotographer && $photographer) {
-                                    $isPhotographerBooked = PhotographerBooking::where('photographer_id', $photographer->id)
-                                        ->where(function ($query) use ($startDateTime, $endDateTime) {
-                                            $query
-                                                ->where(function ($q) use ($startDateTime, $endDateTime) {
-                                                    $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
-                                                })
-                                                ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                                    $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
-                                                })
-                                                ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                                    $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
-                                                });
+                        // Check photographer availability if included
+                        if ($includesPhotographer && $photographer) {
+                            $isPhotographerBooked = PhotographerBooking::where('photographer_id', $photographer->id)
+                                ->where(function ($query) use ($startDateTime, $endDateTime) {
+                                    $query
+                                        ->where(function ($q) use ($startDateTime, $endDateTime) {
+                                            $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
                                         })
-                                        ->where('status', '!=', 'cancelled')
-                                        ->exists();
-
-                                    if ($isPhotographerBooked) {
-                                        $startTimeFormat = $startDateTime->format('d M Y H:i');
-                                        $endTimeFormat = $endDateTime->format('H:i');
-                                        $unavailableItems[] = $membership->name . ' - Fotografer ' . $photographer->name . ' pada ' . $startTimeFormat . ' - ' . $endTimeFormat . ' sudah dibooking';
-                                        continue;
-                                    }
-                                }
-
-                                // Check rental item availability if included
-                                if ($includesRentalItem && $rentalItem) {
-                                    $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
-                                        ->whereNotIn('status', ['cancelled'])
-                                        ->where(function ($query) use ($startDateTime, $endDateTime) {
-                                            $query
-                                                ->where(function ($q) use ($startDateTime, $endDateTime) {
-                                                    $q->where('start_time', '>=', $startDateTime)->where('start_time', '<', $endDateTime);
-                                                })
-                                                ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                                    $q->where('end_time', '>', $startDateTime)->where('end_time', '<=', $endDateTime);
-                                                })
-                                                ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                                    $q->where('start_time', '<=', $startDateTime)->where('end_time', '>=', $endDateTime);
-                                                });
+                                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                                            $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
                                         })
-                                        ->sum('quantity');
+                                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                                            $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
+                                        });
+                                })
+                                ->where('status', '!=', 'cancelled')
+                                ->exists();
 
-                                    $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
-
-                                    if ($requiredRentalQuantity > $availableQuantity) {
-                                        $startTimeFormat = $startDateTime->format('d M Y H:i');
-                                        $endTimeFormat = $endDateTime->format('H:i');
-                                        $unavailableItems[] = $membership->name . ' - Item ' . $rentalItem->name . ' pada ' . $startTimeFormat . ' - ' . $endTimeFormat . ' (Tersedia: ' . $availableQuantity . ', Dibutuhkan: ' . $requiredRentalQuantity . ')';
-                                        continue;
-                                    }
-                                }
-                            } catch (\Exception $e) {
-                                Log::error('Error checking membership session availability', [
-                                    'session_date' => $sessionDate,
-                                    'start_time_str' => $startTimeStr,
-                                    'end_time_str' => $endTimeStr,
-                                    'error' => $e->getMessage()
-                                ]);
-                                $unavailableItems[] = $membership->name . ' (Format tanggal/waktu tidak valid)';
+                            if ($isPhotographerBooked) {
+                                $startTimeFormat = $startDateTime->format('d M Y H:i');
+                                $endTimeFormat = $endDateTime->format('H:i');
+                                $unavailableItems[] = $membership->name . ' - Fotografer ' . $photographer->name . ' pada ' . $startTimeFormat . ' - ' . $endTimeFormat . ' sudah dibooking';
                                 continue;
                             }
                         }
+
+                        // Check rental item availability if included
+                        if ($includesRentalItem && $rentalItem) {
+                            $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+                                ->whereNotIn('status', ['cancelled'])
+                                ->where(function ($query) use ($startDateTime, $endDateTime) {
+                                    $query
+                                        ->where(function ($q) use ($startDateTime, $endDateTime) {
+                                            $q->where('start_time', '>=', $startDateTime)->where('start_time', '<', $endDateTime);
+                                        })
+                                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                                            $q->where('end_time', '>', $startDateTime)->where('end_time', '<=', $endDateTime);
+                                        })
+                                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                                            $q->where('start_time', '<=', $startDateTime)->where('end_time', '>=', $endDateTime);
+                                        });
+                                })
+                                ->sum('quantity');
+
+                            $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+
+                            if ($requiredRentalQuantity > $availableQuantity) {
+                                $startTimeFormat = $startDateTime->format('d M Y H:i');
+                                $endTimeFormat = $endDateTime->format('H:i');
+                                $unavailableItems[] = $membership->name . ' - Item ' . $rentalItem->name . ' pada ' . $startTimeFormat . ' - ' . $endTimeFormat . ' (Tersedia: ' . $availableQuantity . ', Dibutuhkan: ' . $requiredRentalQuantity . ')';
+                                continue;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Error checking membership session availability', [
+                            'session_date' => $sessionDate,
+                            'start_time_str' => $startTimeStr,
+                            'end_time_str' => $endTimeStr,
+                            'error' => $e->getMessage()
+                        ]);
+                        $unavailableItems[] = $membership->name . ' (Format tanggal/waktu tidak valid)';
+                        continue;
                     }
                 }
             }
         }
+    }
+}
+
+// Gabungkan semua item yang bermasalah
+$allProblematicItems = array_merge($pastTimeItems, $unavailableItems);
+
+if (!empty($allProblematicItems)) {
+    // Ada item yang sudah tidak tersedia atau sudah lewat waktu
+    $errorMessage = '';
+
+    if (!empty($pastTimeItems)) {
+        $errorMessage .= 'Item berikut waktu bookingnya sudah lewat: ' . implode(', ', $pastTimeItems);
+
+        // Hapus item yang past time dari keranjang secara otomatis
+        foreach ($cartItems as $item) {
+            if (in_array($item->type, ['field_booking', 'rental_item', 'photographer'])) {
+                $endTime = Carbon::parse($item->end_time);
+                if ($endTime <= $now) {
+                    $item->delete();
+                }
+            }
+        }
+
+        if (!empty($unavailableItems)) {
+            $errorMessage .= '. ';
+        }
+    }
+
+    if (!empty($unavailableItems)) {
+        $errorMessage .= 'Item berikut sudah tidak tersedia: ' . implode(', ', $unavailableItems);
+    }
+
+    return redirect()
+        ->route('user.cart.view')
+        ->with('error', $errorMessage);
+}
 
         if (!empty($unavailableItems)) {
             // Ada item yang sudah tidak tersedia

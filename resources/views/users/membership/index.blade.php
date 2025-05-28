@@ -468,18 +468,6 @@
 </div>
 
     <style>
-        /* Base Styles */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
-        }
-
-        .container {
-            max-width: 1200px;
-            padding: 0 1.5rem;
-            margin: 0 auto;
-        }
 
       /* Hero Section */
       .hero-section {

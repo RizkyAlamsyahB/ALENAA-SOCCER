@@ -131,8 +131,10 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="field_date" class="form-label">Tanggal</label>
-                                                <input type="date" class="form-control" id="field_date" name="date" min="{{ date('Y-m-d') }}" required>
-                                                <small class="form-text text-muted">Anda dapat memilih tanggal hingga 7 hari ke depan</small>
+                                                <input type="date" class="form-control" id="field_date"
+                                                    name="date" min="{{ date('Y-m-d') }}" required>
+                                                <small class="form-text text-muted">Anda dapat memilih tanggal hingga 7
+                                                    hari ke depan</small>
                                             </div>
                                         </div>
 
@@ -350,9 +352,7 @@
                                         <i class="bi bi-cart-check"></i> Proses Pembayaran
                                     </button>
 
-                                    <a href="{{ route('admin.pos.history') }}" class="btn btn-secondary">
-                                        <i class="bi bi-clock-history"></i> Riwayat Transaksi
-                                    </a>
+
                                 </div>
                             </form>
                         </div>
@@ -442,7 +442,7 @@
             const fieldDateInput = document.getElementById('field_date');
             const fieldTimeSlotSelect = document.getElementById('field_time_slot');
 
-            // Event listener untuk saat lapangan atau tanggal dipilih
+            // PERBAIKAN: Update function untuk render time slots dengan past time handling
             function updateFieldTimeSlots() {
                 const fieldId = fieldIdSelect.value;
                 const date = fieldDateInput.value;
@@ -457,18 +457,58 @@
                         .then(data => {
                             fieldTimeSlotSelect.innerHTML = '<option value="">-- Pilih Slot Waktu --</option>';
 
-                            // Tambahkan slot yang tersedia
+                            // Categorize slots by status
+                            const availableSlots = [];
+                            const pastTimeSlots = [];
+                            const bookedSlots = [];
+
                             data.available_slots.forEach(slot => {
-                                const option = document.createElement('option');
-                                option.value = slot.label;
-                                option.textContent = slot.label;
-                                fieldTimeSlotSelect.appendChild(option);
+                                if (slot.is_past_time) {
+                                    pastTimeSlots.push(slot);
+                                } else if (slot.is_available) {
+                                    availableSlots.push(slot);
+                                } else {
+                                    bookedSlots.push(slot);
+                                }
                             });
 
-                            // Tambahkan informasi slot yang sudah dibooking
+                            // Add available slots
+                            if (availableSlots.length > 0) {
+                                const availableGroup = document.createElement('optgroup');
+                                availableGroup.label = `Slot Tersedia (${availableSlots.length})`;
+
+                                availableSlots.forEach(slot => {
+                                    const option = document.createElement('option');
+                                    option.value = slot.label;
+                                    option.textContent = slot.label;
+                                    availableGroup.appendChild(option);
+                                });
+
+                                fieldTimeSlotSelect.appendChild(availableGroup);
+                            }
+
+                            // Add past time slots (disabled)
+                            if (pastTimeSlots.length > 0) {
+                                const pastTimeGroup = document.createElement('optgroup');
+                                pastTimeGroup.label = `Waktu Sudah Lewat (${pastTimeSlots.length})`;
+
+                                pastTimeSlots.forEach(slot => {
+                                    const option = document.createElement('option');
+                                    option.value = "";
+                                    option.textContent = `${slot.label} (Sudah lewat)`;
+                                    option.disabled = true;
+                                    option.style.color = '#6c757d';
+                                    option.style.fontStyle = 'italic';
+                                    pastTimeGroup.appendChild(option);
+                                });
+
+                                fieldTimeSlotSelect.appendChild(pastTimeGroup);
+                            }
+
+                            // Add booked slots (disabled)
                             if (data.booked_slots.length > 0) {
-                                const optgroup = document.createElement('optgroup');
-                                optgroup.label = "Slot yang sudah dibooking";
+                                const bookedGroup = document.createElement('optgroup');
+                                bookedGroup.label = `Slot Sudah Dibooking (${data.booked_slots.length})`;
 
                                 data.booked_slots.forEach(slot => {
                                     const option = document.createElement('option');
@@ -476,10 +516,26 @@
                                     option.textContent =
                                         `${slot.start} - ${slot.end} (${slot.customer})`;
                                     option.disabled = true;
-                                    optgroup.appendChild(option);
+                                    option.style.color = '#dc3545';
+                                    option.style.fontStyle = 'italic';
+                                    bookedGroup.appendChild(option);
                                 });
 
-                                fieldTimeSlotSelect.appendChild(optgroup);
+                                fieldTimeSlotSelect.appendChild(bookedGroup);
+                            }
+
+                            // Show message if no available slots
+                            if (availableSlots.length === 0) {
+                                const noSlotsMessage = pastTimeSlots.length > 0 ?
+                                    'Semua slot waktu sudah lewat atau dibooking. Silakan pilih tanggal lain.' :
+                                    'Tidak ada slot tersedia untuk tanggal ini.';
+
+                                const option = document.createElement('option');
+                                option.value = "";
+                                option.textContent = noSlotsMessage;
+                                option.disabled = true;
+                                option.style.color = '#f0ad4e';
+                                fieldTimeSlotSelect.appendChild(option);
                             }
 
                             fieldTimeSlotSelect.disabled = false;
@@ -495,7 +551,7 @@
             fieldIdSelect.addEventListener('change', updateFieldTimeSlots);
             fieldDateInput.addEventListener('change', updateFieldTimeSlots);
 
-            // Form submission dengan AJAX untuk Lapangan
+            // PERBAIKAN: Enhanced form submission dengan past time validation
             const fieldBookingForm = document.getElementById('fieldBookingForm');
             fieldBookingForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -505,12 +561,41 @@
                     return;
                 }
 
+                // TAMBAHAN: Validasi past time di client side (double check)
+                const selectedTimeSlot = document.getElementById('field_time_slot').value;
+                const selectedDate = document.getElementById('field_date').value;
+
+                if (selectedTimeSlot && selectedDate) {
+                    const [startTime, endTime] = selectedTimeSlot.split(' - ');
+                    const endDateTime = new Date(`${selectedDate} ${endTime}`);
+                    const now = new Date();
+
+                    if (endDateTime <= now) {
+                        Toastify({
+                            text: "Slot waktu yang dipilih sudah lewat. Silakan pilih slot waktu yang masih tersedia.",
+                            duration: 5000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#dc3545",
+                        }).showToast();
+                        return;
+                    }
+                }
+
                 const formData = new FormData(this);
                 formData.append('customer_name', document.getElementById('global_customer_name').value);
                 formData.append('customer_phone', document.getElementById('global_customer_phone').value);
                 if (document.getElementById('global_customer_id').value) {
                     formData.append('customer_id', document.getElementById('global_customer_id').value);
                 }
+
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
+
                 fetch(this.action, {
                         method: 'POST',
                         body: formData,
@@ -548,12 +633,17 @@
                             // Show error message
                             Toastify({
                                 text: data.message,
-                                duration: 3000,
+                                duration: 5000,
                                 close: true,
                                 gravity: "top",
                                 position: "right",
                                 backgroundColor: "#dc3545",
                             }).showToast();
+
+                            // If error is about past time, refresh the time slots
+                            if (data.message.includes('sudah lewat')) {
+                                updateFieldTimeSlots();
+                            }
                         }
                     })
                     .catch(error => {
@@ -566,6 +656,11 @@
                             position: "right",
                             backgroundColor: "#dc3545",
                         }).showToast();
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
                     });
             });
 
@@ -574,7 +669,7 @@
             const photographerDate = document.getElementById('photographer_date');
             const photographerTimeSlot = document.getElementById('photographer_time_slot');
 
-            // Event listener untuk saat fotografer atau tanggal dipilih
+            // PERBAIKAN: Update function untuk fotografer time slots dengan past time handling
             function updatePhotographerTimeSlots() {
                 const pId = photographerId.value;
                 const date = photographerDate.value;
@@ -589,18 +684,58 @@
                         .then(data => {
                             photographerTimeSlot.innerHTML = '<option value="">-- Pilih Slot Waktu --</option>';
 
-                            // Tambahkan slot yang tersedia
+                            // Categorize slots by status
+                            const availableSlots = [];
+                            const pastTimeSlots = [];
+                            const bookedSlots = [];
+
                             data.available_slots.forEach(slot => {
-                                const option = document.createElement('option');
-                                option.value = slot.label;
-                                option.textContent = slot.label;
-                                photographerTimeSlot.appendChild(option);
+                                if (slot.is_past_time) {
+                                    pastTimeSlots.push(slot);
+                                } else if (slot.is_available) {
+                                    availableSlots.push(slot);
+                                } else {
+                                    bookedSlots.push(slot);
+                                }
                             });
 
-                            // Tambahkan informasi slot yang sudah dibooking
+                            // Add available slots
+                            if (availableSlots.length > 0) {
+                                const availableGroup = document.createElement('optgroup');
+                                availableGroup.label = `Slot Tersedia (${availableSlots.length})`;
+
+                                availableSlots.forEach(slot => {
+                                    const option = document.createElement('option');
+                                    option.value = slot.label;
+                                    option.textContent = slot.label;
+                                    availableGroup.appendChild(option);
+                                });
+
+                                photographerTimeSlot.appendChild(availableGroup);
+                            }
+
+                            // Add past time slots (disabled)
+                            if (pastTimeSlots.length > 0) {
+                                const pastTimeGroup = document.createElement('optgroup');
+                                pastTimeGroup.label = `Waktu Sudah Lewat (${pastTimeSlots.length})`;
+
+                                pastTimeSlots.forEach(slot => {
+                                    const option = document.createElement('option');
+                                    option.value = "";
+                                    option.textContent = `${slot.label} (Sudah lewat)`;
+                                    option.disabled = true;
+                                    option.style.color = '#6c757d';
+                                    option.style.fontStyle = 'italic';
+                                    pastTimeGroup.appendChild(option);
+                                });
+
+                                photographerTimeSlot.appendChild(pastTimeGroup);
+                            }
+
+                            // Add booked slots (disabled)
                             if (data.booked_slots.length > 0) {
-                                const optgroup = document.createElement('optgroup');
-                                optgroup.label = "Slot yang sudah dibooking";
+                                const bookedGroup = document.createElement('optgroup');
+                                bookedGroup.label = `Slot Sudah Dibooking (${data.booked_slots.length})`;
 
                                 data.booked_slots.forEach(slot => {
                                     const option = document.createElement('option');
@@ -608,10 +743,26 @@
                                     option.textContent =
                                         `${slot.start} - ${slot.end} (${slot.customer})`;
                                     option.disabled = true;
-                                    optgroup.appendChild(option);
+                                    option.style.color = '#dc3545';
+                                    option.style.fontStyle = 'italic';
+                                    bookedGroup.appendChild(option);
                                 });
 
-                                photographerTimeSlot.appendChild(optgroup);
+                                photographerTimeSlot.appendChild(bookedGroup);
+                            }
+
+                            // Show message if no available slots
+                            if (availableSlots.length === 0) {
+                                const noSlotsMessage = pastTimeSlots.length > 0 ?
+                                    'Semua slot waktu sudah lewat atau dibooking. Silakan pilih tanggal lain.' :
+                                    'Tidak ada slot tersedia untuk tanggal ini.';
+
+                                const option = document.createElement('option');
+                                option.value = "";
+                                option.textContent = noSlotsMessage;
+                                option.disabled = true;
+                                option.style.color = '#f0ad4e';
+                                photographerTimeSlot.appendChild(option);
                             }
 
                             photographerTimeSlot.disabled = false;
@@ -619,7 +770,7 @@
                         .catch(error => {
                             console.error('Error fetching time slots:', error);
                             photographerTimeSlot.innerHTML =
-                                '<option value="">Error memuat slot waktu</option>';
+                            '<option value="">Error memuat slot waktu</option>';
                             photographerTimeSlot.disabled = false;
                         });
                 }
@@ -628,7 +779,7 @@
             photographerId.addEventListener('change', updatePhotographerTimeSlots);
             photographerDate.addEventListener('change', updatePhotographerTimeSlots);
 
-            // Form submission dengan AJAX untuk Fotografer
+            // PERBAIKAN: Enhanced fotografer form submission
             const photographerBookingForm = document.getElementById('photographerBookingForm');
             photographerBookingForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -636,6 +787,28 @@
                 // Validasi data pelanggan
                 if (!validateCustomerData()) {
                     return;
+                }
+
+                // TAMBAHAN: Validasi past time di client side
+                const selectedTimeSlot = document.getElementById('photographer_time_slot').value;
+                const selectedDate = document.getElementById('photographer_date').value;
+
+                if (selectedTimeSlot && selectedDate) {
+                    const [startTime, endTime] = selectedTimeSlot.split(' - ');
+                    const endDateTime = new Date(`${selectedDate} ${endTime}`);
+                    const now = new Date();
+
+                    if (endDateTime <= now) {
+                        Toastify({
+                            text: "Slot waktu yang dipilih sudah lewat. Silakan pilih slot waktu yang masih tersedia.",
+                            duration: 5000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#dc3545",
+                        }).showToast();
+                        return;
+                    }
                 }
 
                 // Ambil data customer dari form global
@@ -647,6 +820,12 @@
                 document.getElementById('photographer_customer_phone_hidden').value = customerPhone;
 
                 const formData = new FormData(this);
+
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
 
                 fetch(this.action, {
                         method: 'POST',
@@ -693,12 +872,17 @@
                             // Show error message
                             Toastify({
                                 text: data.message,
-                                duration: 3000,
+                                duration: 5000,
                                 close: true,
                                 gravity: "top",
                                 position: "right",
                                 backgroundColor: "#dc3545",
                             }).showToast();
+
+                            // If error is about past time, refresh the time slots
+                            if (data.message.includes('sudah lewat')) {
+                                updatePhotographerTimeSlots();
+                            }
                         }
                     })
                     .catch(error => {
@@ -706,17 +890,24 @@
                         Toastify({
                             text: error.message ||
                                 "Terjadi kesalahan saat memproses permintaan",
-                            duration: 3000,
+                            duration: 5000,
                             close: true,
                             gravity: "top",
                             position: "right",
                             backgroundColor: "#dc3545",
                         }).showToast();
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
                     });
             });
 
             // Rental Form Handling
             const rentalItemId = document.getElementById('rental_item_id');
+            const rentalDate = document.getElementById('rental_date');
+            const rentalTimeSlot = document.getElementById('rental_time_slot');
             const rentalQuantity = document.getElementById('rental_quantity');
             const rentalStockInfo = document.getElementById('rental_stock_info');
 
@@ -736,9 +927,122 @@
                     rentalStockInfo.textContent = '';
                     rentalQuantity.removeAttribute('max');
                 }
+
+                // Update time slots untuk rental item jika tanggal sudah dipilih
+                updateRentalTimeSlots();
             });
 
-            // Form submission dengan AJAX untuk Rental
+            // PERBAIKAN: Tambahkan function untuk rental time slots dengan past time handling
+            function updateRentalTimeSlots() {
+                const itemId = rentalItemId.value;
+                const date = rentalDate.value;
+
+                if (itemId && date) {
+                    rentalTimeSlot.disabled = true;
+                    rentalTimeSlot.innerHTML = '<option value="">Memuat slot waktu...</option>';
+
+                    // Generate time slots dengan past time checking
+                    const now = new Date();
+                    const selectedDate = new Date(date);
+                    const isToday = selectedDate.toDateString() === now.toDateString();
+
+                    rentalTimeSlot.innerHTML = '<option value="">-- Pilih Slot Waktu --</option>';
+
+                    // Categorize slots by status
+                    const availableSlots = [];
+                    const pastTimeSlots = [];
+
+                    // Generate slots dari jam 8 pagi sampai 10 malam
+                    for (let hour = 8; hour < 22; hour++) {
+                        const startTime = String(hour).padStart(2, '0') + ':00';
+                        const endTime = String(hour + 1).padStart(2, '0') + ':00';
+                        const timeSlot = startTime + ' - ' + endTime;
+
+                        let isPastTime = false;
+
+                        // Cek past time jika hari ini
+                        if (isToday) {
+                            const endDateTime = new Date(`${date} ${endTime}`);
+                            if (endDateTime <= now) {
+                                isPastTime = true;
+                            }
+                        }
+
+                        if (isPastTime) {
+                            pastTimeSlots.push({
+                                label: timeSlot,
+                                start: startTime,
+                                end: endTime
+                            });
+                        } else {
+                            availableSlots.push({
+                                label: timeSlot,
+                                start: startTime,
+                                end: endTime
+                            });
+                        }
+                    }
+
+                    // Add available slots
+                    if (availableSlots.length > 0) {
+                        const availableGroup = document.createElement('optgroup');
+                        availableGroup.label = `Slot Tersedia (${availableSlots.length})`;
+
+                        availableSlots.forEach(slot => {
+                            const option = document.createElement('option');
+                            option.value = slot.label;
+                            option.textContent = slot.label;
+                            availableGroup.appendChild(option);
+                        });
+
+                        rentalTimeSlot.appendChild(availableGroup);
+                    }
+
+                    // Add past time slots (disabled)
+                    if (pastTimeSlots.length > 0) {
+                        const pastTimeGroup = document.createElement('optgroup');
+                        pastTimeGroup.label = `Waktu Sudah Lewat (${pastTimeSlots.length})`;
+
+                        pastTimeSlots.forEach(slot => {
+                            const option = document.createElement('option');
+                            option.value = "";
+                            option.textContent = `${slot.label} (Sudah lewat)`;
+                            option.disabled = true;
+                            option.style.color = '#6c757d';
+                            option.style.fontStyle = 'italic';
+                            pastTimeGroup.appendChild(option);
+                        });
+
+                        rentalTimeSlot.appendChild(pastTimeGroup);
+                    }
+
+                    // Show message if no available slots
+                    if (availableSlots.length === 0) {
+                        const noSlotsMessage = pastTimeSlots.length > 0 ?
+                            'Semua slot waktu sudah lewat. Silakan pilih tanggal lain.' :
+                            'Tidak ada slot tersedia untuk tanggal ini.';
+
+                        const option = document.createElement('option');
+                        option.value = "";
+                        option.textContent = noSlotsMessage;
+                        option.disabled = true;
+                        option.style.color = '#f0ad4e';
+                        rentalTimeSlot.appendChild(option);
+                    }
+
+                    rentalTimeSlot.disabled = false;
+                } else {
+                    // Reset jika item atau tanggal belum dipilih
+                    rentalTimeSlot.innerHTML =
+                        '<option value="">-- Pilih item dan tanggal terlebih dahulu --</option>';
+                    rentalTimeSlot.disabled = true;
+                }
+            }
+
+            // Event listener untuk update rental time slots
+            rentalDate.addEventListener('change', updateRentalTimeSlots);
+
+            // PERBAIKAN: Enhanced rental form submission
             const rentalBookingForm = document.getElementById('rentalBookingForm');
             rentalBookingForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -746,6 +1050,28 @@
                 // Validasi data pelanggan
                 if (!validateCustomerData()) {
                     return;
+                }
+
+                // TAMBAHAN: Validasi past time di client side
+                const selectedTimeSlot = document.getElementById('rental_time_slot').value;
+                const selectedDate = document.getElementById('rental_date').value;
+
+                if (selectedTimeSlot && selectedDate) {
+                    const [startTime, endTime] = selectedTimeSlot.split(' - ');
+                    const endDateTime = new Date(`${selectedDate} ${endTime}`);
+                    const now = new Date();
+
+                    if (endDateTime <= now) {
+                        Toastify({
+                            text: "Slot waktu yang dipilih sudah lewat. Silakan pilih slot waktu yang masih tersedia.",
+                            duration: 5000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#dc3545",
+                        }).showToast();
+                        return;
+                    }
                 }
 
                 // Ambil data customer dari form global
@@ -757,6 +1083,12 @@
                 document.getElementById('rental_customer_phone_hidden').value = customerPhone;
 
                 const formData = new FormData(this);
+
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
 
                 fetch(this.action, {
                         method: 'POST',
@@ -801,7 +1133,7 @@
                             // Show error message
                             Toastify({
                                 text: data.message,
-                                duration: 3000,
+                                duration: 5000,
                                 close: true,
                                 gravity: "top",
                                 position: "right",
@@ -814,12 +1146,17 @@
                         Toastify({
                             text: error.message ||
                                 "Terjadi kesalahan saat memproses permintaan",
-                            duration: 3000,
+                            duration: 5000,
                             close: true,
                             gravity: "top",
                             position: "right",
                             backgroundColor: "#dc3545",
                         }).showToast();
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
                     });
             });
 
@@ -884,6 +1221,12 @@
 
                 const formData = new FormData(this);
 
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
+
                 fetch(this.action, {
                         method: 'POST',
                         body: formData,
@@ -946,6 +1289,11 @@
                             position: "right",
                             backgroundColor: "#dc3545",
                         }).showToast();
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
                     });
             });
 
@@ -961,13 +1309,49 @@
                 }
             });
 
-            // Checkout Form Handling
+            // PERBAIKAN: Enhanced checkout form validation
             const checkoutForm = document.getElementById('checkoutForm');
             checkoutForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
                 // Validasi data pelanggan
                 if (!validateCustomerData()) {
+                    return;
+                }
+
+                // TAMBAHAN: Validasi past time untuk semua item di cart sebelum checkout
+                const cartItems = document.querySelectorAll('[data-item-type]');
+                let hasPastTimeItems = false;
+                const now = new Date();
+
+                cartItems.forEach(item => {
+                    const itemType = item.dataset.itemType;
+                    const startTime = item.dataset.startTime;
+                    const endTime = item.dataset.endTime;
+
+                    if (itemType && ['field_booking', 'rental_item', 'photographer'].includes(
+                            itemType) && endTime) {
+                        const endDateTime = new Date(endTime);
+                        if (endDateTime <= now) {
+                            hasPastTimeItems = true;
+                        }
+                    }
+                });
+
+                if (hasPastTimeItems) {
+                    Toastify({
+                        text: "Beberapa item di keranjang waktu bookingnya sudah lewat. Halaman akan direfresh untuk membersihkan item yang sudah expired.",
+                        duration: 5000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#dc3545",
+                    }).showToast();
+
+                    // Refresh halaman setelah 2 detik
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
                     return;
                 }
 
@@ -981,7 +1365,6 @@
                         document.getElementById('customer_id').value = firstCustomerId.getAttribute(
                             'data-customer-id');
                     } else {
-                        // Tidak ada customer_id yang tersedia
                         Toastify({
                             text: "Data pelanggan tidak lengkap. Silakan pilih atau masukkan data pelanggan",
                             duration: 3000,
@@ -996,6 +1379,14 @@
 
                 // Konfirmasi checkout
                 if (confirm('Anda yakin ingin memproses pembayaran ini?')) {
+                    // Show loading state
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML =
+                        '<span class="spinner-border spinner-border-sm"></span> Memproses Pembayaran...';
+
+                    // Submit form
                     this.submit();
                 }
             });
@@ -1202,6 +1593,62 @@
                     input.value = phone;
                 });
             });
+
+            // PERBAIKAN: Auto-refresh slot waktu setiap 5 menit untuk update past time status
+            setInterval(() => {
+                // Refresh field time slots if form is active
+                if (fieldIdSelect.value && fieldDateInput.value) {
+                    updateFieldTimeSlots();
+                }
+
+                // Refresh photographer time slots if form is active
+                if (photographerId.value && photographerDate.value) {
+                    updatePhotographerTimeSlots();
+                }
+
+                // Refresh rental time slots if form is active
+                if (rentalItemId.value && rentalDate.value) {
+                    updateRentalTimeSlots();
+                }
+
+                // Check for past time items in cart
+                const cartItems = document.querySelectorAll('[data-item-type]');
+                let hasPastTimeItems = false;
+                const now = new Date();
+
+                cartItems.forEach(item => {
+                    const itemType = item.dataset.itemType;
+                    const endTime = item.dataset.endTime;
+
+                    if (itemType && ['field_booking', 'rental_item', 'photographer'].includes(
+                            itemType) && endTime) {
+                        const endDateTime = new Date(endTime);
+                        if (endDateTime <= now) {
+                            hasPastTimeItems = true;
+                        }
+                    }
+                });
+
+                if (hasPastTimeItems) {
+                    // Show notification about expired items
+                    Toastify({
+                        text: "Beberapa item di keranjang sudah expired. Halaman akan direfresh dalam 10 detik.",
+                        duration: 10000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#f0ad4e",
+                        onClick: function() {
+                            location.reload();
+                        }
+                    }).showToast();
+
+                    // Auto refresh after 10 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 10000);
+                }
+            }, 5 * 60 * 1000); // Check every 5 minutes
 
             // Set path route untuk HTTP request
             const routeFieldTimeslots = '{{ route('admin.pos.field.timeslots') }}';

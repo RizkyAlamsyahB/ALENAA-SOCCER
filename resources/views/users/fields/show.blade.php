@@ -35,42 +35,14 @@
     <!-- Main Content -->
     <div class="container mt-3">
 
-<!-- Gallery Section -->
-<div class="row g-3 mb-5 d-none d-lg-flex mt-3">
-    <!-- Main Image -->
-    <div class="col-lg-8">
-        <div class="gallery-card main-gallery">
-            <div class="gallery-img">
-                @if ($field->image)
-                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
-                @else
-                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                        class="img-fluid w-100" alt="{{ $field->name }}">
-                @endif
-                <div class="gallery-overlay">
-                    <button class="view-btn">
-                        <i class="fas fa-expand-alt"></i>
-                        View Full Image
-                    </button>
-                </div>
-            </div>
-            <div class="status-badge">
-                <span class="badge-content">
-                    <i class="fas fa-check-circle me-1"></i>
-                    Available Now
-                </span>
-            </div>
-        </div>
-    </div>
-    <!-- Side Images -->
-    <div class="col-lg-4">
-        <div class="row g-3">
-            <div class="col-12">
-                <div class="gallery-card">
+        <!-- Gallery Section -->
+        <div class="row g-3 mb-5 d-none d-lg-flex mt-3">
+            <!-- Main Image -->
+            <div class="col-lg-8">
+                <div class="gallery-card main-gallery">
                     <div class="gallery-img">
                         @if ($field->image)
-                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
-                                alt="{{ $field->name }}">
+                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100" alt="{{ $field->name }}">
                         @else
                             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
                                 class="img-fluid w-100" alt="{{ $field->name }}">
@@ -82,123 +54,151 @@
                             </button>
                         </div>
                     </div>
+                    <div class="status-badge">
+                        <span class="badge-content">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Available Now
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div class="col-12">
-                <div class="gallery-card">
-                    <div class="gallery-img">
-                        @if ($field->image)
-                            <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
-                                alt="{{ $field->name }}">
-                        @else
-                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                                class="img-fluid w-100" alt="{{ $field->name }}">
-                        @endif
-                        <div class="gallery-overlay">
-                            <button class="view-btn">
-                                <i class="fas fa-expand-alt"></i>
-                                View Full Image
-                            </button>
+            <!-- Side Images -->
+            <div class="col-lg-4">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="gallery-card">
+                            <div class="gallery-img">
+                                @if ($field->image)
+                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
+                                @else
+                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                        class="img-fluid w-100" alt="{{ $field->name }}">
+                                @endif
+                                <div class="gallery-overlay">
+                                    <button class="view-btn">
+                                        <i class="fas fa-expand-alt"></i>
+                                        View Full Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="gallery-card">
+                            <div class="gallery-img">
+                                @if ($field->image)
+                                    <img src="{{ Storage::url($field->image) }}" class="img-fluid w-100"
+                                        alt="{{ $field->name }}">
+                                @else
+                                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                        class="img-fluid w-100" alt="{{ $field->name }}">
+                                @endif
+                                <div class="gallery-overlay">
+                                    <button class="view-btn">
+                                        <i class="fas fa-expand-alt"></i>
+                                        View Full Image
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Mobile Gallery Carousel -->
-<div class="mobile-gallery d-lg-none">
-    <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
-        <!-- Carousel Inner -->
-        <div class="carousel-inner rounded-4 overflow-hidden">
-            <div class="carousel-item active">
-                <div class="carousel-img-wrapper">
-                    @if ($field->image)
-                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                            alt="{{ $field->name }}">
-                    @else
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                            class="d-block w-100" alt="{{ $field->name }}">
-                    @endif
-                    <div class="image-overlay"></div>
+        <!-- Mobile Gallery Carousel -->
+        <div class="mobile-gallery d-lg-none">
+            <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+                <!-- Carousel Inner -->
+                <div class="carousel-inner rounded-4 overflow-hidden">
+                    <div class="carousel-item active">
+                        <div class="carousel-img-wrapper">
+                            @if ($field->image)
+                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                                    alt="{{ $field->name }}">
+                            @else
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="d-block w-100" alt="{{ $field->name }}">
+                            @endif
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="carousel-caption">
+                            <span class="caption-badge">
+                                <i class="fas fa-image"></i>
+                                1/3
+                            </span>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-img-wrapper">
+                            @if ($field->image)
+                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                                    alt="{{ $field->name }}">
+                            @else
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="d-block w-100" alt="{{ $field->name }}">
+                            @endif
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="carousel-caption">
+                            <span class="caption-badge">
+                                <i class="fas fa-image"></i>
+                                2/3
+                            </span>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-img-wrapper">
+                            @if ($field->image)
+                                <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
+                                    alt="{{ $field->name }}">
+                            @else
+                                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
+                                    class="d-block w-100" alt="{{ $field->name }}">
+                            @endif
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="carousel-caption">
+                            <span class="caption-badge">
+                                <i class="fas fa-image"></i>
+                                3/3
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="carousel-caption">
-                    <span class="caption-badge">
-                        <i class="fas fa-image"></i>
-                        1/3
+
+                <!-- Navigation Buttons -->
+                <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
+                    data-bs-slide="prev">
+                    <span class="control-icon">
+                        <i class="fas fa-chevron-left"></i>
                     </span>
-                </div>
-            </div>
-            <div class="carousel-item">
-                <div class="carousel-img-wrapper">
-                    @if ($field->image)
-                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                            alt="{{ $field->name }}">
-                    @else
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                            class="d-block w-100" alt="{{ $field->name }}">
-                    @endif
-                    <div class="image-overlay"></div>
-                </div>
-                <div class="carousel-caption">
-                    <span class="caption-badge">
-                        <i class="fas fa-image"></i>
-                        2/3
+                </button>
+                <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
+                    data-bs-slide="next">
+                    <span class="control-icon">
+                        <i class="fas fa-chevron-right"></i>
                     </span>
+                </button>
+
+                <!-- Indicators -->
+                <div class="carousel-indicators custom-indicators">
+                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
+                        aria-current="true"></button>
+                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
                 </div>
-            </div>
-            <div class="carousel-item">
-                <div class="carousel-img-wrapper">
-                    @if ($field->image)
-                        <img src="{{ Storage::url($field->image) }}" class="d-block w-100"
-                            alt="{{ $field->name }}">
-                    @else
-                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
-                            class="d-block w-100" alt="{{ $field->name }}">
-                    @endif
-                    <div class="image-overlay"></div>
-                </div>
-                <div class="carousel-caption">
-                    <span class="caption-badge">
-                        <i class="fas fa-image"></i>
-                        3/3
+
+                <!-- Available Badge -->
+                <div class="available-badge">
+                    <span class="badge-content">
+                        <i class="fas fa-check-circle"></i>
+                        Available Now
                     </span>
                 </div>
             </div>
         </div>
-
-        <!-- Navigation Buttons -->
-        <button class="carousel-control carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
-            data-bs-slide="prev">
-            <span class="control-icon">
-                <i class="fas fa-chevron-left"></i>
-            </span>
-        </button>
-        <button class="carousel-control carousel-control-next" type="button" data-bs-target="#galleryCarousel"
-            data-bs-slide="next">
-            <span class="control-icon">
-                <i class="fas fa-chevron-right"></i>
-            </span>
-        </button>
-
-        <!-- Indicators -->
-        <div class="carousel-indicators custom-indicators">
-            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="0" class="active"
-                aria-current="true"></button>
-            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="2"></button>
-        </div>
-
-        <!-- Available Badge -->
-        <div class="available-badge">
-            <span class="badge-content">
-                <i class="fas fa-check-circle"></i>
-                Available Now
-            </span>
-        </div>
-    </div>
-</div>
         <!-- Main Information -->
         <div class="row">
             <!-- Field Details Container -->
@@ -389,65 +389,65 @@
                             </div>
                         </div>
 
-                            <!-- Photographer Packages Card -->
-                            @if ($photographerPackages->count() > 0)
-                                <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                                    <div class="card-header bg-white py-3 border-0 px-4">
-                                        <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
-                                    </div>
-                                    <div class="card-body p-4">
-                                        <div class="row g-4">
-                                            @foreach ($photographerPackages as $photographer)
-                                                <div class="col-md-4">
-                                                    <div class="photographer-card {{ $photographer->package_type }}">
-                                                        <div class="package-header">
-                                                            <div class="package-info">
-                                                                <div class="package-icon">
-                                                                    <i class="fas fa-camera"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <h5 class="package-title">{{ $photographer->name }}
-                                                                    </h5>
-                                                                    <p class="package-subtitle">
-                                                                        {{ $photographer->duration }} jam</p>
-                                                                </div>
+                        <!-- Photographer Packages Card -->
+                        @if ($photographerPackages->count() > 0)
+                            <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
+                                <div class="card-header bg-white py-3 border-0 px-4">
+                                    <h5 class="mb-0 fw-bold">Paket Fotografer</h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row g-4">
+                                        @foreach ($photographerPackages as $photographer)
+                                            <div class="col-md-4">
+                                                <div class="photographer-card {{ $photographer->package_type }}">
+                                                    <div class="package-header">
+                                                        <div class="package-info">
+                                                            <div class="package-icon">
+                                                                <i class="fas fa-camera"></i>
                                                             </div>
-                                                            <div class="badge {{ $photographer->package_type }}">
-                                                                {{ ucfirst($photographer->package_type) }}
+                                                            <div>
+                                                                <h5 class="package-title">{{ $photographer->name }}
+                                                                </h5>
+                                                                <p class="package-subtitle">
+                                                                    {{ $photographer->duration }} jam</p>
                                                             </div>
                                                         </div>
-
-                                                        <div class="package-features">
-                                                            <ul class="list-unstyled">
-                                                                @if (is_array(json_decode($photographer->features)))
-                                                                    @foreach (json_decode($photographer->features) as $feature)
-                                                                        <li><i
-                                                                                class="fas fa-check-circle text-success me-2"></i>
-                                                                            {{ $feature }}</li>
-                                                                    @endforeach
-                                                                @endif
-                                                            </ul>
-                                                        </div>
-
-                                                        <div class="package-footer">
-                                                            <div class="price-info">
-                                                                <span class="price">Rp
-                                                                    {{ number_format($photographer->price, 0, ',', '.') }}</span>
-                                                                <span class="duration">/sesi</span>
-                                                            </div>
-                                                            <a href="{{ route('user.photographer.show', $photographer->id) }}"
-                                                                class="select-btn {{ $photographer->package_type }}">
-                                                                <span>Detail Paket</span>
-                                                                <i class="fas fa-arrow-right"></i>
-                                                            </a>
+                                                        <div class="badge {{ $photographer->package_type }}">
+                                                            {{ ucfirst($photographer->package_type) }}
                                                         </div>
                                                     </div>
+
+                                                    <div class="package-features">
+                                                        <ul class="list-unstyled">
+                                                            @if (is_array(json_decode($photographer->features)))
+                                                                @foreach (json_decode($photographer->features) as $feature)
+                                                                    <li><i
+                                                                            class="fas fa-check-circle text-success me-2"></i>
+                                                                        {{ $feature }}</li>
+                                                                @endforeach
+                                                            @endif
+                                                        </ul>
+                                                    </div>
+
+                                                    <div class="package-footer">
+                                                        <div class="price-info">
+                                                            <span class="price">Rp
+                                                                {{ number_format($photographer->price, 0, ',', '.') }}</span>
+                                                            <span class="duration">/sesi</span>
+                                                        </div>
+                                                        <a href="{{ route('user.photographer.show', $photographer->id) }}"
+                                                            class="select-btn {{ $photographer->package_type }}">
+                                                            <span>Detail Paket</span>
+                                                            <i class="fas fa-arrow-right"></i>
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                            @endforeach
-                                        </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                            @endif
+                            </div>
+                        @endif
 
 
                         <!-- Booking Card -->
@@ -840,6 +840,8 @@
                                 }
 
                                 // Function to render time slots
+                                // Function to render time slots
+                                // Dalam script section, update function renderTimeSlots
                                 function renderTimeSlots(slots) {
                                     const slotsWrapper = document.getElementById('time-slots-wrapper');
                                     const availableSlotsCount = document.getElementById('available-slots-count');
@@ -847,18 +849,23 @@
                                     // Clear previous content
                                     slotsWrapper.innerHTML = '';
 
-                                    // Count available slots
-                                    const availableCount = slots.filter(slot => slot.is_available).length;
+                                    // Count available slots (exclude past time slots)
+                                    const availableCount = slots.filter(slot => slot.is_available && !slot.is_past_time).length;
                                     availableSlotsCount.textContent = `${availableCount} slot`;
 
                                     // If no available slots
                                     if (availableCount === 0) {
+                                        const hasPastTimeSlots = slots.some(slot => slot.is_past_time);
+                                        const message = hasPastTimeSlots ?
+                                            'Semua slot waktu yang tersedia sudah lewat atau terisi. Silakan pilih tanggal lain.' :
+                                            'Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.';
+
                                         slotsWrapper.innerHTML = `
-           <div class="alert alert-warning" role="alert">
-               <i class="fas fa-exclamation-triangle me-2"></i>
-               Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
-           </div>
-       `;
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${message}
+            </div>
+        `;
                                         return;
                                     }
 
@@ -876,6 +883,11 @@
                                         let statusText = '';
 
                                         switch (slot.status) {
+                                            case 'past_time':
+                                                statusClass = 'slot-past-time';
+                                                statusIcon = '<i class="fas fa-clock"></i>';
+                                                isDisabled = true;
+                                                break;
                                             case 'booked':
                                                 statusClass = 'slot-booked';
                                                 statusIcon = '<i class="fas fa-lock"></i>';
@@ -896,6 +908,7 @@
                                                 statusIcon = '<i class="fas fa-clock"></i>';
                                                 break;
                                         }
+
                                         const isSelected = selectedSlots.has(slot.display);
                                         if (isSelected) {
                                             statusClass = 'slot-selected';
@@ -908,12 +921,12 @@
                                         slotDiv.dataset.status = slot.status;
 
                                         slotDiv.innerHTML = `
-           <div class="slot-time">
-               ${statusIcon}
-               <span>${slot.display}</span>
-           </div>
-           <div class="slot-price">Rp ${slot.price.toLocaleString('id')}</div>
-       `;
+            <div class="slot-time">
+                ${statusIcon}
+                <span>${slot.display}</span>
+            </div>
+            <div class="slot-price">Rp ${slot.price.toLocaleString('id')}</div>
+        `;
 
                                         slotGrid.appendChild(slotDiv);
                                     });
@@ -930,6 +943,14 @@
                                             // If already in cart, show message and skip
                                             if (slotStatus === 'in_cart') {
                                                 showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
+                                                return;
+                                            }
+
+                                            // If past time, show message and skip
+                                            if (slotStatus === 'past_time') {
+                                                showToast('Warning',
+                                                    'Slot waktu ini sudah lewat dan tidak dapat dibooking',
+                                                    'warning');
                                                 return;
                                             }
 
@@ -1070,7 +1091,7 @@
 
 
     <style>
-        /* Wizard Booking Process Styling */
+        /* Wizard Booking Process Styling - FIXED VERSION */
         .booking-wizard {
             position: relative;
             margin-bottom: 2.5rem;
@@ -1102,7 +1123,7 @@
             left: 0;
             height: 4px;
             background-color: #9e0620;
-            transition: width 0.5s ease;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 2;
         }
 
@@ -1149,6 +1170,7 @@
             color: white;
             transform: scale(1.1);
             box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            animation: pulse 2s infinite;
         }
 
         .wizard-step.completed .step-circle {
@@ -1220,6 +1242,23 @@
             }
         }
 
+        @keyframes pulse {
+            0% {
+                transform: scale(1.1);
+                box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 6px 15px rgba(158, 6, 32, 0.4);
+            }
+
+            100% {
+                transform: scale(1.1);
+                box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            }
+        }
+
         /* Navigation Buttons */
         .wizard-buttons {
             display: flex;
@@ -1287,18 +1326,31 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none !important;
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
         }
 
-        /* Calendar and Time Slot Specific Styling */
+        .wizard-btn:disabled:hover {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            transform: none !important;
+        }
 
-        /* Time Slots */
+        /* ============================================
+       TIME SLOTS - FIXED CONSISTENT LAYOUT
+       ============================================ */
+
+        /* Time Slots Grid - Improved Consistency */
         .time-slots-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
             width: 100%;
+            padding: 0;
+            margin: 0;
         }
 
+        /* Time Slot Container - Fixed Sizing */
         .time-slot {
             position: relative;
             border-radius: 8px;
@@ -1306,72 +1358,298 @@
             transition: all 0.3s ease;
             cursor: pointer;
             border: 2px solid #e9ecef;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            /* PENTING: Fixed height untuk konsistensi */
+            min-height: 80px;
+            max-height: 80px;
+            box-sizing: border-box;
         }
 
-        .time-slot:not(.disabled):hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        .time-slot:not(.disabled):not(.slot-booked):not(.slot-past-time):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             border-color: #9e0620;
         }
 
+        /* Slot Time Section - Fixed Centering */
         .slot-time {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 50px;
+            flex: 1;
             text-align: center;
-            padding: 0.5rem;
-            font-size: 0.9rem;
+            padding: 8px 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #212529;
+            /* Pastikan elemen ini mengambil ruang yang tersedia */
+            min-height: 50px;
+            position: relative;
         }
 
         .slot-time i {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #6c757d;
-            margin-right: 5px;
+            margin-right: 4px;
+            flex-shrink: 0;
         }
 
+        /* Slot Price Section - Fixed Bottom */
         .slot-price {
             background-color: #f8f9fa;
-            padding: 0.5rem;
+            padding: 4px 8px;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #6c757d;
             border-top: 1px solid #e9ecef;
+            font-weight: 500;
+            /* Fixed height untuk konsistensi */
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        /* Time Slot States */
+        .slot-price small {
+            display: block;
+            font-size: 0.65rem;
+            margin-top: 2px;
+        }
+
+        /* ============================================
+       TIME SLOT STATES - Improved
+       ============================================ */
+
+        /* Available Slots */
         .time-slot.slot-available:hover {
             border-color: #28a745;
+            background-color: #f8fff9;
         }
 
+        /* Selected Slots */
         .time-slot.slot-selected {
             border-color: #9e0620;
             background-color: #fff8f8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(158, 6, 32, 0.2);
         }
 
         .time-slot.slot-selected .slot-time {
             color: #9e0620;
+            font-weight: 700;
         }
 
         .time-slot.slot-selected .slot-time i {
             color: #9e0620;
         }
 
+        .time-slot.slot-selected .slot-price {
+            background-color: #fff0f0;
+            color: #9e0620;
+            border-color: #f8d7da;
+        }
+
+        /* Booked Slots */
         .time-slot.slot-booked {
             border-color: #6c757d;
             background-color: #f8f9fa;
             opacity: 0.7;
             cursor: not-allowed;
+            pointer-events: none;
         }
 
+        .time-slot.slot-booked .slot-time {
+            color: #6c757d;
+        }
+
+        /* In Cart Slots */
         .time-slot.slot-in-cart {
             border-color: #fd7e14;
             background-color: #fff8f1;
         }
 
+        .time-slot.slot-in-cart .slot-time {
+            color: #fd7e14;
+        }
+
         .time-slot.slot-in-cart .slot-time i {
             color: #fd7e14;
         }
+
+        /* Membership Slots */
+        .time-slot.slot-membership {
+            background-color: #ffeeba;
+            border-color: #ffdf7e;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .time-slot.slot-membership .slot-time {
+            color: #856404;
+        }
+
+        /* Past Time Slots - Improved Design */
+        .time-slot.slot-past-time {
+            border-color: #dee2e6;
+            background-color: #f8f9fa;
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .time-slot.slot-past-time::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background-color: #6c757d;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .time-slot.slot-past-time .slot-time {
+            color: #6c757d;
+            position: relative;
+            z-index: 2;
+        }
+
+        .time-slot.slot-past-time .slot-time i {
+            color: #6c757d;
+        }
+
+        .time-slot.slot-past-time .slot-price {
+            color: #6c757d;
+            background-color: #e9ecef;
+        }
+
+        /* Disabled Slots */
+        .time-slot.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* ============================================
+       RESPONSIVE DESIGN - Mobile First
+       ============================================ */
+
+        /* Tablet */
+        @media (max-width: 992px) {
+            .time-slots-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 10px;
+            }
+
+            .time-slot {
+                min-height: 75px;
+                max-height: 75px;
+            }
+
+            .slot-time {
+                font-size: 0.8rem;
+                min-height: 45px;
+                padding: 6px 4px;
+            }
+
+            .slot-price {
+                font-size: 0.7rem;
+                min-height: 22px;
+                padding: 3px 6px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .time-slots-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .time-slot {
+                min-height: 70px;
+                max-height: 70px;
+            }
+
+            .slot-time {
+                font-size: 0.75rem;
+                min-height: 42px;
+                padding: 4px;
+            }
+
+            .slot-time i {
+                font-size: 0.7rem;
+                margin-right: 3px;
+            }
+
+            .slot-price {
+                font-size: 0.65rem;
+                min-height: 20px;
+                padding: 2px 4px;
+            }
+
+            .slot-price small {
+                font-size: 0.6rem;
+                margin-top: 1px;
+            }
+
+            /* Mobile wizard buttons */
+            .wizard-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .wizard-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .wizard-btn-prev {
+                order: 2;
+            }
+
+            .wizard-btn-next,
+            .wizard-btn-submit {
+                order: 1;
+            }
+        }
+
+        /* Small Mobile */
+        @media (max-width: 576px) {
+            .time-slots-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+
+            .time-slot {
+                min-height: 65px;
+                max-height: 65px;
+            }
+
+            .slot-time {
+                font-size: 0.7rem;
+                min-height: 40px;
+                padding: 4px 2px;
+            }
+
+            .slot-price {
+                font-size: 0.6rem;
+                min-height: 18px;
+            }
+
+            .time-slot.slot-past-time::before {
+                left: 5%;
+                right: 5%;
+            }
+        }
+
+        /* ============================================
+       SELECTED SLOTS AND CONFIRMATION
+       ============================================ */
 
         /* Selected Slots List */
         .selected-slots-list {
@@ -1392,6 +1670,20 @@
 
         .selected-slots-list .list-group-item:hover {
             background-color: #fff;
+            transform: translateX(5px);
+        }
+
+        .selected-slots-section {
+            border-top: 1px solid #e9ecef;
+            padding-top: 1rem;
+        }
+
+        .selected-slot-item {
+            transition: all 0.3s ease;
+        }
+
+        .selected-slot-item:hover {
+            background-color: #fff !important;
             transform: translateX(5px);
         }
 
@@ -1422,383 +1714,210 @@
             color: #212529;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .step-desc {
-                display: none !important;
-            }
+        /* ============================================
+       LOADING AND PLACEHOLDER STATES
+       ============================================ */
 
-            .wizard-progress::before {
-                top: 15px;
-            }
-
-            .wizard-progress-bar {
-                top: 15px;
-            }
-
-            .step-circle {
-                width: 30px;
-                height: 30px;
-                font-size: 0.9rem;
-            }
-
-            .step-label {
-                font-size: 0.8rem;
-            }
-
-            .time-slots-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .wizard-buttons {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .wizard-btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .wizard-btn-prev {
-                order: 2;
-            }
-
-            .wizard-btn-next,
-            .wizard-btn-submit {
-                order: 1;
-            }
-        }
-
-/* Custom Flatpickr Theme - brand color #9e0620 */
-/* Base Calendar Container */
-.flatpickr-calendar {
-    width: 100% !important;
-    max-width: 320px !important;
-    box-sizing: border-box !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-    touch-action: manipulation;
-}
-
-/* Month Navigation Section */
-.flatpickr-months {
-    background-color: #ffffff;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-}
-
-.flatpickr-month {
-    color: #fff;
-}
-
-.flatpickr-current-month {
-    font-weight: 600;
-}
-
-.flatpickr-monthDropdown-months,
-.numInputWrapper span.arrowUp,
-.numInputWrapper span.arrowDown {
-    color: #fff;
-}
-
-.flatpickr-prev-month,
-.flatpickr-next-month {
-    fill: #fff;
-}
-
-.flatpickr-prev-month:hover svg,
-.flatpickr-next-month:hover svg {
-    fill: #e9ecef;
-}
-
-/* Weekday Headers */
-span.flatpickr-weekday {
-    color: #9e0620;
-    font-weight: 600;
-    width: 14.2857% !important;
-    max-width: 14.2857% !important;
-    flex-basis: 14.2857% !important;
-}
-
-/* Days Container */
-.flatpickr-days {
-    width: 100% !important;
-}
-
-.dayContainer {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    display: flex;
-    flex-wrap: wrap;
-}
-
-/* Day Cells */
-.flatpickr-day {
-    width: 14.2857% !important;
-    max-width: 14.2857% !important;
-    flex-basis: 14.2857% !important;
-    height: 40px !important;
-    line-height: 40px !important;
-    margin: 0 !important;
-    border-radius: 24px !important;
-}
-
-/* Day States: Hover */
-.flatpickr-day:hover {
-    background: #fff8f8;
-    border-color: #fff8f8;
-}
-
-/* Day States: Today */
-.flatpickr-day.today {
-    border-color: #9e0620;
-}
-
-.flatpickr-day.today:hover {
-    background: #fff8f8;
-    color: #9e0620;
-}
-
-/* Day States: Selected */
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected.inRange,
-.flatpickr-day.startRange.inRange,
-.flatpickr-day.endRange.inRange,
-.flatpickr-day.selected:focus,
-.flatpickr-day.startRange:focus,
-.flatpickr-day.endRange:focus,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover,
-.flatpickr-day.selected.prevMonthDay,
-.flatpickr-day.startRange.prevMonthDay,
-.flatpickr-day.endRange.prevMonthDay,
-.flatpickr-day.selected.nextMonthDay,
-.flatpickr-day.startRange.nextMonthDay,
-.flatpickr-day.endRange.nextMonthDay {
-    background: #9e0620;
-    border-color: #9e0620;
-    color: #fff;
-}
-
-/* Range Selection */
-.flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
-.flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
-.flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
-    box-shadow: -10px 0 0 #9e0620;
-}
-
-/* Next Month Days (within booking window) */
-.flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
-    color: #393939 !important;
-    font-weight: normal !important;
-    background-color: transparent !important;
-    opacity: 1 !important;
-}
-
-.flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
-    background-color: #fff8f8 !important;
-    border-color: #fff8f8 !important;
-    color: #9e0620 !important;
-}
-
-.flatpickr-day.nextMonthDay.selected {
-    background-color: #9e0620 !important;
-    border-color: #9e0620 !important;
-    color: #fff !important;
-}
-
-/* Mobile Adjustments */
-@media (max-width: 576px) {
-    .flatpickr-calendar {
-        max-width: 100%;
-    }
-
-    .flatpickr-day {
-        height: 35px !important;
-        line-height: 35px !important;
-    }
-}
-        .slot-membership {
-            background-color: #ffeeba;
-            /* Warna kuning lembut */
-            border-color: #ffdf7e;
-            cursor: not-allowed;
-        }
-
-        .slot-membership .slot-time {
-            color: #856404;
-            /* Warna text kuning gelap */
-        }
-
-        /* Photographer Card Styles */
-        .photographer-card {
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            height: 100%;
+        .slot-placeholder {
+            min-height: 200px;
             display: flex;
             flex-direction: column;
-            background: white;
-            border: 1px solid #e9ecef;
-        }
-
-        .photographer-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .photographer-card .package-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 1.25rem;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .photographer-card .package-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .photographer-card .package-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
         }
 
-        .photographer-card.favorite .package-icon {
-            background-color: #fff8f1;
-            color: #fd7e14;
+        .slot-placeholder .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
         }
 
-        .photographer-card.plus .package-icon {
-            background-color: #f1f9fe;
-            color: #0d6efd;
-        }
-
-        .photographer-card.exclusive .package-icon {
-            background-color: #fff1f1;
-            color: #9e0620;
-        }
-
-        .photographer-card .package-title {
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
-            font-weight: 600;
-        }
-
-        .photographer-card .package-subtitle {
-            font-size: 0.85rem;
+        .slot-placeholder p {
+            margin-top: 1rem;
             color: #6c757d;
-            margin-bottom: 0;
-        }
-
-        .photographer-card .badge {
-            border-radius: 20px;
-            padding: 0.35rem 0.75rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .photographer-card .badge.favorite {
-            background-color: #fff8f1;
-            color: #fd7e14;
-        }
-
-        .photographer-card .badge.plus {
-            background-color: #f1f9fe;
-            color: #0d6efd;
-        }
-
-        .photographer-card .badge.exclusive {
-            background-color: #fff1f1;
-            color: #9e0620;
-        }
-
-        .photographer-card .package-features {
-            padding: 1.25rem;
-            flex-grow: 1;
-        }
-
-        .photographer-card .package-features li {
             font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: flex-start;
         }
 
-        .photographer-card .package-features i {
-            margin-top: 0.25rem;
-            flex-shrink: 0;
+        /* ============================================
+       CALENDAR STYLING (Flatpickr)
+       ============================================ */
+
+        /* Base Calendar Container */
+        .flatpickr-calendar {
+            width: 100% !important;
+            max-width: 320px !important;
+            box-sizing: border-box !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
+            touch-action: manipulation;
         }
 
-        .photographer-card .package-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem;
-            background-color: #f8f9fa;
-            border-top: 1px solid #e9ecef;
+        /* Month Navigation Section */
+        .flatpickr-months {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
         }
 
-        .photographer-card .price-info {
-            display: flex;
-            flex-direction: column;
+        .flatpickr-month {
+            color: #fff;
         }
 
-        .photographer-card .price {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #212529;
-        }
-
-        .photographer-card .duration {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
-
-        .photographer-card .select-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
+        .flatpickr-current-month {
             font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            text-decoration: none;
         }
 
-        .photographer-card .select-btn.favorite {
-            background-color: #fff8f1;
-            color: #fd7e14;
+        .flatpickr-monthDropdown-months,
+        .numInputWrapper span.arrowUp,
+        .numInputWrapper span.arrowDown {
+            color: #fff;
         }
 
-        .photographer-card .select-btn.plus {
-            background-color: #f1f9fe;
-            color: #0d6efd;
+        .flatpickr-prev-month,
+        .flatpickr-next-month {
+            fill: #fff;
         }
 
-        .photographer-card .select-btn.exclusive {
-            background-color: #fff1f1;
+        .flatpickr-prev-month:hover svg,
+        .flatpickr-next-month:hover svg {
+            fill: #e9ecef;
+        }
+
+        /* Weekday Headers */
+        span.flatpickr-weekday {
+            color: #9e0620;
+            font-weight: 600;
+            width: 14.2857% !important;
+            max-width: 14.2857% !important;
+            flex-basis: 14.2857% !important;
+        }
+
+        /* Days Container */
+        .flatpickr-days {
+            width: 100% !important;
+        }
+
+        .dayContainer {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* Day Cells */
+        .flatpickr-day {
+            width: 14.2857% !important;
+            max-width: 14.2857% !important;
+            flex-basis: 14.2857% !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            margin: 0 !important;
+            border-radius: 24px !important;
+        }
+
+        /* Day States */
+        .flatpickr-day:hover {
+            background: #fff8f8;
+            border-color: #fff8f8;
+        }
+
+        .flatpickr-day.today {
+            border-color: #9e0620;
+        }
+
+        .flatpickr-day.today:hover {
+            background: #fff8f8;
             color: #9e0620;
         }
 
-        .photographer-card .select-btn:hover {
-            transform: translateX(5px);
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange,
+        .flatpickr-day.selected.inRange,
+        .flatpickr-day.startRange.inRange,
+        .flatpickr-day.endRange.inRange,
+        .flatpickr-day.selected:focus,
+        .flatpickr-day.startRange:focus,
+        .flatpickr-day.endRange:focus,
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.startRange:hover,
+        .flatpickr-day.endRange:hover,
+        .flatpickr-day.selected.prevMonthDay,
+        .flatpickr-day.startRange.prevMonthDay,
+        .flatpickr-day.endRange.prevMonthDay,
+        .flatpickr-day.selected.nextMonthDay,
+        .flatpickr-day.startRange.nextMonthDay,
+        .flatpickr-day.endRange.nextMonthDay {
+            background: #9e0620;
+            border-color: #9e0620;
+            color: #fff;
         }
 
+        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
+            color: #393939 !important;
+            font-weight: normal !important;
+            background-color: transparent !important;
+            opacity: 1 !important;
+        }
 
+        .flatpickr-day.nextMonthDay:not(.flatpickr-disabled):hover {
+            background-color: #fff8f8 !important;
+            border-color: #fff8f8 !important;
+            color: #9e0620 !important;
+        }
+
+        .flatpickr-day.nextMonthDay.selected {
+            background-color: #9e0620 !important;
+            border-color: #9e0620 !important;
+            color: #fff !important;
+        }
+
+        .flatpickr-day.flatpickr-disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+
+        .flatpickr-day.flatpickr-disabled:hover {
+            background: transparent !important;
+            color: #393939 !important;
+        }
+
+        /* Mobile Calendar Adjustments */
+        @media (max-width: 576px) {
+            .flatpickr-calendar {
+                max-width: 100%;
+            }
+
+            .flatpickr-day {
+                height: 35px !important;
+                line-height: 35px !important;
+            }
+        }
+
+        /* ============================================
+       ALERT AND TOAST NOTIFICATIONS
+       ============================================ */
+
+        .toast.bg-warning {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeaa7;
+        }
+
+        .toast.bg-info {
+            background-color: #d1ecf1 !important;
+            color: #0c5460 !important;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffecb5;
+            color: #856404;
+        }
+
+        .alert-warning .fas {
+            color: #f0ad4e;
+        }
     </style>
 @endsection

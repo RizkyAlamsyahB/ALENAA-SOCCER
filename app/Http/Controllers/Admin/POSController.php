@@ -62,46 +62,65 @@ class POSController extends Controller
         ]);
     }
 
-    /**
-     * Mengambil slot waktu tersedia untuk lapangan
-     */
-    public function getFieldTimeSlots(Request $request)
-    {
-        $request->validate([
-            'field_id' => 'required|exists:fields,id',
-            'date' => 'required|date',
-        ]);
 
-        $fieldId = $request->field_id;
-        $date = $request->date;
+/**
+ * Mengambil slot waktu tersedia untuk lapangan - DENGAN PENGECEKAN PAST TIME
+ */
+public function getFieldTimeSlots(Request $request)
+{
+    $request->validate([
+        'field_id' => 'required|exists:fields,id',
+        'date' => 'required|date',
+    ]);
 
-        // Siapkan semua slot waktu dari jam 8 pagi sampai 10 malam (sesuaikan dengan jam operasional)
-        $startHour = 8;
-        $endHour = 22;
-        $slotDuration = 60; // dalam menit
+    $fieldId = $request->field_id;
+    $date = $request->date;
+    $carbonDate = Carbon::parse($date);
 
-        $availableSlots = [];
-        $bookedSlots = [];
+    // Get current time untuk comparison
+    $now = Carbon::now();
+    $isToday = $carbonDate->isToday();
 
-        // Ambil booking yang sudah ada untuk lapangan dan tanggal tersebut
-        $existingBookings = FieldBooking::where('field_id', $fieldId)
-            ->whereDate('start_time', $date)
-            ->whereIn('status', ['confirmed', 'pending'])
-            ->get();
+    // Siapkan semua slot waktu dari jam 8 pagi sampai 10 malam
+    $startHour = 8;
+    $endHour = 22;
+    $slotDuration = 60; // dalam menit
 
-        // Buat array slot waktu yang tersedia
-        for ($hour = $startHour; $hour < $endHour; $hour++) {
-            $slotStart = Carbon::parse("$date $hour:00:00");
-            $slotEnd = Carbon::parse("$date $hour:00:00")->addMinutes($slotDuration);
+    $availableSlots = [];
+    $bookedSlots = [];
 
-            $isAvailable = true;
+    // Ambil booking yang sudah ada untuk lapangan dan tanggal tersebut
+    $existingBookings = FieldBooking::where('field_id', $fieldId)
+        ->whereDate('start_time', $date)
+        ->whereIn('status', ['confirmed', 'pending'])
+        ->get();
 
-            // Cek apakah slot bentrok dengan booking yang sudah ada
+    // Buat array slot waktu yang tersedia
+    for ($hour = $startHour; $hour < $endHour; $hour++) {
+        $slotStart = Carbon::parse("$date $hour:00:00");
+        $slotEnd = Carbon::parse("$date $hour:00:00")->addMinutes($slotDuration);
+
+        $isAvailable = true;
+        $isPastTime = false;
+
+        // PERBAIKAN: Cek apakah slot waktu sudah lewat
+        if ($isToday) {
+            // Slot disable jika waktu END sudah terlewati
+            if ($slotEnd <= $now) {
+                $isAvailable = false;
+                $isPastTime = true;
+            }
+        }
+
+        // Jika bukan past time, cek bentrok dengan booking yang sudah ada
+        if (!$isPastTime) {
             foreach ($existingBookings as $booking) {
                 $bookingStart = Carbon::parse($booking->start_time);
                 $bookingEnd = Carbon::parse($booking->end_time);
 
-                if (($slotStart >= $bookingStart && $slotStart < $bookingEnd) || ($slotEnd > $bookingStart && $slotEnd <= $bookingEnd) || ($slotStart <= $bookingStart && $slotEnd >= $bookingEnd)) {
+                if (($slotStart >= $bookingStart && $slotStart < $bookingEnd) ||
+                    ($slotEnd > $bookingStart && $slotEnd <= $bookingEnd) ||
+                    ($slotStart <= $bookingStart && $slotEnd >= $bookingEnd)) {
                     $isAvailable = false;
                     $bookedSlots[] = [
                         'start' => $slotStart->format('H:i'),
@@ -111,446 +130,231 @@ class POSController extends Controller
                     break;
                 }
             }
-
-            if ($isAvailable) {
-                $availableSlots[] = [
-                    'start' => $slotStart->format('H:i'),
-                    'end' => $slotEnd->format('H:i'),
-                    'label' => $slotStart->format('H:i') . ' - ' . $slotEnd->format('H:i'),
-                ];
-            }
         }
+
+        // Tentukan status slot
+        $status = 'available';
+        if ($isPastTime) {
+            $status = 'past_time';
+        } else if (!$isAvailable) {
+            $status = 'booked';
+        }
+
+        // Tambahkan semua slot (termasuk past time) untuk konsistensi UI
+        $availableSlots[] = [
+            'start' => $slotStart->format('H:i'),
+            'end' => $slotEnd->format('H:i'),
+            'label' => $slotStart->format('H:i') . ' - ' . $slotEnd->format('H:i'),
+            'is_available' => $isAvailable,
+            'is_past_time' => $isPastTime,
+            'status' => $status
+        ];
+    }
+
+    return response()->json([
+        'available_slots' => $availableSlots,
+        'booked_slots' => $bookedSlots,
+    ]);
+}
+
+/**
+ * Menambahkan booking lapangan ke cart POS - DENGAN VALIDASI PAST TIME
+ */
+public function addFieldToCart(Request $request)
+{
+    $request->validate([
+        'field_id' => 'required|exists:fields,id',
+        'date' => 'required|date',
+        'time_slot' => 'required',
+        'customer_name' => 'required|string|max:255',
+        'customer_phone' => 'nullable|string|max:20',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // Parsing time slot (format: "08:00 - 09:00")
+        [$startTime, $endTime] = explode(' - ', $request->time_slot);
+
+        // Create full datetime
+        $startDateTime = Carbon::parse("{$request->date} {$startTime}");
+        $endDateTime = Carbon::parse("{$request->date} {$endTime}");
+
+        // PERBAIKAN: Cek past time sebelum validasi lainnya
+        $now = Carbon::now();
+        if ($endDateTime <= $now) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Slot waktu yang dipilih sudah lewat. Silakan pilih slot waktu yang masih tersedia.',
+                ],
+                400,
+            );
+        }
+
+        // Cek kembali ketersediaan slot waktu
+        $conflictingBooking = FieldBooking::where('field_id', $request->field_id)
+            ->where(function ($query) use ($startDateTime, $endDateTime) {
+                $query
+                    ->where(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
+                    })
+                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
+                    })
+                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
+                    });
+            })
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->first();
+
+        if ($conflictingBooking) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Slot waktu sudah dibooking',
+                ],
+                400,
+            );
+        }
+
+        // Cari atau buat data customer berdasarkan no telepon
+        $customer = null;
+        if (!empty($request->customer_phone)) {
+            $customer = Customer::where('phone_number', $request->customer_phone)->first();
+        }
+
+        if (!$customer) {
+            $customer = Customer::create([
+                'name' => $request->customer_name,
+                'phone_number' => $request->customer_phone,
+            ]);
+        }
+
+        // Ambil field untuk mendapatkan harga
+        $field = Field::findOrFail($request->field_id);
+
+        // Ambil atau buat cart POS
+        $posCart = $this->getPOSCart();
+
+        // Periksa apakah item sudah ada di cart
+        $existingItem = CartItem::where('cart_id', $posCart->id)
+            ->where('type', 'field_booking')
+            ->where('item_id', $field->id)
+            ->where('start_time', $startDateTime)
+            ->where('end_time', $endDateTime)
+            ->first();
+
+        if ($existingItem) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Item sudah ada di cart',
+                ],
+                400,
+            );
+        }
+
+        // Tambahkan ke cart
+        $cartItem = CartItem::create([
+            'cart_id' => $posCart->id,
+            'type' => 'field_booking',
+            'item_id' => $field->id,
+            'start_time' => $startDateTime,
+            'end_time' => $endDateTime,
+            'price' => $field->price,
+            'notes' => "Customer: {$customer->name} " . ($customer->phone_number ? "({$customer->phone_number})" : ''),
+            'customer_id' => $customer->id,
+        ]);
+
+        DB::commit();
+
+        // Reload cart items
+        $cartItems = CartItem::where('cart_id', $posCart->id)->get();
+        $htmlContent = view('admin.pos.partials.cart_items', compact('cartItems', 'posCart'))->render();
 
         return response()->json([
-            'available_slots' => $availableSlots,
-            'booked_slots' => $bookedSlots,
+            'success' => true,
+            'message' => 'Booking lapangan berhasil ditambahkan ke cart',
+            'html_content' => $htmlContent,
+            'cart_total' => $cartItems->sum('price'),
         ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error adding field to POS cart: ' . $e->getMessage());
+
+        return response()->json(
+            [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ],
+            500,
+        );
     }
+}
 
-    /**
-     * Menambahkan booking lapangan ke cart POS
-     */
-    public function addFieldToCart(Request $request)
-    {
-        $request->validate([
-            'field_id' => 'required|exists:fields,id',
-            'date' => 'required|date',
-            'time_slot' => 'required',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
-        ]);
+/**
+ * Mengambil slot waktu tersedia untuk fotografer - DENGAN PENGECEKAN PAST TIME
+ */
+public function getPhotographerTimeSlots(Request $request)
+{
+    $request->validate([
+        'photographer_id' => 'required|exists:photographers,id',
+        'date' => 'required|date',
+    ]);
 
-        try {
-            DB::beginTransaction();
+    $photographerId = $request->photographer_id;
+    $date = $request->date;
+    $carbonDate = Carbon::parse($date);
 
-            // Parsing time slot (format: "08:00 - 09:00")
-            [$startTime, $endTime] = explode(' - ', $request->time_slot);
+    // Get current time untuk comparison
+    $now = Carbon::now();
+    $isToday = $carbonDate->isToday();
 
-            // Create full datetime
-            $startDateTime = Carbon::parse("{$request->date} {$startTime}");
-            $endDateTime = Carbon::parse("{$request->date} {$endTime}");
+    // Siapkan semua slot waktu
+    $startHour = 8;
+    $endHour = 22;
+    $slotDuration = 60; // dalam menit
 
-            // Cek kembali ketersediaan slot waktu
-            $conflictingBooking = FieldBooking::where('field_id', $request->field_id)
-                ->where(function ($query) use ($startDateTime, $endDateTime) {
-                    $query
-                        ->where(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
-                        })
-                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
-                        })
-                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
-                        });
-                })
-                ->whereIn('status', ['confirmed', 'pending'])
-                ->first();
+    $availableSlots = [];
+    $bookedSlots = [];
 
-            if ($conflictingBooking) {
-                DB::rollBack();
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Slot waktu sudah dibooking',
-                    ],
-                    400,
-                );
+    // Ambil booking yang sudah ada untuk fotografer dan tanggal tersebut
+    $existingBookings = PhotographerBooking::where('photographer_id', $photographerId)
+        ->whereDate('start_time', $date)
+        ->whereIn('status', ['confirmed', 'pending'])
+        ->get();
+
+    // Buat array slot waktu yang tersedia
+    for ($hour = $startHour; $hour < $endHour; $hour++) {
+        $slotStart = Carbon::parse("$date $hour:00:00");
+        $slotEnd = Carbon::parse("$date $hour:00:00")->addMinutes($slotDuration);
+
+        $isAvailable = true;
+        $isPastTime = false;
+
+        // PERBAIKAN: Cek apakah slot waktu sudah lewat
+        if ($isToday) {
+            // Slot disable jika waktu END sudah terlewati
+            if ($slotEnd <= $now) {
+                $isAvailable = false;
+                $isPastTime = true;
             }
-
-            // Cari atau buat data customer berdasarkan no telepon
-            $customer = null;
-            if (!empty($request->customer_phone)) {
-                $customer = Customer::where('phone_number', $request->customer_phone)->first();
-            }
-
-            if (!$customer) {
-                // Buat customer baru jika tidak ditemukan
-                $customer = Customer::create([
-                    'name' => $request->customer_name,
-                    'phone_number' => $request->customer_phone,
-                ]);
-            }
-
-            // Ambil field untuk mendapatkan harga
-            $field = Field::findOrFail($request->field_id);
-
-            // Ambil atau buat cart POS
-            $posCart = $this->getPOSCart();
-
-            // Periksa apakah item sudah ada di cart
-            $existingItem = CartItem::where('cart_id', $posCart->id)->where('type', 'field_booking')->where('item_id', $field->id)->where('start_time', $startDateTime)->where('end_time', $endDateTime)->first();
-
-            if ($existingItem) {
-                DB::rollBack();
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Item sudah ada di cart',
-                    ],
-                    400,
-                );
-            }
-
-            // Tambahkan ke cart
-            $cartItem = CartItem::create([
-                'cart_id' => $posCart->id,
-                'type' => 'field_booking',
-                'item_id' => $field->id,
-                'start_time' => $startDateTime,
-                'end_time' => $endDateTime,
-                'price' => $field->price,
-                'notes' => "Customer: {$customer->name} " . ($customer->phone_number ? "({$customer->phone_number})" : ''),
-                'customer_id' => $customer->id,
-            ]);
-
-            DB::commit();
-
-            // Reload cart items
-            $cartItems = CartItem::where('cart_id', $posCart->id)->get();
-            $htmlContent = view('admin.pos.partials.cart_items', compact('cartItems', 'posCart'))->render();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking lapangan berhasil ditambahkan ke cart',
-                'html_content' => $htmlContent,
-                'cart_total' => $cartItems->sum('price'),
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error adding field to POS cart: ' . $e->getMessage());
-
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Error: ' . $e->getMessage(),
-                ],
-                500,
-            );
         }
-    }
 
-    /**
-     * Menambahkan booking fotografer ke cart POS
-     */
-    public function addPhotographerToCart(Request $request)
-    {
-        $request->validate([
-            'photographer_id' => 'required|exists:photographers,id',
-            'date' => 'required|date',
-            'time_slot' => 'required',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Parsing time slot (format: "08:00 - 09:00")
-            [$startTime, $endTime] = explode(' - ', $request->time_slot);
-
-            // Create full datetime
-            $startDateTime = Carbon::parse("{$request->date} {$startTime}");
-            $endDateTime = Carbon::parse("{$request->date} {$endTime}");
-
-            // Cek kembali ketersediaan slot waktu
-            $conflictingBooking = PhotographerBooking::where('photographer_id', $request->photographer_id)
-                ->where(function ($query) use ($startDateTime, $endDateTime) {
-                    $query
-                        ->where(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
-                        })
-                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
-                        })
-                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
-                        });
-                })
-                ->whereIn('status', ['confirmed', 'pending'])
-                ->first();
-
-            if ($conflictingBooking) {
-                DB::rollBack();
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Slot waktu sudah dibooking',
-                    ],
-                    400,
-                );
-            }
-
-            // Cari atau buat data customer berdasarkan no telepon
-            $customer = null;
-            if (!empty($request->customer_phone)) {
-                $customer = Customer::where('phone_number', $request->customer_phone)->first();
-            }
-
-            if (!$customer) {
-                // Buat customer baru jika tidak ditemukan
-                $customer = Customer::create([
-                    'name' => $request->customer_name,
-                    'phone_number' => $request->customer_phone,
-                ]);
-            }
-
-            // Ambil photographer untuk mendapatkan harga
-            $photographer = Photographer::findOrFail($request->photographer_id);
-
-            // Ambil atau buat cart POS
-            $posCart = $this->getPOSCart();
-
-            // Periksa apakah item sudah ada di cart
-            $existingItem = CartItem::where('cart_id', $posCart->id)->where('type', 'photographer')->where('item_id', $photographer->id)->where('start_time', $startDateTime)->where('end_time', $endDateTime)->first();
-
-            if ($existingItem) {
-                DB::rollBack();
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Item sudah ada di cart',
-                    ],
-                    400,
-                );
-            }
-
-            // Tambahkan ke cart
-            $cartItem = CartItem::create([
-                'cart_id' => $posCart->id,
-                'type' => 'photographer',
-                'item_id' => $photographer->id,
-                'start_time' => $startDateTime,
-                'end_time' => $endDateTime,
-                'price' => $photographer->price,
-                'notes' => "Customer: {$customer->name} " . ($customer->phone_number ? "({$customer->phone_number})" : ''),
-                'customer_id' => $customer->id,
-            ]);
-
-            DB::commit();
-
-            // Reload cart items
-            $cartItems = CartItem::where('cart_id', $posCart->id)->get();
-            $htmlContent = view('admin.pos.partials.cart_items', compact('cartItems', 'posCart'))->render();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking fotografer berhasil ditambahkan ke cart',
-                'html_content' => $htmlContent,
-                'cart_total' => $cartItems->sum('price'),
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error adding photographer to POS cart: ' . $e->getMessage());
-
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Error: ' . $e->getMessage(),
-                ],
-                500,
-            );
-        }
-    }
-
-    /**
-     * Menambahkan item rental ke cart POS
-     */
-    public function addRentalItemToCart(Request $request)
-    {
-        $request->validate([
-            'rental_item_id' => 'required|exists:rental_items,id',
-            'date' => 'required|date',
-            'time_slot' => 'required',
-            'quantity' => 'required|integer|min:1',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Parsing time slot (format: "08:00 - 09:00")
-            [$startTime, $endTime] = explode(' - ', $request->time_slot);
-
-            // Create full datetime
-            $startDateTime = Carbon::parse("{$request->date} {$startTime}");
-            $endDateTime = Carbon::parse("{$request->date} {$endTime}");
-
-            // Cari item rental
-            $rentalItem = RentalItem::findOrFail($request->rental_item_id);
-
-            // Hitung jumlah yang sudah dipesan dalam rentang waktu yang sama
-            $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
-                ->whereNotIn('status', ['cancelled'])
-                ->where(function ($query) use ($startDateTime, $endDateTime) {
-                    $query
-                        ->where(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '>=', $startDateTime)->where('start_time', '<', $endDateTime);
-                        })
-                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('end_time', '>', $startDateTime)->where('end_time', '<=', $endDateTime);
-                        })
-                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                            $q->where('start_time', '<=', $startDateTime)->where('end_time', '>=', $endDateTime);
-                        });
-                })
-                ->sum('quantity');
-
-            // Cek ketersediaan berdasarkan stok
-            $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
-
-            if ($request->quantity > $availableQuantity) {
-                DB::rollBack();
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => "Stok tidak cukup. Tersedia: {$availableQuantity}, Diminta: {$request->quantity}",
-                    ],
-                    400,
-                );
-            }
-
-            // Cari atau buat data customer berdasarkan no telepon
-            $customer = null;
-            if (!empty($request->customer_phone)) {
-                $customer = Customer::where('phone_number', $request->customer_phone)->first();
-            }
-
-            if (!$customer) {
-                // Buat customer baru jika tidak ditemukan
-                $customer = Customer::create([
-                    'name' => $request->customer_name,
-                    'phone_number' => $request->customer_phone,
-                ]);
-            }
-
-            // Ambil atau buat cart POS
-            $posCart = $this->getPOSCart();
-
-            // Periksa apakah item sudah ada di cart dengan waktu yang sama
-            $existingItem = CartItem::where('cart_id', $posCart->id)->where('type', 'rental_item')->where('item_id', $rentalItem->id)->where('start_time', $startDateTime)->where('end_time', $endDateTime)->first();
-
-            if ($existingItem) {
-                // Update jumlah jika sudah ada
-                $newQuantity = $existingItem->quantity + $request->quantity;
-
-                // Cek lagi ketersediaan stok
-                if ($newQuantity > $availableQuantity) {
-                    DB::rollBack();
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => "Stok tidak cukup. Tersedia: {$availableQuantity}, Total diminta: {$newQuantity}",
-                        ],
-                        400,
-                    );
-                }
-
-                $existingItem->quantity = $newQuantity;
-                $existingItem->price = $rentalItem->rental_price * $newQuantity;
-                $existingItem->save();
-            } else {
-                // Tambahkan ke cart jika belum ada
-                $cartItem = CartItem::create([
-                    'cart_id' => $posCart->id,
-                    'type' => 'rental_item',
-                    'item_id' => $rentalItem->id,
-                    'start_time' => $startDateTime,
-                    'end_time' => $endDateTime,
-                    'quantity' => $request->quantity,
-                    'price' => $rentalItem->rental_price * $request->quantity,
-                    'notes' => "Customer: {$customer->name} " . ($customer->phone_number ? "({$customer->phone_number})" : ''),
-                    'customer_id' => $customer->id,
-                ]);
-            }
-
-            DB::commit();
-
-            // Reload cart items
-            $cartItems = CartItem::where('cart_id', $posCart->id)->get();
-            $htmlContent = view('admin.pos.partials.cart_items', compact('cartItems', 'posCart'))->render();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Item rental berhasil ditambahkan ke cart',
-                'html_content' => $htmlContent,
-                'cart_total' => $cartItems->sum('price'),
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error adding rental item to POS cart: ' . $e->getMessage());
-
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Error: ' . $e->getMessage(),
-                ],
-                500,
-            );
-        }
-    }
-
-    /**
-     * Mengambil slot waktu tersedia untuk fotografer
-     */
-    public function getPhotographerTimeSlots(Request $request)
-    {
-        $request->validate([
-            'photographer_id' => 'required|exists:photographers,id',
-            'date' => 'required|date',
-        ]);
-
-        $photographerId = $request->photographer_id;
-        $date = $request->date;
-
-        // Siapkan semua slot waktu dari jam 8 pagi sampai 10 malam (sesuaikan dengan jam operasional)
-        $startHour = 8;
-        $endHour = 22;
-        $slotDuration = 60; // dalam menit
-
-        $availableSlots = [];
-        $bookedSlots = [];
-
-        // Ambil booking yang sudah ada untuk fotografer dan tanggal tersebut
-        $existingBookings = PhotographerBooking::where('photographer_id', $photographerId)
-            ->whereDate('start_time', $date)
-            ->whereIn('status', ['confirmed', 'pending'])
-            ->get();
-
-        // Buat array slot waktu yang tersedia
-        for ($hour = $startHour; $hour < $endHour; $hour++) {
-            $slotStart = Carbon::parse("$date $hour:00:00");
-            $slotEnd = Carbon::parse("$date $hour:00:00")->addMinutes($slotDuration);
-
-            $isAvailable = true;
-
-            // Cek apakah slot bentrok dengan booking yang sudah ada
+        // Jika bukan past time, cek bentrok dengan booking yang sudah ada
+        if (!$isPastTime) {
             foreach ($existingBookings as $booking) {
                 $bookingStart = Carbon::parse($booking->start_time);
                 $bookingEnd = Carbon::parse($booking->end_time);
 
-                if (($slotStart >= $bookingStart && $slotStart < $bookingEnd) || ($slotEnd > $bookingStart && $slotEnd <= $bookingEnd) || ($slotStart <= $bookingStart && $slotEnd >= $bookingEnd)) {
+                if (($slotStart >= $bookingStart && $slotStart < $bookingEnd) ||
+                    ($slotEnd > $bookingStart && $slotEnd <= $bookingEnd) ||
+                    ($slotStart <= $bookingStart && $slotEnd >= $bookingEnd)) {
                     $isAvailable = false;
                     $bookedSlots[] = [
                         'start' => $slotStart->format('H:i'),
@@ -560,21 +364,531 @@ class POSController extends Controller
                     break;
                 }
             }
+        }
 
-            if ($isAvailable) {
-                $availableSlots[] = [
-                    'start' => $slotStart->format('H:i'),
-                    'end' => $slotEnd->format('H:i'),
-                    'label' => $slotStart->format('H:i') . ' - ' . $slotEnd->format('H:i'),
-                ];
+        // Tentukan status slot
+        $status = 'available';
+        if ($isPastTime) {
+            $status = 'past_time';
+        } else if (!$isAvailable) {
+            $status = 'booked';
+        }
+
+        $availableSlots[] = [
+            'start' => $slotStart->format('H:i'),
+            'end' => $slotEnd->format('H:i'),
+            'label' => $slotStart->format('H:i') . ' - ' . $slotEnd->format('H:i'),
+            'is_available' => $isAvailable,
+            'is_past_time' => $isPastTime,
+            'status' => $status
+        ];
+    }
+
+    return response()->json([
+        'available_slots' => $availableSlots,
+        'booked_slots' => $bookedSlots,
+    ]);
+}
+
+/**
+ * Menambahkan booking fotografer ke cart POS - DENGAN VALIDASI PAST TIME
+ */
+public function addPhotographerToCart(Request $request)
+{
+    $request->validate([
+        'photographer_id' => 'required|exists:photographers,id',
+        'date' => 'required|date',
+        'time_slot' => 'required',
+        'customer_name' => 'required|string|max:255',
+        'customer_phone' => 'nullable|string|max:20',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // Parsing time slot (format: "08:00 - 09:00")
+        [$startTime, $endTime] = explode(' - ', $request->time_slot);
+
+        // Create full datetime
+        $startDateTime = Carbon::parse("{$request->date} {$startTime}");
+        $endDateTime = Carbon::parse("{$request->date} {$endTime}");
+
+        // PERBAIKAN: Cek past time sebelum validasi lainnya
+        $now = Carbon::now();
+        if ($endDateTime <= $now) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Slot waktu yang dipilih sudah lewat. Silakan pilih slot waktu yang masih tersedia.',
+                ],
+                400,
+            );
+        }
+
+        // Cek kembali ketersediaan slot waktu
+        $conflictingBooking = PhotographerBooking::where('photographer_id', $request->photographer_id)
+            ->where(function ($query) use ($startDateTime, $endDateTime) {
+                $query
+                    ->where(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
+                    })
+                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
+                    })
+                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
+                    });
+            })
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->first();
+
+        if ($conflictingBooking) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Slot waktu sudah dibooking',
+                ],
+                400,
+            );
+        }
+
+        // Cari atau buat data customer
+        $customer = null;
+        if (!empty($request->customer_phone)) {
+            $customer = Customer::where('phone_number', $request->customer_phone)->first();
+        }
+
+        if (!$customer) {
+            $customer = Customer::create([
+                'name' => $request->customer_name,
+                'phone_number' => $request->customer_phone,
+            ]);
+        }
+
+        // Ambil photographer untuk mendapatkan harga
+        $photographer = Photographer::findOrFail($request->photographer_id);
+
+        // Ambil atau buat cart POS
+        $posCart = $this->getPOSCart();
+
+        // Periksa apakah item sudah ada di cart
+        $existingItem = CartItem::where('cart_id', $posCart->id)
+            ->where('type', 'photographer')
+            ->where('item_id', $photographer->id)
+            ->where('start_time', $startDateTime)
+            ->where('end_time', $endDateTime)
+            ->first();
+
+        if ($existingItem) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Item sudah ada di cart',
+                ],
+                400,
+            );
+        }
+
+        // Tambahkan ke cart
+        $cartItem = CartItem::create([
+            'cart_id' => $posCart->id,
+            'type' => 'photographer',
+            'item_id' => $photographer->id,
+            'start_time' => $startDateTime,
+            'end_time' => $endDateTime,
+            'price' => $photographer->price,
+            'notes' => "Customer: {$customer->name} " . ($customer->phone_number ? "({$customer->phone_number})" : ''),
+            'customer_id' => $customer->id,
+        ]);
+
+        DB::commit();
+
+        // Reload cart items
+        $cartItems = CartItem::where('cart_id', $posCart->id)->get();
+        $htmlContent = view('admin.pos.partials.cart_items', compact('cartItems', 'posCart'))->render();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking fotografer berhasil ditambahkan ke cart',
+            'html_content' => $htmlContent,
+            'cart_total' => $cartItems->sum('price'),
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error adding photographer to POS cart: ' . $e->getMessage());
+
+        return response()->json(
+            [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ],
+            500,
+        );
+    }
+}
+
+/**
+ * Menambahkan item rental ke cart POS - DENGAN VALIDASI PAST TIME
+ */
+public function addRentalItemToCart(Request $request)
+{
+    $request->validate([
+        'rental_item_id' => 'required|exists:rental_items,id',
+        'date' => 'required|date',
+        'time_slot' => 'required',
+        'quantity' => 'required|integer|min:1',
+        'customer_name' => 'required|string|max:255',
+        'customer_phone' => 'nullable|string|max:20',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // Parsing time slot (format: "08:00 - 09:00")
+        [$startTime, $endTime] = explode(' - ', $request->time_slot);
+
+        // Create full datetime
+        $startDateTime = Carbon::parse("{$request->date} {$startTime}");
+        $endDateTime = Carbon::parse("{$request->date} {$endTime}");
+
+        // PERBAIKAN: Cek past time sebelum validasi lainnya
+        $now = Carbon::now();
+        if ($endDateTime <= $now) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Slot waktu yang dipilih sudah lewat. Silakan pilih slot waktu yang masih tersedia.',
+                ],
+                400,
+            );
+        }
+
+        // Cari item rental
+        $rentalItem = RentalItem::findOrFail($request->rental_item_id);
+
+        // Hitung jumlah yang sudah dipesan dalam rentang waktu yang sama
+        $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+            ->whereNotIn('status', ['cancelled'])
+            ->where(function ($query) use ($startDateTime, $endDateTime) {
+                $query
+                    ->where(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '>=', $startDateTime)->where('start_time', '<', $endDateTime);
+                    })
+                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('end_time', '>', $startDateTime)->where('end_time', '<=', $endDateTime);
+                    })
+                    ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                        $q->where('start_time', '<=', $startDateTime)->where('end_time', '>=', $endDateTime);
+                    });
+            })
+            ->sum('quantity');
+
+        // Cek ketersediaan berdasarkan stok
+        $availableQuantity = $rentalItem->stock_total - $bookedQuantity;
+
+        if ($request->quantity > $availableQuantity) {
+            DB::rollBack();
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => "Stok tidak cukup. Tersedia: {$availableQuantity}, Diminta: {$request->quantity}",
+                ],
+                400,
+            );
+        }
+
+        // Cari atau buat data customer
+        $customer = null;
+        if (!empty($request->customer_phone)) {
+            $customer = Customer::where('phone_number', $request->customer_phone)->first();
+        }
+
+        if (!$customer) {
+            $customer = Customer::create([
+                'name' => $request->customer_name,
+                'phone_number' => $request->customer_phone,
+            ]);
+        }
+
+        // Ambil atau buat cart POS
+        $posCart = $this->getPOSCart();
+
+        // Periksa apakah item sudah ada di cart dengan waktu yang sama
+        $existingItem = CartItem::where('cart_id', $posCart->id)
+            ->where('type', 'rental_item')
+            ->where('item_id', $rentalItem->id)
+            ->where('start_time', $startDateTime)
+            ->where('end_time', $endDateTime)
+            ->first();
+
+        if ($existingItem) {
+            // Update jumlah jika sudah ada
+            $newQuantity = $existingItem->quantity + $request->quantity;
+
+            // Cek lagi ketersediaan stok
+            if ($newQuantity > $availableQuantity) {
+                DB::rollBack();
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => "Stok tidak cukup. Tersedia: {$availableQuantity}, Total diminta: {$newQuantity}",
+                    ],
+                    400,
+                );
+            }
+
+            $existingItem->quantity = $newQuantity;
+            $existingItem->price = $rentalItem->rental_price * $newQuantity;
+            $existingItem->save();
+        } else {
+            // Tambahkan ke cart jika belum ada
+            $cartItem = CartItem::create([
+                'cart_id' => $posCart->id,
+                'type' => 'rental_item',
+                'item_id' => $rentalItem->id,
+                'start_time' => $startDateTime,
+                'end_time' => $endDateTime,
+                'quantity' => $request->quantity,
+                'price' => $rentalItem->rental_price * $request->quantity,
+                'notes' => "Customer: {$customer->name} " . ($customer->phone_number ? "({$customer->phone_number})" : ''),
+                'customer_id' => $customer->id,
+            ]);
+        }
+
+        DB::commit();
+
+        // Reload cart items
+        $cartItems = CartItem::where('cart_id', $posCart->id)->get();
+        $htmlContent = view('admin.pos.partials.cart_items', compact('cartItems', 'posCart'))->render();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Item rental berhasil ditambahkan ke cart',
+            'html_content' => $htmlContent,
+            'cart_total' => $cartItems->sum('price'),
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error adding rental item to POS cart: ' . $e->getMessage());
+
+        return response()->json(
+            [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ],
+            500,
+        );
+    }
+}
+
+/**
+ * Proses checkout untuk POS - DENGAN VALIDASI PAST TIME
+ */
+public function checkout(Request $request)
+{
+    $request->validate([
+        'payment_method' => 'required|in:cash,transfer,other',
+        'customer_id' => 'required|exists:customers,id',
+        'cash_amount' => 'nullable|numeric|min:0',
+        'notes' => 'nullable|string|max:500',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // Ambil cart POS
+        $posCart = $this->getPOSCart();
+        $cartItems = CartItem::where('cart_id', $posCart->id)->get();
+
+        if ($cartItems->isEmpty()) {
+            DB::rollBack();
+            return redirect()->route('admin.pos.index')->with('error', 'Keranjang kosong');
+        }
+
+        // PERBAIKAN: Cek past time untuk item yang memiliki waktu
+        $pastTimeItems = [];
+        $now = Carbon::now();
+
+        foreach ($cartItems as $item) {
+            // Cek past time untuk item yang memiliki waktu
+            if (in_array($item->type, ['field_booking', 'rental_item', 'photographer']) && $item->end_time) {
+                $endTime = Carbon::parse($item->end_time);
+
+                // Jika waktu akhir slot sudah lewat, tandai sebagai past time
+                if ($endTime <= $now) {
+                    $startTime = Carbon::parse($item->start_time)->format('d M Y H:i');
+                    $endTimeFormatted = $endTime->format('H:i');
+
+                    switch ($item->type) {
+                        case 'field_booking':
+                            $field = Field::find($item->item_id);
+                            $itemName = $field ? $field->name : 'Booking Lapangan';
+                            break;
+                        case 'rental_item':
+                            $rentalItem = RentalItem::find($item->item_id);
+                            $itemName = $rentalItem ? $rentalItem->name : 'Rental Item';
+                            break;
+                        case 'photographer':
+                            $photographer = Photographer::find($item->item_id);
+                            $itemName = $photographer ? $photographer->name : 'Fotografer';
+                            break;
+                    }
+
+                    $pastTimeItems[] = $itemName . ' (' . $startTime . ' - ' . $endTimeFormatted . ')';
+                }
             }
         }
 
-        return response()->json([
-            'available_slots' => $availableSlots,
-            'booked_slots' => $bookedSlots,
+        // Jika ada item past time, hapus otomatis dan beri pesan error
+        if (!empty($pastTimeItems)) {
+            // Hapus item yang past time dari keranjang secara otomatis
+            foreach ($cartItems as $item) {
+                if (in_array($item->type, ['field_booking', 'rental_item', 'photographer']) && $item->end_time) {
+                    $endTime = Carbon::parse($item->end_time);
+                    if ($endTime <= $now) {
+                        $item->delete();
+                    }
+                }
+            }
+
+            DB::rollBack();
+            return redirect()
+                ->route('admin.pos.index')
+                ->with('error', 'Beberapa item waktu bookingnya sudah lewat dan telah dihapus dari keranjang: ' . implode(', ', $pastTimeItems) . '. Silakan refresh halaman dan coba lagi.');
+        }
+
+        // Generate unique order ID
+        $orderId = 'POS-' . now()->format('Ymd-His') . '-' . mt_rand(1000, 9999);
+
+        // Hitung total pembayaran
+        $totalAmount = $cartItems->sum('price');
+
+        // Ambil atau buat user_id untuk booking yang memerlukan user_id
+        $adminId = Auth::id();
+
+        // Buat record pembayaran
+        $payment = Payment::create([
+            'order_id' => $orderId,
+            'customer_id' => $request->customer_id,
+            'user_id' => $adminId,
+            'amount' => $totalAmount,
+            'original_amount' => $totalAmount,
+            'payment_type' => $request->payment_method,
+            'transaction_status' => 'success',
+            'transaction_time' => now(),
+            'payment_details' => json_encode([
+                'method' => $request->payment_method,
+                'cash_amount' => $request->cash_amount,
+                'admin_id' => Auth::id(),
+                'admin_name' => Auth::user()->name,
+                'notes' => $request->notes,
+            ]),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
+
+        // Proses setiap item di cart
+        foreach ($cartItems as $item) {
+            switch ($item->type) {
+                case 'field_booking':
+                    $fieldBooking = FieldBooking::create([
+                        'customer_id' => $request->customer_id,
+                        'user_id' => $adminId,
+                        'field_id' => $item->item_id,
+                        'payment_id' => $payment->id,
+                        'start_time' => $item->start_time,
+                        'end_time' => $item->end_time,
+                        'total_price' => $item->price,
+                        'status' => 'confirmed',
+                        'notes' => $item->notes,
+                    ]);
+                    break;
+
+                case 'rental_item':
+                    $rentalBooking = RentalBooking::create([
+                        'customer_id' => $request->customer_id,
+                        'user_id' => $adminId,
+                        'rental_item_id' => $item->item_id,
+                        'payment_id' => $payment->id,
+                        'start_time' => $item->start_time,
+                        'end_time' => $item->end_time,
+                        'quantity' => $item->quantity,
+                        'total_price' => $item->price,
+                        'status' => 'confirmed',
+                    ]);
+
+                    // Update stok yang tersedia
+                    $rentalItem = RentalItem::find($item->item_id);
+                    if ($rentalItem) {
+                        $rentalItem->stock_available -= $item->quantity;
+                        $rentalItem->save();
+                    }
+                    break;
+
+                case 'photographer':
+                    $photographerBooking = PhotographerBooking::create([
+                        'customer_id' => $request->customer_id,
+                        'user_id' => $adminId,
+                        'photographer_id' => $item->item_id,
+                        'payment_id' => $payment->id,
+                        'start_time' => $item->start_time,
+                        'end_time' => $item->end_time,
+                        'price' => $item->price,
+                        'status' => 'confirmed',
+                        'notes' => $item->notes,
+                    ]);
+
+                    // Kirim notifikasi ke fotografer
+                    app(PhotographerController::class)->sendBookingNotification($photographerBooking);
+                    break;
+
+                case 'product':
+                    // Update stok produk
+                    $product = Product::find($item->item_id);
+                    if ($product) {
+                        $product->stock -= $item->quantity;
+                        $product->save();
+                    }
+
+                    // Buat product sale item
+                    ProductSaleItem::create([
+                        'payment_id' => $payment->id,
+                        'product_id' => $item->item_id,
+                        'quantity' => $item->quantity,
+                        'price' => $item->price / $item->quantity,
+                    ]);
+                    break;
+            }
+        }
+
+        // Bersihkan cart POS
+        CartItem::where('cart_id', $posCart->id)->delete();
+
+        DB::commit();
+
+        // Redirect ke halaman sukses
+        return redirect()
+            ->route('admin.pos.receipt', ['id' => $payment->id])
+            ->with('success', 'Transaksi berhasil. Nomor Order: ' . $orderId);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error during POS checkout: ' . $e->getMessage());
+
+        return redirect()
+            ->route('admin.pos.index')
+            ->with('error', 'Gagal memproses transaksi: ' . $e->getMessage());
     }
+}
+
+
+
+
+
+
 
     /**
      * Menambahkan produk ke cart POS
@@ -726,168 +1040,7 @@ class POSController extends Controller
             );
         }
     }
-    /**
-     * Proses checkout untuk POS
-     */
-    public function checkout(Request $request)
-    {
-        $request->validate([
-            'payment_method' => 'required|in:cash,transfer,other',
-            'customer_id' => 'required|exists:customers,id',
-            'cash_amount' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string|max:500',
-        ]);
 
-        try {
-            DB::beginTransaction();
-
-            // Ambil cart POS
-            $posCart = $this->getPOSCart();
-            $cartItems = CartItem::where('cart_id', $posCart->id)->get();
-
-            if ($cartItems->isEmpty()) {
-                DB::rollBack();
-                return redirect()->route('admin.pos.index')->with('error', 'Keranjang kosong');
-            }
-
-            // Generate unique order ID
-            $orderId = 'POS-' . now()->format('Ymd-His') . '-' . mt_rand(1000, 9999);
-
-            // Hitung total pembayaran
-            $totalAmount = $cartItems->sum('price');
-
-            // Ambil atau buat user_id untuk booking yang memerlukan user_id (bukan customer_id)
-            $adminId = Auth::id(); // Default untuk booking yang dibuat admin
-
-            // Buat record pembayaran
-            $payment = Payment::create([
-                'order_id' => $orderId,
-                'customer_id' => $request->customer_id,
-                'user_id' => $adminId, // Tambahkan user_id untuk kompatibilitas
-                'amount' => $totalAmount,
-                'original_amount' => $totalAmount,
-                'payment_type' => $request->payment_method,
-                'transaction_status' => 'success', // Langsung success karena pembayaran cash
-                'transaction_time' => now(),
-                'payment_details' => json_encode([
-                    'method' => $request->payment_method,
-                    'cash_amount' => $request->cash_amount,
-                    'admin_id' => Auth::id(),
-                    'admin_name' => Auth::user()->name,
-                    'notes' => $request->notes,
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // Array untuk menyimpan booking yang dibuat
-            $createdBookings = [
-                'fields' => [],
-                'rentals' => [],
-                'photographers' => [],
-                'products' => [],
-            ];
-
-            // Proses setiap item di cart
-            foreach ($cartItems as $item) {
-                switch ($item->type) {
-                    case 'field_booking':
-                        // Buat field booking
-                        $fieldBooking = FieldBooking::create([
-                            'customer_id' => $request->customer_id,
-                            'user_id' => $adminId, // Gunakan user_id admin sebagai fallback
-                            'field_id' => $item->item_id,
-                            'payment_id' => $payment->id,
-                            'start_time' => $item->start_time,
-                            'end_time' => $item->end_time,
-                            'total_price' => $item->price,
-                            'status' => 'confirmed', // Langsung confirmed karena sudah dibayar
-                            'notes' => $item->notes,
-                        ]);
-
-                        $createdBookings['fields'][] = $fieldBooking;
-                        break;
-
-                    case 'rental_item':
-                        // Buat rental booking
-                        $rentalBooking = RentalBooking::create([
-                            'customer_id' => $request->customer_id,
-                            'user_id' => $adminId, // Gunakan user_id admin sebagai fallback
-                            'rental_item_id' => $item->item_id,
-                            'payment_id' => $payment->id,
-                            'start_time' => $item->start_time,
-                            'end_time' => $item->end_time,
-                            'quantity' => $item->quantity,
-                            'total_price' => $item->price,
-                            'status' => 'confirmed', // Langsung confirmed karena sudah dibayar
-                        ]);
-
-                        // Update stok yang tersedia
-                        $rentalItem = RentalItem::find($item->item_id);
-                        if ($rentalItem) {
-                            $rentalItem->stock_available -= $item->quantity;
-                            $rentalItem->save();
-                        }
-
-                        $createdBookings['rentals'][] = $rentalBooking;
-                        break;
-
-                    case 'photographer':
-                        // Buat photographer booking
-                        $photographerBooking = PhotographerBooking::create([
-                            'customer_id' => $request->customer_id,
-                            'user_id' => $adminId, // Gunakan user_id admin sebagai fallback
-                            'photographer_id' => $item->item_id,
-                            'payment_id' => $payment->id,
-                            'start_time' => $item->start_time,
-                            'end_time' => $item->end_time,
-                            'price' => $item->price,
-                            'status' => 'confirmed', // Langsung confirmed karena sudah dibayar
-                            'notes' => $item->notes,
-                        ]);
-                        // Kirim notifikasi ke fotografer
-                        app(PhotographerController::class)->sendBookingNotification($photographerBooking);
-
-                        $createdBookings['photographers'][] = $photographerBooking;
-                        break;
-
-                    case 'product':
-                        // Update stok produk
-                        $product = Product::find($item->item_id);
-                        if ($product) {
-                            $product->stock -= $item->quantity;
-                            $product->save();
-                        }
-
-                        // Buat langsung product sale item yang terhubung ke payment
-                        ProductSaleItem::create([
-                            'payment_id' => $payment->id,
-                            'product_id' => $item->item_id,
-                            'quantity' => $item->quantity,
-                            'price' => $item->price / $item->quantity, // Harga per unit
-                        ]);
-                        break;
-                }
-            }
-
-            // Bersihkan cart POS
-            CartItem::where('cart_id', $posCart->id)->delete();
-
-            DB::commit();
-
-            // Redirect ke halaman sukses
-            return redirect()
-                ->route('admin.pos.receipt', ['id' => $payment->id])
-                ->with('success', 'Transaksi berhasil. Nomor Order: ' . $orderId);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error during POS checkout: ' . $e->getMessage());
-
-            return redirect()
-                ->route('admin.pos.index')
-                ->with('error', 'Gagal memproses transaksi: ' . $e->getMessage());
-        }
-    }
 
     /**
      * Download struk pembayaran

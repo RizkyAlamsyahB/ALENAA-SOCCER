@@ -425,7 +425,7 @@
             let currentStep = 1;
             const totalSteps = 3;
             const duration = parseInt(document.querySelector('[data-duration]')?.dataset.duration ||
-            1); // Durasi dalam jam dari model
+                1); // Durasi dalam jam dari model
 
             // Store selected time slots in an array
             window.selectedTimeSlots = [];
@@ -669,7 +669,7 @@
                         return response.json().then(data => {
                             if (!response.ok) {
                                 throw new Error(data.message || 'Error: ' + response
-                                .statusText);
+                                    .statusText);
                             }
                             return data;
                         });
@@ -747,6 +747,7 @@
             }
 
             // Function to render time slots
+            // Function to render time slots untuk photographer (ganti di template photographer show)
             function renderTimeSlots(slots) {
                 const slotsWrapper = document.getElementById('time-slots-wrapper');
                 const availableSlotsCount = document.getElementById('available-slots-count');
@@ -754,18 +755,23 @@
                 // Clear previous content
                 slotsWrapper.innerHTML = '';
 
-                // Count available slots
-                const availableCount = slots.filter(slot => slot.is_available).length;
+                // Count available slots (exclude past time slots)
+                const availableCount = slots.filter(slot => slot.is_available && !slot.is_past_time).length;
                 availableSlotsCount.textContent = `${availableCount} slot`;
 
                 // If no available slots
                 if (availableCount === 0) {
+                    const hasPastTimeSlots = slots.some(slot => slot.is_past_time);
+                    const message = hasPastTimeSlots ?
+                        'Semua slot waktu yang tersedia sudah lewat atau terisi. Silakan pilih tanggal lain.' :
+                        'Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.';
+
                     slotsWrapper.innerHTML = `
-                <div class="alert alert-warning" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.
-                </div>
-            `;
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${message}
+            </div>
+        `;
                     return;
                 }
 
@@ -773,37 +779,76 @@
                 const slotGrid = document.createElement('div');
                 slotGrid.classList.add('time-slots-grid');
 
-                // Add available slots to grid
+                // Add ALL slots to grid (termasuk past time untuk konsistensi)
                 slots.forEach(slot => {
-                    if (slot.is_available) {
-                        const slotDiv = document.createElement('div');
-                        slotDiv.className = 'time-slot slot-available';
-                        if (slot.in_cart) {
-                            slotDiv.classList.add('slot-in-cart');
-                        }
+                    const slotDiv = document.createElement('div');
 
-                        slotDiv.dataset.startTime = slot.start;
-                        slotDiv.dataset.endTime = slot.end;
-                        slotDiv.dataset.display = slot.display;
-                        slotDiv.dataset.price = slot.price;
+                    let statusClass = '';
+                    let statusIcon = '';
+                    let isDisabled = false;
 
-                        slotDiv.innerHTML = `
-                    <div class="slot-time">
-                        <i class="fas fa-clock"></i>
-                        <span>${slot.display}</span>
-                    </div>
-                    <div class="slot-duration">1 Jam</div>
-                `;
-
-                        slotGrid.appendChild(slotDiv);
+                    switch (slot.status) {
+                        case 'past_time':
+                            statusClass = 'slot-past-time';
+                            statusIcon = '<i class="fas fa-clock"></i>';
+                            isDisabled = true;
+                            break;
+                        case 'booked':
+                            statusClass = 'slot-booked';
+                            statusIcon = '<i class="fas fa-lock"></i>';
+                            isDisabled = true;
+                            break;
+                        case 'in_cart':
+                            statusClass = 'slot-in-cart';
+                            statusIcon = '<i class="fas fa-shopping-cart"></i>';
+                            break;
+                        case 'available':
+                            statusClass = 'slot-available';
+                            statusIcon = '<i class="fas fa-clock"></i>';
+                            break;
                     }
+
+                    // Check if this slot is already selected
+                    const isSelected = window.selectedTimeSlots && window.selectedTimeSlots.some(
+                        selectedSlot => selectedSlot.display === slot.display
+                    );
+
+                    if (isSelected) {
+                        statusClass = 'slot-selected';
+                        statusIcon = '<i class="fas fa-check"></i>';
+                    }
+
+                    slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
+                    slotDiv.dataset.startTime = slot.start;
+                    slotDiv.dataset.endTime = slot.end;
+                    slotDiv.dataset.display = slot.display;
+                    slotDiv.dataset.price = slot.price;
+                    slotDiv.dataset.status = slot.status;
+
+                    slotDiv.innerHTML = `
+            <div class="slot-time">
+                ${statusIcon}
+                <span>${slot.display}</span>
+            </div>
+            <div class="slot-duration">1 Jam</div>
+        `;
+
+                    slotGrid.appendChild(slotDiv);
                 });
 
                 slotsWrapper.appendChild(slotGrid);
 
-                // Add slot click event listeners
-                document.querySelectorAll('.time-slot').forEach(slotElement => {
+                // Add slot click event listeners (exclude disabled slots)
+                document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
                     slotElement.addEventListener('click', function() {
+                        const slotStatus = this.dataset.status;
+
+                        // If already in cart, show message and skip
+                        if (slotStatus === 'in_cart') {
+                            showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
+                            return;
+                        }
+
                         // Toggle selection for this slot
                         this.classList.toggle('slot-selected');
                         const icon = this.querySelector('.slot-time i');
@@ -821,6 +866,22 @@
 
                         // Enable next button if at least one slot is selected
                         nextBtn.disabled = window.selectedTimeSlots.length === 0;
+                    });
+                });
+
+                // Add click handler for disabled slots to show appropriate message
+                document.querySelectorAll('.time-slot.disabled').forEach(slotElement => {
+                    slotElement.addEventListener('click', function() {
+                        const slotStatus = this.dataset.status;
+
+                        if (slotStatus === 'past_time') {
+                            showToast('Warning',
+                                'Slot waktu ini sudah lewat dan tidak dapat dibooking',
+                                'warning');
+                        } else if (slotStatus === 'booked') {
+                            showToast('Info', 'Slot waktu ini sudah dibooking oleh pengguna lain',
+                                'info');
+                        }
                     });
                 });
             }
@@ -876,7 +937,7 @@
         });
     </script>
     <style>
-        /* Wizard Booking Process Styling */
+        /* Wizard Booking Process Styling - FIXED VERSION */
         .booking-wizard {
             position: relative;
             margin-bottom: 2.5rem;
@@ -908,7 +969,7 @@
             left: 0;
             height: 4px;
             background-color: #9e0620;
-            transition: width 0.5s ease;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 2;
         }
 
@@ -955,6 +1016,7 @@
             color: white;
             transform: scale(1.1);
             box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            animation: pulse 2s infinite;
         }
 
         .wizard-step.completed .step-circle {
@@ -1026,6 +1088,23 @@
             }
         }
 
+        @keyframes pulse {
+            0% {
+                transform: scale(1.1);
+                box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 6px 15px rgba(158, 6, 32, 0.4);
+            }
+
+            100% {
+                transform: scale(1.1);
+                box-shadow: 0 4px 10px rgba(158, 6, 32, 0.3);
+            }
+        }
+
         /* Navigation Buttons */
         .wizard-buttons {
             display: flex;
@@ -1093,18 +1172,31 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none !important;
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
         }
 
-        /* Calendar and Time Slot Specific Styling */
+        .wizard-btn:disabled:hover {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            transform: none !important;
+        }
 
-        /* Time Slots */
+        /* ============================================
+       TIME SLOTS - FIXED CONSISTENT LAYOUT
+       ============================================ */
+
+        /* Time Slots Grid - Improved Consistency */
         .time-slots-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
             width: 100%;
+            padding: 0;
+            margin: 0;
         }
 
+        /* Time Slot Container - Fixed Sizing */
         .time-slot {
             position: relative;
             border-radius: 8px;
@@ -1112,72 +1204,298 @@
             transition: all 0.3s ease;
             cursor: pointer;
             border: 2px solid #e9ecef;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            /* PENTING: Fixed height untuk konsistensi */
+            min-height: 80px;
+            max-height: 80px;
+            box-sizing: border-box;
         }
 
-        .time-slot:not(.disabled):hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        .time-slot:not(.disabled):not(.slot-booked):not(.slot-past-time):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             border-color: #9e0620;
         }
 
+        /* Slot Time Section - Fixed Centering */
         .slot-time {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 50px;
+            flex: 1;
             text-align: center;
-            padding: 0.5rem;
-            font-size: 0.9rem;
+            padding: 8px 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #212529;
+            /* Pastikan elemen ini mengambil ruang yang tersedia */
+            min-height: 50px;
+            position: relative;
         }
 
         .slot-time i {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #6c757d;
-            margin-right: 5px;
+            margin-right: 4px;
+            flex-shrink: 0;
         }
 
+        /* Slot Price Section - Fixed Bottom */
         .slot-price {
             background-color: #f8f9fa;
-            padding: 0.5rem;
+            padding: 4px 8px;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #6c757d;
             border-top: 1px solid #e9ecef;
+            font-weight: 500;
+            /* Fixed height untuk konsistensi */
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        /* Time Slot States */
+        .slot-price small {
+            display: block;
+            font-size: 0.65rem;
+            margin-top: 2px;
+        }
+
+        /* ============================================
+       TIME SLOT STATES - Improved
+       ============================================ */
+
+        /* Available Slots */
         .time-slot.slot-available:hover {
             border-color: #28a745;
+            background-color: #f8fff9;
         }
 
+        /* Selected Slots */
         .time-slot.slot-selected {
             border-color: #9e0620;
             background-color: #fff8f8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(158, 6, 32, 0.2);
         }
 
         .time-slot.slot-selected .slot-time {
             color: #9e0620;
+            font-weight: 700;
         }
 
         .time-slot.slot-selected .slot-time i {
             color: #9e0620;
         }
 
+        .time-slot.slot-selected .slot-price {
+            background-color: #fff0f0;
+            color: #9e0620;
+            border-color: #f8d7da;
+        }
+
+        /* Booked Slots */
         .time-slot.slot-booked {
             border-color: #6c757d;
             background-color: #f8f9fa;
             opacity: 0.7;
             cursor: not-allowed;
+            pointer-events: none;
         }
 
+        .time-slot.slot-booked .slot-time {
+            color: #6c757d;
+        }
+
+        /* In Cart Slots */
         .time-slot.slot-in-cart {
             border-color: #fd7e14;
             background-color: #fff8f1;
         }
 
+        .time-slot.slot-in-cart .slot-time {
+            color: #fd7e14;
+        }
+
         .time-slot.slot-in-cart .slot-time i {
             color: #fd7e14;
         }
+
+        /* Membership Slots */
+        .time-slot.slot-membership {
+            background-color: #ffeeba;
+            border-color: #ffdf7e;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .time-slot.slot-membership .slot-time {
+            color: #856404;
+        }
+
+        /* Past Time Slots - Improved Design */
+        .time-slot.slot-past-time {
+            border-color: #dee2e6;
+            background-color: #f8f9fa;
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .time-slot.slot-past-time::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background-color: #6c757d;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .time-slot.slot-past-time .slot-time {
+            color: #6c757d;
+            position: relative;
+            z-index: 2;
+        }
+
+        .time-slot.slot-past-time .slot-time i {
+            color: #6c757d;
+        }
+
+        .time-slot.slot-past-time .slot-price {
+            color: #6c757d;
+            background-color: #e9ecef;
+        }
+
+        /* Disabled Slots */
+        .time-slot.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* ============================================
+       RESPONSIVE DESIGN - Mobile First
+       ============================================ */
+
+        /* Tablet */
+        @media (max-width: 992px) {
+            .time-slots-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 10px;
+            }
+
+            .time-slot {
+                min-height: 75px;
+                max-height: 75px;
+            }
+
+            .slot-time {
+                font-size: 0.8rem;
+                min-height: 45px;
+                padding: 6px 4px;
+            }
+
+            .slot-price {
+                font-size: 0.7rem;
+                min-height: 22px;
+                padding: 3px 6px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .time-slots-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .time-slot {
+                min-height: 70px;
+                max-height: 70px;
+            }
+
+            .slot-time {
+                font-size: 0.75rem;
+                min-height: 42px;
+                padding: 4px;
+            }
+
+            .slot-time i {
+                font-size: 0.7rem;
+                margin-right: 3px;
+            }
+
+            .slot-price {
+                font-size: 0.65rem;
+                min-height: 20px;
+                padding: 2px 4px;
+            }
+
+            .slot-price small {
+                font-size: 0.6rem;
+                margin-top: 1px;
+            }
+
+            /* Mobile wizard buttons */
+            .wizard-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .wizard-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .wizard-btn-prev {
+                order: 2;
+            }
+
+            .wizard-btn-next,
+            .wizard-btn-submit {
+                order: 1;
+            }
+        }
+
+        /* Small Mobile */
+        @media (max-width: 576px) {
+            .time-slots-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+
+            .time-slot {
+                min-height: 65px;
+                max-height: 65px;
+            }
+
+            .slot-time {
+                font-size: 0.7rem;
+                min-height: 40px;
+                padding: 4px 2px;
+            }
+
+            .slot-price {
+                font-size: 0.6rem;
+                min-height: 18px;
+            }
+
+            .time-slot.slot-past-time::before {
+                left: 5%;
+                right: 5%;
+            }
+        }
+
+        /* ============================================
+       SELECTED SLOTS AND CONFIRMATION
+       ============================================ */
 
         /* Selected Slots List */
         .selected-slots-list {
@@ -1198,6 +1516,20 @@
 
         .selected-slots-list .list-group-item:hover {
             background-color: #fff;
+            transform: translateX(5px);
+        }
+
+        .selected-slots-section {
+            border-top: 1px solid #e9ecef;
+            padding-top: 1rem;
+        }
+
+        .selected-slot-item {
+            transition: all 0.3s ease;
+        }
+
+        .selected-slot-item:hover {
+            background-color: #fff !important;
             transform: translateX(5px);
         }
 
@@ -1228,55 +1560,34 @@
             color: #212529;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .step-desc {
-                display: none !important;
-            }
+        /* ============================================
+       LOADING AND PLACEHOLDER STATES
+       ============================================ */
 
-            .wizard-progress::before {
-                top: 15px;
-            }
-
-            .wizard-progress-bar {
-                top: 15px;
-            }
-
-            .step-circle {
-                width: 30px;
-                height: 30px;
-                font-size: 0.9rem;
-            }
-
-            .step-label {
-                font-size: 0.8rem;
-            }
-
-            .time-slots-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .wizard-buttons {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .wizard-btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .wizard-btn-prev {
-                order: 2;
-            }
-
-            .wizard-btn-next,
-            .wizard-btn-submit {
-                order: 1;
-            }
+        .slot-placeholder {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Custom Flatpickr Theme - brand color #9e0620 */
+        .slot-placeholder .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+        }
+
+        .slot-placeholder p {
+            margin-top: 1rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* ============================================
+       CALENDAR STYLING (Flatpickr)
+       ============================================ */
+
         /* Base Calendar Container */
         .flatpickr-calendar {
             width: 100% !important;
@@ -1289,7 +1600,6 @@
 
         /* Month Navigation Section */
         .flatpickr-months {
-            background-color: #ffffff;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
@@ -1351,13 +1661,12 @@
             border-radius: 24px !important;
         }
 
-        /* Day States: Hover */
+        /* Day States */
         .flatpickr-day:hover {
             background: #fff8f8;
             border-color: #fff8f8;
         }
 
-        /* Day States: Today */
         .flatpickr-day.today {
             border-color: #9e0620;
         }
@@ -1367,7 +1676,6 @@
             color: #9e0620;
         }
 
-        /* Day States: Selected */
         .flatpickr-day.selected,
         .flatpickr-day.startRange,
         .flatpickr-day.endRange,
@@ -1391,14 +1699,6 @@
             color: #fff;
         }
 
-        /* Range Selection */
-        .flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n+1)),
-        .flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n+1)),
-        .flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n+1)) {
-            box-shadow: -10px 0 0 #9e0620;
-        }
-
-        /* Next Month Days (within booking window) */
         .flatpickr-day.nextMonthDay:not(.flatpickr-disabled) {
             color: #393939 !important;
             font-weight: normal !important;
@@ -1418,7 +1718,17 @@
             color: #fff !important;
         }
 
-        /* Mobile Adjustments */
+        .flatpickr-day.flatpickr-disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+
+        .flatpickr-day.flatpickr-disabled:hover {
+            background: transparent !important;
+            color: #393939 !important;
+        }
+
+        /* Mobile Calendar Adjustments */
         @media (max-width: 576px) {
             .flatpickr-calendar {
                 max-width: 100%;
@@ -1430,16 +1740,30 @@
             }
         }
 
-        .slot-membership {
-            background-color: #ffeeba;
-            /* Warna kuning lembut */
-            border-color: #ffdf7e;
-            cursor: not-allowed;
+        /* ============================================
+       ALERT AND TOAST NOTIFICATIONS
+       ============================================ */
+
+        .toast.bg-warning {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeaa7;
         }
 
-        .slot-membership .slot-time {
+        .toast.bg-info {
+            background-color: #d1ecf1 !important;
+            color: #0c5460 !important;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffecb5;
             color: #856404;
-            /* Warna text kuning gelap */
+        }
+
+        .alert-warning .fas {
+            color: #f0ad4e;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

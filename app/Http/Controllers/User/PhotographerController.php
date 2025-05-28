@@ -80,6 +80,10 @@ class PhotographerController extends Controller
             $date = $request->date;
             $carbonDate = Carbon::parse($date);
 
+            // Get current time untuk comparison
+            $now = Carbon::now();
+            $isToday = $carbonDate->isToday();
+
             // Definisikan semua slot waktu (1 jam per slot)
             $allSlots = [
                 ['start' => '08:00', 'end' => '09:00'],
@@ -144,31 +148,44 @@ class PhotographerController extends Controller
                 $isAvailable = true;
                 $isInCart = in_array($displaySlot, $cartSlots);
                 $bookingType = '';
+                $isPastTime = false;
 
-                // Cek booking fotografer yang sudah ada
-                foreach ($bookedSlots as $bookedBooking) {
-                    if (
-                        ($startTime >= $bookedBooking->start_time && $startTime < $bookedBooking->end_time) ||
-                        ($endTime > $bookedBooking->start_time && $endTime <= $bookedBooking->end_time) ||
-                        ($startTime <= $bookedBooking->start_time && $endTime >= $bookedBooking->end_time)
-                    ) {
+                // PERBAIKAN: Cek apakah slot waktu sudah lewat
+                if ($isToday) {
+                    // Jika tanggal yang dipilih adalah hari ini, cek apakah waktu AKHIR slot sudah lewat
+                    // Slot disable jika waktu end sudah terlewati
+                    if ($endTime <= $now) {
                         $isAvailable = false;
-                        $bookingType = 'photographer';
-                        break;
+                        $isPastTime = true;
                     }
                 }
 
-                // Jika masih tersedia dan fotografer ditugaskan ke lapangan, cek slot lapangan
-                if ($isAvailable && $assignedField) {
-                    foreach ($fieldBookedSlots as $fieldBooking) {
+                // Cek booking fotografer yang sudah ada (hanya jika bukan past time)
+                if (!$isPastTime) {
+                    foreach ($bookedSlots as $bookedBooking) {
                         if (
-                            ($startTime >= $fieldBooking->start_time && $startTime < $fieldBooking->end_time) ||
-                            ($endTime > $fieldBooking->start_time && $endTime <= $fieldBooking->end_time) ||
-                            ($startTime <= $fieldBooking->start_time && $endTime >= $fieldBooking->end_time)
+                            ($startTime >= $bookedBooking->start_time && $startTime < $bookedBooking->end_time) ||
+                            ($endTime > $bookedBooking->start_time && $endTime <= $bookedBooking->end_time) ||
+                            ($startTime <= $bookedBooking->start_time && $endTime >= $bookedBooking->end_time)
                         ) {
                             $isAvailable = false;
-                            $bookingType = 'field';
+                            $bookingType = 'photographer';
                             break;
+                        }
+                    }
+
+                    // Jika masih tersedia dan fotografer ditugaskan ke lapangan, cek slot lapangan
+                    if ($isAvailable && $assignedField) {
+                        foreach ($fieldBookedSlots as $fieldBooking) {
+                            if (
+                                ($startTime >= $fieldBooking->start_time && $startTime < $fieldBooking->end_time) ||
+                                ($endTime > $fieldBooking->start_time && $endTime <= $fieldBooking->end_time) ||
+                                ($startTime <= $fieldBooking->start_time && $endTime >= $fieldBooking->end_time)
+                            ) {
+                                $isAvailable = false;
+                                $bookingType = 'field';
+                                break;
+                            }
                         }
                     }
                 }
@@ -176,7 +193,15 @@ class PhotographerController extends Controller
                 // Harga booking fotografer
                 $slotPrice = $photographer->price;
 
-                $status = $isInCart ? 'in_cart' : ($isAvailable ? 'available' : 'booked');
+                // Tentukan status slot
+                $status = 'available';
+                if ($isPastTime) {
+                    $status = 'past_time';
+                } else if ($isInCart) {
+                    $status = 'in_cart';
+                } else if (!$isAvailable) {
+                    $status = 'booked';
+                }
 
                 $availableSlots[] = [
                     'start' => $slot['start'],
@@ -187,14 +212,15 @@ class PhotographerController extends Controller
                     'price' => $slotPrice,
                     'status' => $status,
                     'booking_type' => $isAvailable ? '' : $bookingType,
-                    'assigned_field' => $assignedField ? $assignedField->name : null
+                    'assigned_field' => $assignedField ? $assignedField->name : null,
+                    'is_past_time' => $isPastTime
                 ];
             }
 
             return response()->json($availableSlots);
         } catch (\Exception $e) {
             // Log error
-            Log::error('Error in getAvailableSlots', [
+            Log::error('Error in getAvailableSlots for photographer', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -225,41 +251,41 @@ class PhotographerController extends Controller
         return back()->with('error', 'Maaf, booking fotografer tidak dapat dibatalkan');
     }
 
-/**
- * Send booking notification to photographer
- */
-public function sendBookingNotification(PhotographerBooking $booking)
-{
-    try {
-        // Get the photographer record
-        $photographer = Photographer::findOrFail($booking->photographer_id);
+    /**
+     * Send booking notification to photographer
+     */
+    public function sendBookingNotification(PhotographerBooking $booking)
+    {
+        try {
+            // Get the photographer record
+            $photographer = Photographer::findOrFail($booking->photographer_id);
 
-        // Get the photographer's user record
-        $photographerUser = \App\Models\User::find($photographer->user_id);
+            // Get the photographer's user record
+            $photographerUser = \App\Models\User::find($photographer->user_id);
 
-        // Get the booking user
-        $user = $booking->user;
+            // Get the booking user
+            $user = $booking->user;
 
-        if ($photographerUser && $photographerUser->email) {
-            // Pass both photographer user and booking user to the notification
-            Mail::to($photographerUser->email)
-                ->send(new PhotographerBookingNotification($booking, $photographerUser, $user));
+            if ($photographerUser && $photographerUser->email) {
+                // Pass both photographer user and booking user to the notification
+                Mail::to($photographerUser->email)
+                    ->send(new PhotographerBookingNotification($booking, $photographerUser, $user));
 
-            $booking->notification_sent_at = now();
-            $booking->save();
+                $booking->notification_sent_at = now();
+                $booking->save();
 
-            Log::info('Photographer booking notification sent to: ' . $photographerUser->email);
-            return true;
-        } else {
-            Log::warning('Photographer user or email not found for booking: ' . $booking->id);
+                Log::info('Photographer booking notification sent to: ' . $photographerUser->email);
+                return true;
+            } else {
+                Log::warning('Photographer user or email not found for booking: ' . $booking->id);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send photographer notification: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return false;
         }
-    } catch (\Exception $e) {
-        Log::error('Failed to send photographer notification: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString()
-        ]);
+
         return false;
     }
-
-    return false;
-}
 }
