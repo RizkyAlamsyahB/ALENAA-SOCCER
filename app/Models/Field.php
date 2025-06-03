@@ -8,10 +8,11 @@ use App\Models\FieldBooking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Field extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = ['name', 'type', 'price', 'image', 'photographer_id', 'description'];
     protected $hidden = ['created_at', 'updated_at'];
@@ -21,7 +22,7 @@ class Field extends Model
         'price' => 'integer',
         'features' => 'array',
     ];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 
 

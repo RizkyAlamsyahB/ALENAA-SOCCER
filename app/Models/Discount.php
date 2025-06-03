@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Models\Payment;
 use App\Models\DiscountUsage;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Discount extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'code',
@@ -32,6 +33,7 @@ class Discount extends Model
         'end_date' => 'datetime',
         'is_active' => 'boolean',
     ];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     /**
      * Relasi ke penggunaan diskon

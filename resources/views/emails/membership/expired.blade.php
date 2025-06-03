@@ -132,7 +132,7 @@
                         </td>
                         <td width="48%" style="padding-left: 10px;">
                             <div class="stats-item">
-                                <span class="stats-number">{{ \Carbon\Carbon::parse($data['subscription']->end_date)->format('d F Y') }}</span>
+                                <span class="stats-number">{{ \Carbon\Carbon::parse($data['subscription']->end_date)->locale('id')->isoFormat('dddd, D MMMM Y') }}</span>
                                 <span class="stats-label">Tanggal Kedaluwarsa</span>
                             </div>
                         </td>

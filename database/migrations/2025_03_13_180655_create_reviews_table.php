@@ -27,6 +27,7 @@ return new class extends Migration
 
             // Tambahkan unique constraint untuk mencegah review duplikat
             $table->unique(['user_id', 'item_id', 'item_type', 'payment_id']);
+            $table->softDeletes();
         });
     }
 

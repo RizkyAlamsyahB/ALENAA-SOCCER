@@ -206,11 +206,7 @@
                     <div class="col-lg-2 col-md-4">
                         <h5 class="footer-title">Komunitas</h5>
                         <ul class="footer-links">
-                            <li><a href="/events">Event Mendatang</a></li>
-                            <li><a href="/teams">Cari Tim</a></li>
-                            <li><a href="/tournaments">Turnamen</a></li>
-                            <li><a href="/forum">Forum</a></li>
-                            <li><a href="/support">Bantuan</a></li>
+                            <li><a href="/mabar">Cari Tim</a></li>
                         </ul>
                     </div>
 
@@ -232,20 +228,20 @@
                                     <a href="mailto:info@alenasoccer.com">info@alenasoccer.com</a>
                                 </div>
                             </li>
-                            <li class="contact-item">
+                            {{-- <li class="contact-item">
                                 <i class="fas fa-users"></i>
                                 <div>
                                     <span class="label">Member Aktif</span>
                                     <span class="value text-dark">120+ Member</span>
                                 </div>
-                            </li>
+                            </li> --}}
                         </ul>
                     </div>
 
                     <!-- Latest Events -->
                     <div class="col-lg-3 col-md-4">
                         <h5 class="footer-title">Event Terbaru</h5>
-                        <div class="events-wrapper">
+                        {{-- <div class="events-wrapper">
                             <div class="event-card">
                                 <div class="event-content">
                                     <div class="event-date">15-20 MAR 2024</div>
@@ -260,7 +256,7 @@
                                     <p class="event-desc">Temukan tim impianmu!</p>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

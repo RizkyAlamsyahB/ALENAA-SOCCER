@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Owner;
 
+use Carbon\Carbon;
+use App\Models\Payment;
 use App\Models\Discount;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
-use Carbon\Carbon;
 
 class DiscountsController extends Controller
 {
@@ -200,6 +201,15 @@ class DiscountsController extends Controller
      */
     public function destroy(Discount $discount)
     {
+        // Cek apakah diskon sedang digunakan dalam transaksi pending
+        $isInUse = Payment::where('discount_id', $discount->id)
+                         ->where('transaction_status', 'pending')
+                         ->exists();
+
+        if ($isInUse) {
+            return redirect()->route('owner.discounts.index')->with('error', 'Tidak dapat menghapus diskon. Diskon sedang digunakan dalam transaksi aktif.');
+        }
+
         try {
             $discount->delete();
             return redirect()->route('owner.discounts.index')->with('success', 'Diskon berhasil dihapus');

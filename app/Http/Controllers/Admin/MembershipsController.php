@@ -244,23 +244,41 @@ class MembershipsController extends Controller
     }
 
     /**
-     * Menghapus paket membership
+     * Menghapus paket membership (soft delete)
      */
     public function destroy($id)
     {
         try {
             $membership = Membership::findOrFail($id);
 
+            // Cek apakah ada subscription aktif yang menggunakan paket ini
+            $activeSubscriptions = $membership->subscriptions()->where('status', 'active')->where('end_date', '>', now())->exists();
+
+            if ($activeSubscriptions) {
+                return redirect()->route('admin.memberships.index')->with('error', 'Tidak dapat menghapus paket membership karena masih ada pengguna aktif.');
+            }
+
+            // Cek apakah ada booking yang menggunakan membership ini di masa depan
+            $futureBookings = $membership->fieldBookings()->where('status', '!=', 'cancelled')->where('end_time', '>', now())->exists();
+
+            if ($futureBookings) {
+                return redirect()->route('admin.memberships.index')->with('error', 'Tidak dapat menghapus paket membership karena masih ada booking aktif terkait.');
+            }
+
             // Hapus gambar jika ada
             if ($membership->image && Storage::exists('public/' . $membership->image)) {
                 Storage::delete('public/' . $membership->image);
             }
 
+            // Soft delete
             $membership->delete();
+
             return redirect()->route('admin.memberships.index')->with('success', 'Paket membership berhasil dihapus');
         } catch (\Exception $e) {
             Log::error('Error deleting membership: ' . $e->getMessage());
-            return redirect()->route('admin.memberships.index')->with('error', 'Tidak dapat menghapus paket membership');
+            return redirect()
+                ->route('admin.memberships.index')
+                ->with('error', 'Tidak dapat menghapus paket membership: ' . $e->getMessage());
         }
     }
 }

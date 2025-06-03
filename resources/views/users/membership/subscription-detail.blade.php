@@ -168,12 +168,13 @@
                                     @foreach($sortedSessions as $session)
                                         <tr class="session-row">
                                             <td class="session-number">{{ $session->session_number }}</td>
-                                            <td>
-                                                <div class="session-date">
-                                                    <div class="day-name">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
-                                                    <div class="date">{{ \Carbon\Carbon::parse($session->start_time)->format('d M Y') }}</div>
-                                                </div>
-                                            </td>
+<td>
+    <div class="session-date">
+        <div class="day-name">{{ \Carbon\Carbon::parse($session->start_time)->locale('id')->dayName }}</div>
+        <div class="date">{{ \Carbon\Carbon::parse($session->start_time)->locale('id')->isoFormat('D MMMM Y') }}</div>
+    </div>
+</td>
+
                                             <td>
                                                 <div class="session-time">
                                                     <i class="far fa-clock"></i>
@@ -294,19 +295,19 @@
 
         @if($upcomingSessions->count() > 0)
             @foreach($upcomingSessions as $session)
-                <div class="upcoming-session">
-                    <div class="session-day">
-                        <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}</div>
-                        <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->format('M') }}</div>
-                    </div>
-                    <div class="session-details">
-                        <div class="time">
-                            <i class="far fa-clock"></i>
-                            <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
-                        </div>
-                        <div class="weekday">{{ \Carbon\Carbon::parse($session->start_time)->format('l') }}</div>
-                    </div>
-                </div>
+<div class="upcoming-session">
+    <div class="session-day">
+        <div class="day">{{ \Carbon\Carbon::parse($session->start_time)->format('d') }}</div>
+        <div class="month">{{ \Carbon\Carbon::parse($session->start_time)->locale('id')->isoFormat('MMM') }}</div>
+    </div>
+    <div class="session-details">
+        <div class="time">
+            <i class="far fa-clock"></i>
+            <span>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }}</span>
+        </div>
+        <div class="weekday">{{ \Carbon\Carbon::parse($session->start_time)->locale('id')->dayName }}</div>
+    </div>
+</div>
             @endforeach
         @else
             <div class="empty-upcoming">

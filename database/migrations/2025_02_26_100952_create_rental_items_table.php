@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->integer('stock_available');
             $table->string('condition')->nullable();
             $table->string('image')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

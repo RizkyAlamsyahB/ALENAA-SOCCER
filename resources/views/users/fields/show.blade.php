@@ -47,12 +47,7 @@
                             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
                                 class="img-fluid w-100" alt="{{ $field->name }}">
                         @endif
-                        <div class="gallery-overlay">
-                            <button class="view-btn">
-                                <i class="fas fa-expand-alt"></i>
-                                View Full Image
-                            </button>
-                        </div>
+
                     </div>
                     <div class="status-badge">
                         <span class="badge-content">
@@ -75,12 +70,7 @@
                                     <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
                                         class="img-fluid w-100" alt="{{ $field->name }}">
                                 @endif
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -94,12 +84,7 @@
                                     <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/044664ba4bdf6e751b907ef4f4555d90041b6947df1b73075a20a385d181c41e"
                                         class="img-fluid w-100" alt="{{ $field->name }}">
                                 @endif
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -776,7 +761,7 @@
 
                                             if (data.success) {
                                                 // Show success message
-                                                showToast('Success', data.message, 'success');
+                                                showAlert('Success', data.message, 'success');
 
                                                 // Update cart count in navbar if exists
                                                 const cartCountElement = document.querySelector('.cart-count');
@@ -794,7 +779,7 @@
                                         })
                                         .catch(error => {
                                             console.error('Error adding to cart:', error);
-                                            showToast('Error', error.message ||
+                                            showAlert('Error', error.message ||
                                                 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
 
                                             // Restore button state
@@ -942,13 +927,13 @@
 
                                             // If already in cart, show message and skip
                                             if (slotStatus === 'in_cart') {
-                                                showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
+                                                showAlert('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
                                                 return;
                                             }
 
                                             // If past time, show message and skip
                                             if (slotStatus === 'past_time') {
-                                                showToast('Warning',
+                                                showAlert('Warning',
                                                     'Slot waktu ini sudah lewat dan tidak dapat dibooking',
                                                     'warning');
                                                 return;
@@ -1026,52 +1011,141 @@
                                     // Update total price
                                     totalPriceElement.textContent = `Rp ${totalPrice.toLocaleString('id')}`;
                                 }
+// Helper function to show Bootstrap alerts
+function showAlert(title, message, type, duration = 5000) {
+    // Create alert container if it doesn't exist
+    let alertContainer = document.querySelector('.alert-container');
+    if (!alertContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.className = 'alert-container position-fixed top-0 end-0 p-3';
+        alertContainer.style.zIndex = '9999';
+        alertContainer.style.maxWidth = '400px';
+        document.body.appendChild(alertContainer);
+    }
 
-                                // Helper function to show toast notifications
-                                function showToast(title, message, type) {
-                                    // Check if toastr is available
-                                    if (typeof toastr !== 'undefined') {
-                                        toastr[type](message, title);
-                                    } else {
-                                        // Use Bootstrap toast if available
-                                        if (typeof bootstrap !== 'undefined') {
-                                            // Create toast element
-                                            const toastEl = document.createElement('div');
-                                            toastEl.className =
-                                                `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
-                                            toastEl.setAttribute('role', 'alert');
-                                            toastEl.setAttribute('aria-live', 'assertive');
-                                            toastEl.setAttribute('aria-atomic', 'true');
+    // Map alert types to Bootstrap classes
+    const alertTypeMap = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'danger': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+    };
 
-                                            toastEl.innerHTML = `
-               <div class="d-flex">
-                   <div class="toast-body">
-                       <strong>${title}:</strong> ${message}
-                   </div>
-                   <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-               </div>
-           `;
+    // Create alert element
+    const alertEl = document.createElement('div');
+    alertEl.className = `alert ${alertTypeMap[type] || 'alert-info'} alert-dismissible fade show mb-2`;
+    alertEl.setAttribute('role', 'alert');
+    alertEl.style.minWidth = '300px';
+    alertEl.style.animation = 'slideInRight 0.3s ease-out';
 
-                                            // Add to container
-                                            const toastContainer = document.querySelector('.toast-container');
-                                            if (!toastContainer) {
-                                                const container = document.createElement('div');
-                                                container.className = 'toast-container position-fixed top-0 end-0 p-3';
-                                                document.body.appendChild(container);
-                                                container.appendChild(toastEl);
-                                            } else {
-                                                toastContainer.appendChild(toastEl);
-                                            }
+    // Get appropriate icon for alert type
+    const getIcon = (type) => {
+        switch(type) {
+            case 'success': return '<i class="fas fa-check-circle me-2"></i>';
+            case 'error':
+            case 'danger': return '<i class="fas fa-exclamation-circle me-2"></i>';
+            case 'warning': return '<i class="fas fa-exclamation-triangle me-2"></i>';
+            case 'info': return '<i class="fas fa-info-circle me-2"></i>';
+            default: return '<i class="fas fa-info-circle me-2"></i>';
+        }
+    };
 
-                                            // Show toast
-                                            const toast = new bootstrap.Toast(toastEl);
-                                            toast.show();
-                                        } else {
-                                            // Fallback to alert
-                                            alert(`${title}: ${message}`);
-                                        }
-                                    }
-                                }
+    alertEl.innerHTML = `
+        <div class="d-flex align-items-center">
+            ${getIcon(type)}
+            <div class="flex-grow-1">
+                ${title ? `<strong>${title}:</strong> ` : ''}${message}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+
+    // Add to container
+    alertContainer.appendChild(alertEl);
+
+    // Auto dismiss after specified duration
+    if (duration > 0) {
+        setTimeout(() => {
+            if (alertEl && alertEl.parentNode) {
+                // Add fade out effect
+                alertEl.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (alertEl && alertEl.parentNode) {
+                        alertEl.remove();
+                    }
+                }, 300);
+            }
+        }, duration);
+    }
+
+    // Return alert element for manual control if needed
+    return alertEl;
+}
+
+// Alternative: Show alert inline within a specific container
+function showInlineAlert(containerId, title, message, type, duration = 5000) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`Container with ID '${containerId}' not found`);
+        return;
+    }
+
+    // Map alert types to Bootstrap classes
+    const alertTypeMap = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'danger': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+    };
+
+    // Remove existing alerts in the container
+    const existingAlerts = container.querySelectorAll('.alert');
+    existingAlerts.forEach(alert => alert.remove());
+
+    // Create alert element
+    const alertEl = document.createElement('div');
+    alertEl.className = `alert ${alertTypeMap[type] || 'alert-info'} alert-dismissible fade show`;
+    alertEl.setAttribute('role', 'alert');
+
+    // Get appropriate icon for alert type
+    const getIcon = (type) => {
+        switch(type) {
+            case 'success': return '<i class="fas fa-check-circle me-2"></i>';
+            case 'error':
+            case 'danger': return '<i class="fas fa-exclamation-circle me-2"></i>';
+            case 'warning': return '<i class="fas fa-exclamation-triangle me-2"></i>';
+            case 'info': return '<i class="fas fa-info-circle me-2"></i>';
+            default: return '<i class="fas fa-info-circle me-2"></i>';
+        }
+    };
+
+    alertEl.innerHTML = `
+        <div class="d-flex align-items-center">
+            ${getIcon(type)}
+            <div class="flex-grow-1">
+                ${title ? `<strong>${title}:</strong> ` : ''}${message}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+
+    // Add to container at the top
+    container.insertBefore(alertEl, container.firstChild);
+
+    // Auto dismiss after specified duration
+    if (duration > 0) {
+        setTimeout(() => {
+            if (alertEl && alertEl.parentNode) {
+                const alert = new bootstrap.Alert(alertEl);
+                alert.close();
+            }
+        }, duration);
+    }
+
+    return alertEl;
+}
 
                                 // Initialize the wizard
                                 goToStep(1);
@@ -1089,7 +1163,28 @@
 
     <!-- Include custom field booking JS -->
 
+<style>
+/* Bootstrap Alert Animations */
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
 
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+.alert-container {
+    z-index: 9999;
+}
+
+.alert-container .alert {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    border-radius: 8px;
+}
+</style>
     <style>
         /* Wizard Booking Process Styling - FIXED VERSION */
         .booking-wizard {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\RentalItem;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
@@ -10,171 +10,171 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
-class RentalItemController extends Controller
+class ProductController extends Controller
 {
     /**
-     * Menampilkan daftar item sewa dengan server-side processing
+     * Menampilkan daftar produk dengan server-side processing
      */
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $rentalItems = RentalItem::select('*');
+            $products = Product::select('*');
 
-            return DataTables::of($rentalItems)
-                ->addColumn('action', function ($rentalItem) {
+            return DataTables::of($products)
+                ->addColumn('action', function ($product) {
                     return '<div class="d-flex gap-1">
                             <a href="' .
-                        route('admin.rental-items.show', $rentalItem->id) .
+                        route('admin.products.show', $product->id) .
                         '" class="btn btn-sm btn-info">Show</a>
                             <a href="' .
-                        route('admin.rental-items.edit', $rentalItem->id) .
+                        route('admin.products.edit', $product->id) .
                         '" class="btn btn-sm btn-warning">Edit</a>
                             <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' .
-                        $rentalItem->id .
+                        $product->id .
                         '" data-name="' .
-                        $rentalItem->name .
+                        $product->name .
                         '">Hapus</button>
                         </div>';
                 })
 
-                ->editColumn('category', function ($rentalItem) {
+                ->editColumn('category', function ($product) {
                     $badges = [
-                        'ball' => 'bg-primary',
-                        'jersey' => 'bg-info',
-                        'shoes' => 'bg-warning',
+                        'food' => 'bg-primary',
+                        'beverage' => 'bg-info',
+                        'equipment' => 'bg-warning',
                         'other' => 'bg-secondary',
                     ];
 
-                    $badge = isset($badges[$rentalItem->category]) ? $badges[$rentalItem->category] : 'bg-secondary';
-                    return '<span class="badge ' . $badge . '">' . ucfirst($rentalItem->category) . '</span>';
+                    $badge = isset($badges[$product->category]) ? $badges[$product->category] : 'bg-secondary';
+                    return '<span class="badge ' . $badge . '">' . ucfirst($product->category) . '</span>';
                 })
-                ->editColumn('stock_available', function ($rentalItem) {
-                    $percentage = $rentalItem->stock_total > 0 ? ($rentalItem->stock_available / $rentalItem->stock_total) * 100 : 0;
-
-                    if ($percentage <= 20) {
-                        $badgeClass = 'bg-danger';
-                    } elseif ($percentage <= 50) {
-                        $badgeClass = 'bg-warning';
-                    } else {
-                        $badgeClass = 'bg-success';
-                    }
-
-                    return '<span class="badge ' . $badgeClass . '">' . $rentalItem->stock_available . ' / ' . $rentalItem->stock_total . '</span>';
-                })
-                ->rawColumns(['action', 'category', 'stock_available'])
+                ->rawColumns(['action', 'category'])
                 ->make(true);
         }
 
-        return view('admin.rental-items.index');
+        return view('admin.products.index');
     }
 
     /**
-     * Menampilkan form tambah item sewa
+     * Menampilkan form tambah produk
      */
     public function create()
     {
-        return view('admin.rental-items.create');
+        return view('admin.products.create');
     }
 
     /**
-     * Menyimpan item sewa baru
+     * Menyimpan produk baru
      */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255|unique:rental_items,name',
+            'name' => 'required|string|max:255|unique:products,name',
             'description' => 'nullable|string',
-            'category' => ['required', Rule::in(['ball', 'jersey', 'shoes', 'other'])],
-            'rental_price' => 'required|numeric|min:0',
-            'stock_total' => 'required|numeric|min:0',
-            'condition' => 'nullable|string|max:255',
+            'category' => ['required', Rule::in(['food', 'beverage', 'equipment', 'other'])],
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
-        // Set stok tersedia sama dengan stok total awal
-        $validatedData['stock_available'] = $validatedData['stock_total'];
-
         // Cek jika ada file gambar yang diupload
         if ($request->hasFile('image')) {
-            // Simpan gambar ke storage/app/public/rental-items
-            $path = $request->file('image')->store('rental-items', 'public');
+            // Simpan gambar ke storage/app/public/products
+            $path = $request->file('image')->store('products', 'public');
             $validatedData['image'] = $path; // Simpan path di database
         }
 
-        RentalItem::create($validatedData);
+        Product::create($validatedData);
 
-        return redirect()->route('admin.rental-items.index')->with('success', 'Item sewa berhasil ditambahkan');
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan');
     }
 
     /**
-     * Menampilkan detail item sewa
+     * Menampilkan detail produk
      */
-    public function show(RentalItem $rentalItem)
+    public function show(Product $product)
     {
-        return view('admin.rental-items.show', compact('rentalItem'));
+        return view('admin.products.show', compact('product'));
     }
 
     /**
-     * Menampilkan form edit item sewa
+     * Menampilkan form edit produk
      */
-    public function edit(RentalItem $rentalItem)
+    public function edit(Product $product)
     {
-        return view('admin.rental-items.edit', compact('rentalItem'));
+        return view('admin.products.edit', compact('product'));
     }
 
     /**
-     * Memperbarui data item sewa
+     * Memperbarui data produk
      */
-    public function update(Request $request, RentalItem $rentalItem)
+    public function update(Request $request, Product $product)
     {
         $validatedData = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('rental_items')->ignore($rentalItem->id)],
+            'name' => ['required', 'string', 'max:255', Rule::unique('products')->ignore($product->id)],
             'description' => 'nullable|string',
-            'category' => ['required', Rule::in(['ball', 'jersey', 'shoes', 'other'])],
-            'rental_price' => 'required|numeric|min:0',
-            'stock_total' => 'required|numeric|min:' . ($rentalItem->stock_total - $rentalItem->stock_available),
-            'stock_available' => 'required|numeric|min:0|max:' . $request->input('stock_total', $rentalItem->stock_total),
-            'condition' => 'nullable|string|max:255',
+            'category' => ['required', Rule::in(['food', 'beverage', 'equipment', 'other'])],
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi gambar
         ]);
 
         // Cek jika ada file gambar yang diupload
         if ($request->hasFile('image')) {
             // Hapus gambar lama jika ada
-            if ($rentalItem->image && Storage::exists('public/rental-items/' . basename($rentalItem->image))) {
-                Storage::delete('public/rental-items/' . basename($rentalItem->image));
+            if ($product->image && Storage::exists('public/products/' . basename($product->image))) {
+                Storage::delete('public/products/' . basename($product->image));
             }
 
-            // Simpan gambar baru ke storage/app/public/rental-items
-            $path = $request->file('image')->store('rental-items', 'public');
+            // Simpan gambar baru ke storage/app/public/products
+            $path = $request->file('image')->store('products', 'public');
             $validatedData['image'] = $path; // Simpan path di database
         }
 
-        $rentalItem->update($validatedData);
+        $product->update($validatedData);
 
-        return redirect()->route('admin.rental-items.index')->with('success', 'Item sewa berhasil diperbarui');
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui');
     }
 
     /**
-     * Menghapus item sewa
+     * Menghapus produk (soft delete)
      */
-    public function destroy(RentalItem $rentalItem)
+    public function destroy($id)
     {
         try {
-            // Cek apakah item sedang disewa (stock_available tidak sama dengan stock_total)
-            if ($rentalItem->stock_available < $rentalItem->stock_total) {
-                return redirect()->route('admin.rental-items.index')->with('error', 'Tidak dapat menghapus item karena sedang disewa');
+            $product = Product::findOrFail($id);
+
+            // Cek apakah produk memiliki pending transactions
+            $pendingTransactions = $product
+                ->saleItems()
+                ->whereHas('payment', function ($query) {
+                    $query->where('transaction_status', 'pending');
+                })
+                ->exists();
+
+            if ($pendingTransactions) {
+                return redirect()->route('admin.products.index')->with('error', 'Tidak dapat menghapus produk karena masih ada transaksi pending terkait.');
+            }
+
+            // Cek apakah stok produk ada yang tersedia
+            if ($product->current_stock <= 0 && $product->type == 'physical') {
+                return redirect()->route('admin.products.index')->with('error', 'Tidak dapat menghapus produk karena stok kosong atau negatif. Silakan periksa stok terlebih dahulu.');
             }
 
             // Hapus gambar jika ada
-            if ($rentalItem->image && Storage::exists(str_replace('storage/', 'public/', $rentalItem->image))) {
-                Storage::delete(str_replace('storage/', 'public/', $rentalItem->image));
+            if ($product->image && Storage::exists('public/' . $product->image)) {
+                Storage::delete('public/' . $product->image);
             }
 
-            $rentalItem->delete();
-            return redirect()->route('admin.rental-items.index')->with('success', 'Item sewa berhasil dihapus');
+            // Soft delete
+            $product->delete();
+
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->route('admin.rental-items.index')->with('error', 'Tidak dapat menghapus item sewa');
+            Log::error('Error deleting product: ' . $e->getMessage());
+            return redirect()
+                ->route('admin.products.index')
+                ->with('error', 'Tidak dapat menghapus produk: ' . $e->getMessage());
         }
     }
 }

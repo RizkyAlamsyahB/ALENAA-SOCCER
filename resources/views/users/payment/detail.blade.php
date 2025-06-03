@@ -26,6 +26,29 @@
 
     <!-- Main Content -->
     <div class="container mt-4 mb-5">
+        <!-- Session Alert - Add this right after opening <div class="container mt-4 mb-5"> -->
+@if(session('alert'))
+    <div class="alert alert-{{ session('alert.type') }} alert-dismissible fade show" role="alert" style="margin-bottom: 2rem;">
+        <div class="d-flex align-items-center">
+            @if(session('alert.type') == 'success')
+                <i class="fas fa-check-circle me-2"></i>
+            @elseif(session('alert.type') == 'danger')
+                <i class="fas fa-exclamation-triangle me-2"></i>
+            @elseif(session('alert.type') == 'warning')
+                <i class="fas fa-exclamation-circle me-2"></i>
+            @elseif(session('alert.type') == 'info')
+                <i class="fas fa-info-circle me-2"></i>
+            @endif
+            <div>
+                @if(session('alert.title'))
+                    <strong>{{ session('alert.title') }}</strong>
+                @endif
+                {{ session('alert.message') }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="page-header d-flex justify-content-between align-items-center mb-4">
@@ -844,196 +867,213 @@
         });
 
         // Fungsi untuk menginisialisasi sistem review
-        function initReviewSystem() {
-            // Inisialisasi interaksi bintang rating
-            const stars = document.querySelectorAll('.star-rating label');
-            stars.forEach((star, index) => {
-                star.addEventListener('click', () => {
-                    // Reset semua bintang
-                    stars.forEach(s => s.classList.remove('text-warning'));
+function initReviewSystem() {
+    // Inisialisasi interaksi bintang rating
+    const stars = document.querySelectorAll('.star-rating label');
+    stars.forEach((star, index) => {
+        star.addEventListener('click', () => {
+            // Reset semua bintang
+            stars.forEach(s => s.classList.remove('text-warning'));
 
-                    // Highlight bintang yang diklik dan semua bintang sebelumnya
-                    for (let i = 0; i <= index; i++) {
-                        stars[stars.length - 1 - i].classList.add('text-warning');
-                    }
-                });
-            });
-
-            // Inisialisasi tombol submit review
-            const submitButton = document.getElementById('submitReviewBtn');
-            if (submitButton) {
-                submitButton.addEventListener('click', submitReview);
+            // Highlight bintang yang diklik dan semua bintang sebelumnya
+            for (let i = 0; i <= index; i++) {
+                stars[stars.length - 1 - i].classList.add('text-warning');
             }
+        });
+    });
+
+    // Inisialisasi tombol submit review
+    const submitButton = document.getElementById('submitReviewBtn');
+    if (submitButton) {
+        submitButton.addEventListener('click', submitReview);
+    }
+}
+
+// Fungsi untuk menampilkan modal review
+function showReviewForm(itemType, itemId, itemName) {
+    // Reset form sebelum menampilkan
+    document.getElementById('reviewForm').reset();
+
+    // Reset tampilan bintang
+    document.querySelectorAll('.star-rating label').forEach(star => {
+        star.classList.remove('text-warning');
+    });
+
+    // Set judul modal dengan nama item
+    document.getElementById('reviewModalTitle').textContent = 'Beri Ulasan: ' + itemName;
+
+    // Set nilai pada input hidden
+    document.getElementById('reviewItemType').value = itemType;
+    document.getElementById('reviewItemId').value = itemId;
+
+    // Tampilkan modal menggunakan Bootstrap API
+    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    reviewModal.show();
+}
+
+// Fungsi untuk mengirim review
+function submitReview() {
+    const form = document.getElementById('reviewForm');
+    const formData = new FormData(form);
+
+    // Validasi: pastikan rating dipilih
+    const rating = document.querySelector('input[name="rating"]:checked');
+    if (!rating) {
+        // Gunakan Bootstrap alert untuk validasi
+        showBootstrapAlert('warning', 'Perhatian!', 'Silakan berikan rating dengan memilih jumlah bintang');
+        return;
+    }
+
+    // Persiapkan data untuk dikirim
+    const data = {
+        payment_id: formData.get('payment_id'),
+        item_id: formData.get('item_id'),
+        item_type: formData.get('item_type'),
+        rating: formData.get('rating'),
+        comment: formData.get('comment')
+    };
+
+    // Ambil CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    // Tampilkan loading state pada tombol
+    const submitBtn = document.getElementById('submitReviewBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+    submitBtn.disabled = true;
+
+    // Kirim request AJAX
+    fetch('/review/store', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            return response.json().then(data => ({
+                status: response.status,
+                data: data
+            }));
+        })
+        .then(result => {
+            if (result.data.success) {
+                // Tutup modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
+                modal.hide();
+
+                // Redirect ke halaman detail pembayaran untuk menampilkan session alert
+                if (result.data.redirect) {
+                    window.location.href = result.data.redirect;
+                } else {
+                    // Fallback: reload halaman
+                    location.reload();
+                }
+            } else {
+                // Tampilkan pesan error dengan Bootstrap alert
+                showBootstrapAlert('danger', 'Error!', result.data.message || 'Terjadi kesalahan saat mengirim ulasan');
+
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+
+                // Jika ada redirect, lakukan redirect setelah beberapa detik
+                if (result.data.redirect) {
+                    setTimeout(() => {
+                        window.location.href = result.data.redirect;
+                    }, 3000);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+
+            // Tampilkan pesan error dengan Bootstrap alert
+            showBootstrapAlert('danger', 'Error!', 'Terjadi kesalahan saat mengirim ulasan. Silakan coba lagi.');
+
+            // Reset button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+}
+
+// Fungsi untuk menampilkan Bootstrap alert
+function showBootstrapAlert(type, title, message) {
+    // Hapus alert sebelumnya jika ada
+    const existingAlert = document.querySelector('.dynamic-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
+    // Buat elemen alert baru
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show dynamic-alert" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 500px;">
+            <strong>${title}</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+
+    // Tambahkan alert ke body
+    document.body.insertAdjacentHTML('afterbegin', alertHtml);
+
+    // Auto hide alert setelah 5 detik
+    setTimeout(() => {
+        const alert = document.querySelector('.dynamic-alert');
+        if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
         }
+    }, 5000);
+}
 
-        // Fungsi untuk menampilkan modal review
-        function showReviewForm(itemType, itemId, itemName) {
-            // Reset form sebelum menampilkan
-            document.getElementById('reviewForm').reset();
+// Fungsi untuk inisialisasi countdown timer
+function initCountdownTimer() {
+    const countdownEl = document.getElementById('countdown');
 
-            // Reset tampilan bintang
-            document.querySelectorAll('.star-rating label').forEach(star => {
-                star.classList.remove('text-warning');
-            });
+    if (countdownEl) {
+        const expiresTimestamp = parseInt(countdownEl.dataset.expires);
+        let serverNowTimestamp = parseInt(countdownEl.dataset.now);
 
-            // Set judul modal dengan nama item
-            document.getElementById('reviewModalTitle').textContent = 'Beri Ulasan: ' + itemName;
+        // Ambil waktu client sekarang untuk menghitung offset
+        const clientNowTimestamp = Math.floor(Date.now() / 1000);
+        const timeOffset = clientNowTimestamp - serverNowTimestamp;
 
-            // Set nilai pada input hidden
-            document.getElementById('reviewItemType').value = itemType;
-            document.getElementById('reviewItemId').value = itemId;
+        // Update countdown setiap detik
+        const countdownInterval = setInterval(function() {
+            // Update server time berdasarkan waktu client dengan offset
+            serverNowTimestamp = Math.floor(Date.now() / 1000) - timeOffset;
 
-            // Tampilkan modal menggunakan Bootstrap API
-            const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
-            reviewModal.show();
-        }
+            // Hitung sisa waktu
+            const remainingTime = expiresTimestamp - serverNowTimestamp;
 
-        // Fungsi untuk mengirim review
-        function submitReview() {
-            const form = document.getElementById('reviewForm');
-            const formData = new FormData(form);
+            // Jika waktu sudah habis
+            if (remainingTime <= 0) {
+                clearInterval(countdownInterval);
+                countdownEl.innerHTML = '<span class="text-danger">Waktu pembayaran telah habis</span>';
 
-            // Validasi: pastikan rating dipilih
-            const rating = document.querySelector('input[name="rating"]:checked');
-            if (!rating) {
-                // Ganti alert dengan SweetAlert
-                Swal.fire({
-                    title: 'Perhatian!',
-                    text: 'Silakan berikan rating dengan memilih jumlah bintang',
-                    icon: 'warning',
-                    confirmButtonText: 'OK'
-                });
+                // Gunakan Bootstrap alert untuk notifikasi waktu habis
+                showBootstrapAlert('info', 'Waktu Habis!', 'Waktu pembayaran telah habis. Halaman akan dimuat ulang dalam 3 detik.');
+
+                // Reload halaman setelah 3 detik
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+
                 return;
             }
 
-            // Persiapkan data untuk dikirim
-            const data = {
-                payment_id: formData.get('payment_id'),
-                item_id: formData.get('item_id'),
-                item_type: formData.get('item_type'),
-                rating: formData.get('rating'),
-                comment: formData.get('comment')
-            };
+            // Hitung menit dan detik
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
 
-            // Ambil CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-            // Tampilkan loading state pada tombol
-            const submitBtn = document.getElementById('submitReviewBtn');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
-            submitBtn.disabled = true;
-
-            // Kirim request AJAX
-            fetch('/review/store', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(result => {
-                    if (result.success) {
-                        // Tutup modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
-                        modal.hide();
-
-                        // Tampilkan pesan sukses dengan SweetAlert
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Terima kasih! Ulasan Anda berhasil dikirim.',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then((result) => {
-                            // Reload halaman untuk menampilkan status ulasan terbaru
-                            if (result.isConfirmed) {
-                                location.reload();
-                            }
-                        });
-                    } else {
-                        // Tampilkan pesan error dengan SweetAlert
-                        Swal.fire({
-                            title: 'Error!',
-                            text: result.message || 'Terjadi kesalahan saat mengirim ulasan',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    // Tampilkan pesan error dengan SweetAlert
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan saat mengirim ulasan. Silakan coba lagi.',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                });
-        }
-
-        // Fungsi untuk inisialisasi countdown timer
-        function initCountdownTimer() {
-            const countdownEl = document.getElementById('countdown');
-
-            if (countdownEl) {
-                const expiresTimestamp = parseInt(countdownEl.dataset.expires);
-                let serverNowTimestamp = parseInt(countdownEl.dataset.now);
-
-                // Ambil waktu client sekarang untuk menghitung offset
-                const clientNowTimestamp = Math.floor(Date.now() / 1000);
-                const timeOffset = clientNowTimestamp - serverNowTimestamp;
-
-                // Update countdown setiap detik
-                const countdownInterval = setInterval(function() {
-                    // Update server time berdasarkan waktu client dengan offset
-                    serverNowTimestamp = Math.floor(Date.now() / 1000) - timeOffset;
-
-                    // Hitung sisa waktu
-                    const remainingTime = expiresTimestamp - serverNowTimestamp;
-
-                    // Jika waktu sudah habis
-                    if (remainingTime <= 0) {
-                        clearInterval(countdownInterval);
-                        countdownEl.innerHTML = '<span class="text-danger">Waktu pembayaran telah habis</span>';
-
-                        // Gunakan SweetAlert untuk notifikasi waktu habis
-                        Swal.fire({
-                            title: 'Waktu Habis!',
-                            text: 'Waktu pembayaran telah habis. Halaman akan dimuat ulang.',
-                            icon: 'info',
-                            confirmButtonText: 'OK',
-
-                            timer: 3000,
-                            timerProgressBar: true
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                        return;
-                    }
-
-                    // Hitung menit dan detik
-                    const minutes = Math.floor(remainingTime / 60);
-                    const seconds = remainingTime % 60;
-
-                    // Tampilkan dalam format MM:SS
-                    countdownEl.innerHTML =
-                        `Sisa waktu: <span class="text-danger">${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</span>`;
-                }, 1000);
-            }
-        }
+            // Tampilkan dalam format MM:SS
+            countdownEl.innerHTML =
+                `Sisa waktu: <span class="text-danger">${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</span>`;
+        }, 1000);
+    }
+}
     </script>
 
 

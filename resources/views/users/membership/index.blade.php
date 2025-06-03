@@ -24,455 +24,352 @@
         </div>
     </div>
 
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Intro Section -->
+        <section class="intro-section">
+            <div class="intro-content">
+                <span class="section-tag">Benefits</span>
+                <h2>Keuntungan Menjadi Member</h2>
+                <p>Nikmati berbagai keuntungan eksklusif dengan bergabung sebagai member kami</p>
 
- <!-- Main Content -->
- <div class="container">
-    <!-- Intro Section -->
-    <section class="intro-section">
-        <div class="intro-content">
-            <span class="section-tag">Benefits</span>
-            <h2>Keuntungan Menjadi Member</h2>
-            <p>Nikmati berbagai keuntungan eksklusif dengan bergabung sebagai member kami</p>
-
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="benefit-content">
-                        <h3>Jadwal Tetap</h3>
-                        <p>Dapatkan slot jadwal tetap setiap minggu sesuai dengan pilihan Anda</p>
-                    </div>
-                </div>
-
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                    <div class="benefit-content">
-                        <h3>Harga Spesial</h3>
-                        <p>Nikmati potongan harga khusus dibandingkan dengan booking regular</p>
-                    </div>
-                </div>
-
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div class="benefit-content">
-                        <h3>Dokumentasi</h3>
-                        <p>Layanan fotografer profesional untuk mengabadikan momen bermain Anda</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Membership Plans For Each Field -->
-    @foreach ($fields as $field)
-        <section class="membership-plans-section" id="membership-plans-{{ $field->id }}">
-            <div class="section-header">
-                <span class="section-tag">Packages</span>
-                <h2>Paket Membership {{ $field->name }}</h2>
-                <p>Pilih paket membership yang sesuai dengan kebutuhan Anda</p>
-            </div>
-
-            <div class="plans-grid">
-                <!-- Bronze Plan -->
-                <div class="plan-card">
-                    <div class="plan-bg" style="background-image: url('/images/bg-card-bronze.jpg')">
-                        <div class="plan-overlay bronze-overlay"></div>
-                    </div>
-                    <div class="plan-content">
-                        <div class="plan-header">
-                            <div class="plan-badge bronze">Bronze</div>
-                                            @php
-                                $bronzeMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'bronze')
-                                    ->first();
-                            @endphp
-                            <div class="plan-price">
-                                <div class="price">
-                                    @if ($bronzeMembership)
-                                        Rp {{ number_format($bronzeMembership->price, 0, ',', '.') }}
-                                    @else
-                                        Rp {{ number_format($field->price * 3 * 4 * 0.9, 0, ',', '.') }}
-                                    @endif
-                                </div>
-                                <div class="period">
-                                    @if ($bronzeMembership)
-                                        {{ $bronzeMembership->sessions_per_week }}x main/minggu
-                                    @else
-                                        3x main/minggu
-                                    @endif
-                                </div>
-                            </div>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-calendar-check"></i>
                         </div>
-
-                        <div class="plan-features">
-                            @php
-                                $bronzeMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'bronze')
-                                    ->first();
-                            @endphp
-                            @if ($bronzeMembership)
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Jadwal tetap {{ $bronzeMembership->sessions_per_week }}x seminggu</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Durasi {{ $bronzeMembership->session_duration }} jam per sesi</span>
-                                </div>
-                                @if($bronzeMembership->description)
-                                    @foreach(explode("\n", $bronzeMembership->description) as $benefit)
-                                        @if(trim($benefit))
-                                            <div class="feature-item">
-                                                <i class="fas fa-check"></i>
-                                                <span>{{ trim($benefit) }}</span>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            @else
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Jadwal tetap 3x seminggu</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Diskon 10% dari harga regular</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Durasi 1 jam per sesi</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="plan-action">
-                            @php
-                                $bronzeMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'bronze')
-                                    ->first();
-                            @endphp
-                            @if ($bronzeMembership)
-                                <a href="{{ route('user.membership.show', $bronzeMembership->id) }}" class="btn-primary">
-                                    <span>Pilih Paket</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            @else
-                                <button class="btn-disabled">
-                                    <span>Tidak Tersedia</span>
-                                </button>
-                            @endif
+                        <div class="benefit-content">
+                            <h3>Jadwal Tetap</h3>
+                            <p>Dapatkan slot jadwal tetap setiap minggu sesuai dengan pilihan Anda</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Silver Plan -->
-                <div class="plan-card featured">
-                    <div class="popular-badge">Populer</div>
-                    <div class="plan-bg" style="background-image: url('/images/bg-card-silver.jpg')">
-                        <div class="plan-overlay silver-overlay"></div>
-                    </div>
-                    <div class="plan-content">
-                        <div class="plan-header">
-                            <div class="plan-badge silver">Silver</div>
-                            <div class="plan-price">
-                                <div class="price">Rp {{ number_format($field->price * 3 * 4 * 2 * 0.85, 0, ',', '.') }}
-                                </div>
-                                <div class="period">3x main/minggu</div>
-                            </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-percentage"></i>
                         </div>
-
-                        <div class="plan-features">
-                            @php
-                                $silverMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'silver')
-                                    ->first();
-                            @endphp
-                            @if ($silverMembership)
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Jadwal tetap {{ $silverMembership->sessions_per_week }}x seminggu</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Durasi {{ $silverMembership->session_duration }} jam per sesi</span>
-                                </div>
-                                @if($silverMembership->photographer_duration > 0)
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Fotografer {{ $silverMembership->photographer_duration }} jam per sesi</span>
-                                </div>
-                                @endif
-                                @if($silverMembership->description)
-                                    @foreach(explode("\n", $silverMembership->description) as $benefit)
-                                        @if(trim($benefit))
-                                            <div class="feature-item">
-                                                <i class="fas fa-check"></i>
-                                                <span>{{ trim($benefit) }}</span>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            @else
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Jadwal tetap 3x seminggu</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Diskon 15% dari harga regular</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Durasi 1 jam per sesi</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Fotografer 1x dalam sebulan</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="plan-action">
-                            @php
-                                $silverMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'silver')
-                                    ->first();
-                            @endphp
-                            @if ($silverMembership)
-                                <a href="{{ route('user.membership.show', $silverMembership->id) }}" class="btn-primary">
-                                    <span>Pilih Paket</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            @else
-                                <button class="btn-disabled">
-                                    <span>Tidak Tersedia</span>
-                                </button>
-                            @endif
+                        <div class="benefit-content">
+                            <h3>Harga Spesial</h3>
+                            <p>Nikmati potongan harga khusus dibandingkan dengan booking regular</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Gold Plan -->
-                <div class="plan-card">
-                    <div class="plan-bg" style="background-image: url('/images/bg-card-gold.jpg')">
-                        <div class="plan-overlay gold-overlay"></div>
-                    </div>
-                    <div class="plan-content">
-                        <div class="plan-header">
-                            <div class="plan-badge gold">Gold</div>
-                                            @php
-                                $goldMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'gold')
-                                    ->first();
-                            @endphp
-                            <div class="plan-price">
-                                <div class="price">
-                                    @if ($goldMembership)
-                                        Rp {{ number_format($goldMembership->price, 0, ',', '.') }}
-                                    @else
-                                        Rp {{ number_format($field->price * 3 * 4 * 3 * 0.8, 0, ',', '.') }}
-                                    @endif
-                                </div>
-                                <div class="period">
-                                    @if ($goldMembership)
-                                        {{ $goldMembership->sessions_per_week }}x main/minggu
-                                    @else
-                                        3x main/minggu
-                                    @endif
-                                </div>
-                            </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-camera"></i>
                         </div>
-
-                        <div class="plan-features">
-                            @php
-                                $goldMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'gold')
-                                    ->first();
-                            @endphp
-                            @if ($goldMembership)
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Jadwal tetap {{ $goldMembership->sessions_per_week }}x seminggu</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Durasi {{ $goldMembership->session_duration }} jam per sesi</span>
-                                </div>
-                                @if($goldMembership->photographer_duration > 0)
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Fotografer {{ $goldMembership->photographer_duration }} jam per sesi</span>
-                                </div>
-                                @endif
-                                @if($goldMembership->description)
-                                    @foreach(explode("\n", $goldMembership->description) as $benefit)
-                                        @if(trim($benefit))
-                                            <div class="feature-item">
-                                                <i class="fas fa-check"></i>
-                                                <span>{{ trim($benefit) }}</span>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            @else
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Jadwal tetap 3x seminggu</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Diskon 20% dari harga regular</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Durasi 1 jam per sesi</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Fotografer 2x dalam sebulan</span>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="fas fa-check"></i>
-                                    <span>Minuman gratis setiap sesi</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="plan-action">
-                            @php
-                                $goldMembership = $memberships
-                                    ->where('field_id', $field->id)
-                                    ->where('type', 'gold')
-                                    ->first();
-                            @endphp
-                            @if ($goldMembership)
-                                <a href="{{ route('user.membership.show', $goldMembership->id) }}" class="btn-primary">
-                                    <span>Pilih Paket</span>
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            @else
-                                <button class="btn-disabled">
-                                    <span>Tidak Tersedia</span>
-                                </button>
-                            @endif
+                        <div class="benefit-content">
+                            <h3>Dokumentasi</h3>
+                            <p>Layanan fotografer profesional untuk mengabadikan momen bermain Anda</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-    @endforeach
 
-    <!-- FAQ Section -->
-    <section class="faq-section">
-        <div class="section-header">
-            <span class="section-tag">Information</span>
-            <h2>Pertanyaan Umum</h2>
-            <p>Temukan jawaban dari pertanyaan yang sering diajukan</p>
-        </div>
+        <!-- Membership Plans For Each Field -->
+        @foreach ($fields as $field)
+            @php
+                $fieldMemberships = $memberships->where('field_id', $field->id);
+                $bronzeMembership = $fieldMemberships->where('type', 'bronze')->first();
+                $silverMembership = $fieldMemberships->where('type', 'silver')->first();
+                $goldMembership = $fieldMemberships->where('type', 'gold')->first();
+            @endphp
 
-        <div class="faq-accordion" id="membershipFAQ">
-            <div class="faq-item">
-                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseOne" aria-expanded="false">
-                    <span>Bagaimana cara mendaftar membership?</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div id="collapseOne" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                    <div class="faq-content">
-                        Pilih lapangan dan paket membership yang diinginkan, lalu pilih 3 jadwal permainan tetap dalam
-                        satu minggu. Setelah itu, lakukan pembayaran dan nikmati fasilitas member.
+            @if($fieldMemberships->count() > 0)
+                <section class="membership-plans-section" id="membership-plans-{{ $field->id }}">
+                    <div class="section-header">
+                        <span class="section-tag">Packages</span>
+                        <h2>Paket Membership {{ $field->name }}</h2>
+                        <p>Pilih paket membership yang sesuai dengan kebutuhan Anda</p>
+                    </div>
+
+                    <div class="plans-grid">
+                        <!-- Bronze Plan -->
+                        @if($bronzeMembership)
+                            <div class="plan-card">
+                                <div class="plan-bg" style="background-image: url('/images/bg-card-bronze.jpg')">
+                                    <div class="plan-overlay bronze-overlay"></div>
+                                </div>
+                                <div class="plan-content">
+                                    <div class="plan-header">
+                                        <div class="plan-badge bronze">Bronze</div>
+                                        <div class="plan-price">
+                                            <div class="price">
+                                                Rp {{ number_format($bronzeMembership->price, 0, ',', '.') }}
+                                            </div>
+                                            <div class="period">
+                                                {{ $bronzeMembership->sessions_per_week }}x main/minggu
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="plan-features">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check"></i>
+                                            <span>Jadwal tetap {{ $bronzeMembership->sessions_per_week }}x seminggu</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check"></i>
+                                            <span>Durasi {{ $bronzeMembership->session_duration }} jam per sesi</span>
+                                        </div>
+                                        @if($bronzeMembership->photographer_duration > 0)
+                                            <div class="feature-item">
+                                                <i class="fas fa-check"></i>
+                                                <span>Fotografer {{ $bronzeMembership->photographer_duration }} jam per sesi</span>
+                                            </div>
+                                        @endif
+                                        @if($bronzeMembership->description)
+                                            @foreach(explode("\n", $bronzeMembership->description) as $benefit)
+                                                @if(trim($benefit))
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-check"></i>
+                                                        <span>{{ trim($benefit) }}</span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </div>
+
+                                    <div class="plan-action">
+                                        <a href="{{ route('user.membership.show', $bronzeMembership->id) }}" class="btn-primary">
+                                            <span>Pilih Paket</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Silver Plan -->
+                        @if($silverMembership)
+                            <div class="plan-card {{ $silverMembership->is_popular ? 'featured' : '' }}">
+                                @if($silverMembership->is_popular)
+                                    <div class="popular-badge">Populer</div>
+                                @endif
+                                <div class="plan-bg" style="background-image: url('/images/bg-card-silver.jpg')">
+                                    <div class="plan-overlay silver-overlay"></div>
+                                </div>
+                                <div class="plan-content">
+                                    <div class="plan-header">
+                                        <div class="plan-badge silver">Silver</div>
+                                        <div class="plan-price">
+                                            <div class="price">
+                                                Rp {{ number_format($silverMembership->price, 0, ',', '.') }}
+                                            </div>
+                                            <div class="period">
+                                                {{ $silverMembership->sessions_per_week }}x main/minggu
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="plan-features">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check"></i>
+                                            <span>Jadwal tetap {{ $silverMembership->sessions_per_week }}x seminggu</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check"></i>
+                                            <span>Durasi {{ $silverMembership->session_duration }} jam per sesi</span>
+                                        </div>
+                                        @if($silverMembership->photographer_duration > 0)
+                                            <div class="feature-item">
+                                                <i class="fas fa-check"></i>
+                                                <span>Fotografer {{ $silverMembership->photographer_duration }} jam per sesi</span>
+                                            </div>
+                                        @endif
+                                        @if($silverMembership->description)
+                                            @foreach(explode("\n", $silverMembership->description) as $benefit)
+                                                @if(trim($benefit))
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-check"></i>
+                                                        <span>{{ trim($benefit) }}</span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </div>
+
+                                    <div class="plan-action">
+                                        <a href="{{ route('user.membership.show', $silverMembership->id) }}" class="btn-primary">
+                                            <span>Pilih Paket</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Gold Plan -->
+                        @if($goldMembership)
+                            <div class="plan-card">
+                                <div class="plan-bg" style="background-image: url('/images/bg-card-gold.jpg')">
+                                    <div class="plan-overlay gold-overlay"></div>
+                                </div>
+                                <div class="plan-content">
+                                    <div class="plan-header">
+                                        <div class="plan-badge gold">Gold</div>
+                                        <div class="plan-price">
+                                            <div class="price">
+                                                Rp {{ number_format($goldMembership->price, 0, ',', '.') }}
+                                            </div>
+                                            <div class="period">
+                                                {{ $goldMembership->sessions_per_week }}x main/minggu
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="plan-features">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check"></i>
+                                            <span>Jadwal tetap {{ $goldMembership->sessions_per_week }}x seminggu</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check"></i>
+                                            <span>Durasi {{ $goldMembership->session_duration }} jam per sesi</span>
+                                        </div>
+                                        @if($goldMembership->photographer_duration > 0)
+                                            <div class="feature-item">
+                                                <i class="fas fa-check"></i>
+                                                <span>Fotografer {{ $goldMembership->photographer_duration }} jam per sesi</span>
+                                            </div>
+                                        @endif
+                                        @if($goldMembership->description)
+                                            @foreach(explode("\n", $goldMembership->description) as $benefit)
+                                                @if(trim($benefit))
+                                                    <div class="feature-item">
+                                                        <i class="fas fa-check"></i>
+                                                        <span>{{ trim($benefit) }}</span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </div>
+
+                                    <div class="plan-action">
+                                        <a href="{{ route('user.membership.show', $goldMembership->id) }}" class="btn-primary">
+                                            <span>Pilih Paket</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </section>
+            @endif
+        @endforeach
+
+        <!-- No Membership Available Message -->
+        @if($memberships->count() == 0)
+            <section class="no-membership-section">
+                <div class="text-center">
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times" style="font-size: 4rem; color: #6c757d; margin-bottom: 1rem;"></i>
+                        <h3>Belum Ada Paket Membership</h3>
+                        <p class="text-muted">Saat ini belum ada paket membership yang tersedia. Silakan hubungi admin untuk informasi lebih lanjut.</p>
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <div class="section-header">
+                <span class="section-tag">Information</span>
+                <h2>Pertanyaan Umum</h2>
+                <p>Temukan jawaban dari pertanyaan yang sering diajukan</p>
+            </div>
+
+            <div class="faq-accordion" id="membershipFAQ">
+                <div class="faq-item">
+                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="false">
+                        <span>Bagaimana cara mendaftar membership?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="collapseOne" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                        <div class="faq-content">
+                            Pilih lapangan dan paket membership yang diinginkan, lalu pilih 3 jadwal permainan tetap dalam
+                            satu minggu. Setelah itu, lakukan pembayaran dan nikmati fasilitas member.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseTwo" aria-expanded="false">
+                        <span>Bagaimana sistem pembayaran membership?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="collapseTwo" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                        <div class="faq-content">
+                            Pembayaran membership dilakukan setiap minggu. Invoice akan dikirimkan pada jadwal main kedua
+                            dan harus dibayar sebelum jadwal main ketiga.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseThree" aria-expanded="false">
+                        <span>Apakah jadwal bisa diubah setelah terdaftar?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="collapseThree" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                        <div class="faq-content">
+                            Jadwal yang sudah dipilih tidak dapat diubah selama periode membership berjalan. Pastikan untuk
+                            memilih jadwal yang sesuai dengan ketersediaan Anda.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseFour" aria-expanded="false">
+                        <span>Apa yang terjadi jika saya tidak hadir pada jadwal yang ditentukan?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="collapseFour" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                        <div class="faq-content">
+                            Jadwal yang terlewat tidak dapat diganti atau dikompensasi. Pembayaran tetap harus dilakukan
+                            sesuai jadwal yang telah disepakati.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseFive" aria-expanded="false">
+                        <span>Berapa lama durasi membership yang harus diambil?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="collapseFive" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
+                        <div class="faq-content">
+                            Durasi minimum membership adalah 1 bulan (4 minggu). Setelah periode tersebut, Anda dapat memperpanjang atau mengakhiri membership.
+                        </div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <div class="faq-item">
-                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseTwo" aria-expanded="false">
-                    <span>Bagaimana sistem pembayaran membership?</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div id="collapseTwo" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                    <div class="faq-content">
-                        Pembayaran membership dilakukan setiap minggu. Invoice akan dikirimkan pada jadwal main kedua
-                        dan harus dibayar sebelum jadwal main ketiga.
-                    </div>
-                </div>
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2>Siap untuk bergabung?</h2>
+                <p>Pilih paket membership sekarang dan nikmati berbagai keuntungannya</p>
+                <a href="#" class="btn-primary large">
+                    <span>Mulai Sekarang</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
-
-            <div class="faq-item">
-                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseThree" aria-expanded="false">
-                    <span>Apakah jadwal bisa diubah setelah terdaftar?</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div id="collapseThree" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                    <div class="faq-content">
-                        Jadwal yang sudah dipilih tidak dapat diubah selama periode membership berjalan. Pastikan untuk
-                        memilih jadwal yang sesuai dengan ketersediaan Anda.
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseFour" aria-expanded="false">
-                    <span>Apa yang terjadi jika saya tidak hadir pada jadwal yang ditentukan?</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div id="collapseFour" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                    <div class="faq-content">
-                        Jadwal yang terlewat tidak dapat diganti atau dikompensasi. Pembayaran tetap harus dilakukan
-                        sesuai jadwal yang telah disepakati.
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseFive" aria-expanded="false">
-                    <span>Berapa lama durasi membership yang harus diambil?</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div id="collapseFive" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                    <div class="faq-content">
-                        Durasi minimum membership adalah 1 bulan (4 minggu). Setelah periode tersebut, Anda dapat memperpanjang atau mengakhiri membership.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2>Siap untuk bergabung?</h2>
-            <p>Pilih paket membership sekarang dan nikmati berbagai keuntungannya</p>
-            <a href="#" class="btn-primary large">
-                <span>Mulai Sekarang</span>
-                <i class="fas fa-arrow-right"></i>
-            </a>
-        </div>
-    </section>
-</div>
+        </section>
+    </div>
 
     <style>
-
-      /* Hero Section */
-      .hero-section {
+        /* Hero Section */
+        .hero-section {
             background: linear-gradient(to right, #9e0620, #bb2d3b);
-
             height: 220px;
             position: relative;
             display: flex;
@@ -814,6 +711,17 @@
             margin-top: auto;
         }
 
+        /* Empty State */
+        .no-membership-section {
+            padding: 4rem 0;
+        }
+
+        .empty-state {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
         /* FAQ Section */
         .faq-item {
             background: white;
@@ -1090,6 +998,7 @@
             }
         }
     </style>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>

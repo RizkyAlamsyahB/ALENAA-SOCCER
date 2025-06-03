@@ -35,13 +35,13 @@ class ProfileController extends Controller
             ->orderBy('created_at', 'desc')
             ->first();
 
-        // Default tipe membership jika tidak memiliki membership aktif
-        $membershipType = 'bronze';
-        $membershipName = 'Belum Memiliki Membership';
+        // Default values jika tidak memiliki membership aktif
+        $membershipType = null; // ← Perbaikan: set ke null jika tidak ada membership
+        $membershipName = null; // ← Perbaikan: set ke null jika tidak ada membership
 
         if ($activeMembership && $activeMembership->membership) {
-            $membershipType = $activeMembership->membership->type ?? 'bronze';
-            $membershipName = $activeMembership->membership->name ?? 'Membership';
+            $membershipType = $activeMembership->membership->type ?? null;
+            $membershipName = $activeMembership->membership->name ?? null;
         }
 
         return view('profile.edit', [

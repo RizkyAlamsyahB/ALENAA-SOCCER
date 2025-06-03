@@ -19,7 +19,7 @@
                                     style="width: 128px; height: 128px; border: 4px solid #9E0620; border-radius: 50%; overflow: hidden;">
                                     @if (Auth::user()->profile_picture)
                                         <img src="{{ Storage::url(Auth::user()->profile_picture) }}"
-                                            alt="{{ Auth::user()->name }}" class="w-100 h-100" style="object-fit: cover;">
+                                            class="w-100 h-100" style="object-fit: cover;">
                                     @else
                                         <i class="fas fa-user text-secondary fs-1"></i>
                                     @endif
@@ -52,28 +52,36 @@
 
                         </div>
 
-                        <!-- User Info Section -->
-                        <div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
-                            style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
-                            <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
-                            <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
-                            <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
+<!-- User Info Section -->
+<div class="mt-4 mt-sm-0 ms-sm-4 text-center text-sm-start"
+    style="z-index: 1; background: white; padding: 10px; border-radius: 8px;">
+    <h3 class="fs-4 fw-bold text-dark">{{ Auth::user()->name }}</h3>
+    <p class="text-secondary mb-2">{{ Auth::user()->email }}</p>
+    <div class="mt-2 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
 
-                                <span class="badge text-white" style="background-color: #9E0620;">
-                                    <i class="fas fa-crown me-1"></i> Premium Member
-                                </span>
+        {{-- Membership Badge --}}
+        @if ($membershipType && $membershipName)
+            <span class="badge text-white" style="background-color: #9E0620;">
+                <i class="fas fa-crown me-1"></i> {{ ucfirst($membershipType) }} Member
+            </span>
+        @else
+            <span class="badge bg-secondary">
+                <i class="fas fa-user me-1"></i> Free Account
+            </span>
+        @endif
 
-                                @if (Auth::user()->email_verified_at)
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-check-circle me-1"></i> Verified
-                                    </span>
-                                @else
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-times-circle me-1"></i> Unverified
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
+        {{-- Email Verification Badge --}}
+        @if (Auth::user()->email_verified_at)
+            <span class="badge bg-success">
+                <i class="fas fa-check-circle me-1"></i> Verified
+            </span>
+        @else
+            <span class="badge bg-danger">
+                <i class="fas fa-times-circle me-1"></i> Unverified
+            </span>
+        @endif
+    </div>
+</div>
 
 
                         <!-- Points Card (Positioned to the right) -->
@@ -106,12 +114,12 @@
                     <nav class="nav nav-tabs d-flex flex-nowrap overflow-x-auto"
                         style="white-space: nowrap; -webkit-overflow-scrolling: touch;">
                         <button class="nav-link active flex-shrink-0" style="color: #9E0620;" id="tab-personal-info">
-                            <i class="fas fa-user-circle me-2"></i>Personal Info
+                            <i class="fas fa-user-circle me-2"></i>Informasi Pribadi
                         </button>
 
 
                         <button class="nav-link text-secondary flex-shrink-0" id="tab-security">
-                            <i class="fas fa-lock me-2"></i>Security
+                            <i class="fas fa-lock me-2"></i>Keamanan
                         </button>
                     </nav>
 
@@ -146,14 +154,14 @@
                         <div class="card mb-4">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="card-title mb-0">Personal Information</h5>
+                                    <h5 class="card-title mb-0">Informasi Pribadi</h5>
                                 </div>
                                 <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
                                     @csrf
                                     @method('patch')
 
                                     <div class="mb-3">
-                                        <label class="form-label">Name</label>
+                                        <label class="form-label">Nama</label>
                                         <input type="text" name="name" class="form-control"
                                             value="{{ old('name', $user->name) }}" required autofocus
                                             autocomplete="name">
@@ -170,26 +178,24 @@
                                     @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
                                         <div>
                                             <p class="text-sm mt-2 text-muted">
-                                                {{ __('Your email address is unverified.') }}
+                                                {{ __('Alamat email Anda belum diverifikasi.') }}
 
                                                 <button form="send-verification"
                                                     class="btn btn-link p-0 m-0 align-baseline">
-                                                    {{ __('Click here to re-send the verification email.') }}
+                                                    {{ __('Klik disini untuk mengirim ulang email verifikasi.') }}
                                                 </button>
                                             </p>
 
                                             @if (session('status') === 'verification-link-sent')
                                                 <p class="mt-2 text-success">
-                                                    {{ __('A new verification link has been sent to your email address.') }}
+                                                    {{ __('Link verifikasi baru telah dikirim ke alamat email Anda.') }}
                                                 </p>
                                             @endif
                                         </div>
                                     @endif
 
-                                    <button type="submit" class="btn text-white" style="background-color: #9E0620;">Save
-                                        Changes</button>
-
-
+                                    <button type="submit" class="btn text-white" style="background-color: #9E0620;">Simpan
+                                        Perubahan</button>
                                 </form>
                             </div>
                         </div>
@@ -201,63 +207,39 @@
                         <div class="card mb-4">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="card-title mb-0">Update Password</h5>
+                                    <h5 class="card-title mb-0">Perbarui Kata Sandi</h5>
                                 </div>
                                 <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
                                     @csrf
                                     @method('put')
 
                                     <div class="mb-3">
-                                        <label class="form-label">Current Password</label>
+                                        <label class="form-label">Kata Sandi Saat Ini</label>
                                         <input type="password" name="current_password" class="form-control"
                                             autocomplete="current-password">
                                         <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">New Password</label>
+                                        <label class="form-label">Kata Sandi Baru</label>
                                         <input type="password" name="password" class="form-control"
                                             autocomplete="new-password">
                                         <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">Confirm Password</label>
+                                        <label class="form-label">Konfirmasi Kata Sandi</label>
                                         <input type="password" name="password_confirmation" class="form-control"
                                             autocomplete="new-password">
                                         <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
                                     </div>
 
                                     <button type="submit" class="btn text-white"
-                                        style="background-color: #9E0620;">Update Password</button>
+                                        style="background-color: #9E0620;">Perbarui Kata Sandi</button>
 
                                     @if (session('status') === 'password-updated')
-                                        <p class="text-success mt-2">{{ __('Saved.') }}</p>
+                                        <p class="text-success mt-2">{{ __('Tersimpan.') }}</p>
                                     @endif
-                                </form>
-                            </div>
-                        </div>
-
-                        <!-- Delete Account Section -->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="card-title mb-0">Delete Account</h5>
-                                    <span class="text-muted">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>Permanent Action
-                                    </span>
-                                </div>
-                                <p class="text-muted mb-4">Once your account is deleted, all of its resources and data will
-                                    be permanently deleted. Before deleting your account, please download any data or
-                                    information that you wish to retain.</p>
-                                <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-                                    @csrf
-                                    @method('delete')
-
-                                    <button type="submit" class="btn text-white" style="background-color: #9E0620;"
-                                        onclick="return confirm('Are you sure you want to delete your account?')">
-                                        Delete Account
-                                    </button>
                                 </form>
                             </div>
                         </div>

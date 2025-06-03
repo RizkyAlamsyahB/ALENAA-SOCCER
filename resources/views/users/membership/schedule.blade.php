@@ -947,19 +947,6 @@
             padding: 0;
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light-bg);
-            color: var(--text-dark);
-            line-height: 1.5;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1140px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
 
         /* Hero Section */
         .hero-section {

@@ -154,21 +154,33 @@ class FieldController extends Controller
     }
 
     /**
-     * Menghapus lapangan
+     * Menghapus lapangan (soft delete)
      */
-    public function destroy(Field $field)
+    public function destroy($id)
     {
         try {
+            $field = Field::findOrFail($id);
+
+            // Cek apakah lapangan masih memiliki booking aktif
+            $activeBookings = $field->bookings()->where('status', '!=', 'cancelled')->where('end_time', '>', now())->exists();
+            if ($activeBookings) {
+                return redirect()->route('admin.fields.index')->with('error', 'Tidak dapat menghapus lapangan karena masih ada booking aktif terkait.');
+            }
+
             // Hapus gambar jika ada dan bukan default
             if ($field->image && $field->image != 'assets/futsal-field.png' && Storage::exists('public/' . $field->image)) {
                 Storage::delete('public/' . $field->image);
             }
 
+            // Soft delete
             $field->delete();
+
             return redirect()->route('admin.fields.index')->with('success', 'Lapangan berhasil dihapus');
         } catch (\Exception $e) {
             Log::error('Error deleting field: ' . $e->getMessage());
-            return redirect()->route('admin.fields.index')->with('error', 'Tidak dapat menghapus lapangan');
+            return redirect()
+                ->route('admin.fields.index')
+                ->with('error', 'Tidak dapat menghapus lapangan: ' . $e->getMessage());
         }
     }
 }

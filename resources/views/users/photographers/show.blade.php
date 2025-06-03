@@ -417,302 +417,370 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 
     <!-- JavaScript untuk Booking Fotografer -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            const photographerId = document.getElementById('photographerId').value;
-            let selectedDate = '';
-            let currentStep = 1;
-            const totalSteps = 3;
-            const duration = parseInt(document.querySelector('[data-duration]')?.dataset.duration ||
-                1); // Durasi dalam jam dari model
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize variables
+    const photographerId = document.getElementById('photographerId').value;
+    let selectedDate = '';
+    let currentStep = 1;
+    const totalSteps = 3;
+    const duration = parseInt(document.querySelector('[data-duration]')?.dataset.duration || 1);
 
-            // Store selected time slots in an array
-            window.selectedTimeSlots = [];
+    // Store selected time slots in an array
+    window.selectedTimeSlots = [];
 
-            // DOM Elements
-            const progressBar = document.getElementById('wizard-progress-bar');
-            const wizardSteps = document.querySelectorAll('.wizard-step');
-            const wizardPanels = document.querySelectorAll('.wizard-panel');
+    // DOM Elements
+    const progressBar = document.getElementById('wizard-progress-bar');
+    const wizardSteps = document.querySelectorAll('.wizard-step');
+    const wizardPanels = document.querySelectorAll('.wizard-panel');
 
-            const prevBtn = document.getElementById('wizard-prev-btn');
-            const nextBtn = document.getElementById('wizard-next-btn');
-            const submitBtn = document.getElementById('wizard-submit-btn');
+    const prevBtn = document.getElementById('wizard-prev-btn');
+    const nextBtn = document.getElementById('wizard-next-btn');
+    const submitBtn = document.getElementById('wizard-submit-btn');
 
-            // Initialize Flatpickr inline calendar
-            const calendar = flatpickr("#inline-calendar", {
-                inline: true,
-                locale: 'id',
-                dateFormat: 'Y-m-d',
-                minDate: 'today',
-                maxDate: new Date().fp_incr(6), // Maksimal 7 hari ke depan
-                responsive: true, // Enable responsive mode
-                onChange: function(selectedDates, dateStr) {
-                    selectedDate = dateStr;
-                    document.getElementById('selectedDate').value = dateStr;
+    // Initialize Flatpickr inline calendar
+    const calendar = flatpickr("#inline-calendar", {
+        inline: true,
+        locale: 'id',
+        dateFormat: 'Y-m-d',
+        minDate: 'today',
+        maxDate: new Date().fp_incr(6),
+        responsive: true,
+        onChange: function(selectedDates, dateStr) {
+            selectedDate = dateStr;
+            document.getElementById('selectedDate').value = dateStr;
+            nextBtn.disabled = false;
+        }
+    });
 
-                    // Enable next button
-                    nextBtn.disabled = false;
+    // Helper function to show Bootstrap alerts
+    function showAlert(title, message, type, duration = 5000) {
+        // Create alert container if it doesn't exist
+        let alertContainer = document.querySelector('.alert-container');
+        if (!alertContainer) {
+            alertContainer = document.createElement('div');
+            alertContainer.className = 'alert-container position-fixed top-0 end-0 p-3';
+            alertContainer.style.zIndex = '9999';
+            alertContainer.style.maxWidth = '400px';
+            document.body.appendChild(alertContainer);
+        }
+
+        // Map alert types to Bootstrap classes
+        const alertTypeMap = {
+            'success': 'alert-success',
+            'error': 'alert-danger',
+            'danger': 'alert-danger',
+            'warning': 'alert-warning',
+            'info': 'alert-info'
+        };
+
+        // Create alert element
+        const alertEl = document.createElement('div');
+        alertEl.className = `alert ${alertTypeMap[type] || 'alert-info'} alert-dismissible fade show mb-2`;
+        alertEl.setAttribute('role', 'alert');
+        alertEl.style.minWidth = '300px';
+        alertEl.style.animation = 'slideInRight 0.3s ease-out';
+
+        // Get appropriate icon for alert type
+        const getIcon = (type) => {
+            switch(type) {
+                case 'success': return '<i class="fas fa-check-circle me-2"></i>';
+                case 'error':
+                case 'danger': return '<i class="fas fa-exclamation-circle me-2"></i>';
+                case 'warning': return '<i class="fas fa-exclamation-triangle me-2"></i>';
+                case 'info': return '<i class="fas fa-info-circle me-2"></i>';
+                default: return '<i class="fas fa-info-circle me-2"></i>';
+            }
+        };
+
+        alertEl.innerHTML = `
+            <div class="d-flex align-items-center">
+                ${getIcon(type)}
+                <div class="flex-grow-1">
+                    ${title ? `<strong>${title}:</strong> ` : ''}${message}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+        // Add to container
+        alertContainer.appendChild(alertEl);
+
+        // Auto dismiss after specified duration
+        if (duration > 0) {
+            setTimeout(() => {
+                if (alertEl && alertEl.parentNode) {
+                    // Add fade out effect
+                    alertEl.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (alertEl && alertEl.parentNode) {
+                            alertEl.remove();
+                        }
+                    }, 300);
                 }
+            }, duration);
+        }
+
+        return alertEl;
+    }
+
+    // Updated showToast function
+    function showToast(title, message, type) {
+        showAlert(title, message, type, 5000);
+    }
+
+    // Update progress bar
+    function updateProgressBar() {
+        const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+    }
+
+    // Update step states
+    function updateSteps() {
+        wizardSteps.forEach((step, index) => {
+            const stepNumber = index + 1;
+
+            // Remove all states
+            step.classList.remove('active', 'completed');
+
+            // Set appropriate state
+            if (stepNumber === currentStep) {
+                step.classList.add('active');
+            } else if (stepNumber < currentStep) {
+                step.classList.add('completed');
+            }
+        });
+    }
+
+    // Show/hide panels
+    function showPanel() {
+        wizardPanels.forEach((panel, index) => {
+            const panelNumber = index + 1;
+
+            if (panelNumber === currentStep) {
+                panel.classList.add('active');
+            } else {
+                panel.classList.remove('active');
+            }
+        });
+    }
+
+    // Update buttons
+    function updateButtons() {
+        prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
+        nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
+        submitBtn.style.display = currentStep === totalSteps ? 'flex' : 'none';
+
+        // Disable next button on date selection step if no date is selected
+        if (currentStep === 1) {
+            nextBtn.disabled = !selectedDate;
+        }
+
+        // Disable next button on time selection step if no time is selected
+        if (currentStep === 2) {
+            nextBtn.disabled = window.selectedTimeSlots.length === 0;
+        }
+    }
+
+    // Function to update selected time slots
+    function updateSelectedTimeSlots() {
+        // Clear previous selection
+        window.selectedTimeSlots = [];
+
+        // Collect all selected slots
+        document.querySelectorAll('.time-slot.slot-selected').forEach(slot => {
+            window.selectedTimeSlots.push({
+                startTime: slot.dataset.startTime,
+                endTime: slot.dataset.endTime,
+                display: slot.dataset.display
             });
+        });
 
-            // Update progress bar
-            function updateProgressBar() {
-                const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-                progressBar.style.width = `${progressPercentage}%`;
-            }
+        // Sort them by start time
+        window.selectedTimeSlots.sort((a, b) => {
+            return a.startTime.localeCompare(b.startTime);
+        });
+    }
 
-            // Update step states
-            function updateSteps() {
-                wizardSteps.forEach((step, index) => {
-                    const stepNumber = index + 1;
+    // Navigate to step
+    function goToStep(step) {
+        currentStep = step;
+        updateProgressBar();
+        updateSteps();
+        showPanel();
+        updateButtons();
 
-                    // Remove all states
-                    step.classList.remove('active', 'completed');
+        // Additional actions based on step
+        if (step === 2 && selectedDate) {
+            // Format date for display
+            const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            document.getElementById('selected-date-display').textContent = formattedDate;
 
-                    // Set appropriate state
-                    if (stepNumber === currentStep) {
-                        step.classList.add('active');
-                    } else if (stepNumber < currentStep) {
-                        step.classList.add('completed');
-                    }
-                });
-            }
+            // Load available time slots
+            loadAvailableSlots(selectedDate);
+        }
 
-            // Show/hide panels
-            function showPanel() {
-                wizardPanels.forEach((panel, index) => {
-                    const panelNumber = index + 1;
+        if (step === 3) {
+            // Update confirmation details
+            const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            document.getElementById('confirm-date').textContent = formattedDate;
 
-                    if (panelNumber === currentStep) {
-                        panel.classList.add('active');
-                    } else {
-                        panel.classList.remove('active');
-                    }
-                });
-            }
+            // Update selected time display
+            const selectedTimeDisplay = document.getElementById('selected-time-display');
 
-            // Update buttons
-            function updateButtons() {
-                prevBtn.style.display = currentStep === 1 ? 'none' : 'flex';
-                nextBtn.style.display = currentStep === totalSteps ? 'none' : 'flex';
-                submitBtn.style.display = currentStep === totalSteps ? 'flex' : 'none';
+            if (window.selectedTimeSlots && window.selectedTimeSlots.length > 0) {
+                // Create HTML for all selected time slots
+                let timeSlotHTML = '<div class="selected-slots">';
 
-                // Disable next button on date selection step if no date is selected
-                if (currentStep === 1) {
-                    nextBtn.disabled = !selectedDate;
-                }
-
-                // Disable next button on time selection step if no time is selected
-                if (currentStep === 2) {
-                    nextBtn.disabled = window.selectedTimeSlots.length === 0;
-                }
-            }
-
-            // Function to update selected time slots
-            function updateSelectedTimeSlots() {
-                // Clear previous selection
-                window.selectedTimeSlots = [];
-
-                // Collect all selected slots
-                document.querySelectorAll('.time-slot.slot-selected').forEach(slot => {
-                    window.selectedTimeSlots.push({
-                        startTime: slot.dataset.startTime,
-                        endTime: slot.dataset.endTime,
-                        display: slot.dataset.display
-                    });
-                });
-
-                // Sort them by start time
-                window.selectedTimeSlots.sort((a, b) => {
-                    return a.startTime.localeCompare(b.startTime);
-                });
-            }
-
-            // Navigate to step
-            function goToStep(step) {
-                currentStep = step;
-                updateProgressBar();
-                updateSteps();
-                showPanel();
-                updateButtons();
-
-                // Additional actions based on step
-                if (step === 2 && selectedDate) {
-                    // Format date for display
-                    const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-                    document.getElementById('selected-date-display').textContent = formattedDate;
-
-                    // Load available time slots
-                    loadAvailableSlots(selectedDate);
-                }
-
-                if (step === 3) {
-                    // Update confirmation details
-                    const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-                    document.getElementById('confirm-date').textContent = formattedDate;
-
-                    // Update selected time display
-                    const selectedTimeDisplay = document.getElementById('selected-time-display');
-
-                    if (window.selectedTimeSlots && window.selectedTimeSlots.length > 0) {
-                        // Create HTML for all selected time slots
-                        let timeSlotHTML = '<div class="selected-slots">';
-
-                        window.selectedTimeSlots.forEach((slot, index) => {
-                            timeSlotHTML += `
-                        <div class="selected-slot-item mb-2 p-2  ">
+                window.selectedTimeSlots.forEach((slot, index) => {
+                    timeSlotHTML += `
+                        <div class="selected-slot-item mb-2 p-2">
                             <i class="fas fa-clock me-2"></i>
                             <strong>Slot ${index + 1}:</strong> ${slot.display}
                         </div>
                     `;
-                        });
+                });
 
-                        timeSlotHTML += '</div>';
-                        selectedTimeDisplay.innerHTML = timeSlotHTML;
+                timeSlotHTML += '</div>';
+                selectedTimeDisplay.innerHTML = timeSlotHTML;
 
-                        // Get the base price per hour
-                        const basePrice = document.querySelector('.price-tag .h3')?.textContent || '';
-                        let pricePerHour = 0;
+                // Get the base price per hour
+                const basePrice = document.querySelector('.price-tag .h3')?.textContent || '';
+                let pricePerHour = 0;
 
-                        // Extract the numeric value from "Rp 300.000" format
-                        const priceMatch = basePrice.match(/\d+(\.\d+)*/);
-                        if (priceMatch) {
-                            pricePerHour = parseInt(priceMatch[0].replace(/\./g, ''));
-                        }
+                // Extract the numeric value from "Rp 300.000" format
+                const priceMatch = basePrice.match(/\d+(\.\d+)*/);
+                if (priceMatch) {
+                    pricePerHour = parseInt(priceMatch[0].replace(/\./g, ''));
+                }
 
-                        // Calculate total price (price per hour * number of selected slots)
-                        const totalPrice = pricePerHour * window.selectedTimeSlots.length;
-                        document.getElementById('total-price').textContent = 'Rp ' + numberWithCommas(totalPrice);
-                    } else {
-                        selectedTimeDisplay.innerHTML = `
+                // Calculate total price (price per hour * number of selected slots)
+                const totalPrice = pricePerHour * window.selectedTimeSlots.length;
+                document.getElementById('total-price').textContent = 'Rp ' + numberWithCommas(totalPrice);
+            } else {
+                selectedTimeDisplay.innerHTML = `
                     <i class="fas fa-info-circle me-2"></i>
                     Belum ada waktu yang dipilih
                 `;
-                    }
-                }
             }
+        }
+    }
 
-            // Helper function for formatting numbers with commas
-            function numberWithCommas(x) {
-                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
+    // Helper function for formatting numbers with commas
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
 
-            // Next button click handler
-            nextBtn.addEventListener('click', function() {
-                if (currentStep < totalSteps) {
-                    goToStep(currentStep + 1);
-                }
-            });
+    // Next button click handler
+    nextBtn.addEventListener('click', function() {
+        if (currentStep < totalSteps) {
+            goToStep(currentStep + 1);
+        }
+    });
 
-            // Previous button click handler
-            prevBtn.addEventListener('click', function() {
-                if (currentStep > 1) {
-                    goToStep(currentStep - 1);
-                }
-            });
+    // Previous button click handler
+    prevBtn.addEventListener('click', function() {
+        if (currentStep > 1) {
+            goToStep(currentStep - 1);
+        }
+    });
 
-            // Submit button click handler (Add to Cart)
-            submitBtn.addEventListener('click', function() {
-                // Check if we have selected time slots
-                if (!window.selectedTimeSlots || window.selectedTimeSlots.length === 0) {
-                    showToast('Error', 'Silakan pilih setidaknya satu slot waktu', 'error');
-                    return;
-                }
+    // Submit button click handler - UPDATED with new showAlert
+    submitBtn.addEventListener('click', function() {
+        // Check if we have selected time slots
+        if (!window.selectedTimeSlots || window.selectedTimeSlots.length === 0) {
+            showAlert('Error', 'Silakan pilih setidaknya satu slot waktu', 'error');
+            return;
+        }
 
-                // Disable button and show loading state
-                this.disabled = true;
-                const originalText = this.innerHTML;
-                this.innerHTML = `
+        // Disable button and show loading state
+        this.disabled = true;
+        const originalText = this.innerHTML;
+        this.innerHTML = `
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             <span class="ms-2">Menambahkan...</span>
         `;
 
-                // Prepare data for API request
-                const requestData = {
-                    type: 'photographer',
-                    photographer_id: parseInt(photographerId),
-                    date: selectedDate,
-                    time_slots: window.selectedTimeSlots
-                };
+        // Prepare data for API request
+        const requestData = {
+            type: 'photographer',
+            photographer_id: parseInt(photographerId),
+            date: selectedDate,
+            time_slots: window.selectedTimeSlots
+        };
 
-                // Log data yang akan dikirim (untuk debugging)
-                console.log('Sending data:', requestData);
+        // Log data yang akan dikirim (untuk debugging)
+        console.log('Sending data:', requestData);
 
-                // Get CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                // Send request to add to cart
-                fetch('/cart/add', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(requestData)
-                    })
-                    .then(response => {
-                        // Log response status (untuk debugging)
-                        console.log('Response status:', response.status);
-
-                        return response.json().then(data => {
-                            if (!response.ok) {
-                                throw new Error(data.message || 'Error: ' + response
-                                    .statusText);
-                            }
-                            return data;
-                        });
-                    })
-                    .then(data => {
-                        // Log response data (untuk debugging)
-                        console.log('Response data:', data);
-
-                        if (data.success) {
-                            // Show success message
-                            showToast('Success', data.message, 'success');
-
-                            // Update cart count in navbar if exists
-                            const cartCountElement = document.querySelector('.cart-count');
-                            if (cartCountElement) {
-                                cartCountElement.textContent = data.cart_count;
-                            }
-
-                            // Redirect to cart page or stay on current page based on preference
-                            setTimeout(() => {
-                                window.location.href = '/cart';
-                            }, 1500);
-                        } else {
-                            throw new Error(data.message || 'Failed to add to cart');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error adding to cart:', error);
-                        showToast('Error', error.message ||
-                            'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
-
-                        // Restore button state
-                        this.disabled = false;
-                        this.innerHTML = originalText;
-                    });
+        // Send request to add to cart
+        fetch('/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error: ' + response.statusText);
+                }
+                return data;
             });
+        })
+        .then(data => {
+            console.log('Response data:', data);
 
-            // Function to load available slots
-            function loadAvailableSlots(date) {
-                const slotsWrapper = document.getElementById('time-slots-wrapper');
+            if (data.success) {
+                // Show success message using Bootstrap alert
+                showAlert('Berhasil', data.message, 'success');
 
-                // Show loading state
-                slotsWrapper.innerHTML = `
+                // Update cart count in navbar if exists
+                const cartCountElement = document.querySelector('.cart-count');
+                if (cartCountElement) {
+                    cartCountElement.textContent = data.cart_count;
+                }
+
+                // Redirect to cart page
+                setTimeout(() => {
+                    window.location.href = '/cart';
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Failed to add to cart');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding to cart:', error);
+            showAlert('Error', error.message || 'Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+
+            // Restore button state
+            this.disabled = false;
+            this.innerHTML = originalText;
+        });
+    });
+
+    // Function to load available slots
+    function loadAvailableSlots(date) {
+        const slotsWrapper = document.getElementById('time-slots-wrapper');
+
+        // Show loading state
+        slotsWrapper.innerHTML = `
             <div class="text-center py-4 slot-placeholder">
                 <div class="spinner-border text-danger" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -721,221 +789,229 @@
             </div>
         `;
 
-                // Clear selected time slots when loading new date
-                window.selectedTimeSlots = [];
+        // Clear selected time slots when loading new date
+        window.selectedTimeSlots = [];
 
-                // Fetch available slots from the server
-                fetch(`/photographer/${photographerId}/available-slots?date=${date}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        renderTimeSlots(data);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching available slots:', error);
-                        slotsWrapper.innerHTML = `
+        // Fetch available slots from the server
+        fetch(`/photographer/${photographerId}/available-slots?date=${date}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderTimeSlots(data);
+            })
+            .catch(error => {
+                console.error('Error fetching available slots:', error);
+                slotsWrapper.innerHTML = `
                     <div class="alert alert-danger" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i>
                         Gagal memuat slot waktu. Silakan coba lagi nanti.
                     </div>
                 `;
-                    });
+            });
+    }
+
+    // Function to render time slots - UPDATED with new showAlert calls
+    function renderTimeSlots(slots) {
+        const slotsWrapper = document.getElementById('time-slots-wrapper');
+        const availableSlotsCount = document.getElementById('available-slots-count');
+
+        // Clear previous content
+        slotsWrapper.innerHTML = '';
+
+        // Count available slots (exclude past time slots)
+        const availableCount = slots.filter(slot => slot.is_available && !slot.is_past_time).length;
+        availableSlotsCount.textContent = `${availableCount} slot`;
+
+        // If no available slots
+        if (availableCount === 0) {
+            const hasPastTimeSlots = slots.some(slot => slot.is_past_time);
+            const message = hasPastTimeSlots ?
+                'Semua slot waktu yang tersedia sudah lewat atau terisi. Silakan pilih tanggal lain.' :
+                'Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.';
+
+            slotsWrapper.innerHTML = `
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                </div>
+            `;
+            return;
+        }
+
+        // Create grid for slots
+        const slotGrid = document.createElement('div');
+        slotGrid.classList.add('time-slots-grid');
+
+        // Add ALL slots to grid (termasuk past time untuk konsistensi)
+        slots.forEach(slot => {
+            const slotDiv = document.createElement('div');
+
+            let statusClass = '';
+            let statusIcon = '';
+            let isDisabled = false;
+
+            switch (slot.status) {
+                case 'past_time':
+                    statusClass = 'slot-past-time';
+                    statusIcon = '<i class="fas fa-clock"></i>';
+                    isDisabled = true;
+                    break;
+                case 'booked':
+                    statusClass = 'slot-booked';
+                    statusIcon = '<i class="fas fa-lock"></i>';
+                    isDisabled = true;
+                    break;
+                case 'in_cart':
+                    statusClass = 'slot-in-cart';
+                    statusIcon = '<i class="fas fa-shopping-cart"></i>';
+                    break;
+                case 'available':
+                    statusClass = 'slot-available';
+                    statusIcon = '<i class="fas fa-clock"></i>';
+                    break;
             }
 
-            // Function to render time slots
-            // Function to render time slots untuk photographer (ganti di template photographer show)
-            function renderTimeSlots(slots) {
-                const slotsWrapper = document.getElementById('time-slots-wrapper');
-                const availableSlotsCount = document.getElementById('available-slots-count');
+            // Check if this slot is already selected
+            const isSelected = window.selectedTimeSlots && window.selectedTimeSlots.some(
+                selectedSlot => selectedSlot.display === slot.display
+            );
 
-                // Clear previous content
-                slotsWrapper.innerHTML = '';
+            if (isSelected) {
+                statusClass = 'slot-selected';
+                statusIcon = '<i class="fas fa-check"></i>';
+            }
 
-                // Count available slots (exclude past time slots)
-                const availableCount = slots.filter(slot => slot.is_available && !slot.is_past_time).length;
-                availableSlotsCount.textContent = `${availableCount} slot`;
+            slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
+            slotDiv.dataset.startTime = slot.start;
+            slotDiv.dataset.endTime = slot.end;
+            slotDiv.dataset.display = slot.display;
+            slotDiv.dataset.price = slot.price;
+            slotDiv.dataset.status = slot.status;
 
-                // If no available slots
-                if (availableCount === 0) {
-                    const hasPastTimeSlots = slots.some(slot => slot.is_past_time);
-                    const message = hasPastTimeSlots ?
-                        'Semua slot waktu yang tersedia sudah lewat atau terisi. Silakan pilih tanggal lain.' :
-                        'Tidak ada slot waktu yang tersedia pada tanggal ini. Silakan pilih tanggal lain.';
+            slotDiv.innerHTML = `
+                <div class="slot-time">
+                    ${statusIcon}
+                    <span>${slot.display}</span>
+                </div>
+                <div class="slot-duration">1 Jam</div>
+            `;
 
-                    slotsWrapper.innerHTML = `
-            <div class="alert alert-warning" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                ${message}
-            </div>
-        `;
+            slotGrid.appendChild(slotDiv);
+        });
+
+        slotsWrapper.appendChild(slotGrid);
+
+        // Add slot click event listeners (exclude disabled slots) - UPDATED with new showAlert calls
+        document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
+            slotElement.addEventListener('click', function() {
+                const slotStatus = this.dataset.status;
+
+                // If already in cart, show message and skip
+                if (slotStatus === 'in_cart') {
+                    showAlert('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
                     return;
                 }
 
-                // Create grid for slots
-                const slotGrid = document.createElement('div');
-                slotGrid.classList.add('time-slots-grid');
+                // Toggle selection for this slot
+                this.classList.toggle('slot-selected');
+                const icon = this.querySelector('.slot-time i');
 
-                // Add ALL slots to grid (termasuk past time untuk konsistensi)
-                slots.forEach(slot => {
-                    const slotDiv = document.createElement('div');
-
-                    let statusClass = '';
-                    let statusIcon = '';
-                    let isDisabled = false;
-
-                    switch (slot.status) {
-                        case 'past_time':
-                            statusClass = 'slot-past-time';
-                            statusIcon = '<i class="fas fa-clock"></i>';
-                            isDisabled = true;
-                            break;
-                        case 'booked':
-                            statusClass = 'slot-booked';
-                            statusIcon = '<i class="fas fa-lock"></i>';
-                            isDisabled = true;
-                            break;
-                        case 'in_cart':
-                            statusClass = 'slot-in-cart';
-                            statusIcon = '<i class="fas fa-shopping-cart"></i>';
-                            break;
-                        case 'available':
-                            statusClass = 'slot-available';
-                            statusIcon = '<i class="fas fa-clock"></i>';
-                            break;
-                    }
-
-                    // Check if this slot is already selected
-                    const isSelected = window.selectedTimeSlots && window.selectedTimeSlots.some(
-                        selectedSlot => selectedSlot.display === slot.display
-                    );
-
-                    if (isSelected) {
-                        statusClass = 'slot-selected';
-                        statusIcon = '<i class="fas fa-check"></i>';
-                    }
-
-                    slotDiv.className = `time-slot ${statusClass} ${isDisabled ? 'disabled' : ''}`;
-                    slotDiv.dataset.startTime = slot.start;
-                    slotDiv.dataset.endTime = slot.end;
-                    slotDiv.dataset.display = slot.display;
-                    slotDiv.dataset.price = slot.price;
-                    slotDiv.dataset.status = slot.status;
-
-                    slotDiv.innerHTML = `
-            <div class="slot-time">
-                ${statusIcon}
-                <span>${slot.display}</span>
-            </div>
-            <div class="slot-duration">1 Jam</div>
-        `;
-
-                    slotGrid.appendChild(slotDiv);
-                });
-
-                slotsWrapper.appendChild(slotGrid);
-
-                // Add slot click event listeners (exclude disabled slots)
-                document.querySelectorAll('.time-slot:not(.disabled)').forEach(slotElement => {
-                    slotElement.addEventListener('click', function() {
-                        const slotStatus = this.dataset.status;
-
-                        // If already in cart, show message and skip
-                        if (slotStatus === 'in_cart') {
-                            showToast('Info', 'Slot waktu ini sudah ada di keranjang Anda', 'info');
-                            return;
-                        }
-
-                        // Toggle selection for this slot
-                        this.classList.toggle('slot-selected');
-                        const icon = this.querySelector('.slot-time i');
-
-                        if (this.classList.contains('slot-selected')) {
-                            // If selected
-                            icon.className = 'fas fa-check';
-                        } else {
-                            // If deselected
-                            icon.className = 'fas fa-clock';
-                        }
-
-                        // Update the selected time slots array
-                        updateSelectedTimeSlots();
-
-                        // Enable next button if at least one slot is selected
-                        nextBtn.disabled = window.selectedTimeSlots.length === 0;
-                    });
-                });
-
-                // Add click handler for disabled slots to show appropriate message
-                document.querySelectorAll('.time-slot.disabled').forEach(slotElement => {
-                    slotElement.addEventListener('click', function() {
-                        const slotStatus = this.dataset.status;
-
-                        if (slotStatus === 'past_time') {
-                            showToast('Warning',
-                                'Slot waktu ini sudah lewat dan tidak dapat dibooking',
-                                'warning');
-                        } else if (slotStatus === 'booked') {
-                            showToast('Info', 'Slot waktu ini sudah dibooking oleh pengguna lain',
-                                'info');
-                        }
-                    });
-                });
-            }
-
-            // Helper function to show toast notifications
-            function showToast(title, message, type) {
-                // Check if toastr is available
-                if (typeof toastr !== 'undefined') {
-                    toastr[type](message, title);
+                if (this.classList.contains('slot-selected')) {
+                    // If selected
+                    icon.className = 'fas fa-check';
                 } else {
-                    // Use Bootstrap toast if available
-                    if (typeof bootstrap !== 'undefined') {
-                        // Create toast element
-                        const toastEl = document.createElement('div');
-                        toastEl.className =
-                            `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'info' ? 'info' : 'warning'} border-0`;
-                        toastEl.setAttribute('role', 'alert');
-                        toastEl.setAttribute('aria-live', 'assertive');
-                        toastEl.setAttribute('aria-atomic', 'true');
-
-                        toastEl.innerHTML = `
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <strong>${title}:</strong> ${message}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                `;
-
-                        // Add to container
-                        const toastContainer = document.querySelector('.toast-container');
-                        if (!toastContainer) {
-                            const container = document.createElement('div');
-                            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-                            document.body.appendChild(container);
-                            container.appendChild(toastEl);
-                        } else {
-                            toastContainer.appendChild(toastEl);
-                        }
-
-                        // Show toast
-                        const toast = new bootstrap.Toast(toastEl);
-                        toast.show();
-                    } else {
-                        // Fallback to alert
-                        alert(`${title}: ${message}`);
-                    }
+                    // If deselected
+                    icon.className = 'fas fa-clock';
                 }
-            }
 
-            // Initialize the wizard
-            goToStep(1);
+                // Update the selected time slots array
+                updateSelectedTimeSlots();
+
+                // Enable next button if at least one slot is selected
+                nextBtn.disabled = window.selectedTimeSlots.length === 0;
+            });
         });
-    </script>
+
+        // Add click handler for disabled slots - UPDATED with new showAlert calls
+        document.querySelectorAll('.time-slot.disabled').forEach(slotElement => {
+            slotElement.addEventListener('click', function() {
+                const slotStatus = this.dataset.status;
+
+                if (slotStatus === 'past_time') {
+                    showAlert('Peringatan', 'Slot waktu ini sudah lewat dan tidak dapat dibooking', 'warning');
+                } else if (slotStatus === 'booked') {
+                    showAlert('Info', 'Slot waktu ini sudah dibooking oleh pengguna lain', 'info');
+                }
+            });
+        });
+    }
+
+    // Initialize the wizard
+    goToStep(1);
+});
+</script>
+<style>
+/* Bootstrap Alert Animations */
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+.alert-container {
+    z-index: 9999;
+}
+
+.alert-container .alert {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    border-radius: 8px;
+}
+
+.alert-success {
+    background-color: #d1eddf;
+    border-color: #badbcc;
+    color: #0f5132;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #b6d4ea;
+    color: #055160;
+}
+
+@media (max-width: 576px) {
+    .alert-container {
+        left: 1rem;
+        right: 1rem;
+        max-width: none;
+    }
+
+    .alert-container .alert {
+        min-width: auto;
+    }
+}
+</style>
     <style>
         /* Wizard Booking Process Styling - FIXED VERSION */
         .booking-wizard {

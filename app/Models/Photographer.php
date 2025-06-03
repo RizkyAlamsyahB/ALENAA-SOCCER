@@ -5,13 +5,15 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Field;
 use App\Models\Review;
+use App\Models\Membership;
 use App\Models\PhotographerBooking;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Photographer extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
        'user_id',     // ID pengguna yang membuat fotografer
@@ -24,7 +26,9 @@ class Photographer extends Model
         'image',        // Gambar/foto fotografer
         'status',       // aktif/tidak aktif
         'features',     // JSON untuk menyimpan fitur tambahan
+        ''
     ];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [
         'features' => 'array',
@@ -79,6 +83,12 @@ public function user()
 {
     return $this->belongsTo(User::class);
 }
-
+/**
+ * Get the memberships that use this photographer
+ */
+public function memberships()
+{
+    return $this->hasMany(Membership::class);
+}
 
 }

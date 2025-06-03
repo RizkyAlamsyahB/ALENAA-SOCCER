@@ -2,28 +2,74 @@
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/users/welcome.css') }}">
     <!-- Promo Banner -->
-    <div class="promo-banner text-white" style="background-color: #9E0620; margin-top:60px;">
+    <div class="promo-banner text-white" style="background-color: #9E0620; margin-top:70px;">
         <div class="promo-slider">
             <div class="d-flex promo-slide-container mt-3">
-                <div class="promo-slide">
-                    <i class="fas fa-gift me-2"></i>
-                    Member Baru Diskon 20%! Gunakan kode: ALENAFIRST
-                </div>
-                <div class="promo-slide">
-                    <i class="fas fa-trophy me-2"></i>
-                    Special Weekend! Booking Sekarang Hemat 15%
-                </div>
-                <div class="promo-slide">
-                    <i class="fas fa-bolt me-2"></i>
-                    Flash Deal: Booking 3 Jam Gratis 1 Jam Extra!
-                </div>
-                <div class="promo-slide">
-                    <i class="fas fa-gift me-2"></i>
-                    Member Baru Diskon 20%! Gunakan kode: ALENAFIRST
-                </div>
+                @if (count($activeDiscounts) > 0)
+                    @foreach ($activeDiscounts as $discount)
+                        <div class="promo-slide d-flex align-items-center">
+                            @if ($discount->type == 'percentage')
+                                <i class="fas fa-gift me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $discount->name }}</span>
+                                    <span class="mx-1">{{ number_format($discount->value, 0) }}% off</span>
+                                    <span>Kode: <strong>{{ $discount->code }}</strong></span>
+                                    @if ($discount->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($discount->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @else
+                                <i class="fas fa-tag me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $discount->name }}</span>
+                                    <span class="mx-1">Hemat Rp {{ number_format($discount->value / 1000, 0) }}K</span>
+                                    <span>Kode: <strong>{{ $discount->code }}</strong></span>
+                                    @if ($discount->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($discount->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+
+                    <!-- Duplicate pertama untuk efek slider yang mulus -->
+                    @if (count($activeDiscounts) > 0)
+                        <div class="promo-slide d-flex align-items-center">
+                            @if ($activeDiscounts[0]->type == 'percentage')
+                                <i class="fas fa-gift me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $activeDiscounts[0]->name }}</span>
+                                    <span class="mx-1">{{ number_format($activeDiscounts[0]->value, 0) }}% off</span>
+                                    <span>Kode: <strong>{{ $activeDiscounts[0]->code }}</strong></span>
+                                    @if ($activeDiscounts[0]->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($activeDiscounts[0]->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @else
+                                <i class="fas fa-tag me-2"></i>
+                                <div>
+                                    <span class="fw-bold">{{ $activeDiscounts[0]->name }}</span>
+                                    <span class="mx-1">Hemat Rp
+                                        {{ number_format($activeDiscounts[0]->value / 1000, 0) }}K</span>
+                                    <span>Kode: <strong>{{ $activeDiscounts[0]->code }}</strong></span>
+                                    @if ($activeDiscounts[0]->min_order > 0)
+                                        <small class="ms-1">(Min. Rp
+                                            {{ number_format($activeDiscounts[0]->min_order / 1000, 0) }}K)</small>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                @else
+
+                @endif
             </div>
         </div>
     </div>
+
 
     <!-- Hero Section -->
     <section class="hero position-relative vh-100 d-flex align-items-center">
@@ -55,7 +101,7 @@
 
                     <!-- CTA Buttons -->
                     <div class="button-group fade-in-up delay-4">
-                        <a href="#booking" class="btn btn-danger me-3 mb-3 mb-sm-0">
+                        <a href="/fields" class="btn btn-danger me-3 mb-3 mb-sm-0">
                             Booking Sekarang
                             <i class="fas fa-arrow-right ms-2"></i>
                         </a>
@@ -69,19 +115,19 @@
                     <div class="stats-wrapper mt-5 fade-in-up delay-5">
                         <div class="stats-container">
                             <div class="stat-item">
-                                <h3 class="text-white mb-0">3</h3>
+                                <h3 class="text-white mb-0">{{ $fieldCount }}</h3>
                                 <p class="text-white-50 mb-0">Lapangan</p>
                             </div>
                             <div class="stat-divider"></div>
                             <div class="stat-item">
-                                <h3 class="text-white mb-0">20+</h3>
+                                <h3 class="text-white mb-0">{{ $activeMemberCount }}+</h3>
                                 <p class="text-white-50 mb-0">Member Aktif</p>
                             </div>
                             <div class="stat-divider"></div>
-                            <div class="stat-item">
-                                <h3 class="text-white mb-0">100+</h3>
+                            {{-- <div class="stat-item">
+                                <h3 class="text-white mb-0">{{ $eventCount }}+</h3>
                                 <p class="text-white-50 mb-0">Event</p>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -137,12 +183,12 @@
                                 Jaminan jadwal pasti
                             </div>
                         </div>
-                        <a href="/booking" class="btn btn-danger mt-4">
+                        <a href="/fields" class="btn btn-danger mt-4">
                             Booking Sekarang <i class="fas fa-arrow-right ms-2"></i>
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-6 mt-4 mt-lg-0">
                     <div class="booking-image">
                         <img src="assets/futsal-field.jpg" alt="Booking Lapangan" class="img-fluid rounded-3 shadow"
                             loading="lazy">
@@ -184,12 +230,12 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="/community" class="btn btn-danger">
+                        <a href="/mabar" class="btn btn-danger">
                             Gabung Komunitas <i class="fas fa-users ms-2"></i>
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6 order-lg-1">
+                <div class="col-lg-6 order-lg-1 mt-4 mt-lg-0">
                     <div class="community-image">
                         <img src="assets/komunitas.jpg" alt="Komunitas Sepakbola" class="img-fluid rounded-3 shadow"
                             loading="lazy">
@@ -248,89 +294,97 @@
         </div>
     </section>
 
-<!-- Testimonials Section -->
-<section class="testimonials-section py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <span class="badge bg-danger mb-3">Ulasan Member</span>
-            <h2 class="section-title">Apa Kata Mereka?</h2>
-        </div>
-        <div class="row g-4">
-            @forelse($testimonials as $testimonial)
-                <div class="col-md-4">
-                    <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
-                        <div class="testimonial-header d-flex justify-content-between align-items-center mb-3">
-                            <div class="rating">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star {{ $i <= $testimonial->rating ? 'text-warning' : 'text-muted' }}"></i>
-                                @endfor
+    <!-- Testimonials Section -->
+    <section class="testimonials-section py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="badge bg-danger mb-3">Ulasan Member</span>
+                <h2 class="section-title">Apa Kata Mereka?</h2>
+            </div>
+            <div class="row g-4">
+                @forelse($testimonials as $testimonial)
+                    <div class="col-md-4">
+                        <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
+                            <div class="testimonial-header d-flex justify-content-between align-items-center mb-3">
+                                <div class="rating">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <i
+                                            class="fas fa-star {{ $i <= $testimonial->rating ? 'text-warning' : 'text-muted' }}"></i>
+                                    @endfor
+                                </div>
+                                <span class="text-muted small">
+                                    {{ $testimonial->created_at->diffForHumans() }}
+                                </span>
                             </div>
-                            <span class="text-muted small">
-                                {{ $testimonial->created_at->diffForHumans() }}
-                            </span>
-                        </div>
-                        <div class="testimonial-content mb-3">
-                            <i class="fas fa-quote-left text-danger mb-3"></i>
-                            <p class="mb-0">
-                                "{{ $testimonial->comment }}"
-                            </p>
-                        </div>
-                        <div class="testimonial-author d-flex align-items-center">
-                            <div class="author-avatar me-3">
-                                @if($testimonial->user->profile_photo_path)
-                                    <img src="{{ Storage::url($testimonial->user->profile_photo_path) }}"
-                                        alt="{{ $testimonial->user->name }}" class="rounded-circle" width="50" height="50">
-                                @else
-                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                        style="width: 50px; height: 50px;">
-                                        {{ strtoupper(substr($testimonial->user->name, 0, 1)) }}
-                                    </div>
-                                @endif
+                            <div class="testimonial-content mb-3">
+                                <i class="fas fa-quote-left text-danger mb-3"></i>
+                                <p class="mb-0">
+                                    "{{ $testimonial->comment }}"
+                                </p>
                             </div>
-                            <div>
-                                <h6 class="mb-0">{{ $testimonial->user->name }}</h6>
-                                <small class="text-muted">
-                                    Tentang :
-                                    @if($testimonial->item_type == 'App\\Models\\Field')
-                                         {{ $testimonial->reviewable->name ?? '' }}
-                                    @elseif($testimonial->item_type == 'App\\Models\\RentalItem')
-                                        {{ $testimonial->reviewable->name ?? 'Penyewaan Peralatan' }}
-                                    @elseif($testimonial->item_type == 'App\\Models\\Photographer')
-                                         {{ $testimonial->reviewable->name ?? '' }}
+                            <div class="testimonial-author d-flex align-items-center">
+                                <div class="author-avatar me-3">
+                                    @if ($testimonial->user->profile_photo_path)
+                                        <img src="{{ Storage::url($testimonial->user->profile_photo_path) }}"
+                                            alt="{{ $testimonial->user->name }}" class="rounded-circle" width="50"
+                                            height="50">
+                                    @else
+                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 50px;">
+                                            {{ strtoupper(substr($testimonial->user->name, 0, 1)) }}
+                                        </div>
                                     @endif
-                                </small>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ strtoupper(substr($testimonial->user->name, 0, 1)) }}***</h6>
+                                    <small class="text-muted">
+                                        Tentang :
+                                        @if ($testimonial->item_type == 'App\\Models\\Field')
+                                            {{ $testimonial->reviewable->name ?? '' }}
+                                        @elseif($testimonial->item_type == 'App\\Models\\RentalItem')
+                                            {{ $testimonial->reviewable->name ?? 'Penyewaan Peralatan' }}
+                                        @elseif($testimonial->item_type == 'App\\Models\\Photographer')
+                                            {{ $testimonial->reviewable->name ?? '' }}
+                                        @endif
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @empty
-                <!-- Tampilkan testimonial default jika belum ada ulasan -->
-                <div class="col-md-4">
-                    <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
-                        <div class="testimonial-content mb-3">
-                            <i class="fas fa-quote-left text-danger mb-3"></i>
-                            <p class="mb-0">
-                                "Booking lapangan jadi super gampang, gak perlu ribet telepon atau datang langsung.
-                                Lapangannya juga berkualitas!"
-                            </p>
-                        </div>
-                        <div class="testimonial-author d-flex align-items-center">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
-                                style="width: 50px; height: 50px;">A</div>
-                            <div>
-                                <h6 class="mb-0">Ahmad Fadillah</h6>
-                                <small class="text-muted">Member Aktif</small>
+                @empty
+                    <!-- Tampilkan testimonial default jika belum ada ulasan -->
+                    <div class="col-md-4">
+                        <div class="testimonial-card p-4 bg-white rounded-3 shadow-sm h-100">
+                            <div class="testimonial-content mb-3">
+                                <i class="fas fa-quote-left text-danger mb-3"></i>
+                                <p class="mb-0">
+                                    "Booking lapangan jadi super gampang, gak perlu ribet telepon atau datang langsung.
+                                    Lapangannya juga berkualitas!"
+                                </p>
+                            </div>
+                            <div class="testimonial-author d-flex align-items-center">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                                    style="width: 50px; height: 50px;">A</div>
+                                <div>
+                                    <h6 class="mb-0">Ahmad Fadillah</h6>
+                                    <small class="text-muted">Member Aktif</small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- Tambahkan testimonial default lain seperti sebelumnya -->
-            @endforelse
+                    <!-- Tambahkan testimonial default lain seperti sebelumnya -->
+                @endforelse
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <style>
+        .bg-danger {
+            background-color: #9E0620 !important;
+        }
+        .text-danger {
+            color: #9E0620 !important;
+        }
         /* New Sections Styling */
         .section-title {
             font-size: 2.5rem;
@@ -422,15 +476,11 @@
     </style>
 
 
-
-
     <!-- WhatsApp Button -->
     <a href="https://wa.me/628784017803" class="whatsapp-button" title="Chat on WhatsApp">
         <i class="fab fa-whatsapp"></i>
     </a>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
+
 @endsection

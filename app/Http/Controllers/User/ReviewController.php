@@ -37,6 +37,7 @@ class ReviewController extends Controller
                     [
                         'success' => false,
                         'message' => 'Pembayaran tidak ditemukan',
+                        'redirect' => route('user.payment.detail', $request->payment_id),
                     ],
                     404,
                 );
@@ -47,6 +48,7 @@ class ReviewController extends Controller
                     [
                         'success' => false,
                         'message' => 'Hanya pembayaran yang berhasil yang dapat direview',
+                        'redirect' => route('user.payment.detail', $request->payment_id),
                     ],
                     400,
                 );
@@ -74,6 +76,7 @@ class ReviewController extends Controller
                     [
                         'success' => false,
                         'message' => 'Item tidak ditemukan',
+                        'redirect' => route('user.payment.detail', $request->payment_id),
                     ],
                     404,
                 );
@@ -88,10 +91,18 @@ class ReviewController extends Controller
                 $existingReview->comment = $request->comment;
                 $existingReview->save();
 
+                // Set session alert untuk update
+                session()->flash('alert', [
+                    'type' => 'success',
+                    'title' => 'Berhasil!',
+                    'message' => 'Review Anda berhasil diperbarui.',
+                ]);
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Review berhasil diperbarui',
                     'review' => $existingReview,
+                    'redirect' => route('user.payment.detail', $request->payment_id),
                 ]);
             }
 
@@ -106,21 +117,54 @@ class ReviewController extends Controller
                 'status' => 'active',
             ]);
 
+            // Set session alert untuk review baru
+            session()->flash('alert', [
+                'type' => 'success',
+                'title' => 'Berhasil!',
+                'message' => 'Review kamu sudah kami terima, terima kasih!',
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Review berhasil ditambahkan',
                 'review' => $review,
+                'redirect' => route('user.payment.detail', $request->payment_id),
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Set session alert untuk validation error
+            session()->flash('alert', [
+                'type' => 'danger',
+                'title' => 'Error Validasi!',
+                'message' => 'Data yang dimasukkan tidak valid. Silakan periksa kembali.',
+            ]);
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $e->errors(),
+                    'redirect' => route('user.payment.detail', $request->payment_id),
+                ],
+                422,
+            );
         } catch (\Exception $e) {
             Log::error('Error adding review: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all(),
             ]);
 
+            // Set session alert untuk general error
+            session()->flash('alert', [
+                'type' => 'danger',
+                'title' => 'Error!',
+                'message' => 'Terjadi kesalahan saat mengirim review. Silakan coba lagi.',
+            ]);
+
             return response()->json(
                 [
                     'success' => false,
                     'message' => 'Error: ' . $e->getMessage(),
+                    'redirect' => route('user.payment.detail', $request->payment_id),
                 ],
                 500,
             );
