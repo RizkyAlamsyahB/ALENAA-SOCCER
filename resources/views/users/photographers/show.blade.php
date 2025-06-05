@@ -348,64 +348,6 @@
                             </div>
                         </div>
 
-                        <!-- Testimonials Card -->
-                        <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
-                            <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Testimonial Klien</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="testimonial-card p-3 border rounded-3">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <div class="avatar me-3">
-                                                    <img src="/api/placeholder/40/40" class="rounded-circle"
-                                                        alt="User">
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">Ahmad Fauzi</h6>
-                                                    <div class="rating">
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <p class="testimonial-text">
-                                                "Fotografer sangat profesional. Hasil fotonya bagus dan dikirim tepat waktu
-                                                sesuai janji."
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="testimonial-card p-3 border rounded-3">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <div class="avatar me-3">
-                                                    <img src="/api/placeholder/40/40" class="rounded-circle"
-                                                        alt="User">
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">Budi Santoso</h6>
-                                                    <div class="rating">
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="fas fa-star text-warning"></i>
-                                                        <i class="far fa-star text-warning"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <p class="testimonial-text">
-                                                "Pelayanan memuaskan, fotografer datang tepat waktu dan hasil foto sangat
-                                                bagus."
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
