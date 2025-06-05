@@ -25,7 +25,6 @@
     </div>
 </div>
 
-
     <!-- Main Content -->
     <div class="container mt-4 mb-5">
       <!-- Bootstrap Alert for Session Messages -->
@@ -70,11 +69,10 @@
                         <div class="card-header bg-white py-3 border-0 px-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0 fw-bold">Item Keranjang ({{ count($cartItems) }})</h5>
-                                <a href="{{ route('user.cart.clear') }}" class="btn-clear"
-                                    onclick="return confirm('Apakah Anda yakin ingin mengosongkan keranjang?')">
+                                <button class="btn-clear" data-action="clear-cart" data-url="{{ route('user.cart.clear') }}">
                                     <i class="fas fa-trash-alt me-2"></i>
                                     <span>Kosongkan</span>
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <div class="card-body p-0">
@@ -175,14 +173,13 @@
                                                     </div>
                                                 </div>
                                                 <div class="cart-item-actions">
-                                                    <form action="{{ route('user.cart.remove', $item->id) }}"
-                                                        method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn-remove" title="Hapus">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" class="btn-remove"
+                                                            data-action="remove-item"
+                                                            data-url="{{ route('user.cart.remove', $item->id) }}"
+                                                            data-item-name="{{ $item->name ?? 'Item' }}"
+                                                            title="Hapus">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -222,10 +219,12 @@
                                 </div>
                             @endif
                         </div>
-                        <a href="{{ route('user.cart.remove.discount') }}" class="btn-remove-discount"
-                            title="Hapus diskon/voucher">
+                        <button type="button" class="btn-remove-discount"
+                                data-action="remove-discount"
+                                data-url="{{ route('user.cart.remove.discount') }}"
+                                title="Hapus diskon/voucher">
                             <i class="fas fa-times"></i>
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -366,39 +365,49 @@
             </div>
         @endif
     </div>
-    <script>
-        // Menangani klik tombol "Gunakan Promo"
-        document.addEventListener('DOMContentLoaded', function() {
-            const usePromoButtons = document.querySelectorAll('.btn-use-promo');
-            const discountInput = document.querySelector('input[name="discount_code"]');
 
-            usePromoButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const promoCode = this.getAttribute('data-code');
-                    if (discountInput) {
-                        discountInput.value = promoCode;
-                    }
-                });
-            });
-
-            // Fungsi untuk menyalin kode promo
-            const copyButtons = document.querySelectorAll('.btn-copy-code');
-            copyButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const code = this.getAttribute('data-code');
-                    navigator.clipboard.writeText(code).then(() => {
-                        // Feedback visual bahwa kode telah disalin
-                        const originalText = this.innerHTML;
-                        this.innerHTML = '<i class="fas fa-check"></i>';
-                        setTimeout(() => {
-                            this.innerHTML = originalText;
-                        }, 1500);
-                    });
-                });
-            });
-        });
-    </script>
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="confirmDeleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Konfirmasi Hapus
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="text-center mb-3">
+                        <div class="delete-icon mb-3">
+                            <i class="fas fa-trash-alt fa-3x text-danger"></i>
+                        </div>
+                        <p class="mb-0 fs-6" id="deleteMessage">
+                            Apakah Anda yakin ingin menghapus item ini?
+                        </p>
+                    </div>
+                    <div class="alert alert-light border-start border-warning border-4 mb-0">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Tindakan ini tidak dapat dibatalkan.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Batal
+                    </button>
+                    <form id="deleteForm" method="POST" style="display: inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger px-4" id="confirmDeleteBtn">
+                            <i class="fas fa-trash-alt me-2"></i>Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Daftar Promo -->
     <div class="modal fade" id="promosModal" tabindex="-1" aria-labelledby="promosModalLabel" aria-hidden="true">
@@ -501,6 +510,121 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
+    <script>
+        // Menangani klik tombol "Gunakan Promo"
+        document.addEventListener('DOMContentLoaded', function() {
+            const usePromoButtons = document.querySelectorAll('.btn-use-promo');
+            const discountInput = document.querySelector('input[name="discount_code"]');
+
+            usePromoButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const promoCode = this.getAttribute('data-code');
+                    if (discountInput) {
+                        discountInput.value = promoCode;
+                    }
+                });
+            });
+
+            // Fungsi untuk menyalin kode promo
+            const copyButtons = document.querySelectorAll('.btn-copy-code');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const code = this.getAttribute('data-code');
+                    navigator.clipboard.writeText(code).then(() => {
+                        // Feedback visual bahwa kode telah disalin
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                        }, 1500);
+                    });
+                });
+            });
+
+            // === KONFIRMASI HAPUS DENGAN MODAL ===
+            const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            const deleteForm = document.getElementById('deleteForm');
+            const deleteMessage = document.getElementById('deleteMessage');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+            // Handle semua tombol hapus
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+
+                e.preventDefault();
+
+                const action = target.getAttribute('data-action');
+                const url = target.getAttribute('data-url');
+
+                let message = '';
+                let buttonText = '';
+                let buttonIcon = '';
+
+                // Set pesan dan teks tombol berdasarkan aksi
+                switch(action) {
+                    case 'remove-item':
+                        const itemName = target.getAttribute('data-item-name') || 'item ini';
+                        message = `Apakah Anda yakin ingin menghapus <strong>"${itemName}"</strong> dari keranjang?`;
+                        buttonText = 'Hapus Item';
+                        buttonIcon = 'fas fa-times';
+                        break;
+
+                    case 'clear-cart':
+                        message = 'Apakah Anda yakin ingin <strong>mengosongkan seluruh keranjang</strong>? Semua item akan dihapus.';
+                        buttonText = 'Kosongkan Keranjang';
+                        buttonIcon = 'fas fa-trash-alt';
+                        break;
+
+                    case 'remove-discount':
+                        message = 'Apakah Anda yakin ingin <strong>menghapus diskon/voucher</strong> yang sedang diterapkan?';
+                        buttonText = 'Hapus Diskon';
+                        buttonIcon = 'fas fa-times';
+                        break;
+
+                    default:
+                        message = 'Apakah Anda yakin ingin melakukan tindakan ini?';
+                        buttonText = 'Hapus';
+                        buttonIcon = 'fas fa-trash-alt';
+                }
+
+                // Update konten modal
+                deleteMessage.innerHTML = message;
+                confirmDeleteBtn.innerHTML = `<i class="${buttonIcon} me-2"></i>${buttonText}`;
+
+                // Set form action
+                if (action === 'clear-cart' || action === 'remove-discount') {
+                    // Untuk clear cart dan remove discount, gunakan GET request
+                    deleteForm.setAttribute('action', url);
+                    deleteForm.querySelector('input[name="_method"]').value = 'GET';
+                } else {
+                    // Untuk remove item, gunakan DELETE request
+                    deleteForm.setAttribute('action', url);
+                    deleteForm.querySelector('input[name="_method"]').value = 'DELETE';
+                }
+
+                // Tampilkan modal
+                confirmDeleteModal.show();
+            });
+
+            // Handle submit form
+            deleteForm.addEventListener('submit', function(e) {
+                // Ubah button menjadi loading state
+                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menghapus...';
+                confirmDeleteBtn.disabled = true;
+
+                // Form akan disubmit secara normal
+            });
+
+            // Reset button saat modal ditutup
+            document.getElementById('confirmDeleteModal').addEventListener('hidden.bs.modal', function() {
+                confirmDeleteBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Hapus';
+                confirmDeleteBtn.disabled = false;
+            });
+        });
     </script>
 
     <style>
@@ -1059,6 +1183,55 @@
             background-color: #7d0318;
         }
 
+        /* Styling untuk Modal Konfirmasi */
+        #confirmDeleteModal .modal-content {
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        #confirmDeleteModal .modal-header {
+            background: linear-gradient(135deg, #fff8f8 0%, #f8f9fa 100%);
+        }
+
+        #confirmDeleteModal .modal-title {
+            color: #495057;
+        }
+
+        #confirmDeleteModal .delete-icon {
+            opacity: 0.3;
+        }
+
+        #confirmDeleteModal .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #confirmDeleteModal .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        #confirmDeleteModal .btn-outline-secondary {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #confirmDeleteModal .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Loading state untuk button */
+        #confirmDeleteModal .btn-danger:disabled {
+            opacity: 0.7;
+            transform: none !important;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
 
@@ -1194,4 +1367,3 @@
 }
     </style>
 @endsection
-

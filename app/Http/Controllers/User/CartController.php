@@ -532,7 +532,7 @@ private function processMembershipCheckout($item, $payment, $cartItems)
                 if ($conflictingFieldBooking) {
                     $conflictStartTime = Carbon::parse($conflictingFieldBooking->start_time)->format('d M Y H:i');
                     $conflictEndTime = Carbon::parse($conflictingFieldBooking->end_time)->format('H:i');
-                    throw new \Exception("Lapangan sudah dibooking pada {$conflictStartTime} - {$conflictEndTime}");
+throw new \Exception("Ada jadwal yang bentrok pada {$conflictStartTime} - {$conflictEndTime}");
                 }
 
                 // TAMBAHAN BARU - Validasi ulang konflik booking fotografer
