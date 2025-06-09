@@ -4,7 +4,7 @@
     <div class="hero-section" style="margin-top: 50px;">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Rental Equipment</h1>
+                <h1 class="hero-title">Sewa Perlengkapan</h1>
                 <div class="breadcrumb-wrapper">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
@@ -14,7 +14,7 @@
                                 </a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">
-                                <i class="fas fa-shopping-bag"></i> Rental Equipment
+                                <i class="fas fa-shopping-bag"></i> Sewa Perlengkapan
                             </li>
                         </ol>
                     </nav>

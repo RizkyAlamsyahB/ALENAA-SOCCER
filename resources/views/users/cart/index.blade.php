@@ -1,60 +1,61 @@
 @extends('layouts.app')
+
 @section('content')
     {{-- <link rel="stylesheet" href="{{ asset('css/users/modern-cart.css') }}"> --}}
 
- <!-- Hero Section -->
-<div class="hero-section" style="margin-top: 50px;">
-    <div class="container">
-        <div class="hero-content">
-            <h1 class="hero-title">Keranjang</h1>
-            <div class="breadcrumb-wrapper">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="/">
-                                <i class="fas fa-home"></i> Home
-                            </a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                            <i class="fas fa-shopping-cart"></i> Keranjang
-                        </li>
-                    </ol>
-                </nav>
+    <!-- Hero Section -->
+    <div class="hero-section" style="margin-top: 50px;">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Keranjang</h1>
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/">
+                                    <i class="fas fa-home"></i> Home
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <i class="fas fa-shopping-cart"></i> Keranjang
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Main Content -->
     <div class="container mt-4 mb-5">
-      <!-- Bootstrap Alert for Session Messages -->
-@if (session('success'))
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    {{ session('success') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-@endif
+        <!-- Bootstrap Alert for Session Messages -->
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-@if (session('error'))
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{ session('error') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-@endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-@if (session('info'))
-<div class="alert alert-info alert-dismissible fade show" role="alert">
-    {{ session('info') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-@endif
+        @if (session('info'))
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ session('info') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-@if (session('warning'))
-<div class="alert alert-warning alert-dismissible fade show" role="alert">
-    {{ session('warning') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-@endif
+        @if (session('warning'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ session('warning') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
         <div class="row">
             <div class="col-12">
@@ -69,7 +70,8 @@
                         <div class="card-header bg-white py-3 border-0 px-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0 fw-bold">Item Keranjang ({{ count($cartItems) }})</h5>
-                                <button class="btn-clear" data-action="clear-cart" data-url="{{ route('user.cart.clear') }}">
+                                <button class="btn-clear" data-action="clear-cart"
+                                    data-url="{{ route('user.cart.clear') }}">
                                     <i class="fas fa-trash-alt me-2"></i>
                                     <span>Kosongkan</span>
                                 </button>
@@ -133,7 +135,7 @@
                                                                     {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
                                                                 </span>
                                                             </div>
-                                                            @elseif($item->type == 'membership')
+                                                        @elseif($item->type == 'membership')
                                                             <div class="info-badge">
                                                                 <i class="fas fa-id-card"></i>
                                                                 <span>{{ $item->details ?? 'Membership' }}</span>
@@ -159,8 +161,6 @@
                                                                         true,
                                                                     );
                                                                 @endphp
-
-
                                                             @endif
                                                         @endif
                                                     </div>
@@ -169,15 +169,23 @@
                                             <div
                                                 class="col-md-3 col-sm-3 d-flex justify-content-between align-items-center">
                                                 <div class="cart-item-price text-end">
-                                                    <div class="price">Rp {{ number_format($item->price, 0, ',', '.') }}
+                                                    <div class="price" id="price-{{ $item->id }}">Rp
+                                                        {{ number_format($item->price, 0, ',', '.') }}
                                                     </div>
                                                 </div>
-                                                <div class="cart-item-actions">
-                                                    <button type="button" class="btn-remove"
-                                                            data-action="remove-item"
-                                                            data-url="{{ route('user.cart.remove', $item->id) }}"
-                                                            data-item-name="{{ $item->name ?? 'Item' }}"
-                                                            title="Hapus">
+                                                <div class="cart-item-actions d-flex gap-2">
+                                                    <!-- Edit Button - hanya untuk rental item -->
+                                                    @if ($item->type == 'rental_item')
+                                                        <button type="button" class="btn-edit" data-action="edit-item"
+                                                            data-item-id="{{ $item->id }}" title="Edit Quantity">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                    @endif
+
+                                                    <!-- Remove Button -->
+                                                    <button type="button" class="btn-remove" data-action="remove-item"
+                                                        data-url="{{ route('user.cart.remove', $item->id) }}"
+                                                        data-item-name="{{ $item->name ?? 'Item' }}" title="Hapus">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
@@ -190,158 +198,170 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
-<!-- Form Diskon dan Voucher Poin yang dipisahkan -->
-<div class="card border-0 rounded-4 shadow-sm hover-shadow summary-card">
-    <div class="card-header bg-white py-3 border-0 px-4">
-        <h5 class="mb-0 fw-bold">Ringkasan Booking</h5>
-    </div>
-    <div class="card-body p-4">
-        <!-- Tampilkan jika ada diskon atau voucher yang diterapkan -->
-        @if (session()->has('cart_discount') || session()->has('cart_point_voucher'))
-            <div class="discount-applied mb-4">
-                <div class="discount-info p-3 {{ session()->has('cart_point_voucher') ? 'bg-warning-subtle' : 'bg-success-subtle' }} rounded-3 mb-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            @if (session()->has('cart_discount'))
-                                <h6 class="fw-bold mb-1">{{ session('cart_discount')['name'] }}</h6>
-                                <span class="badge bg-success">{{ session('cart_discount')['code'] }}</span>
-                                <div class="text-success mt-1 fw-bold">
-                                    - Rp {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}
+                    <!-- Form Diskon dan Voucher Poin yang dipisahkan -->
+                    <div class="card border-0 rounded-4 shadow-sm hover-shadow summary-card">
+                        <div class="card-header bg-white py-3 border-0 px-4">
+                            <h5 class="mb-0 fw-bold">Ringkasan Booking</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Tampilkan jika ada diskon atau voucher yang diterapkan -->
+                            @if (session()->has('cart_discount') || session()->has('cart_point_voucher'))
+                                <div class="discount-applied mb-4">
+                                    <div
+                                        class="discount-info p-3 {{ session()->has('cart_point_voucher') ? 'bg-warning-subtle' : 'bg-success-subtle' }} rounded-3 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                @if (session()->has('cart_discount'))
+                                                    <h6 class="fw-bold mb-1">{{ session('cart_discount')['name'] }}</h6>
+                                                    <span
+                                                        class="badge bg-success">{{ session('cart_discount')['code'] }}</span>
+                                                    <div class="text-success mt-1 fw-bold">
+                                                        - Rp
+                                                        {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}
+                                                    </div>
+                                                @else
+                                                    <h6 class="fw-bold mb-1">{{ session('cart_point_voucher')['name'] }}
+                                                    </h6>
+                                                    <span
+                                                        class="badge bg-warning text-dark">{{ session('cart_point_voucher')['code'] }}</span>
+                                                    <span class="badge bg-warning text-dark ms-1">
+                                                        <i class="fas fa-coins me-1"></i> Voucher Poin
+                                                    </span>
+                                                    <div class="text-warning text-dark mt-1 fw-bold">
+                                                        - Rp
+                                                        {{ number_format(session('cart_point_voucher')['amount'], 0, ',', '.') }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <button type="button" class="btn-remove-discount"
+                                                data-action="remove-discount"
+                                                data-url="{{ route('user.cart.remove.discount') }}"
+                                                title="Hapus diskon/voucher">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             @else
-                                <h6 class="fw-bold mb-1">{{ session('cart_point_voucher')['name'] }}</h6>
-                                <span class="badge bg-warning text-dark">{{ session('cart_point_voucher')['code'] }}</span>
-                                <span class="badge bg-warning text-dark ms-1">
-                                    <i class="fas fa-coins me-1"></i> Voucher Poin
-                                </span>
-                                <div class="text-warning text-dark mt-1 fw-bold">
-                                    - Rp {{ number_format(session('cart_point_voucher')['amount'], 0, ',', '.') }}
+                                <!-- Form Kupon Diskon Reguler -->
+                                <div class="discount-form mb-3">
+                                    <h6 class="fw-semibold mb-2">Kode Promo</h6>
+                                    <form action="{{ route('user.cart.apply.discount') }}" method="POST">
+                                        @csrf
+                                        <div class="input-group">
+                                            <input type="text" name="discount_code" class="form-control"
+                                                placeholder="Masukkan kode promo" required>
+                                            <button type="submit" class="btn-apply-discount">Terapkan</button>
+                                        </div>
+                                        @error('discount_code')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </form>
+                                    <button type="button" class="btn-view-promos mt-2" data-bs-toggle="modal"
+                                        data-bs-target="#promosModal">
+                                        <i class="fas fa-tags me-2"></i>Lihat Promo
+                                    </button>
+                                </div>
+
+                                <!-- Form untuk Penukaran Poin -->
+                                <div class="point-voucher-section mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-semibold mb-0">Voucher Poin</h6>
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-coins me-1"></i> {{ Auth::user()->points }} Poin
+                                        </span>
+                                    </div>
+
+                                    <div class="point-voucher-options">
+                                        <!-- Opsi 1: Gunakan voucher yang sudah ada -->
+                                        <div class="point-option mb-2">
+                                            <form action="{{ route('user.cart.apply.point.voucher') }}" method="POST">
+                                                @csrf
+                                                <div class="input-group">
+                                                    <input type="text" name="voucher_code" class="form-control"
+                                                        placeholder="Kode voucher poin" required>
+                                                    <button type="submit" class="btn-apply-point-voucher">
+                                                        <i class="fas fa-check me-1"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Opsi 2: Tukar poin sekarang -->
+                                        <a href="{{ route('user.points.index') }}" class="btn-points w-100">
+                                            <i class="fas fa-coins me-2" style="color: #FFD700;"></i>
+                                            Tukar Poin
+                                        </a>
+                                    </div>
                                 </div>
                             @endif
-                        </div>
-                        <button type="button" class="btn-remove-discount"
-                                data-action="remove-discount"
-                                data-url="{{ route('user.cart.remove.discount') }}"
-                                title="Hapus diskon/voucher">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        @else
-            <!-- Form Kupon Diskon Reguler -->
-            <div class="discount-form mb-3">
-                <h6 class="fw-semibold mb-2">Kode Promo</h6>
-                <form action="{{ route('user.cart.apply.discount') }}" method="POST">
-                    @csrf
-                    <div class="input-group">
-                        <input type="text" name="discount_code" class="form-control"
-                            placeholder="Masukkan kode promo" required>
-                        <button type="submit" class="btn-apply-discount">Terapkan</button>
-                    </div>
-                    @error('discount_code')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </form>
-                <button type="button" class="btn-view-promos mt-2" data-bs-toggle="modal"
-                    data-bs-target="#promosModal">
-                    <i class="fas fa-tags me-2"></i>Lihat Promo
-                </button>
-            </div>
 
-            <!-- Form untuk Penukaran Poin -->
-            <div class="point-voucher-section mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="fw-semibold mb-0">Voucher Poin</h6>
-                    <span class="badge bg-secondary">
-                        <i class="fas fa-coins me-1"></i> {{ Auth::user()->points }} Poin
-                    </span>
-                </div>
+                            <!-- Ringkasan Harga -->
+                            <div class="summary-items mb-4">
+                                <div class="summary-item d-flex justify-content-between mb-3">
+                                    <span class="label">Subtotal</span>
+                                    <span class="value" id="cart-subtotal">Rp
+                                        {{ number_format($subtotal, 0, ',', '.') }}</span>
+                                </div>
 
-                <div class="point-voucher-options">
-                    <!-- Opsi 1: Gunakan voucher yang sudah ada -->
-                    <div class="point-option mb-2">
-                        <form action="{{ route('user.cart.apply.point.voucher') }}" method="POST">
-                            @csrf
-                            <div class="input-group">
-                                <input type="text" name="voucher_code" class="form-control"
-                                    placeholder="Kode voucher poin" required>
-                                <button type="submit" class="btn-apply-point-voucher">
-                                    <i class="fas fa-check me-1"></i>
-                                </button>
+                                @if (session()->has('cart_discount'))
+                                    <div class="summary-item d-flex justify-content-between mb-3 text-success">
+                                        <span class="label">Diskon</span>
+                                        <span class="value">- Rp
+                                            {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}</span>
+                                    </div>
+                                @elseif (session()->has('cart_point_voucher'))
+                                    <div class="summary-item d-flex justify-content-between mb-3 text-warning">
+                                        <span class="label">Voucher Poin</span>
+                                        <span class="value">- Rp
+                                            {{ number_format(session('cart_point_voucher')['amount'], 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+
+                                <div class="summary-item d-flex justify-content-between mb-3">
+                                    <span class="label">Jumlah Item</span>
+                                    <span class="value">{{ count($cartItems) }} item</span>
+                                </div>
                             </div>
-                        </form>
+
+                            <!-- Total -->
+                            <div class="summary-total d-flex justify-content-between align-items-center p-3 rounded-3">
+                                <span class="fw-bold">Total</span>
+                                <span class="total-price" id="cart-total">
+                                    Rp
+                                    {{ number_format(
+                                        session('cart_discount')
+                                            ? $subtotal - session('cart_discount')['amount']
+                                            : (session('cart_point_voucher')
+                                                ? $subtotal - session('cart_point_voucher')['amount']
+                                                : $subtotal),
+                                        0,
+                                        ',',
+                                        '.',
+                                    ) }}
+                                </span>
+                            </div>
+
+                            <!-- Tombol Checkout -->
+                            <div class="mt-4">
+                                <form action="{{ route('user.cart.checkout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn-checkout">
+                                        <span>Checkout</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Link Lanjutkan Shopping -->
+                            <div class="mt-3 text-center">
+                                <a href="{{ route('user.fields.index') }}" class="continue-shopping-link">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Lanjutkan Booking
+                                </a>
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- Opsi 2: Tukar poin sekarang -->
-                    <a href="{{ route('user.points.index') }}" class="btn-points w-100">
-                        <i class="fas fa-coins me-2" style="color: #FFD700;"></i>
-                        Tukar Poin
-                    </a>
-                </div>
-            </div>
-        @endif
-
-        <!-- Ringkasan Harga -->
-        <div class="summary-items mb-4">
-            <div class="summary-item d-flex justify-content-between mb-3">
-                <span class="label">Subtotal</span>
-                <span class="value">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
-            </div>
-
-            @if (session()->has('cart_discount'))
-                <div class="summary-item d-flex justify-content-between mb-3 text-success">
-                    <span class="label">Diskon</span>
-                    <span class="value">- Rp {{ number_format(session('cart_discount')['amount'], 0, ',', '.') }}</span>
-                </div>
-            @elseif (session()->has('cart_point_voucher'))
-                <div class="summary-item d-flex justify-content-between mb-3 text-warning">
-                    <span class="label">Voucher Poin</span>
-                    <span class="value">- Rp {{ number_format(session('cart_point_voucher')['amount'], 0, ',', '.') }}</span>
-                </div>
-            @endif
-
-            <div class="summary-item d-flex justify-content-between mb-3">
-                <span class="label">Jumlah Item</span>
-                <span class="value">{{ count($cartItems) }} item</span>
-            </div>
-        </div>
-
-        <!-- Total -->
-        <div class="summary-total d-flex justify-content-between align-items-center p-3 rounded-3">
-            <span class="fw-bold">Total</span>
-            <span class="total-price">
-                Rp {{ number_format(
-                    session('cart_discount')
-                        ? $subtotal - session('cart_discount')['amount']
-                        : (session('cart_point_voucher')
-                            ? $subtotal - session('cart_point_voucher')['amount']
-                            : $subtotal),
-                    0, ',', '.')
-                }}
-            </span>
-        </div>
-
-        <!-- Tombol Checkout -->
-        <div class="mt-4">
-            <form action="{{ route('user.cart.checkout') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn-checkout">
-                    <span>Checkout</span>
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
-        </div>
-
-        <!-- Link Lanjutkan Shopping -->
-        <div class="mt-3 text-center">
-            <a href="{{ route('user.fields.index') }}" class="continue-shopping-link">
-                <i class="fas fa-arrow-left me-2"></i>
-                Lanjutkan Booking
-            </a>
-        </div>
-    </div>
-</div>
                 </div>
             </div>
         @else
@@ -367,7 +387,8 @@
     </div>
 
     <!-- Modal Konfirmasi Hapus -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header border-0 pb-0">
@@ -404,6 +425,68 @@
                             <i class="fas fa-trash-alt me-2"></i>Hapus
                         </button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Quantity -->
+    <div class="modal fade" id="editQuantityModal" tabindex="-1" aria-labelledby="editQuantityModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="editQuantityModalLabel">
+                        <i class="fas fa-edit text-danger me-2"></i>
+                        Edit Quantity
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <h6 id="editItemName" class="fw-bold mb-2"></h6>
+                        <div class="text-muted small mb-3">
+                            <i class="far fa-calendar-alt me-1"></i>
+                            <span id="editItemTime"></span>
+                        </div>
+                    </div>
+
+                    <div class="quantity-control mb-3">
+                        <label for="editQuantityInput" class="form-label fw-semibold">Quantity</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" id="decreaseBtn">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" class="form-control text-center" id="editQuantityInput" min="1"
+                                value="1">
+                            <button type="button" class="btn btn-outline-secondary" id="increaseBtn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">Maksimal: <span id="maxQuantity">1</span></small>
+                            <small class="text-success">Tersedia: <span id="availableStock">0</span></small>
+                        </div>
+                    </div>
+
+                    <div class="price-info p-3 bg-light rounded-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">Harga per unit:</span>
+                            <span id="pricePerUnit">Rp 0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fw-bold">Total harga:</span>
+                            <span id="totalPrice" class="fw-bold text-danger">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Batal
+                    </button>
+                    <button type="button" class="btn btn-primary px-4" id="saveQuantityBtn">
+                        <i class="fas fa-save me-2"></i>Simpan
+                    </button>
                 </div>
             </div>
         </div>
@@ -513,8 +596,27 @@
     </script>
 
     <script>
-        // Menangani klik tombol "Gunakan Promo"
+        // FIXED JavaScript untuk Cart View - Hapus duplikasi csrfToken
+
         document.addEventListener('DOMContentLoaded', function() {
+            // ✅ DEKLARASI CSRF TOKEN HANYA SEKALI
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            // Debug CSRF token (optional - bisa dihapus di production)
+            console.log('CSRF Token check:', {
+                found: !!csrfToken,
+                length: csrfToken?.length || 0,
+                value: csrfToken?.substring(0, 10) + '...' || 'NOT FOUND'
+            });
+
+            if (!csrfToken) {
+                console.error('❌ CSRF token meta tag tidak ditemukan!');
+                console.error('Pastikan ada di head HTML: <meta name="csrf-token" content="{{ csrf_token() }}">');
+            }
+
+            // Define base URLs for cart operations
+            const cartBaseUrl = "{{ route('user.cart.view') }}";
+
             const usePromoButtons = document.querySelectorAll('.btn-use-promo');
             const discountInput = document.querySelector('input[name="discount_code"]');
 
@@ -565,25 +667,33 @@
                 let buttonIcon = '';
 
                 // Set pesan dan teks tombol berdasarkan aksi
-                switch(action) {
+                switch (action) {
                     case 'remove-item':
                         const itemName = target.getAttribute('data-item-name') || 'item ini';
-                        message = `Apakah Anda yakin ingin menghapus <strong>"${itemName}"</strong> dari keranjang?`;
+                        message =
+                            `Apakah Anda yakin ingin menghapus <strong>"${itemName}"</strong> dari keranjang?`;
                         buttonText = 'Hapus Item';
                         buttonIcon = 'fas fa-times';
                         break;
 
                     case 'clear-cart':
-                        message = 'Apakah Anda yakin ingin <strong>mengosongkan seluruh keranjang</strong>? Semua item akan dihapus.';
+                        message =
+                            'Apakah Anda yakin ingin <strong>mengosongkan seluruh keranjang</strong>? Semua item akan dihapus.';
                         buttonText = 'Kosongkan Keranjang';
                         buttonIcon = 'fas fa-trash-alt';
                         break;
 
                     case 'remove-discount':
-                        message = 'Apakah Anda yakin ingin <strong>menghapus diskon/voucher</strong> yang sedang diterapkan?';
+                        message =
+                            'Apakah Anda yakin ingin <strong>menghapus diskon/voucher</strong> yang sedang diterapkan?';
                         buttonText = 'Hapus Diskon';
                         buttonIcon = 'fas fa-times';
                         break;
+
+                    case 'edit-item':
+                        // Handle edit item
+                        handleEditItem(target);
+                        return;
 
                     default:
                         message = 'Apakah Anda yakin ingin melakukan tindakan ini?';
@@ -613,7 +723,8 @@
             // Handle submit form
             deleteForm.addEventListener('submit', function(e) {
                 // Ubah button menjadi loading state
-                confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menghapus...';
+                confirmDeleteBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menghapus...';
                 confirmDeleteBtn.disabled = true;
 
                 // Form akan disubmit secara normal
@@ -624,15 +735,424 @@
                 confirmDeleteBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Hapus';
                 confirmDeleteBtn.disabled = false;
             });
+
+            // === EDIT QUANTITY MODAL ===
+            const editQuantityModal = new bootstrap.Modal(document.getElementById('editQuantityModal'));
+            const editQuantityInput = document.getElementById('editQuantityInput');
+            const decreaseBtn = document.getElementById('decreaseBtn');
+            const increaseBtn = document.getElementById('increaseBtn');
+            const saveQuantityBtn = document.getElementById('saveQuantityBtn');
+            const editItemName = document.getElementById('editItemName');
+            const editItemTime = document.getElementById('editItemTime');
+            const maxQuantitySpan = document.getElementById('maxQuantity');
+            const availableStockSpan = document.getElementById('availableStock');
+            const pricePerUnitSpan = document.getElementById('pricePerUnit');
+            const totalPriceSpan = document.getElementById('totalPrice');
+
+            let currentEditItemId = null;
+            let currentPricePerUnit = 0;
+            let currentMaxQuantity = 1;
+
+            function handleEditItem(button) {
+                const itemId = button.getAttribute('data-item-id');
+                currentEditItemId = itemId;
+
+                // Fetch item details
+                fetch(`${cartBaseUrl}/item/${itemId}/details`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const item = data.item;
+
+                            editItemName.textContent = item.name;
+                            editItemTime.textContent = `${item.start_time} - ${item.end_time}`;
+                            editQuantityInput.value = item.current_quantity;
+                            editQuantityInput.max = item.max_quantity;
+                            maxQuantitySpan.textContent = item.max_quantity;
+                            availableStockSpan.textContent = item.available_stock || item.max_quantity;
+                            pricePerUnitSpan.textContent = `Rp ${item.price_per_unit.toLocaleString('id-ID')}`;
+
+                            currentPricePerUnit = item.price_per_unit;
+                            currentMaxQuantity = item.max_quantity;
+
+                            updateTotalPrice();
+                            editQuantityModal.show();
+                        } else {
+                            showErrorAlert('Gagal mengambil detail item: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showErrorAlert('Terjadi kesalahan saat mengambil detail item');
+                    });
+            }
+
+            function updateTotalPrice() {
+                const quantity = parseInt(editQuantityInput.value) || 1;
+                const total = quantity * currentPricePerUnit;
+                totalPriceSpan.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+            }
+
+            // Event listeners untuk quantity controls
+            decreaseBtn.addEventListener('click', function() {
+                const currentValue = parseInt(editQuantityInput.value);
+                if (currentValue > 1) {
+                    editQuantityInput.value = currentValue - 1;
+                    updateTotalPrice();
+                }
+            });
+
+            increaseBtn.addEventListener('click', function() {
+                const currentValue = parseInt(editQuantityInput.value);
+                if (currentValue < currentMaxQuantity) {
+                    editQuantityInput.value = currentValue + 1;
+                    updateTotalPrice();
+                }
+            });
+
+            editQuantityInput.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value < 1) {
+                    this.value = 1;
+                } else if (value > currentMaxQuantity) {
+                    this.value = currentMaxQuantity;
+                }
+                updateTotalPrice();
+            });
+
+            // ✅ SAVE QUANTITY - DENGAN DEBUGGING ENHANCED
+            saveQuantityBtn.addEventListener('click', function() {
+                const newQuantity = parseInt(editQuantityInput.value);
+
+                console.log('=== UPDATE QUANTITY DEBUG START ===');
+                console.log('Item ID:', currentEditItemId);
+                console.log('New Quantity:', newQuantity);
+                console.log('Max Quantity:', currentMaxQuantity);
+
+                if (!currentEditItemId || newQuantity < 1 || newQuantity > currentMaxQuantity) {
+                    console.error('Validation failed:', {
+                        itemId: currentEditItemId,
+                        quantity: newQuantity,
+                        maxQuantity: currentMaxQuantity
+                    });
+                    showErrorAlert('Quantity tidak valid');
+                    return;
+                }
+
+                // Show loading state
+                saveQuantityBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+                saveQuantityBtn.disabled = true;
+
+                const requestData = {
+                    quantity: newQuantity
+                };
+                const requestUrl = `/cart/update-quantity/${currentEditItemId}`;
+
+                console.log('Sending request:', {
+                    url: requestUrl,
+                    method: 'POST',
+                    data: requestData,
+                    csrfToken: csrfToken ? 'present' : 'missing'
+                });
+
+                // Send update request
+                fetch(requestUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken || ''
+                        },
+                        body: JSON.stringify(requestData)
+                    })
+                    .then(response => {
+                        console.log('Response received:', {
+                            status: response.status,
+                            statusText: response.statusText,
+                            ok: response.ok
+                        });
+
+                        // Clone response untuk debugging
+                        const responseClone = response.clone();
+
+                        // Cek content type
+                        const contentType = response.headers.get('content-type');
+                        console.log('Response Content-Type:', contentType);
+
+                        if (!response.ok) {
+                            // Jika response tidak OK, log error response
+                            return responseClone.text().then(errorText => {
+                                console.error('HTTP Error Response:', errorText);
+                                throw new Error(
+                                    `HTTP ${response.status}: ${response.statusText}`);
+                            });
+                        }
+
+                        if (!contentType || !contentType.includes('application/json')) {
+                            // Jika response bukan JSON, log content
+                            return responseClone.text().then(text => {
+                                console.error('Non-JSON Response:', text);
+                                throw new Error('Server mengembalikan response non-JSON: ' +
+                                    text.substring(0, 200));
+                            });
+                        }
+
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('✅ Parsed JSON response:', data);
+
+                        // Validasi struktur response
+                        if (typeof data !== 'object' || data === null) {
+                            console.error('Invalid response structure:', data);
+                            throw new Error('Response tidak valid dari server');
+                        }
+
+                        if (data.success === true) {
+                            console.log('✅ Update berhasil!');
+
+                            // Update UI elements dengan error handling
+                            try {
+                                const priceElement = document.getElementById(
+                                    `price-${currentEditItemId}`);
+                                if (priceElement && data.formatted_price) {
+                                    priceElement.textContent = data.formatted_price;
+                                    console.log('✅ Price element updated');
+                                }
+
+                                const subtotalElement = document.getElementById('cart-subtotal');
+                                if (subtotalElement && data.formatted_subtotal) {
+                                    subtotalElement.textContent = data.formatted_subtotal;
+                                    console.log('✅ Subtotal element updated');
+                                }
+
+                                // Update total (jika tidak ada diskon)
+                                const totalElement = document.getElementById('cart-total');
+                                if (totalElement && !document.querySelector('.discount-applied') && data
+                                    .formatted_subtotal) {
+                                    totalElement.textContent = data.formatted_subtotal;
+                                    console.log('✅ Total element updated');
+                                }
+
+                                // Update quantity display in cart item
+                                const cartItem = document.querySelector(
+                                    `[data-item-id="${currentEditItemId}"]`)?.closest('.cart-item');
+                                if (cartItem) {
+                                    const quantityBadge = cartItem.querySelector('.info-badge span');
+                                    if (quantityBadge && quantityBadge.textContent.includes(
+                                        'Jumlah:')) {
+                                        quantityBadge.textContent = `Jumlah: ${newQuantity}`;
+                                        console.log('✅ Quantity display updated');
+                                    }
+                                }
+
+                                // Hide modal
+                                editQuantityModal.hide();
+                                console.log('✅ Modal hidden');
+
+                                // Show success message
+                                showSuccessAlert(data.message || 'Quantity berhasil diupdate');
+                                console.log('✅ Success alert shown');
+
+                            } catch (uiError) {
+                                console.error('Error updating UI:', uiError);
+                                // Meskipun ada error UI, data sudah berhasil disimpan
+                                editQuantityModal.hide();
+                                showSuccessAlert(
+                                    'Quantity berhasil diupdate (refresh halaman untuk melihat perubahan)'
+                                    );
+                            }
+
+                        } else {
+                            console.error('❌ Server returned success: false');
+                            console.error('Server message:', data.message);
+                            showErrorAlert('Gagal mengupdate quantity: ' + (data.message ||
+                                'Unknown error'));
+                        }
+
+                        console.log('=== UPDATE QUANTITY DEBUG END ===');
+                    })
+                    .catch(error => {
+                        console.error('❌ Request failed:', error);
+                        console.error('Error type:', error.constructor.name);
+                        console.error('Error message:', error.message);
+
+                        // Tentukan jenis error dan berikan pesan yang sesuai
+                        let errorMessage = 'Terjadi kesalahan tidak diketahui';
+
+                        if (error.message.includes('HTTP')) {
+                            errorMessage = 'Server error: ' + error.message;
+                        } else if (error.message.includes('JSON')) {
+                            errorMessage = 'Format response tidak valid dari server';
+                        } else if (error.message.includes('Failed to fetch')) {
+                            errorMessage =
+                                'Tidak dapat menghubungi server. Periksa koneksi internet Anda.';
+                        } else {
+                            errorMessage = error.message;
+                        }
+
+                        showErrorAlert(errorMessage);
+                        console.log('=== UPDATE QUANTITY DEBUG END (ERROR) ===');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        saveQuantityBtn.innerHTML = '<i class="fas fa-save me-2"></i>Simpan';
+                        saveQuantityBtn.disabled = false;
+                        console.log('Button state reset');
+                    });
+            });
+
+            // ✅ PERBAIKAN FUNGSI ALERT - Target container yang tepat
+
+            function showSuccessAlert(message) {
+                console.log('Showing success alert:', message);
+
+                // Remove existing alerts from main content area only
+                document.querySelectorAll('.container .alert').forEach(alert => alert.remove());
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+                // ✅ PERBAIKAN: Target container di main content, bukan navigation
+                // Cari container yang memiliki class 'mt-4' (main content area)
+                const mainContainer = document.querySelector('.container.mt-4') ||
+                    document.querySelector('main .container') ||
+                    document.querySelectorAll('.container')[1]; // Fallback ke container kedua
+
+                if (mainContainer) {
+                    // Insert alert sebagai child pertama dari main container
+                    mainContainer.insertBefore(alertDiv, mainContainer.firstElementChild);
+                    console.log('✅ Alert inserted in main content area');
+
+                    // Auto dismiss after 3 seconds
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, 3000);
+                } else {
+                    console.error('❌ Main container not found for alert');
+                    // Fallback: append ke body jika tidak ada container yang tepat
+                    document.body.appendChild(alertDiv);
+
+                    // Style untuk fixed position jika fallback
+                    alertDiv.style.position = 'fixed';
+                    alertDiv.style.top = '20px';
+                    alertDiv.style.right = '20px';
+                    alertDiv.style.zIndex = '9999';
+                    alertDiv.style.maxWidth = '400px';
+                }
+            }
+
+            function showErrorAlert(message) {
+                console.log('Showing error alert:', message);
+
+                // Remove existing alerts from main content area only
+                document.querySelectorAll('.container .alert').forEach(alert => alert.remove());
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+        <i class="fas fa-exclamation-triangle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+                // ✅ PERBAIKAN: Target container di main content, bukan navigation
+                // Cari container yang memiliki class 'mt-4' (main content area)
+                const mainContainer = document.querySelector('.container.mt-4') ||
+                    document.querySelector('main .container') ||
+                    document.querySelectorAll('.container')[1]; // Fallback ke container kedua
+
+                if (mainContainer) {
+                    // Insert alert sebagai child pertama dari main container
+                    mainContainer.insertBefore(alertDiv, mainContainer.firstElementChild);
+                    console.log('✅ Alert inserted in main content area');
+
+                    // Auto dismiss after 5 seconds for errors
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, 5000);
+                } else {
+                    console.error('❌ Main container not found for alert');
+                    // Fallback: append ke body jika tidak ada container yang tepat
+                    document.body.appendChild(alertDiv);
+
+                    // Style untuk fixed position jika fallback
+                    alertDiv.style.position = 'fixed';
+                    alertDiv.style.top = '20px';
+                    alertDiv.style.right = '20px';
+                    alertDiv.style.zIndex = '9999';
+                    alertDiv.style.maxWidth = '400px';
+                }
+            }
+
+            // ✅ ALTERNATIF SOLUSI: Target berdasarkan ID atau class yang unik
+            function showSuccessAlertAlternative(message) {
+                console.log('Showing success alert (alternative method):', message);
+
+                // Remove existing alerts
+                document.querySelectorAll('.alert').forEach(alert => {
+                    // Hanya hapus alert yang bukan di navigation
+                    if (!alert.closest('nav') && !alert.closest('.navbar')) {
+                        alert.remove();
+                    }
+                });
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+                // Cari berdasarkan h1 "Keranjang Booking" dan insert setelahnya
+                const cartHeader = document.querySelector('h1.h3.mb-4.fw-bold');
+                if (cartHeader && cartHeader.textContent.includes('Keranjang')) {
+                    cartHeader.parentNode.insertBefore(alertDiv, cartHeader.nextSibling);
+                    console.log('✅ Alert inserted after cart header');
+                } else {
+                    // Fallback ke hero section + 1
+                    const heroSection = document.querySelector('.hero-section');
+                    if (heroSection && heroSection.nextElementSibling) {
+                        const nextContainer = heroSection.nextElementSibling.querySelector('.container');
+                        if (nextContainer) {
+                            nextContainer.insertBefore(alertDiv, nextContainer.firstElementChild);
+                            console.log('✅ Alert inserted in post-hero container');
+                        }
+                    }
+                }
+
+                // Auto dismiss after 3 seconds
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 3000);
+            }
+
+            // Reset modal saat ditutup
+            document.getElementById('editQuantityModal').addEventListener('hidden.bs.modal', function() {
+                currentEditItemId = null;
+                currentPricePerUnit = 0;
+                currentMaxQuantity = 1;
+                saveQuantityBtn.innerHTML = '<i class="fas fa-save me-2"></i>Simpan';
+                saveQuantityBtn.disabled = false;
+            });
         });
     </script>
 
     <style>
         /* Modern Cart Styling */
 
-     /* Hero Section */
-     .hero-section {
-        background: linear-gradient(to right, #9e0620, #bb2d3b);
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(to right, #9e0620, #bb2d3b);
 
             height: 220px;
             position: relative;
@@ -809,12 +1329,12 @@
             font-size: 1.1rem;
         }
 
-        .btn-remove {
+        .btn-remove,
+        .btn-edit {
             width: 36px;
             height: 36px;
             border-radius: 50%;
             background-color: #f8f9fa;
-            color: #9e0620;
             border: none;
             display: flex;
             align-items: center;
@@ -824,10 +1344,24 @@
             cursor: pointer;
         }
 
+        .btn-remove {
+            color: #9e0620;
+        }
+
+        .btn-edit {
+            color: #9e0620;
+        }
+
         .btn-remove:hover {
             background-color: #9e0620;
             color: white;
             transform: rotate(90deg);
+        }
+
+        .btn-edit:hover {
+            background-color: #9e0620;
+            color: white;
+            transform: scale(1.1);
         }
 
         /* Summary Card */
@@ -1184,16 +1718,19 @@
         }
 
         /* Styling untuk Modal Konfirmasi */
-        #confirmDeleteModal .modal-content {
+        #confirmDeleteModal .modal-content,
+        #editQuantityModal .modal-content {
             border-radius: 16px;
             overflow: hidden;
         }
 
-        #confirmDeleteModal .modal-header {
+        #confirmDeleteModal .modal-header,
+        #editQuantityModal .modal-header {
             background: linear-gradient(135deg, #fff8f8 0%, #f8f9fa 100%);
         }
 
-        #confirmDeleteModal .modal-title {
+        #confirmDeleteModal .modal-title,
+        #editQuantityModal .modal-title {
             color: #495057;
         }
 
@@ -1216,20 +1753,42 @@
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
 
-        #confirmDeleteModal .btn-outline-secondary {
+        #confirmDeleteModal .btn-outline-secondary,
+        #editQuantityModal .btn-outline-secondary {
             border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
-        #confirmDeleteModal .btn-outline-secondary:hover {
+        #confirmDeleteModal .btn-outline-secondary:hover,
+        #editQuantityModal .btn-outline-secondary:hover {
             transform: translateY(-2px);
         }
 
         /* Loading state untuk button */
-        #confirmDeleteModal .btn-danger:disabled {
+        #confirmDeleteModal .btn-danger:disabled,
+        #editQuantityModal .btn-primary:disabled {
             opacity: 0.7;
             transform: none !important;
+        }
+
+        /* Edit Quantity Modal Specific Styles */
+        .quantity-control .input-group {
+            width: 150px;
+            margin: 0 auto;
+        }
+
+        .quantity-control .form-control {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+
+        .quantity-control .btn {
+            border-color: #dee2e6;
+        }
+
+        .price-info {
+            border-left: 4px solid #7d0318;
         }
 
         /* Responsive Adjustments */
@@ -1274,96 +1833,105 @@
             .modal-dialog {
                 margin: 10px;
             }
+
+            .quantity-control .input-group {
+                width: 100%;
+            }
         }
+
         .btn-points {
-    display: block;
-    padding: 8px 12px;
-    background-color: #9E0620;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+            display: block;
+            padding: 8px 12px;
+            background-color: #9E0620;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
 
-.btn-points:hover {
-    background-color: #7d0519;
-    color: white;
-    text-decoration: none;
-}
-/* Styling untuk Form Voucher Poin */
-.point-voucher-section {
-    border: 1px dashed #ffc107;
-    border-radius: 12px;
-    padding: 16px;
-    background-color: #fff8e1;
-}
+        .btn-points:hover {
+            background-color: #7d0519;
+            color: white;
+            text-decoration: none;
+        }
 
-.btn-apply-point-voucher {
-    background-color: #ffc107;
-    color: #212529;
-    border: none;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    padding: 0 16px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+        /* Styling untuk Form Voucher Poin */
+        .point-voucher-section {
+            border: 1px dashed #ffc107;
+            border-radius: 12px;
+            padding: 16px;
+            background-color: #fff8e1;
+        }
 
-.btn-apply-point-voucher:hover {
-    background-color: #e0a800;
-}
+        .btn-apply-point-voucher {
+            background-color: #ffc107;
+            color: #212529;
+            border: none;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            padding: 0 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
 
-.point-option {
-    padding: 5px 0;
-}
+        .btn-apply-point-voucher:hover {
+            background-color: #e0a800;
+        }
 
-.btn-points {
-    display: block;
-    padding: 10px 12px;
-    background-color: #212529;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+        .point-option {
+            padding: 5px 0;
+        }
 
-.btn-points:hover {
-    background-color: #343a40;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-2px);
-}
+        .btn-points {
+            display: block;
+            padding: 10px 12px;
+            background-color: #212529;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
 
-/* Badge styling */
-.badge.bg-warning {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-}
+        .btn-points:hover {
+            background-color: #343a40;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
 
-/* Hover effect untuk badge */
-.badge {
-    transition: all 0.3s ease;
-}
+        /* Badge styling */
+        .badge.bg-warning {
+            background-color: #ffc107 !important;
+            color: #212529 !important;
+        }
 
-.badge:hover {
-    transform: translateY(-2px);
-}
+        /* Hover effect untuk badge */
+        .badge {
+            transition: all 0.3s ease;
+        }
 
-/* Warna untuk voucher point */
-.bg-warning-subtle {
-    background-color: rgba(255, 193, 7, 0.15) !important;
-}
+        .badge:hover {
+            transform: translateY(-2px);
+        }
 
-.text-warning {
-    color: #ffc107 !important;
-}
+        /* Warna untuk voucher point */
+        .bg-warning-subtle {
+            background-color: rgba(255, 193, 7, 0.15) !important;
+        }
+
+        .text-warning {
+            color: #ffc107 !important;
+        }
+        .text-danger {
+            color: #9E0620 !important;
+        }
     </style>
 @endsection

@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SportVue</title>
-
+    <title>Alena Soccer</title>
+<link rel="icon" type="image/png" href="{{ asset('assets/fire.png') }}">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font -->
@@ -151,6 +151,10 @@
         .hover-text-white:hover {
             color: white !important;
         }
+
+        .text-danger {
+            color: #9E0620 !important;
+        }
     </style>
 
 </head>
@@ -262,52 +266,55 @@
             </div>
         </div>
 
-<!-- Footer Bottom -->
-<div class="footer-bottom mt-5 pt-4 border-top">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <p class="copyright mb-md-0 text-muted">© 2024 Alena Soccer. All rights reserved.</p>
-            </div>
-            <div class="col-md-6">
-                <div class="d-flex justify-content-md-end align-items-center flex-wrap">
-                    <span class="partners-label me-3 text-muted">Partner Kami:</span>
-                    <div class="partner-static-logos d-flex flex-wrap align-items-center">
-                        <img src="{{ asset('assets/midtrans.png') }}" alt="Midtrans Logo" class="partner-logo">
-                        <img src="{{ asset('assets/specs.svg') }}" alt="Specs Logo" class="partner-logo">
-                        <img src="{{ asset('assets/ortuseight-seeklogo.png') }}" alt="Ortuseight Logo" class="partner-logo">
-                        <img src="{{ asset('assets/nike.jpg') }}" alt="Nike Logo" class="partner-logo">
-                        <img src="{{ asset('assets/Adidas.png') }}" alt="Adidas Logo" class="partner-logo">
-                        <img src="{{ asset('assets/pocari-sweat-seeklogo.png') }}" alt="Pocari Sweat Logo" class="partner-logo">
-                        <img src="{{ asset('assets/aqua.png') }}" alt="Aqua Logo" class="partner-logo">
-                        <img src="{{ asset('assets/Le_Minerale.png') }}" alt="Le Minerale Logo" class="partner-logo">
-                        <img src="{{ asset('assets/ake-logo.png') }}" alt="AKE Logo" class="partner-logo">
+        <!-- Footer Bottom -->
+        <div class="footer-bottom mt-5 pt-4 border-top">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="copyright mb-md-0 text-muted">© 2024 Alena Soccer. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-md-end align-items-center flex-wrap">
+                            <span class="partners-label me-3 text-muted">Partner Kami:</span>
+                            <div class="partner-static-logos d-flex flex-wrap align-items-center">
+                                <img src="{{ asset('assets/midtrans.png') }}" alt="Midtrans Logo" class="partner-logo">
+                                <img src="{{ asset('assets/specs.svg') }}" alt="Specs Logo" class="partner-logo">
+                                <img src="{{ asset('assets/ortuseight-seeklogo.png') }}" alt="Ortuseight Logo"
+                                    class="partner-logo">
+                                <img src="{{ asset('assets/nike.jpg') }}" alt="Nike Logo" class="partner-logo">
+                                <img src="{{ asset('assets/Adidas.png') }}" alt="Adidas Logo" class="partner-logo">
+                                <img src="{{ asset('assets/pocari-sweat-seeklogo.png') }}" alt="Pocari Sweat Logo"
+                                    class="partner-logo">
+                                <img src="{{ asset('assets/aqua.png') }}" alt="Aqua Logo" class="partner-logo">
+                                <img src="{{ asset('assets/Le_Minerale.png') }}" alt="Le Minerale Logo"
+                                    class="partner-logo">
+                                <img src="{{ asset('assets/ake-logo.png') }}" alt="AKE Logo" class="partner-logo">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-</footer>
+    </footer>
 
-<style>
-    .partner-logo {
-        height: 40px;
-        width: auto;
-        margin: 0 10px 10px 0;
-    }
-
-    @media (max-width: 768px) {
+    <style>
         .partner-logo {
-            height: 30px;
-            margin: 0 6px 10px 0;
+            height: 40px;
+            width: auto;
+            margin: 0 10px 10px 0;
         }
-    }
 
-    .partner-static-logos {
-        gap: 10px;
-    }
-</style>
+        @media (max-width: 768px) {
+            .partner-logo {
+                height: 30px;
+                margin: 0 6px 10px 0;
+            }
+        }
+
+        .partner-static-logos {
+            gap: 10px;
+        }
+    </style>
 
 
 </body>

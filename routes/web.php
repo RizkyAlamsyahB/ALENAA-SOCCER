@@ -58,25 +58,32 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::post('/bookings/{bookingId}/cancel', [FieldsController::class, 'cancelBooking'])->name('bookings.cancel');
         });
 
-    // Cart Management
-    Route::prefix('cart')
-        ->name('user.cart.')
-        ->group(function () {
-            Route::post('/add', [CartController::class, 'addToCart'])->name('add');
-            Route::get('/', [CartController::class, 'viewCart'])->name('view');
-            Route::delete('/{itemId}', [CartController::class, 'removeFromCart'])->name('remove');
-            Route::delete('/api/{itemId}', [CartController::class, 'apiRemoveFromCart'])->name('api.remove');
-            Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
-            Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
-            Route::get('/clear', [CartController::class, 'clearCart'])->name('clear');
-            Route::get('/checkout', [CartController::class, 'showCheckout'])->name('show.checkout');
-            Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
-            // Dalam grup cart management, tambahkan ini:
-            Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
-            Route::post('/apply-point-voucher', [CartController::class, 'applyPointVoucher'])->name('apply.point.voucher');
-            Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name('remove.discount');
-            Route::get('/add-membership/{id}', [CartController::class, 'addMembershipToCartRoute'])->name('add.membership');
-        });
+// Tambahkan route ini di dalam grup cart management di routes/web.php
+
+// Cart Management
+Route::prefix('cart')
+    ->name('user.cart.')
+    ->group(function () {
+        Route::post('/add', [CartController::class, 'addToCart'])->name('add');
+        Route::get('/', [CartController::class, 'viewCart'])->name('view');
+        Route::delete('/{itemId}', [CartController::class, 'removeFromCart'])->name('remove');
+        Route::delete('/api/{itemId}', [CartController::class, 'apiRemoveFromCart'])->name('api.remove');
+        Route::get('/sidebar', [CartController::class, 'getCartSidebar'])->name('sidebar');
+        Route::get('/count', [CartController::class, 'getCartCount'])->name('count');
+        Route::get('/clear', [CartController::class, 'clearCart'])->name('clear');
+        Route::get('/checkout', [CartController::class, 'showCheckout'])->name('show.checkout');
+        Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
+
+        // Discount & Voucher management
+        Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('apply.discount');
+        Route::post('/apply-point-voucher', [CartController::class, 'applyPointVoucher'])->name('apply.point.voucher');
+        Route::get('/remove-discount', [CartController::class, 'removeDiscount'])->name('remove.discount');
+        Route::get('/add-membership/{id}', [CartController::class, 'addMembershipToCartRoute'])->name('add.membership');
+
+        // NEW: Item management routes
+        Route::get('/item/{itemId}/details', [CartController::class, 'getCartItemDetails'])->name('item.details');
+        Route::post('/update-quantity/{itemId}', [CartController::class, 'updateQuantity'])->name('update.quantity');
+    });
 
     // Rental Management
     Route::prefix('rental')

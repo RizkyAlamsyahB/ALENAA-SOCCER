@@ -38,7 +38,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3" href="{{ route('user.rental_items.index') }}">
-                        <span>Rental</span>
+                        <span>Perlengkapan</span>
                     </a>
                 </li>
                 <li class="nav-item">

@@ -202,6 +202,9 @@
                             <div class="wizard-panel" id="step-panel-2">
                                 <h5 class="panel-title">Pilih Slot Waktu ({{ $requiredHours }} jam)</h5>
 
+                                <div id="slot-alert-container" class="mb-3" style="display: none;">
+                                </div>
+
                                 <div class="day-tabs-container">
                                     <div class="day-tabs" id="dayTabs"></div>
                                 </div>
@@ -503,7 +506,42 @@
             // Render slot waktu
             // Update di script membership schedule template untuk handle past time
 
-            // Render slot waktu - update function renderTimeSlots
+            // Function untuk show Bootstrap alert - TAMBAHAN BARU
+            function showSlotAlert(message, type = 'info') {
+                const alertContainer = document.getElementById('slot-alert-container');
+
+                const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+
+                alertContainer.innerHTML = alertHtml;
+                alertContainer.style.display = 'block';
+
+                // Auto hide after 5 seconds
+                setTimeout(function() {
+                    const alert = alertContainer.querySelector('.alert');
+                    if (alert) {
+                        alert.classList.remove('show');
+                        setTimeout(function() {
+                            alertContainer.style.display = 'none';
+                            alertContainer.innerHTML = '';
+                        }, 150);
+                    }
+                }, 5000);
+            }
+
+            // Function untuk hide alert - TAMBAHAN BARU
+            function hideSlotAlert() {
+                const alertContainer = document.getElementById('slot-alert-container');
+                alertContainer.style.display = 'none';
+                alertContainer.innerHTML = '';
+            }
+
+            // Update function renderTimeSlots - DENGAN BOOTSTRAP ALERT
             function renderTimeSlots(slots, container) {
                 if (!slots || slots.length === 0) {
                     container.innerHTML = `
@@ -515,6 +553,9 @@
                     return;
                 }
 
+                // Hide existing alerts saat render ulang
+                hideSlotAlert();
+
                 // Buat grid slots
                 const timeSlotsGrid = document.createElement('div');
                 timeSlotsGrid.className = 'time-slots-grid';
@@ -522,29 +563,38 @@
                 // Tambahkan setiap slot
                 slots.forEach(slot => {
                     const slotElement = document.createElement('div');
-                    const slotValue = `${slot.date}|${slot.display}|${fieldId}`;
+                    const slotValue = slot.value;
                     const isSelected = selectedSlots.has(slotValue);
 
-                    // Cek apakah slot ini past time (backend sudah filter, tapi untuk keamanan)
+                    // Cek status slot
                     const isPastTime = slot.is_past_time || false;
+                    const isInCart = slot.in_cart || false;
+                    const isAvailable = slot.is_available || false;
 
-                    // Tentukan class berdasarkan status
+                    // Tentukan class dan icon berdasarkan status
                     let slotClass = 'slot-available';
                     let iconClass = 'fas fa-clock';
-                    let isDisabled = false;
 
                     if (isPastTime) {
                         slotClass = 'slot-past-time';
                         iconClass = 'fas fa-clock';
-                        isDisabled = true;
+                    } else if (isInCart) {
+                        // SLOT YANG ADA DI CART - masih bisa diklik untuk show alert
+                        slotClass = 'slot-in-cart';
+                        iconClass = 'fas fa-shopping-cart';
+                    } else if (!isAvailable) {
+                        slotClass = 'slot-booked';
+                        iconClass = 'fas fa-lock';
                     } else if (isSelected) {
                         slotClass = 'slot-selected';
                         iconClass = 'fas fa-check';
                     }
 
-                    slotElement.className = `time-slot ${slotClass} ${isDisabled ? 'disabled' : ''}`;
+                    slotElement.className = `time-slot ${slotClass}`;
                     slotElement.dataset.value = slotValue;
                     slotElement.dataset.isPastTime = isPastTime;
+                    slotElement.dataset.isInCart = isInCart;
+                    slotElement.dataset.isAvailable = isAvailable;
 
                     slotElement.innerHTML = `
             <div class="slot-time">
@@ -556,28 +606,97 @@
             </div>
         `;
 
-                    // Tambahkan event listener hanya untuk slot yang tidak disabled
-                    if (!isDisabled) {
-                        slotElement.addEventListener('click', function() {
-                            toggleSlotSelection(this);
-                        });
-                    } else {
-                        // Tambahkan event listener untuk show warning pada past time slots
-                        slotElement.addEventListener('click', function() {
-                            if (this.dataset.isPastTime === 'true') {
-                                alert(
-                                    'Slot waktu ini sudah lewat dan tidak dapat dipilih. Silakan pilih slot waktu yang masih tersedia.');
-                            }
-                        });
-                    }
+                    // Tambahkan event listener untuk SEMUA slot
+                    slotElement.addEventListener('click', function() {
+                        handleSlotClick(this);
+                    });
 
                     timeSlotsGrid.appendChild(slotElement);
                 });
 
-                // Tambahkan ke container
                 container.innerHTML = '';
                 container.appendChild(timeSlotsGrid);
             }
+
+            // NEW function untuk handle slot click - DENGAN BOOTSTRAP ALERT
+            function handleSlotClick(slotElement) {
+                const isPastTime = slotElement.dataset.isPastTime === 'true';
+                const isInCart = slotElement.dataset.isInCart === 'true';
+                const isAvailable = slotElement.dataset.isAvailable === 'true';
+
+                // Cek kondisi slot dan tampilkan alert yang sesuai
+                if (isPastTime) {
+                    showSlotAlert(
+                        'Slot waktu ini sudah lewat dan tidak dapat dipilih. Silakan pilih slot waktu yang masih tersedia.',
+                        'warning');
+                    return;
+                }
+
+                if (isInCart) {
+                    // TAMPILKAN BOOTSTRAP ALERT untuk slot yang ada di cart
+                    showSlotAlert(
+                        'Slot waktu ini sudah ada di keranjang Anda. Silakan pilih slot waktu lain atau hapus dari keranjang terlebih dahulu.',
+                        'info');
+                    return;
+                }
+
+                if (!isAvailable) {
+                    showSlotAlert(
+                        'Slot waktu ini sudah dibooking oleh pengguna lain. Silakan pilih slot waktu lain.',
+                        'danger');
+                    return;
+                }
+
+                // Jika slot available, lanjutkan dengan normal selection
+                toggleSlotSelection(slotElement);
+            }
+
+            // Update function toggleSlotSelection - SIMPLIFIED karena sudah ada handleSlotClick
+            function toggleSlotSelection(slotElement) {
+                const slotValue = slotElement.dataset.value;
+
+                if (selectedSlots.has(slotValue)) {
+                    // Hapus dari pilihan
+                    selectedSlots.delete(slotValue);
+                    slotElement.classList.remove('slot-selected');
+                    slotElement.classList.add('slot-available');
+                    slotElement.querySelector('i').className = 'fas fa-clock';
+                } else {
+                    // Tambahkan ke pilihan jika belum cukup
+                    if (selectedSlots.size < requiredHours) {
+                        selectedSlots.add(slotValue);
+                        slotElement.classList.remove('slot-available');
+                        slotElement.classList.add('slot-selected');
+                        slotElement.querySelector('i').className = 'fas fa-check';
+                    } else {
+                        // Tampilkan alert untuk batas maksimum
+                        showSlotAlert(`Anda hanya dapat memilih maksimal ${requiredHours} jam untuk paket ini.`,
+                            'warning');
+                        return;
+                    }
+                }
+
+                // Hide alert jika berhasil select/unselect
+                hideSlotAlert();
+                updateSelectedSlotsCount();
+                updateHiddenFields();
+            }
+
+            // Update event listener untuk date change - hide alert
+            document.addEventListener('DOMContentLoaded', function() {
+                // Existing code...
+
+                // Tambahkan ini untuk hide alert saat ganti tanggal
+                if (typeof flatpickr !== 'undefined') {
+                    const datePicker = flatpickr("#date-picker", {
+                        // existing options...
+                        onChange: function(selectedDates, dateStr, instance) {
+                            hideSlotAlert(); // Hide alert saat ganti tanggal
+                            // existing onChange code...
+                        }
+                    });
+                }
+            });
 
             // Update toggle slot selection untuk handle past time
             function toggleSlotSelection(slotElement) {
@@ -633,7 +752,8 @@
                 if (hasPastTimeSlots) {
                     e.preventDefault();
                     alert(
-                        'Beberapa slot waktu yang dipilih sudah lewat. Silakan refresh halaman dan pilih kembali slot yang masih tersedia.');
+                        'Beberapa slot waktu yang dipilih sudah lewat. Silakan refresh halaman dan pilih kembali slot yang masih tersedia.'
+                        );
                     return false;
                 }
 

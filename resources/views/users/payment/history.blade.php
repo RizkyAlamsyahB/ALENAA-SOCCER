@@ -37,37 +37,7 @@
                 </div>
 
                 @if (count($payments) > 0)
-                    <div class="payment-filter mb-4">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <div class="search-box">
-                                    <i class="fas fa-search search-icon"></i>
-                                    <input type="text" class="form-control" placeholder="Cari Order ID...">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option selected>Semua Status</option>
-                                    <option value="success">Sukses</option>
-                                    <option value="pending">Menunggu</option>
-                                    <option value="failed">Gagal</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option selected>Semua Metode</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="credit_card">Kartu Kredit</option>
-                                    <option value="gopay">GoPay</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn-filter w-100">
-                                    <i class="fas fa-filter me-2"></i>Filter
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="payment-list">
                         @foreach ($payments as $payment)

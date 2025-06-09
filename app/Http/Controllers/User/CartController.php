@@ -1945,4 +1945,345 @@ if (!empty($allProblematicItems)) {
                 ->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
         }
     }
+
+
+/**
+ * Update quantity untuk rental item di cart
+ */
+public function updateQuantity(Request $request, $itemId)
+{
+    try {
+        $request->validate([
+            'quantity' => 'required|integer|min:1|max:50'
+        ]);
+
+        $cart = Cart::where('user_id', Auth::id())->first();
+
+        if (!$cart) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Keranjang tidak ditemukan'
+            ], 404);
+        }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+                           ->where('id', $itemId)
+                           ->where('type', 'rental_item')
+                           ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item tidak ditemukan'
+            ], 404);
+        }
+
+        $rentalItem = RentalItem::find($cartItem->item_id);
+        if (!$rentalItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item rental tidak ditemukan'
+            ], 404);
+        }
+
+        $newQuantity = $request->quantity;
+
+        // Hitung quantity yang sudah dibooking (confirmed bookings only)
+        $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+            ->whereNotIn('status', ['cancelled'])
+            ->where(function ($query) use ($cartItem) {
+                $query->where(function ($q) use ($cartItem) {
+                    $q->where('start_time', '>=', $cartItem->start_time)
+                      ->where('start_time', '<', $cartItem->end_time);
+                })
+                ->orWhere(function ($q) use ($cartItem) {
+                    $q->where('end_time', '>', $cartItem->start_time)
+                      ->where('end_time', '<=', $cartItem->end_time);
+                })
+                ->orWhere(function ($q) use ($cartItem) {
+                    $q->where('start_time', '<=', $cartItem->start_time)
+                      ->where('end_time', '>=', $cartItem->end_time);
+                });
+            })
+            ->sum('quantity');
+
+        // Hitung quantity di cart user lain (untuk slot waktu yang sama)
+        $otherCartQuantity = CartItem::join('carts', 'cart_items.cart_id', '=', 'carts.id')
+            ->where('cart_items.type', 'rental_item')
+            ->where('cart_items.item_id', $rentalItem->id)
+            ->where('cart_items.id', '!=', $cartItem->id)
+            ->where('carts.user_id', '!=', Auth::id()) // Exclude current user's cart
+            ->where(function ($query) use ($cartItem) {
+                $query->where(function ($q) use ($cartItem) {
+                    $q->where('cart_items.start_time', '>=', $cartItem->start_time)
+                      ->where('cart_items.start_time', '<', $cartItem->end_time);
+                })
+                ->orWhere(function ($q) use ($cartItem) {
+                    $q->where('cart_items.end_time', '>', $cartItem->start_time)
+                      ->where('cart_items.end_time', '<=', $cartItem->end_time);
+                })
+                ->orWhere(function ($q) use ($cartItem) {
+                    $q->where('cart_items.start_time', '<=', $cartItem->start_time)
+                      ->where('cart_items.end_time', '>=', $cartItem->end_time);
+                });
+            })
+            ->sum('cart_items.quantity');
+
+        // Hitung quantity dari cart item user saat ini di slot waktu yang sama (exclude item yang sedang diedit)
+        $currentUserOtherCartQuantity = CartItem::where('cart_id', $cart->id)
+            ->where('type', 'rental_item')
+            ->where('item_id', $rentalItem->id)
+            ->where('id', '!=', $cartItem->id)
+            ->where(function ($query) use ($cartItem) {
+                $query->where(function ($q) use ($cartItem) {
+                    $q->where('start_time', '>=', $cartItem->start_time)
+                      ->where('start_time', '<', $cartItem->end_time);
+                })
+                ->orWhere(function ($q) use ($cartItem) {
+                    $q->where('end_time', '>', $cartItem->start_time)
+                      ->where('end_time', '<=', $cartItem->end_time);
+                })
+                ->orWhere(function ($q) use ($cartItem) {
+                    $q->where('start_time', '<=', $cartItem->start_time)
+                      ->where('end_time', '>=', $cartItem->end_time);
+                });
+            })
+            ->sum('quantity');
+
+        // Hitung total quantity yang sudah terpakai (exclude quantity item yang sedang diedit)
+        $totalUsedQuantity = $bookedQuantity + $otherCartQuantity + $currentUserOtherCartQuantity;
+        $availableQuantity = $rentalItem->stock_total - $totalUsedQuantity;
+
+        Log::info('Update quantity validation', [
+            'rental_item_id' => $rentalItem->id,
+            'stock_total' => $rentalItem->stock_total,
+            'booked_quantity' => $bookedQuantity,
+            'other_cart_quantity' => $otherCartQuantity,
+            'current_user_other_cart_quantity' => $currentUserOtherCartQuantity,
+            'total_used_quantity' => $totalUsedQuantity,
+            'available_quantity' => $availableQuantity,
+            'new_quantity' => $newQuantity
+        ]);
+
+        if ($newQuantity > $availableQuantity) {
+            return response()->json([
+                'success' => false,
+                'message' => "Stok tidak mencukupi. Tersedia: {$availableQuantity}, Diminta: {$newQuantity}"
+            ], 400);
+        }
+
+        // Update quantity dan price
+        $cartItem->quantity = $newQuantity;
+        $cartItem->price = $rentalItem->rental_price * $newQuantity;
+        $cartItem->save();
+
+        // Hitung ulang subtotal
+        $cartItems = CartItem::where('cart_id', $cart->id)->get();
+        $subtotal = $cartItems->sum('price');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Quantity berhasil diupdate',
+            'new_quantity' => $newQuantity,
+            'new_price' => $cartItem->price,
+            'new_subtotal' => $subtotal,
+            'formatted_price' => 'Rp ' . number_format($cartItem->price, 0, ',', '.'),
+            'formatted_subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.')
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error updating cart quantity: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengupdate quantity: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Get cart item details untuk modal edit
+ */
+public function getCartItemDetails($itemId)
+{
+    try {
+        $cart = Cart::where('user_id', Auth::id())->first();
+
+        if (!$cart) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Keranjang tidak ditemukan'
+            ], 404);
+        }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+                           ->where('id', $itemId)
+                           ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item tidak ditemukan'
+            ], 404);
+        }
+
+        $itemDetails = [];
+
+        switch ($cartItem->type) {
+            case 'rental_item':
+                $rentalItem = RentalItem::find($cartItem->item_id);
+                if ($rentalItem) {
+                    // Hitung quantity yang sudah dibooking (confirmed bookings only)
+                    $bookedQuantity = RentalBooking::where('rental_item_id', $rentalItem->id)
+                        ->whereNotIn('status', ['cancelled'])
+                        ->where(function ($query) use ($cartItem) {
+                            $query->where(function ($q) use ($cartItem) {
+                                $q->where('start_time', '>=', $cartItem->start_time)
+                                  ->where('start_time', '<', $cartItem->end_time);
+                            })
+                            ->orWhere(function ($q) use ($cartItem) {
+                                $q->where('end_time', '>', $cartItem->start_time)
+                                  ->where('end_time', '<=', $cartItem->end_time);
+                            })
+                            ->orWhere(function ($q) use ($cartItem) {
+                                $q->where('start_time', '<=', $cartItem->start_time)
+                                  ->where('end_time', '>=', $cartItem->end_time);
+                            });
+                        })
+                        ->sum('quantity');
+
+                    // Hitung quantity di cart user lain (untuk slot waktu yang sama)
+                    $otherCartQuantity = CartItem::join('carts', 'cart_items.cart_id', '=', 'carts.id')
+                        ->where('cart_items.type', 'rental_item')
+                        ->where('cart_items.item_id', $rentalItem->id)
+                        ->where('cart_items.id', '!=', $cartItem->id)
+                        ->where('carts.user_id', '!=', Auth::id()) // Exclude current user's cart
+                        ->where(function ($query) use ($cartItem) {
+                            $query->where(function ($q) use ($cartItem) {
+                                $q->where('cart_items.start_time', '>=', $cartItem->start_time)
+                                  ->where('cart_items.start_time', '<', $cartItem->end_time);
+                            })
+                            ->orWhere(function ($q) use ($cartItem) {
+                                $q->where('cart_items.end_time', '>', $cartItem->start_time)
+                                  ->where('cart_items.end_time', '<=', $cartItem->end_time);
+                            })
+                            ->orWhere(function ($q) use ($cartItem) {
+                                $q->where('cart_items.start_time', '<=', $cartItem->start_time)
+                                  ->where('cart_items.end_time', '>=', $cartItem->end_time);
+                            });
+                        })
+                        ->sum('cart_items.quantity');
+
+                    // Hitung quantity dari cart item user saat ini di slot waktu yang sama (exclude item yang sedang diedit)
+                    $currentUserOtherCartQuantity = CartItem::where('cart_id', $cart->id)
+                        ->where('type', 'rental_item')
+                        ->where('item_id', $rentalItem->id)
+                        ->where('id', '!=', $cartItem->id)
+                        ->where(function ($query) use ($cartItem) {
+                            $query->where(function ($q) use ($cartItem) {
+                                $q->where('start_time', '>=', $cartItem->start_time)
+                                  ->where('start_time', '<', $cartItem->end_time);
+                            })
+                            ->orWhere(function ($q) use ($cartItem) {
+                                $q->where('end_time', '>', $cartItem->start_time)
+                                  ->where('end_time', '<=', $cartItem->end_time);
+                            })
+                            ->orWhere(function ($q) use ($cartItem) {
+                                $q->where('start_time', '<=', $cartItem->start_time)
+                                  ->where('end_time', '>=', $cartItem->end_time);
+                            });
+                        })
+                        ->sum('quantity');
+
+                    // Hitung total quantity yang sudah terpakai
+                    $totalUsedQuantity = $bookedQuantity + $otherCartQuantity + $currentUserOtherCartQuantity;
+
+                    // Maximum quantity = total stock - yang sudah terpakai + quantity item saat ini
+                    $maxQuantity = $rentalItem->stock_total - $totalUsedQuantity + $cartItem->quantity;
+
+                    // Pastikan max quantity tidak negatif dan tidak melebihi total stock
+                    $maxQuantity = max(1, min($maxQuantity, $rentalItem->stock_total));
+
+                    Log::info('Cart item details calculation', [
+                        'rental_item_id' => $rentalItem->id,
+                        'stock_total' => $rentalItem->stock_total,
+                        'booked_quantity' => $bookedQuantity,
+                        'other_cart_quantity' => $otherCartQuantity,
+                        'current_user_other_cart_quantity' => $currentUserOtherCartQuantity,
+                        'total_used_quantity' => $totalUsedQuantity,
+                        'current_quantity' => $cartItem->quantity,
+                        'calculated_max_quantity' => $maxQuantity
+                    ]);
+
+                    $itemDetails = [
+                        'type' => 'rental_item',
+                        'name' => $rentalItem->name,
+                        'current_quantity' => $cartItem->quantity,
+                        'max_quantity' => $maxQuantity,
+                        'available_stock' => $rentalItem->stock_total - $totalUsedQuantity,
+                        'price_per_unit' => $rentalItem->rental_price,
+                        'current_price' => $cartItem->price,
+                        'start_time' => Carbon::parse($cartItem->start_time)->format('d M Y H:i'),
+                        'end_time' => Carbon::parse($cartItem->end_time)->format('H:i'),
+                    ];
+                }
+                break;
+
+            case 'field_booking':
+                $field = Field::find($cartItem->item_id);
+                if ($field) {
+                    $itemDetails = [
+                        'type' => 'field_booking',
+                        'name' => $field->name,
+                        'start_time' => Carbon::parse($cartItem->start_time)->format('d M Y H:i'),
+                        'end_time' => Carbon::parse($cartItem->end_time)->format('H:i'),
+                        'price' => $cartItem->price,
+                    ];
+                }
+                break;
+
+            case 'photographer':
+                $photographer = Photographer::find($cartItem->item_id);
+                if ($photographer) {
+                    $itemDetails = [
+                        'type' => 'photographer',
+                        'name' => $photographer->name,
+                        'start_time' => Carbon::parse($cartItem->start_time)->format('d M Y H:i'),
+                        'end_time' => Carbon::parse($cartItem->end_time)->format('H:i'),
+                        'price' => $cartItem->price,
+                    ];
+                }
+                break;
+
+            case 'membership':
+                $membership = Membership::find($cartItem->item_id);
+                if ($membership) {
+                    $paymentPeriod = $cartItem->payment_period ?? 'weekly';
+                    $periodText = $paymentPeriod === 'monthly' ? 'Bulanan' : 'Mingguan';
+
+                    $itemDetails = [
+                        'type' => 'membership',
+                        'name' => $membership->name,
+                        'payment_period' => $periodText,
+                        'price' => $cartItem->price,
+                    ];
+                }
+                break;
+        }
+
+        return response()->json([
+            'success' => true,
+            'item' => $itemDetails
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error getting cart item details: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengambil detail item'
+        ], 500);
+    }
+}
+
 }

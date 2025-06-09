@@ -338,18 +338,7 @@
                     </div>
                 </div>
 
-                <div class="faq-item">
-                    <button class="faq-question collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#collapseFive" aria-expanded="false">
-                        <span>Berapa lama durasi membership yang harus diambil?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div id="collapseFive" class="faq-answer collapse" data-bs-parent="#membershipFAQ">
-                        <div class="faq-content">
-                            Durasi minimum membership adalah 1 bulan (4 minggu). Setelah periode tersebut, Anda dapat memperpanjang atau mengakhiri membership.
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </section>
 
@@ -444,7 +433,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: #d00f25;
+            color: #9E0620;
             background: rgba(208, 15, 37, 0.1);
             padding: 0.4rem 1rem;
             border-radius: 50px;
@@ -523,7 +512,7 @@
             width: 80px;
             height: 80px;
             background: rgba(208, 15, 37, 0.1);
-            color: #d00f25;
+            color: #9E0620;
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -623,7 +612,7 @@
             position: absolute;
             top: 1.25rem;
             right: 1.25rem;
-            background: #d00f25;
+            background: #9E0620;
             color: white;
             font-size: 0.75rem;
             font-weight: 700;
@@ -760,7 +749,7 @@
 
         .faq-question:not(.collapsed) {
             background: #f8f9fa;
-            color: #d00f25;
+            color: #9E0620;
         }
 
         .faq-question i {
@@ -778,7 +767,7 @@
         .faq-question:not(.collapsed) i {
             transform: rotate(180deg);
             color: white;
-            background: #d00f25;
+            background: #9E0620;
         }
 
         .faq-answer {
@@ -855,7 +844,7 @@
         }
 
         .btn-primary {
-            background: #d00f25;
+            background: #9E0620;
             color: white;
             box-shadow: 0 8px 15px rgba(208, 15, 37, 0.3);
         }

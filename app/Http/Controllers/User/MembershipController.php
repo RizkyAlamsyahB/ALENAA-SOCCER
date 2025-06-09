@@ -4,9 +4,11 @@ namespace App\Http\Controllers\User;
 
 use Carbon\Carbon;
 use Midtrans\Snap;
+use App\Models\Cart;
 use App\Models\User;
 use App\Models\Field;
 use App\Models\Payment;
+use App\Models\CartItem;
 use App\Models\Membership;
 use App\Models\RentalItem;
 use Illuminate\Support\Str;
@@ -146,7 +148,7 @@ class MembershipController extends Controller
 
 
 /**
- * Mendapatkan slot waktu yang tersedia berdasarkan tanggal
+ * Mendapatkan slot waktu yang tersedia berdasarkan tanggal - FIXED VERSION
  */
 public function getAvailableTimeSlotsByDate(Request $request, $fieldId)
 {
@@ -164,6 +166,57 @@ public function getAvailableTimeSlotsByDate(Request $request, $fieldId)
     // Ambil semua slot waktu
     $allSlots = $this->getAvailableTimeSlots($fieldId);
 
+    // TAMBAHAN BARU: Get cart items for current user, field, and date (mirip FieldsController)
+    $cartSlots = [];
+    if (Auth::check()) {
+        $userCart = Cart::where('user_id', Auth::id())->first();
+
+        if ($userCart) {
+            // Cek cart items untuk membership dengan field yang sama dan tanggal yang sama
+            $cartItems = CartItem::where('cart_id', $userCart->id)
+                ->where('type', 'membership')
+                ->get();
+
+            foreach ($cartItems as $cartItem) {
+                // Jika item ini adalah membership, cek sessions-nya
+                if (!empty($cartItem->membership_sessions)) {
+                    $sessions = json_decode($cartItem->membership_sessions, true);
+                    $membership = Membership::find($cartItem->item_id);
+
+                    if ($membership && $membership->field_id == $fieldId) {
+                        foreach ($sessions as $session) {
+                            // Cek apakah session ini pada tanggal yang sama
+                            if ($session['date'] === $date) {
+                                try {
+                                    $startTime = Carbon::parse($session['start_time']);
+                                    $endTime = Carbon::parse($session['end_time']);
+                                    $startFormatted = $startTime->format('H:i');
+                                    $endFormatted = $endTime->format('H:i');
+                                    $cartSlots[] = $startFormatted . ' - ' . $endFormatted;
+                                } catch (\Exception $e) {
+                                    Log::error('Error parsing membership session time in cart: ' . $e->getMessage());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // TAMBAHAN: Juga cek field_booking biasa di cart untuk field yang sama
+            $fieldCartItems = CartItem::where('cart_id', $userCart->id)
+                ->where('type', 'field_booking')
+                ->where('item_id', $fieldId)
+                ->whereDate('start_time', $date)
+                ->get();
+
+            foreach ($fieldCartItems as $item) {
+                $startFormatted = Carbon::parse($item->start_time)->format('H:i');
+                $endFormatted = Carbon::parse($item->end_time)->format('H:i');
+                $cartSlots[] = $startFormatted . ' - ' . $endFormatted;
+            }
+        }
+    }
+
     // Dapatkan booking yang sudah ada pada tanggal tersebut
     $bookedSlots = DB::table('field_bookings')
         ->where('field_id', $fieldId)
@@ -176,13 +229,13 @@ public function getAvailableTimeSlotsByDate(Request $request, $fieldId)
     foreach ($allSlots as $slot) {
         $startTime = Carbon::parse("{$date} {$slot['start']}");
         $endTime = Carbon::parse("{$date} {$slot['end']}");
+        $displaySlot = $slot['start'] . ' - ' . $slot['end'];
         $isAvailable = true;
         $isPastTime = false;
+        $isInCart = in_array($displaySlot, $cartSlots); // TAMBAHAN BARU
 
-        // PERBAIKAN: Cek apakah slot waktu sudah lewat
+        // Cek apakah slot waktu sudah lewat
         if ($isToday) {
-            // Jika tanggal yang dipilih adalah hari ini, cek apakah waktu AKHIR slot sudah lewat
-            // Slot disable jika waktu end sudah terlewati
             if ($endTime <= $now) {
                 $isPastTime = true;
                 $isAvailable = false;
@@ -204,15 +257,18 @@ public function getAvailableTimeSlotsByDate(Request $request, $fieldId)
             }
         }
 
-        // Hanya tambahkan slot yang available (bukan past time dan tidak booked)
-        if ($isAvailable) {
+        // PERBAIKAN: Hanya tambahkan slot yang available DAN tidak past time
+        // Slot yang in_cart tetap ditampilkan tapi dengan status khusus
+        if (!$isPastTime) {
             $availableSlots[] = [
                 'start' => $slot['start'],
                 'end' => $slot['end'],
-                'display' => $slot['start'] . ' - ' . $slot['end'],
+                'display' => $displaySlot,
                 'date' => $date,
-                'value' => $date . '|' . $slot['start'] . ' - ' . $slot['end'] . '|' . $fieldId,
-                'is_past_time' => $isPastTime
+                'value' => $date . '|' . $displaySlot . '|' . $fieldId,
+                'is_past_time' => $isPastTime,
+                'is_available' => $isAvailable && !$isInCart, // TAMBAHAN: tidak available jika sudah di cart
+                'in_cart' => $isInCart // TAMBAHAN BARU
             ];
         }
     }
@@ -241,7 +297,84 @@ public function saveScheduleToCart(Request $request, $id)
 
         // Ambil array dari slot yang dipilih
         $selectedSlots = $request->selected_slots;
+// Tambahkan validasi ini di method saveScheduleToCart() setelah basic validation
+// Letakkan setelah baris: $selectedSlots = $request->selected_slots;
 
+// TAMBAHAN BARU: Validasi apakah ada slot yang sudah ada di cart
+$cartConflictSlots = [];
+if (Auth::check()) {
+    $userCart = Cart::where('user_id', Auth::id())->first();
+
+    if ($userCart) {
+        // Cek membership items di cart yang menggunakan field yang sama
+        $existingMembershipItems = CartItem::where('cart_id', $userCart->id)
+            ->where('type', 'membership')
+            ->get();
+
+        foreach ($existingMembershipItems as $cartItem) {
+            if (!empty($cartItem->membership_sessions)) {
+                $existingSessions = json_decode($cartItem->membership_sessions, true);
+                $existingMembership = Membership::find($cartItem->item_id);
+
+                if ($existingMembership && $existingMembership->field_id == $membership->field_id) {
+                    foreach ($existingSessions as $existingSession) {
+                        foreach ($selectedSlots as $selectedSlot) {
+                            $parts = explode('|', $selectedSlot);
+                            if (count($parts) === 3) {
+                                $selectedDate = $parts[0];
+                                $selectedTimeRange = $parts[1];
+
+                                // Cek apakah ada konflik
+                                if ($existingSession['date'] === $selectedDate) {
+                                    $existingStartTime = Carbon::parse($existingSession['start_time'])->format('H:i');
+                                    $existingEndTime = Carbon::parse($existingSession['end_time'])->format('H:i');
+                                    $existingTimeRange = $existingStartTime . ' - ' . $existingEndTime;
+
+                                    if ($selectedTimeRange === $existingTimeRange) {
+                                        $cartConflictSlots[] = $selectedTimeRange . ' pada tanggal ' . $selectedDate;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Cek juga field booking biasa di cart
+        foreach ($selectedSlots as $selectedSlot) {
+            $parts = explode('|', $selectedSlot);
+            if (count($parts) === 3) {
+                $selectedDate = $parts[0];
+                $selectedTimeRange = $parts[1];
+                [$startTime, $endTime] = explode(' - ', $selectedTimeRange);
+
+                $startDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$selectedDate} {$startTime}");
+                $endDateTime = Carbon::createFromFormat('Y-m-d H:i', "{$selectedDate} {$endTime}");
+
+                $fieldCartItems = CartItem::where('cart_id', $userCart->id)
+                    ->where('type', 'field_booking')
+                    ->where('item_id', $membership->field_id)
+                    ->whereDate('start_time', $selectedDate)
+                    ->get();
+
+                foreach ($fieldCartItems as $fieldCartItem) {
+                    $cartStartTime = Carbon::parse($fieldCartItem->start_time);
+                    $cartEndTime = Carbon::parse($fieldCartItem->end_time);
+
+                    if ($startDateTime->equalTo($cartStartTime) && $endDateTime->equalTo($cartEndTime)) {
+                        $cartConflictSlots[] = $selectedTimeRange . ' pada tanggal ' . $selectedDate;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Jika ada konflik dengan cart, return error
+if (!empty($cartConflictSlots)) {
+    return back()->with('error', 'Beberapa slot waktu yang dipilih sudah ada di keranjang Anda: ' . implode(', ', array_unique($cartConflictSlots)) . '. Silakan pilih slot waktu lain atau hapus dari keranjang terlebih dahulu.');
+}
         // Periksa jumlah slot berdasarkan tipe membership
         $requiredHours = $this->getRequiredHoursByType($membership->type);
 
