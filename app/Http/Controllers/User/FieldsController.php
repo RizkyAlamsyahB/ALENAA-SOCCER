@@ -33,26 +33,30 @@ class FieldsController extends Controller
         return view('users.fields.index', compact('fields'));
     }
 
-    /**
-     * Menampilkan detail lapangan
-     */
-    public function show($id)
-    {
-        $field = Field::findOrFail($id);
+/**
+ * Menampilkan detail lapangan
+ */
+public function show($id)
+{
+    $field = Field::findOrFail($id);
 
-        // Tambahkan rating dan review count
-        $field->rating = $field->getRatingAttribute();
-        $field->reviews_count = $field->getReviewsCountAttribute();
+    // Tambahkan rating dan review count
+    $field->rating = $field->getRatingAttribute();
+    $field->reviews_count = $field->getReviewsCountAttribute();
 
-        // Ambil paket fotografer untuk lapangan ini
-        $photographerPackages = Photographer::where('field_id', $id)
-            ->where('status', 'active')
-            ->get();
+    // Ambil paket fotografer untuk lapangan ini
+    $photographerPackages = Photographer::where('field_id', $id)
+        ->where('status', 'active')
+        ->get();
 
-        $memberships = Membership::where('field_id', $id)->get();
+    // Ambil membership dengan urutan yang diinginkan (bronze, silver, gold)
+    $memberships = Membership::where('field_id', $id)
+        ->where('status', 'active')
+        ->orderByRaw("FIELD(type, 'bronze', 'silver', 'gold')")
+        ->get();
 
-        return view('users.fields.show', compact('field', 'memberships', 'photographerPackages'));
-    }
+    return view('users.fields.show', compact('field', 'memberships', 'photographerPackages'));
+}
 
     /**
      * Mendapatkan slot waktu yang tersedia untuk tanggal tertentu

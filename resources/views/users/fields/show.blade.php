@@ -21,7 +21,7 @@
                 <li class="breadcrumb-item">
                     <a href="{{ route('user.fields.index') }}" class="breadcrumb-link">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>Venues</span>
+                        <span>Lapangan</span>
                     </a>
                 </li>
                 <li class="breadcrumb-item active">
@@ -217,159 +217,85 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Membership Packages Card -->
+                        <!-- Membership Packages Card - DYNAMIC VERSION -->
                         <div class="card border-0 rounded-4 shadow-sm hover-shadow mb-4">
                             <div class="card-header bg-white py-3 border-0 px-4">
-                                <h5 class="mb-0 fw-bold">Membership Packages</h5>
+                                <h5 class="mb-0 fw-bold">Paket Membership</h5>
                             </div>
                             <div class="card-body p-4">
                                 <div class="row g-4">
-                                    <!-- Bronze Package -->
-                                    <div class="col-md-4">
-                                        <div class="membership-card bronze">
-                                            <div class="package-header">
-                                                <div class="package-info">
-                                                    <div class="package-icon">
-                                                        <i class="fas fa-award"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h5 class="package-title">Bronze</h5>
-                                                        <p class="package-subtitle">3x main/minggu</p>
-                                                    </div>
-                                                </div>
-                                                <div class="save-badge bronze">
-                                                    <i class="fas fa-tag"></i>
-                                                    <span>Save 10%</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="package-footer">
-                                                <div class="price-info">
-                                                    <span class="price">Rp
-                                                        {{ number_format($field->price * 3 * 4 * 0.9, 0, ',', '.') }}</span>
-                                                    <span class="duration">/minggu</span>
-                                                </div>
-
-                                                @php
-                                                    $bronzeMembership = $memberships
-                                                        ->where('field_id', $field->id)
-                                                        ->where('type', 'bronze')
-                                                        ->first();
-                                                @endphp
-                                                @if ($bronzeMembership)
-                                                    <a href="{{ route('user.membership.show', $bronzeMembership->id) }}"
-                                                        class="select-btn bronze">
-                                                        <span>Pilih Paket</span>
-                                                        <i class="fas fa-arrow-right"></i>
-                                                    </a>
-                                                @else
-                                                    <button class="btn btn-secondary" disabled>
-                                                        <span>Tidak Tersedia</span>
-                                                    </button>
+                                    @forelse($memberships as $membership)
+                                        <div class="col-md-4">
+                                            <div
+                                                class="membership-card {{ $membership->type }} {{ $membership->is_popular ? 'featured' : '' }}">
+                                                @if ($membership->is_popular)
+                                                    <div class="featured-label">Populer</div>
                                                 @endif
+
+                                                <div class="package-header">
+                                                    <div class="package-info">
+                                                        <div class="package-icon">
+                                                            @if ($membership->type == 'bronze')
+                                                                <i class="fas fa-award"></i>
+                                                            @elseif($membership->type == 'silver')
+                                                                <i class="fas fa-medal"></i>
+                                                            @elseif($membership->type == 'gold')
+                                                                <i class="fas fa-trophy"></i>
+                                                            @else
+                                                                <i class="fas fa-star"></i>
+                                                            @endif
+                                                        </div>
+                                                        <div>
+                                                            <h5 class="package-title">{{ ucfirst($membership->type) }}
+                                                            </h5>
+                                                            <p class="package-subtitle">
+                                                                {{ $membership->sessions_per_week ?? 3 }}x sesi/minggu</p>
+                                                        </div>
+                                                    </div>
+
+                                                    @if ($membership->discount_percentage)
+                                                        <div class="save-badge {{ $membership->type }}">
+                                                            <i class="fas fa-tag"></i>
+                                                            <span>Save {{ $membership->discount_percentage }}%</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                <div class="package-footer">
+                                                    <div class="price-info">
+                                                        <span class="price">Rp
+                                                            {{ number_format($membership->price, 0, ',', '.') }}</span>
+                                                        <span
+                                                            class="duration">/{{ $membership->billing_period ?? 'minggu' }}</span>
+                                                    </div>
+
+                                                    @if ($membership->status == 'active')
+                                                        <a href="{{ route('user.membership.show', $membership->id) }}"
+                                                            class="select-btn {{ $membership->type }}">
+                                                            <span>Pilih Paket</span>
+                                                            <i class="fas fa-arrow-right"></i>
+                                                        </a>
+                                                    @else
+                                                        <button class="btn btn-secondary" disabled>
+                                                            <span>Tidak Tersedia</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Silver Package -->
-                                    <div class="col-md-4">
-                                        <div class="membership-card silver featured">
-                                            <div class="featured-label">Populer</div>
-                                            <div class="package-header">
-                                                <div class="package-info">
-                                                    <div class="package-icon">
-                                                        <i class="fas fa-medal"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h5 class="package-title">Silver</h5>
-                                                        <p class="package-subtitle">3x main/minggu</p>
-                                                    </div>
+                                    @empty
+                                        <div class="col-12">
+                                            <div class="text-center py-5">
+                                                <div class="empty-state">
+                                                    <i class="fas fa-calendar-times"
+                                                        style="font-size: 3rem; color: #6c757d; margin-bottom: 1rem;"></i>
+                                                    <h4>Belum Ada Paket Membership</h4>
+                                                    <p class="text-muted">Saat ini belum ada paket membership yang tersedia
+                                                        untuk lapangan ini.</p>
                                                 </div>
-                                                <div class="save-badge silver">
-                                                    <i class="fas fa-tag"></i>
-                                                    <span>Save 15%</span>
-                                                </div>
-                                            </div>
-
-
-
-                                            <div class="package-footer">
-                                                <div class="price-info">
-                                                    <span class="price">Rp
-                                                        {{ number_format($field->price * 3 * 4 * 2 * 0.85, 0, ',', '.') }}</span>
-                                                    <span class="duration">/minggu</span>
-                                                </div>
-
-                                                @php
-                                                    $silverMembership = $memberships
-                                                        ->where('field_id', $field->id)
-                                                        ->where('type', 'silver')
-                                                        ->first();
-                                                @endphp
-                                                @if ($silverMembership)
-                                                    <a href="{{ route('user.membership.show', $silverMembership->id) }}"
-                                                        class="select-btn silver">
-                                                        <span>Pilih Paket</span>
-                                                        <i class="fas fa-arrow-right"></i>
-                                                    </a>
-                                                @else
-                                                    <button class="btn btn-secondary" disabled>
-                                                        <span>Tidak Tersedia</span>
-                                                    </button>
-                                                @endif
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Gold Package -->
-                                    <div class="col-md-4">
-                                        <div class="membership-card gold">
-                                            <div class="package-header">
-                                                <div class="package-info">
-                                                    <div class="package-icon">
-                                                        <i class="fas fa-trophy"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h5 class="package-title">Gold</h5>
-                                                        <p class="package-subtitle">3x main/minggu</p>
-                                                    </div>
-                                                </div>
-                                                <div class="save-badge gold">
-                                                    <i class="fas fa-tag"></i>
-                                                    <span>Save 20%</span>
-                                                </div>
-                                            </div>
-
-
-
-                                            <div class="package-footer">
-                                                <div class="price-info">
-                                                    <span class="price">Rp
-                                                        {{ number_format($field->price * 3 * 4 * 3 * 0.8, 0, ',', '.') }}</span>
-                                                    <span class="duration">/minggu</span>
-                                                </div>
-
-                                                @php
-                                                    $goldMembership = $memberships
-                                                        ->where('field_id', $field->id)
-                                                        ->where('type', 'gold')
-                                                        ->first();
-                                                @endphp
-                                                @if ($goldMembership)
-                                                    <a href="{{ route('user.membership.show', $goldMembership->id) }}"
-                                                        class="select-btn gold">
-                                                        <span>Pilih Paket</span>
-                                                        <i class="fas fa-arrow-right"></i>
-                                                    </a>
-                                                @else
-                                                    <button class="btn btn-secondary" disabled>
-                                                        <span>Tidak Tersedia</span>
-                                                    </button>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endforelse
                                 </div>
                             </div>
                         </div>
@@ -1011,47 +937,52 @@
                                     // Update total price
                                     totalPriceElement.textContent = `Rp ${totalPrice.toLocaleString('id')}`;
                                 }
-// Helper function to show Bootstrap alerts
-function showAlert(title, message, type, duration = 5000) {
-    // Create alert container if it doesn't exist
-    let alertContainer = document.querySelector('.alert-container');
-    if (!alertContainer) {
-        alertContainer = document.createElement('div');
-        alertContainer.className = 'alert-container position-fixed top-0 end-0 p-3';
-        alertContainer.style.zIndex = '9999';
-        alertContainer.style.maxWidth = '400px';
-        document.body.appendChild(alertContainer);
-    }
+                                // Helper function to show Bootstrap alerts
+                                function showAlert(title, message, type, duration = 5000) {
+                                    // Create alert container if it doesn't exist
+                                    let alertContainer = document.querySelector('.alert-container');
+                                    if (!alertContainer) {
+                                        alertContainer = document.createElement('div');
+                                        alertContainer.className = 'alert-container position-fixed top-0 end-0 p-3';
+                                        alertContainer.style.zIndex = '9999';
+                                        alertContainer.style.maxWidth = '400px';
+                                        document.body.appendChild(alertContainer);
+                                    }
 
-    // Map alert types to Bootstrap classes
-    const alertTypeMap = {
-        'success': 'alert-success',
-        'error': 'alert-danger',
-        'danger': 'alert-danger',
-        'warning': 'alert-warning',
-        'info': 'alert-info'
-    };
+                                    // Map alert types to Bootstrap classes
+                                    const alertTypeMap = {
+                                        'success': 'alert-success',
+                                        'error': 'alert-danger',
+                                        'danger': 'alert-danger',
+                                        'warning': 'alert-warning',
+                                        'info': 'alert-info'
+                                    };
 
-    // Create alert element
-    const alertEl = document.createElement('div');
-    alertEl.className = `alert ${alertTypeMap[type] || 'alert-info'} alert-dismissible fade show mb-2`;
-    alertEl.setAttribute('role', 'alert');
-    alertEl.style.minWidth = '300px';
-    alertEl.style.animation = 'slideInRight 0.3s ease-out';
+                                    // Create alert element
+                                    const alertEl = document.createElement('div');
+                                    alertEl.className = `alert ${alertTypeMap[type] || 'alert-info'} alert-dismissible fade show mb-2`;
+                                    alertEl.setAttribute('role', 'alert');
+                                    alertEl.style.minWidth = '300px';
+                                    alertEl.style.animation = 'slideInRight 0.3s ease-out';
 
-    // Get appropriate icon for alert type
-    const getIcon = (type) => {
-        switch(type) {
-            case 'success': return '<i class="fas fa-check-circle me-2"></i>';
-            case 'error':
-            case 'danger': return '<i class="fas fa-exclamation-circle me-2"></i>';
-            case 'warning': return '<i class="fas fa-exclamation-triangle me-2"></i>';
-            case 'info': return '<i class="fas fa-info-circle me-2"></i>';
-            default: return '<i class="fas fa-info-circle me-2"></i>';
-        }
-    };
+                                    // Get appropriate icon for alert type
+                                    const getIcon = (type) => {
+                                        switch (type) {
+                                            case 'success':
+                                                return '<i class="fas fa-check-circle me-2"></i>';
+                                            case 'error':
+                                            case 'danger':
+                                                return '<i class="fas fa-exclamation-circle me-2"></i>';
+                                            case 'warning':
+                                                return '<i class="fas fa-exclamation-triangle me-2"></i>';
+                                            case 'info':
+                                                return '<i class="fas fa-info-circle me-2"></i>';
+                                            default:
+                                                return '<i class="fas fa-info-circle me-2"></i>';
+                                        }
+                                    };
 
-    alertEl.innerHTML = `
+                                    alertEl.innerHTML = `
         <div class="d-flex align-items-center">
             ${getIcon(type)}
             <div class="flex-grow-1">
@@ -1061,67 +992,72 @@ function showAlert(title, message, type, duration = 5000) {
         </div>
     `;
 
-    // Add to container
-    alertContainer.appendChild(alertEl);
+                                    // Add to container
+                                    alertContainer.appendChild(alertEl);
 
-    // Auto dismiss after specified duration
-    if (duration > 0) {
-        setTimeout(() => {
-            if (alertEl && alertEl.parentNode) {
-                // Add fade out effect
-                alertEl.style.animation = 'slideOutRight 0.3s ease-in';
-                setTimeout(() => {
-                    if (alertEl && alertEl.parentNode) {
-                        alertEl.remove();
-                    }
-                }, 300);
-            }
-        }, duration);
-    }
+                                    // Auto dismiss after specified duration
+                                    if (duration > 0) {
+                                        setTimeout(() => {
+                                            if (alertEl && alertEl.parentNode) {
+                                                // Add fade out effect
+                                                alertEl.style.animation = 'slideOutRight 0.3s ease-in';
+                                                setTimeout(() => {
+                                                    if (alertEl && alertEl.parentNode) {
+                                                        alertEl.remove();
+                                                    }
+                                                }, 300);
+                                            }
+                                        }, duration);
+                                    }
 
-    // Return alert element for manual control if needed
-    return alertEl;
-}
+                                    // Return alert element for manual control if needed
+                                    return alertEl;
+                                }
 
-// Alternative: Show alert inline within a specific container
-function showInlineAlert(containerId, title, message, type, duration = 5000) {
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.error(`Container with ID '${containerId}' not found`);
-        return;
-    }
+                                // Alternative: Show alert inline within a specific container
+                                function showInlineAlert(containerId, title, message, type, duration = 5000) {
+                                    const container = document.getElementById(containerId);
+                                    if (!container) {
+                                        console.error(`Container with ID '${containerId}' not found`);
+                                        return;
+                                    }
 
-    // Map alert types to Bootstrap classes
-    const alertTypeMap = {
-        'success': 'alert-success',
-        'error': 'alert-danger',
-        'danger': 'alert-danger',
-        'warning': 'alert-warning',
-        'info': 'alert-info'
-    };
+                                    // Map alert types to Bootstrap classes
+                                    const alertTypeMap = {
+                                        'success': 'alert-success',
+                                        'error': 'alert-danger',
+                                        'danger': 'alert-danger',
+                                        'warning': 'alert-warning',
+                                        'info': 'alert-info'
+                                    };
 
-    // Remove existing alerts in the container
-    const existingAlerts = container.querySelectorAll('.alert');
-    existingAlerts.forEach(alert => alert.remove());
+                                    // Remove existing alerts in the container
+                                    const existingAlerts = container.querySelectorAll('.alert');
+                                    existingAlerts.forEach(alert => alert.remove());
 
-    // Create alert element
-    const alertEl = document.createElement('div');
-    alertEl.className = `alert ${alertTypeMap[type] || 'alert-info'} alert-dismissible fade show`;
-    alertEl.setAttribute('role', 'alert');
+                                    // Create alert element
+                                    const alertEl = document.createElement('div');
+                                    alertEl.className = `alert ${alertTypeMap[type] || 'alert-info'} alert-dismissible fade show`;
+                                    alertEl.setAttribute('role', 'alert');
 
-    // Get appropriate icon for alert type
-    const getIcon = (type) => {
-        switch(type) {
-            case 'success': return '<i class="fas fa-check-circle me-2"></i>';
-            case 'error':
-            case 'danger': return '<i class="fas fa-exclamation-circle me-2"></i>';
-            case 'warning': return '<i class="fas fa-exclamation-triangle me-2"></i>';
-            case 'info': return '<i class="fas fa-info-circle me-2"></i>';
-            default: return '<i class="fas fa-info-circle me-2"></i>';
-        }
-    };
+                                    // Get appropriate icon for alert type
+                                    const getIcon = (type) => {
+                                        switch (type) {
+                                            case 'success':
+                                                return '<i class="fas fa-check-circle me-2"></i>';
+                                            case 'error':
+                                            case 'danger':
+                                                return '<i class="fas fa-exclamation-circle me-2"></i>';
+                                            case 'warning':
+                                                return '<i class="fas fa-exclamation-triangle me-2"></i>';
+                                            case 'info':
+                                                return '<i class="fas fa-info-circle me-2"></i>';
+                                            default:
+                                                return '<i class="fas fa-info-circle me-2"></i>';
+                                        }
+                                    };
 
-    alertEl.innerHTML = `
+                                    alertEl.innerHTML = `
         <div class="d-flex align-items-center">
             ${getIcon(type)}
             <div class="flex-grow-1">
@@ -1131,21 +1067,21 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         </div>
     `;
 
-    // Add to container at the top
-    container.insertBefore(alertEl, container.firstChild);
+                                    // Add to container at the top
+                                    container.insertBefore(alertEl, container.firstChild);
 
-    // Auto dismiss after specified duration
-    if (duration > 0) {
-        setTimeout(() => {
-            if (alertEl && alertEl.parentNode) {
-                const alert = new bootstrap.Alert(alertEl);
-                alert.close();
-            }
-        }, duration);
-    }
+                                    // Auto dismiss after specified duration
+                                    if (duration > 0) {
+                                        setTimeout(() => {
+                                            if (alertEl && alertEl.parentNode) {
+                                                const alert = new bootstrap.Alert(alertEl);
+                                                alert.close();
+                                            }
+                                        }, duration);
+                                    }
 
-    return alertEl;
-}
+                                    return alertEl;
+                                }
 
                                 // Initialize the wizard
                                 goToStep(1);
@@ -1163,28 +1099,42 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
 
     <!-- Include custom field booking JS -->
 
-<style>
-/* Bootstrap Alert Animations */
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
+    <style>
+        /* Bootstrap Alert Animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
 
-@keyframes slideOutRight {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-}
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
 
-.alert-container {
-    z-index: 9999;
-}
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
 
-.alert-container .alert {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: none;
-    border-radius: 8px;
-}
-</style>
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .alert-container {
+            z-index: 9999;
+        }
+
+        .alert-container .alert {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
     <style>
         /* Wizard Booking Process Styling - FIXED VERSION */
         .booking-wizard {
@@ -1432,8 +1382,8 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         }
 
         /* ============================================
-       TIME SLOTS - FIXED CONSISTENT LAYOUT
-       ============================================ */
+           TIME SLOTS - FIXED CONSISTENT LAYOUT
+           ============================================ */
 
         /* Time Slots Grid - Improved Consistency */
         .time-slots-grid {
@@ -1515,8 +1465,8 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         }
 
         /* ============================================
-       TIME SLOT STATES - Improved
-       ============================================ */
+           TIME SLOT STATES - Improved
+           ============================================ */
 
         /* Available Slots */
         .time-slot.slot-available:hover {
@@ -1630,8 +1580,8 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         }
 
         /* ============================================
-       RESPONSIVE DESIGN - Mobile First
-       ============================================ */
+           RESPONSIVE DESIGN - Mobile First
+           ============================================ */
 
         /* Tablet */
         @media (max-width: 992px) {
@@ -1743,8 +1693,8 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         }
 
         /* ============================================
-       SELECTED SLOTS AND CONFIRMATION
-       ============================================ */
+           SELECTED SLOTS AND CONFIRMATION
+           ============================================ */
 
         /* Selected Slots List */
         .selected-slots-list {
@@ -1810,8 +1760,8 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         }
 
         /* ============================================
-       LOADING AND PLACEHOLDER STATES
-       ============================================ */
+           LOADING AND PLACEHOLDER STATES
+           ============================================ */
 
         .slot-placeholder {
             min-height: 200px;
@@ -1834,8 +1784,8 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         }
 
         /* ============================================
-       CALENDAR STYLING (Flatpickr)
-       ============================================ */
+           CALENDAR STYLING (Flatpickr)
+           ============================================ */
 
         /* Base Calendar Container */
         .flatpickr-calendar {
@@ -1990,8 +1940,8 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         }
 
         /* ============================================
-       ALERT AND TOAST NOTIFICATIONS
-       ============================================ */
+           ALERT AND TOAST NOTIFICATIONS
+           ============================================ */
 
         .toast.bg-warning {
             background-color: #fff3cd !important;
@@ -2014,8 +1964,10 @@ function showInlineAlert(containerId, title, message, type, duration = 5000) {
         .alert-warning .fas {
             color: #f0ad4e;
         }
+        
     </style>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
+
 @endsection

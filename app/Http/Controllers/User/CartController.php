@@ -70,99 +70,110 @@ class CartController extends Controller
         }
     }
 
-    /**
-     * Menambahkan booking lapangan ke keranjang
-     */
-    private function addFieldBookingToCart(Request $request, Cart $cart)
-    {
-        // Validasi input spesifik untuk field booking
-        $request->validate([
-            'field_id' => 'required|exists:fields,id',
-            'date' => 'required|date|after_or_equal:today',
-            'slots' => 'required|array|min:1',
-            'slots.*' => 'string',
-        ]);
 
-        $field = Field::findOrFail($request->field_id);
-        $date = $request->date;
-        $selectedSlots = $request->slots;
-        $itemsAdded = 0;
+// Update method addFieldBookingToCart di CartController
 
-        // Log untuk debugging
-        Log::info('Field booking details', [
-            'field_id' => $field->id,
-            'field_name' => $field->name,
-            'date' => $date,
-            'slots_count' => count($selectedSlots),
-        ]);
+/**
+ * Menambahkan booking lapangan ke keranjang - DENGAN SARAN FOTOGRAFER
+ */
+private function addFieldBookingToCart(Request $request, Cart $cart)
+{
+    // Validasi input spesifik untuk field booking
+    $request->validate([
+        'field_id' => 'required|exists:fields,id',
+        'date' => 'required|date|after_or_equal:today',
+        'slots' => 'required|array|min:1',
+        'slots.*' => 'string',
+    ]);
 
-        foreach ($selectedSlots as $slot) {
-            // Parse slot info (format: "08:00 - 09:00")
-            [$startTime, $endTime] = explode(' - ', $slot);
+    $field = Field::findOrFail($request->field_id);
+    $date = $request->date;
+    $selectedSlots = $request->slots;
+    $itemsAdded = 0;
 
-            // Buat full datetime untuk start dan end time
-            $startDateTime = Carbon::parse("{$date} {$startTime}");
-            $endDateTime = Carbon::parse("{$date} {$endTime}");
+    // Log untuk debugging
+    Log::info('Field booking details', [
+        'field_id' => $field->id,
+        'field_name' => $field->name,
+        'date' => $date,
+        'slots_count' => count($selectedSlots),
+    ]);
 
-            // Periksa apakah slot sudah ada di cart
-            $existingItem = CartItem::where('cart_id', $cart->id)->where('type', 'field_booking')->where('item_id', $field->id)->where('start_time', $startDateTime)->where('end_time', $endDateTime)->first();
+    foreach ($selectedSlots as $slot) {
+        // Parse slot info (format: "08:00 - 09:00")
+        [$startTime, $endTime] = explode(' - ', $slot);
 
-            if (!$existingItem) {
-                // Periksa apakah slot sudah di-booking oleh user lain
-                $isBooked = FieldBooking::where('field_id', $field->id)
-                    ->whereDate('start_time', $startDateTime->toDateString())
-                    ->where(function ($query) use ($startDateTime, $endDateTime) {
-                        // PERBAIKAN: Logika diubah untuk menghindari false positive pada slot berdekatan
-                        $query
-                            ->where(function ($q) use ($startDateTime, $endDateTime) {
-                                // Waktu mulai slot berada dalam rentang booking (kecuali tepat di akhir)
-                                $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
-                            })
-                            ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                // Waktu akhir slot berada dalam rentang booking (kecuali tepat di awal)
-                                $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
-                            })
-                            ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
-                                // Booking berada seluruhnya dalam rentang slot
-                                $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
-                            });
-                    })
-                    ->where('status', '!=', 'cancelled')
-                    ->exists();
+        // Buat full datetime untuk start dan end time
+        $startDateTime = Carbon::parse("{$date} {$startTime}");
+        $endDateTime = Carbon::parse("{$date} {$endTime}");
 
-                if ($isBooked) {
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => "Slot {$slot} sudah di-booking. Silakan pilih slot lain.",
-                        ],
-                        400,
-                    );
-                }
+        // Periksa apakah slot sudah ada di cart
+        $existingItem = CartItem::where('cart_id', $cart->id)
+            ->where('type', 'field_booking')
+            ->where('item_id', $field->id)
+            ->where('start_time', $startDateTime)
+            ->where('end_time', $endDateTime)
+            ->first();
 
-                // Tambahkan item ke cart
-                CartItem::create([
-                    'cart_id' => $cart->id,
-                    'type' => 'field_booking',
-                    'item_id' => $field->id,
-                    'start_time' => $startDateTime,
-                    'end_time' => $endDateTime,
-                    'price' => $field->price,
-                ]);
+        if (!$existingItem) {
+            // Periksa apakah slot sudah di-booking oleh user lain
+            $isBooked = FieldBooking::where('field_id', $field->id)
+                ->whereDate('start_time', $startDateTime->toDateString())
+                ->where(function ($query) use ($startDateTime, $endDateTime) {
+                    $query
+                        ->where(function ($q) use ($startDateTime, $endDateTime) {
+                            $q->where('start_time', '<=', $startDateTime)->where('end_time', '>', $startDateTime);
+                        })
+                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                            $q->where('start_time', '<', $endDateTime)->where('end_time', '>=', $endDateTime);
+                        })
+                        ->orWhere(function ($q) use ($startDateTime, $endDateTime) {
+                            $q->where('start_time', '>=', $startDateTime)->where('end_time', '<=', $endDateTime);
+                        });
+                })
+                ->where('status', '!=', 'cancelled')
+                ->exists();
 
-                $itemsAdded++;
+            if ($isBooked) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => "Slot {$slot} sudah di-booking. Silakan pilih slot lain.",
+                    ],
+                    400,
+                );
             }
+
+            // Tambahkan item ke cart
+            CartItem::create([
+                'cart_id' => $cart->id,
+                'type' => 'field_booking',
+                'item_id' => $field->id,
+                'start_time' => $startDateTime,
+                'end_time' => $endDateTime,
+                'price' => $field->price,
+            ]);
+
+            $itemsAdded++;
         }
-
-        // Hitung jumlah item di cart
-        $cartCount = CartItem::where('cart_id', $cart->id)->count();
-
-        return response()->json([
-            'success' => true,
-            'message' => $itemsAdded > 0 ? 'Slot waktu berhasil ditambahkan ke keranjang' : 'Semua slot yang dipilih sudah ada di keranjang',
-            'cart_count' => $cartCount,
-        ]);
     }
+
+    // Hitung jumlah item di cart
+    $cartCount = CartItem::where('cart_id', $cart->id)->count();
+
+
+    $response = [
+        'success' => true,
+        'message' => $itemsAdded > 0 ? 'Slot waktu berhasil ditambahkan ke keranjang' : 'Semua slot yang dipilih sudah ada di keranjang',
+        'cart_count' => $cartCount,
+
+    ];
+
+
+
+    return response()->json($response);
+}
+
 
     /**
      * Menambahkan item rental ke keranjang dengan dukungan untuk jumlah berbeda per slot waktu

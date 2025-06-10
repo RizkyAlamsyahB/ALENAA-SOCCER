@@ -18,13 +18,58 @@ use App\Mail\PhotographerBookingNotification;
 
 class PhotographerController extends Controller
 {
-    /**
-     * Menampilkan daftar fotografer untuk user
+/**
+     * Menampilkan daftar fotografer untuk user - DENGAN FILTER BERDASARKAN CART
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua paket fotografer yang aktif
-        $photographers = Photographer::where('status', 'active')->get();
+        // Ambil field IDs yang ada di cart user
+        $cartFieldIds = $this->getCartFieldIds();
+
+        Log::info('Cart field IDs for photographer filtering', [
+            'user_id' => Auth::id(),
+            'cart_field_ids' => $cartFieldIds
+        ]);
+
+        // Query dasar untuk fotografer aktif
+        $query = Photographer::where('status', 'active');
+
+        // FILTER UTAMA: Jika ada lapangan di cart, filter fotografer berdasarkan lapangan tersebut
+        if (!empty($cartFieldIds)) {
+            $query->where(function($q) use ($cartFieldIds) {
+                // Fotografer yang ditugaskan ke lapangan yang ada di cart
+                $q->whereIn('field_id', $cartFieldIds)
+                  // ATAU fotografer yang tidak terikat dengan lapangan tertentu (bisa untuk semua lapangan)
+                  ->orWhereNull('field_id');
+            });
+        }
+
+        // Filter pencarian
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%")
+                  ->orWhere('package_type', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Sorting
+        switch ($request->get('sort', 'latest')) {
+            case 'price_low':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_high':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        // Ambil fotografer
+        $photographers = $query->get();
 
         // Kelompokkan fotografer berdasarkan package_type
         $photographersByType = $photographers->groupBy('package_type');
@@ -34,16 +79,88 @@ class PhotographerController extends Controller
             $photographer->rating = $photographer->getRatingAttribute();
             $photographer->reviews_count = $photographer->getReviewsCountAttribute();
 
-            // Tambahkan info lapangan
-            $field = Field::find($photographer->field_id);
-            $photographer->assigned_field = $field ? $field->name : 'Tidak terkait dengan lapangan';
+            // Tambahkan info lapangan - DENGAN LOGIC YANG LEBIH SMART
+            if ($photographer->field_id) {
+                // Jika fotografer ditugaskan ke lapangan tertentu
+                $field = Field::find($photographer->field_id);
+                $photographer->assigned_field = $field ? $field->name : 'Lapangan tidak ditemukan';
+                $photographer->field_restriction = true;
+            } else {
+                // Jika fotografer tidak terikat dengan lapangan tertentu
+                if (!empty($cartFieldIds)) {
+                    // Tampilkan lapangan yang ada di cart
+                    $cartFields = Field::whereIn('id', $cartFieldIds)->pluck('name')->toArray();
+                    $photographer->assigned_field = 'Tersedia untuk: ' . implode(', ', $cartFields);
+                } else {
+                    $photographer->assigned_field = 'Tersedia untuk semua lapangan';
+                }
+                $photographer->field_restriction = false;
+            }
         }
 
-        return view('users.photographers.index', compact('photographers', 'photographersByType'));
+        // Info untuk view tentang filtering yang diterapkan
+        $filterInfo = $this->getFilterInfo($cartFieldIds);
+
+        return view('users.photographers.index', compact(
+            'photographers',
+            'photographersByType',
+            'filterInfo',
+            'cartFieldIds'
+        ));
     }
 
     /**
-     * Menampilkan detail fotografer
+     * Helper: Ambil field IDs yang ada di cart user
+     */
+    private function getCartFieldIds()
+    {
+        if (!Auth::check()) {
+            return [];
+        }
+
+        $cart = Cart::where('user_id', Auth::id())->first();
+
+        if (!$cart) {
+            return [];
+        }
+
+        // Ambil field IDs dari cart items yang bertipe 'field_booking'
+        $fieldIds = CartItem::where('cart_id', $cart->id)
+            ->where('type', 'field_booking')
+            ->pluck('item_id')
+            ->unique()
+            ->toArray();
+
+        return $fieldIds;
+    }
+
+    /**
+     * Helper: Buat info tentang filtering yang diterapkan
+     */
+    private function getFilterInfo($cartFieldIds)
+    {
+        if (empty($cartFieldIds)) {
+            return [
+                'has_filter' => false,
+                'message' => 'Menampilkan semua fotografer tersedia',
+                'cart_fields' => []
+            ];
+        }
+
+        $cartFields = Field::whereIn('id', $cartFieldIds)->get(['id', 'name']);
+
+        return [
+            'has_filter' => true,
+            'message' => 'Menampilkan fotografer yang kompatibel dengan lapangan di keranjang Anda',
+            'cart_fields' => $cartFields,
+            'field_names' => $cartFields->pluck('name')->toArray()
+        ];
+    }
+
+
+
+    /**
+     * Method lainnya tetap sama seperti sebelumnya...
      */
     public function show($id)
     {
@@ -53,11 +170,56 @@ class PhotographerController extends Controller
         $photographer->rating = $photographer->getRatingAttribute();
         $photographer->reviews_count = $photographer->getReviewsCountAttribute();
 
-        // Tambahkan info lapangan
-        $field = Field::where('photographer_id', $photographer->user_id)->first();
-        $photographer->assigned_field = $field;
+        // Tambahkan info lapangan dengan logic yang sama
+        if ($photographer->field_id) {
+            $field = Field::find($photographer->field_id);
+            $photographer->assigned_field = $field;
+            $photographer->field_restriction = true;
+        } else {
+            $photographer->assigned_field = null;
+            $photographer->field_restriction = false;
+        }
 
-        return view('users.photographers.show', compact('photographer'));
+
+        return view('users.photographers.show', compact(
+            'photographer',
+        ));
+    }
+
+    /**
+     * Helper: Check apakah fotografer kompatibel dengan lapangan di cart
+     */
+    private function checkPhotographerCompatibility($photographer, $cartFieldIds)
+    {
+        if (empty($cartFieldIds)) {
+            // Jika tidak ada lapangan di cart, semua fotografer kompatibel
+            return [
+                'is_compatible' => true,
+                'message' => 'Fotografer tersedia'
+            ];
+        }
+
+        if ($photographer->field_id) {
+            // Jika fotografer ditugaskan ke lapangan tertentu
+            if (in_array($photographer->field_id, $cartFieldIds)) {
+                return [
+                    'is_compatible' => true,
+                    'message' => 'Fotografer kompatibel dengan lapangan di keranjang Anda'
+                ];
+            } else {
+                $assignedField = Field::find($photographer->field_id);
+                return [
+                    'is_compatible' => false,
+                    'message' => "Fotografer ini hanya tersedia untuk {$assignedField->name}. Silakan tambahkan lapangan tersebut ke keranjang atau pilih fotografer lain."
+                ];
+            }
+        } else {
+            // Jika fotografer tidak terikat dengan lapangan tertentu
+            return [
+                'is_compatible' => true,
+                'message' => 'Fotografer tersedia untuk semua lapangan di keranjang Anda'
+            ];
+        }
     }
 
     /**
