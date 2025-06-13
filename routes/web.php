@@ -191,6 +191,13 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
 
             // Detail penukaran
             Route::get('/redemption/{id}', [PointController::class, 'showRedemption'])->name('redemption-detail');
+
+            // Routes untuk modal cart:
+Route::get('/available-for-cart', [PointController::class, 'getAvailableVouchersForCart'])->name('available.for.cart');
+Route::post('/redeem-from-cart/{id}', [PointController::class, 'redeemVoucherFromCart'])->name('redeem.from.cart');
+
+// TAMBAHAN BARU - untuk apply voucher yang sudah dimiliki:
+Route::post('/apply-owned-voucher/{redemptionId}', [PointController::class, 'applyOwnedVoucherToCart'])->name('apply.owned.voucher');
         });
 
     Route::prefix('mabar')
