@@ -369,6 +369,7 @@ Route::middleware(['auth', 'checkRole:owner'])
         Route::resources([
             'users' => UserManagementController::class,
         ]);
+        Route::get('customers', [UserManagementController::class, 'customers'])->name('users.customers');
     });
 // Photographers Routes
 Route::middleware(['auth', 'checkRole:photographer'])
@@ -387,6 +388,8 @@ Route::middleware(['auth', 'checkRole:photographer'])
         // Route untuk confirm booking
         Route::post('/confirm-booking/{bookingId}/{bookingType}', [ScheduleController::class, 'confirmBooking'])->name('confirm-booking');
 
+        // Di dalam grup photographers routes
+Route::post('/complete-with-link/{bookingId}', [ScheduleController::class, 'completeWithLink'])->name('complete-with-link');
         // Route untuk cancel booking
         // Route::post('/cancel-booking/{bookingId}/{bookingType}', [ScheduleController::class, 'cancelBooking'])->name('cancel-booking');
     });

@@ -66,46 +66,35 @@
                         </a>
                     </li>
 
-                    {{-- Schedule Management --}}
-                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-                        <a href="#" class="sidebar-link">
-                            <i class="bi bi-calendar3"></i>
-                            <span>Jadwal</span>
-                        </a>
-                        <ul class="submenu {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-                            <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
-                                <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Kalender Jadwal</a>
-                            </li>
-                            <li
-                                class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
-                                <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Semua
-                                    Booking</a>
-                            </li>
-                            <li
-                                class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
-                                <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal
-                                    Membership</a>
-                            </li>
-                        </ul>
-                    </li>
 
-                    {{-- Lapangan (Field Management) --}}
-                    <li
-                        class="sidebar-item has-sub {{ request()->routeIs('admin.fields.*') || request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-                        <a href="#" class="sidebar-link">
-                            <i class="bi bi-geo-alt"></i>
-                            <span>Lapangan</span>
-                        </a>
-                        <ul
-                            class="submenu {{ request()->routeIs('admin.fields.*') || request()->routeIs('admin.schedule.field*') ? 'active' : '' }}">
-                            <li class="submenu-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
-                                <a href="{{ route('admin.fields.index') }}" class="submenu-link">Data Lapangan</a>
-                            </li>
-                            <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
-                                <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Jadwal Lapangan</a>
-                            </li>
-                        </ul>
-                    </li>
+{{-- Schedule Management --}}
+<li class="sidebar-item has-sub {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+    <a href="#" class="sidebar-link">
+        <i class="bi bi-calendar3"></i>
+        <span>Jadwal</span>
+    </a>
+    <ul class="submenu {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+        <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
+            <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Kalender Jadwal</a>
+        </li>
+        <li class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
+            <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Semua Booking</a>
+        </li>
+        <li class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
+            <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal Membership</a>
+        </li>
+    </ul>
+</li>
+
+
+{{-- Lapangan (Field Management) --}}
+<li class="sidebar-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
+    <a href="{{ route('admin.fields.index') }}" class="sidebar-link">
+        <i class="bi bi-geo-alt"></i>
+        <span>Lapangan</span>
+    </a>
+</li>
+
 
                     {{-- Fotografer --}}
                     <li class="sidebar-item {{ request()->routeIs('admin.photo-packages.*') ? 'active' : '' }}">
@@ -132,47 +121,27 @@
                             </li>
                         </ul>
                     </li>
+{{-- Membership Management --}}
+<li class="sidebar-item {{ request()->routeIs('admin.memberships.index') ? 'active' : '' }}">
+    <a href="{{ route('admin.memberships.index') }}" class="sidebar-link">
+        <i class="bi bi-person-badge"></i>
+        <span>Membership</span>
+    </a>
+</li>
 
-                    {{-- Membership Management --}}
-                    <li
-                        class="sidebar-item has-sub {{ request()->routeIs('admin.memberships.*') || request()->routeIs('admin.schedule.membership*') ? 'active' : '' }}">
-                        <a href="#" class="sidebar-link">
-                            <i class="bi bi-person-badge"></i>
-                            <span>Membership</span>
-                        </a>
-                        <ul
-                            class="submenu {{ request()->routeIs('admin.memberships.*') || request()->routeIs('admin.schedule.membership*') ? 'active' : '' }}">
-                            <li
-                                class="submenu-item {{ request()->routeIs('admin.memberships.index') ? 'active' : '' }}">
-                                <a href="{{ route('admin.memberships.index') }}" class="submenu-link">Member</a>
-                            </li>
-                            <li
-                                class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
-                                <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal
-                                    Member</a>
-                            </li>
-                        </ul>
-                    </li>
                 @endif
 
                 @if (auth()->user()->hasRole('owner'))
                     {{-- Owner Section --}}
                     <li class="sidebar-title">Manajemen (Owner)</li>
 
-                    {{-- Reports & Statistics --}}
-                    <li class="sidebar-item has-sub {{ request()->routeIs('owner.reports.*') ? 'active' : '' }}">
-                        <a href="#" class="sidebar-link">
-                            <i class="bi bi-bar-chart-fill"></i>
-                            <span>Laporan & Statistik</span>
-                        </a>
-                        <ul class="submenu {{ request()->routeIs('owner.reports.*') ? 'active' : '' }}">
-                            <li class="submenu-item {{ request()->routeIs('owner.reports.index') ? 'active' : '' }}">
-                                <a href="{{ route('owner.reports.index') }}" class="submenu-link">Dashboard
-                                    Laporan</a>
-                            </li>
-
-                        </ul>
-                    </li>
+{{-- Reports & Statistics --}}
+<li class="sidebar-item {{ request()->routeIs('owner.reports.index') ? 'active' : '' }}">
+    <a href="{{ route('owner.reports.index') }}" class="sidebar-link">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>Laporan & Statistik</span>
+    </a>
+</li>
 
                     {{-- Kelola Diskon --}}
                     <li class="sidebar-item {{ request()->routeIs('owner.discounts.*') ? 'active' : '' }}">
@@ -199,10 +168,18 @@
                     </li>
 
                     {{-- Data Pengguna - Direct link without submenu --}}
-                    <li class="sidebar-item {{ request()->routeIs('owner.users.*') ? 'active' : '' }}">
+                    <li class="sidebar-item {{ request()->routeIs('owner.users.index') ? 'active' : '' }}">
                         <a href="{{ route('owner.users.index') }}" class="sidebar-link">
                             <i class="bi bi-people-fill"></i>
                             <span>Data Pengguna</span>
+                        </a>
+                    </li>
+
+                    {{-- Data Customer - Direct link without submenu --}}
+                    <li class="sidebar-item {{ request()->routeIs('owner.users.customers') ? 'active' : '' }}">
+                        <a href="{{ route('owner.users.customers') }}" class="sidebar-link">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>Data Customer</span>
                         </a>
                     </li>
                 @endif
@@ -223,18 +200,17 @@
                 @endif
 
                 {{-- Logout - Direct link without submenu --}}
-<li class="sidebar-item">
-    <a href="{{ route('logout') }}"
-       class="sidebar-link bg-danger text-white rounded-3"
-       onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-       style="display: flex; align-items: center; padding: 0.5rem 1rem;">
-        <i class="bi bi-box-arrow-right me-2 text-white"></i>
-        <span>Logout</span>
-    </a>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-        @csrf
-    </form>
-</li>
+                <li class="sidebar-item">
+                    <a href="{{ route('logout') }}" class="sidebar-link bg-danger text-white rounded-3"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                        style="display: flex; align-items: center; padding: 0.5rem 1rem;">
+                        <i class="bi bi-box-arrow-right me-2 text-white"></i>
+                        <span>Logout</span>
+                    </a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                </li>
 
 
             </ul>

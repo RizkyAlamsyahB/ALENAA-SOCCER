@@ -249,4 +249,33 @@ public function destroy(User $user)
             ->with('error', 'Tidak dapat menghapus pengguna. Error: ' . $e->getMessage());
     }
 }
+public function customers(Request $request)
+{
+    if ($request->ajax()) {
+        // Ambil semua user dengan role 'user'
+        $users = User::where('role', 'user')->select('*');
+
+        return DataTables::of($users)
+            ->editColumn('role', function ($user) {
+                $badgeClass = match ($user->role) {
+                    'owner' => 'bg-primary',
+                    'admin' => 'bg-success',
+                    'photographer' => 'bg-info',
+                    default => 'bg-secondary',
+                };
+                return '<span class="badge ' . $badgeClass . '">' . ucfirst($user->role) . '</span>';
+            })
+            ->editColumn('created_at', fn($user) => $user->created_at->format('d M Y H:i'))
+            ->editColumn('profile_picture', function ($user) {
+                return $user->profile_picture
+                    ? '<img src="' . asset('storage/' . $user->profile_picture) . '" alt="Profile" class="img-thumbnail" width="50">'
+                    : '<span class="badge bg-secondary">No Image</span>';
+            })
+            ->rawColumns(['role', 'profile_picture'])
+            ->make(true);
+    }
+
+    return view('owner.users.customers');
+}
+
 }

@@ -20,6 +20,10 @@ return new class extends Migration {
             $table->decimal('price', 12, 2);
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
             $table->text('notes')->nullable();
+             $table->text('photo_gallery_link')->nullable();
+            $table->text('photographer_notes')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->enum('completion_status', ['pending', 'confirmed', 'shooting_completed', 'delivered'])->default('pending');
             $table->timestamps();
         });
     }

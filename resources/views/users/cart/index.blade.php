@@ -76,97 +76,153 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="cart-items-list">
-                                @foreach ($cartItems as $item)
-                                    <div class="cart-item p-4 border-bottom">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-2 col-sm-3 mb-3 mb-md-0">
-                                                <div class="cart-item-image">
-                                                    @if (isset($item->image))
-                                                        <img src="{{ Storage::url($item->image) }}"
-                                                            alt="{{ $item->name ?? 'Item' }}" class="img-fluid rounded-3">
-                                                    @else
-                                                        <div class="placeholder-image bg-light rounded-3 d-flex align-items-center justify-content-center">
-                                                            <i class="fas fa-futbol text-muted"></i>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="col-md-7 col-sm-6 mb-3 mb-md-0">
-                                                <div class="cart-item-details">
-                                                    <h5 class="cart-item-title fw-bold mb-1">
-                                                        {{ $item->name ?? 'Item' }}
-                                                    </h5>
-                                                    <div class="cart-item-category mb-2">
-                                                        <span class="type-badge">{{ $item->type_name ?? $item->type }}</span>
-                                                    </div>
-                                                    <div class="cart-item-info">
-                                                        @if ($item->type == 'field_booking' || $item->type == 'photographer')
-                                                            <div class="info-badge">
-                                                                <i class="far fa-calendar-alt"></i>
-                                                                <span>{{ $item->formatted_date ?? \Carbon\Carbon::parse($item->start_time)->format('d M Y') }}</span>
-                                                            </div>
-                                                            <div class="info-badge">
-                                                                <i class="far fa-clock"></i>
-                                                                <span>
-                                                                    {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
-                                                                </span>
-                                                            </div>
-                                                        @elseif($item->type == 'rental_item')
-                                                            <div class="info-badge">
-                                                                <i class="fas fa-box"></i>
-                                                                <span>Jumlah: {{ $item->quantity }}</span>
-                                                            </div>
-                                                            <div class="info-badge">
-                                                                <i class="far fa-calendar-alt"></i>
-                                                                <span>{{ \Carbon\Carbon::parse($item->start_time)->format('d M Y') }}</span>
-                                                            </div>
-                                                            <div class="info-badge">
-                                                                <i class="far fa-clock"></i>
-                                                                <span>
-                                                                    {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
-                                                                </span>
-                                                            </div>
-                                                        @elseif($item->type == 'membership')
-                                                            <div class="info-badge">
-                                                                <i class="fas fa-id-card"></i>
-                                                                <span>{{ $item->details ?? 'Membership' }}</span>
-                                                            </div>
-                                                            <div class="info-badge">
-                                                                <i class="fas fa-credit-card"></i>
-                                                                <span>
-                                                                    Periode:
-                                                                    @if (isset($item->payment_period) && $item->payment_period == 'monthly')
-                                                                        Bulanan (4 Minggu)
-                                                                    @else
-                                                                        Mingguan
-                                                                    @endif
-                                                                </span>
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3 col-sm-3 d-flex justify-content-between align-items-center">
-                                                <div class="cart-item-price text-end">
-                                                    <div class="price" id="price-{{ $item->id }}">Rp {{ number_format($item->price, 0, ',', '.') }}</div>
-                                                </div>
-                                                <div class="cart-item-actions d-flex gap-2">
-                                                    @if ($item->type == 'rental_item')
-                                                        <button type="button" class="btn-edit" data-action="edit-item"
-                                                            data-item-id="{{ $item->id }}" title="Edit Quantity">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                    @endif
-                                                    <button type="button" class="btn-remove" data-action="remove-item"
-                                                        data-url="{{ route('user.cart.remove', $item->id) }}"
-                                                        data-item-name="{{ $item->name ?? 'Item' }}" title="Hapus">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
+@foreach ($cartItems as $item)
+    <div class="cart-item p-4 border-bottom">
+        <div class="row align-items-center">
+            <div class="col-md-2 col-sm-3 mb-3 mb-md-0">
+                <div class="cart-item-image">
+                    @if ($item->image)
+                        <img src="{{ Storage::url($item->image) }}"
+                            alt="{{ $item->name }}" class="img-fluid rounded-3">
+                    @else
+                        <div class="placeholder-image bg-light rounded-3 d-flex align-items-center justify-content-center">
+                            @switch($item->type)
+                                @case('field_booking')
+                                    <i class="fas fa-futbol"></i>
+                                    @break
+                                @case('rental_item')
+                                    <i class="fas fa-box"></i>
+                                    @break
+                                @case('membership')
+                                    <i class="fas fa-id-card"></i>
+                                    @break
+                                @case('photographer')
+                                    <i class="fas fa-camera"></i>
+                                    @break
+                                @default
+                                    <i class="fas fa-shopping-bag"></i>
+                            @endswitch
+                        </div>
+                    @endif
+                </div>
+            </div>
+            <div class="col-md-7 col-sm-6 mb-3 mb-md-0">
+                <div class="cart-item-details">
+                    <h5 class="cart-item-title fw-bold mb-1">
+                        {{ $item->name }}
+                    </h5>
+                    <div class="cart-item-category mb-2">
+                        {{-- Badge utama dengan kategori simple --}}
+                        <span class="type-badge {{ $item->category_class }}">{{ $item->category }}</span>
+
+                        {{-- Badge tambahan untuk tipe membership (Bronze, Silver, Gold) --}}
+                        @if($item->membership_type_with_class)
+                            <span class="type-badge {{ $item->membership_type_with_class['class'] }}">
+                                {{ $item->membership_type_with_class['name'] }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="cart-item-info">
+                        @if ($item->type == 'field_booking')
+                            <div class="info-badge">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>{{ $item->formatted_date }}</span>
+                            </div>
+                            <div class="info-badge">
+                                <i class="far fa-clock"></i>
+                                <span>
+                                    {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
+                                </span>
+                            </div>
+                            @if($item->field && $item->field->location)
+                                <div class="info-badge">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ $item->field->location }}</span>
+                                </div>
+                            @endif
+
+                        @elseif($item->type == 'rental_item')
+                            <div class="info-badge">
+                                <i class="fas fa-box"></i>
+                                <span>Jumlah: {{ $item->quantity }}</span>
+                            </div>
+                            <div class="info-badge">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>{{ $item->formatted_date }}</span>
+                            </div>
+                            <div class="info-badge">
+                                <i class="far fa-clock"></i>
+                                <span>
+                                    {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
+                                </span>
+                            </div>
+
+                        @elseif($item->type == 'membership')
+                            <div class="info-badge">
+                                <i class="fas fa-credit-card"></i>
+                                <span>
+                                    Periode:
+                                    @if (isset($item->payment_period) && $item->payment_period == 'monthly')
+                                        Bulanan (4 Minggu)
+                                    @else
+                                        Mingguan
+                                    @endif
+                                </span>
+                            </div>
+                            @if($item->membership && $item->membership->field)
+                                <div class="info-badge">
+                                    <i class="fas fa-futbol"></i>
+                                    <span>{{ $item->membership->field->name }}</span>
+                                </div>
+                            @endif
+
+                        @elseif($item->type == 'photographer')
+                            <div class="info-badge">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>{{ $item->formatted_date }}</span>
+                            </div>
+                            <div class="info-badge">
+                                <i class="far fa-clock"></i>
+                                <span>
+                                    {{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}
+                                </span>
+                            </div>
+                            @if($item->photographer)
+                                <div class="info-badge">
+                                    <i class="fas fa-user"></i>
+                                    <span>{{ $item->photographer->name }}</span>
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-3 d-flex justify-content-between align-items-center">
+                <div class="cart-item-price text-end">
+                    <div class="price" id="price-{{ $item->id }}">Rp {{ number_format($item->price, 0, ',', '.') }}</div>
+                    @if($item->type == 'rental_item' && $item->quantity > 1)
+                        <div class="price-per-unit text-muted small">
+                            Rp {{ number_format($item->price / $item->quantity, 0, ',', '.') }} per unit
+                        </div>
+                    @endif
+                </div>
+                <div class="cart-item-actions d-flex gap-2">
+                    @if ($item->type == 'rental_item')
+                        <button type="button" class="btn-edit" data-action="edit-item"
+                            data-item-id="{{ $item->id }}" title="Edit Quantity">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    @endif
+                    <button type="button" class="btn-remove" data-action="remove-item"
+                        data-url="{{ route('user.cart.remove', $item->id) }}"
+                        data-item-name="{{ $item->name }}" title="Hapus">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach
                             </div>
                         </div>
                     </div>
@@ -1973,5 +2029,77 @@ if (pointRedemptionModal) {
                 display: none;
             }
         }
+        /* Category Badge Styling */
+.category-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    background-color: #e9ecef;
+    color: #495057;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.cart-item:hover .category-badge {
+    background-color: #dee2e6;
+}
+
+/* Specific colors for different categories */
+.category-badge.lapangan {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.category-badge.rental {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.category-badge.member {
+    background-color: rgba(158, 6, 32, 0.1);
+    color: #9e0620;
+}
+
+.category-badge.foto {
+    background-color: rgba(111, 66, 193, 0.1);
+    color: #6f42c1;
+}
+
+.category-badge.produk {
+    background-color: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+/* Price per unit styling */
+.price-per-unit {
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+/* Enhanced icon styling for different types */
+.placeholder-image i {
+    font-size: 2rem;
+}
+
+.placeholder-image i.fa-futbol {
+    color: #28a745;
+}
+
+.placeholder-image i.fa-box {
+    color: #ffc107;
+}
+
+.placeholder-image i.fa-id-card {
+    color: #9e0620;
+}
+
+.placeholder-image i.fa-camera {
+    color: #6f42c1;
+}
+
+.placeholder-image i.fa-shopping-bag {
+    color: #17a2b8;
+}
     </style>
 @endsection
