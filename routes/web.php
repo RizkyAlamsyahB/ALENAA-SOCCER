@@ -330,48 +330,67 @@ Route::middleware(['auth', 'checkRole:owner'])
     ->prefix('owner')
     ->name('owner.')
     ->group(function () {
+
         // Dashboard Owner
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('dashboard');
 
+        // Photographer Tasks Monitoring - NEW FEATURE
+        Route::prefix('photographer-tasks')->name('photographer-tasks.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'index'])->name('index');
+            Route::get('/{task}', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'show'])->name('show');
+            Route::get('/data/tasks', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'getTasksData'])->name('data');
+            Route::get('/analytics/performance', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'photographerPerformance'])->name('performance');
+            Route::post('/{task}/reminder', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'sendReminder'])->name('reminder');
+        });
+
         // Diskon
-        Route::resource('discounts', DiscountsController::class);
+        Route::resource('discounts', App\Http\Controllers\Owner\DiscountsController::class);
 
         // Reviews
-        Route::get('reviews', [ReviewsController::class, 'index'])->name('reviews.index');
-        Route::get('reviews/{review}', [ReviewsController::class, 'show'])->name('reviews.show');
-        Route::delete('reviews/{review}', [ReviewsController::class, 'destroy'])->name('reviews.destroy');
-        Route::post('reviews/{review}/toggle-status', [ReviewsController::class, 'toggleStatus'])->name('reviews.toggle-status');
+        Route::get('reviews', [App\Http\Controllers\Owner\ReviewsController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/{review}', [App\Http\Controllers\Owner\ReviewsController::class, 'show'])->name('reviews.show');
+        Route::delete('reviews/{review}', [App\Http\Controllers\Owner\ReviewsController::class, 'destroy'])->name('reviews.destroy');
+        Route::post('reviews/{review}/toggle-status', [App\Http\Controllers\Owner\ReviewsController::class, 'toggleStatus'])->name('reviews.toggle-status');
 
-        // Summary and analytics
-        Route::get('reviews-summary', [ReviewsController::class, 'reviewSummary'])->name('reviews.summary');
-
-        // Get reviews for specific item
-        Route::get('reviews-for-item', [ReviewsController::class, 'getItemReviews'])->name('reviews.item-reviews');
+        // Summary and analytics for reviews
+        Route::get('reviews-summary', [App\Http\Controllers\Owner\ReviewsController::class, 'reviewSummary'])->name('reviews.summary');
+        Route::get('reviews-for-item', [App\Http\Controllers\Owner\ReviewsController::class, 'getItemReviews'])->name('reviews.item-reviews');
 
         // Voucher Poin
-        Route::resource('point_vouchers', PointVoucherController::class);
-        Route::patch('point-vouchers/{pointVoucher}/toggle-status', [PointVoucherController::class, 'toggleStatus'])->name('point_vouchers.toggle-status');
+        Route::resource('point_vouchers', App\Http\Controllers\Owner\PointVoucherController::class);
+        Route::patch('point-vouchers/{pointVoucher}/toggle-status', [App\Http\Controllers\Owner\PointVoucherController::class, 'toggleStatus'])->name('point_vouchers.toggle-status');
 
-        // Reports & Analytics
-        Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
-        Route::get('reports/revenue', [ReportsController::class, 'revenueReport'])->name('reports.revenue');
-        Route::get('reports/field-revenue', [ReportsController::class, 'fieldRevenueReport'])->name('reports.field-revenue');
-        Route::get('reports/rental-revenue', [ReportsController::class, 'rentalRevenueReport'])->name('reports.rental-revenue');
-        Route::get('reports/photographer-revenue', [ReportsController::class, 'photographerRevenueReport'])->name('reports.photographer-revenue');
-        Route::get('reports/dashboard-stats', [ReportsController::class, 'dashboardStats'])->name('reports.dashboard-stats');
-        Route::get('reports/membership-revenue', [ReportsController::class, 'membershipRevenueReport'])->name('reports.membership-revenue');
-        Route::get('reports/transactions', [ReportsController::class, 'transactionHistory'])->name('reports.transactions');
+        // Reports & Analytics - Grouped for better organization
+        Route::prefix('reports')->name('reports.')->group(function () {
+            // Main reports page
+            Route::get('/', [App\Http\Controllers\Owner\ReportsController::class, 'index'])->name('index');
 
-        Route::get('/reports/product-sales', [ReportsController::class, 'productSalesRevenueReport'])->name('reports.product-sales-revenue');
+            // Legacy revenue report routes (if needed)
+            Route::get('/revenue', [App\Http\Controllers\Owner\ReportsController::class, 'revenueReport'])->name('revenue');
+            Route::get('/field-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'fieldRevenueReport'])->name('field-revenue');
+            Route::get('/rental-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'rentalRevenueReport'])->name('rental-revenue');
+            Route::get('/photographer-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'photographerRevenueReport'])->name('photographer-revenue');
+            Route::get('/membership-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'membershipRevenueReport'])->name('membership-revenue');
+            Route::get('/product-sales', [App\Http\Controllers\Owner\ReportsController::class, 'productSalesRevenueReport'])->name('product-sales-revenue');
+            Route::get('/transactions', [App\Http\Controllers\Owner\ReportsController::class, 'transactionHistory'])->name('transactions');
 
-        Route::resources([
-            'users' => UserManagementController::class,
-        ]);
-        Route::get('customers', [UserManagementController::class, 'customers'])->name('users.customers');
+            // API endpoints for charts and data
+            Route::get('/dashboard-stats', [App\Http\Controllers\Owner\ReportsController::class, 'dashboardStats'])->name('dashboard-stats');
+
+            // NEW: Table data and export endpoints
+            Route::get('/table-data', [App\Http\Controllers\Owner\ReportsController::class, 'getTableData'])->name('table-data');
+            Route::get('/export', [App\Http\Controllers\Owner\ReportsController::class, 'exportToExcel'])->name('export');
+        });
+
+        // User Management
+        Route::resource('users', App\Http\Controllers\Owner\UserManagementController::class);
+        Route::get('customers', [App\Http\Controllers\Owner\UserManagementController::class, 'customers'])->name('users.customers');
     });
-// Photographers Routes
+
+
+
 Route::middleware(['auth', 'checkRole:photographer'])
     ->prefix('photographers')
     ->name('photographers.')
@@ -388,10 +407,11 @@ Route::middleware(['auth', 'checkRole:photographer'])
         // Route untuk confirm booking
         Route::post('/confirm-booking/{bookingId}/{bookingType}', [ScheduleController::class, 'confirmBooking'])->name('confirm-booking');
 
-        // Di dalam grup photographers routes
-Route::post('/complete-with-link/{bookingId}', [ScheduleController::class, 'completeWithLink'])->name('complete-with-link');
-        // Route untuk cancel booking
-        // Route::post('/cancel-booking/{bookingId}/{bookingType}', [ScheduleController::class, 'cancelBooking'])->name('cancel-booking');
+        // Route untuk mark shooting completed
+        Route::post('/mark-shooting-completed/{bookingId}', [ScheduleController::class, 'markShootingCompleted'])->name('mark-shooting-completed');
+
+        // Route untuk send photo gallery
+        Route::post('/send-photo-gallery/{bookingId}', [ScheduleController::class, 'sendPhotoGallery'])->name('send-photo-gallery');
     });
 // Auth Routes
 require __DIR__ . '/auth.php';

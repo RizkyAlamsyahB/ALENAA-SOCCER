@@ -91,13 +91,13 @@
                                     <th>Waktu</th>
                                     <th>Pelanggan</th>
                                     <th>Status</th>
-                                    <th>Status Pekerjaan</th>
+                                    <th>Status Progress</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($allBookings as $booking)
-                                    <tr data-completion-status="{{ $booking['completion_status'] ?? 'not_applicable' }}">
+                                    <tr>
                                         <td>{{ $booking['id'] }}</td>
                                         <td>
                                             @if ($booking['type'] == 'photographer')
@@ -128,51 +128,54 @@
                                                 @php
                                                     $completionStatus = $booking['completion_status'] ?? 'pending';
                                                 @endphp
-                                                @switch($completionStatus)
-                                                    @case('pending')
-                                                        <span class="badge bg-secondary">Belum Dimulai</span>
-                                                        @break
-                                                    @case('confirmed')
-                                                        <span class="badge bg-primary">Dikonfirmasi</span>
-                                                        @break
-                                                    @case('shooting_completed')
-                                                        <span class="badge bg-info">Pemotretan Selesai</span>
-                                                        @break
-                                                    @case('delivered')
-                                                        <span class="badge bg-success">Sudah Dikirim</span>
-                                                        @break
-                                                    @default
-                                                        <span class="badge bg-secondary">-</span>
-                                                @endswitch
+                                                @if ($completionStatus == 'pending' || $completionStatus == 'confirmed')
+                                                    <span class="badge bg-primary">Siap Shooting</span>
+                                                @elseif ($completionStatus == 'shooting_completed')
+                                                    <span class="badge bg-warning">Editing Foto</span>
+                                                @elseif ($completionStatus == 'delivered')
+                                                    <span class="badge bg-success">Foto Dikirim</span>
+                                                @endif
                                             @else
-                                                <span class="badge bg-light text-dark">N/A</span>
+                                                <span class="badge bg-light text-dark">-</span>
                                             @endif
                                         </td>
                                         <td>
-                                            <div class="btn-group" data-completion-status="{{ $booking['completion_status'] ?? 'not_applicable' }}">
+                                            <div class="btn-group">
                                                 <button type="button" class="btn btn-sm btn-info view-booking"
                                                     data-id="{{ $booking['id'] }}"
-                                                    data-type="{{ $booking['type'] }}"
-                                                    title="Lihat Detail">
+                                                    data-type="{{ $booking['type'] }}">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
 
-                                                @if ($booking['status'] == 'pending')
-                                                    <button type="button" class="btn btn-sm btn-success confirm-booking"
-                                                        data-id="{{ $booking['id'] }}"
-                                                        data-type="{{ $booking['type'] }}"
-                                                        title="Konfirmasi Booking">
-                                                        <i class="bi bi-check-circle"></i>
-                                                    </button>
-                                                @endif
+                                                {{-- Removed manual confirm button since payment auto-confirms --}}
 
-                                                @if ($booking['type'] == 'photographer' && $booking['status'] == 'confirmed' && ($booking['completion_status'] ?? 'pending') !== 'delivered')
-                                                    <button type="button" class="btn btn-sm btn-warning complete-booking"
-                                                        data-id="{{ $booking['id'] }}"
-                                                        data-type="{{ $booking['type'] }}"
-                                                        title="Selesaikan Pekerjaan">
-                                                        <i class="bi bi-camera-fill"></i>
-                                                    </button>
+                                                @if ($booking['type'] == 'photographer' && $booking['status'] == 'confirmed')
+                                                    @php
+                                                        $completionStatus = $booking['completion_status'] ?? 'confirmed';
+                                                    @endphp
+
+                                                    @if (in_array($completionStatus, ['pending', 'confirmed']))
+                                                        <button type="button" class="btn btn-sm btn-warning mark-completed"
+                                                            data-id="{{ $booking['id'] }}"
+                                                            title="Tandai Shooting Selesai">
+                                                            <i class="bi bi-camera"></i>
+                                                        </button>
+                                                    @elseif ($completionStatus == 'shooting_completed')
+                                                        <button type="button" class="btn btn-sm btn-primary send-gallery"
+                                                            data-id="{{ $booking['id'] }}"
+                                                            title="Kirim Link Galeri">
+                                                            <i class="bi bi-images"></i>
+                                                        </button>
+                                                    @elseif ($completionStatus == 'delivered')
+                                                        @if ($booking['photo_gallery_link'])
+                                                            <a href="{{ $booking['photo_gallery_link'] }}"
+                                                               target="_blank"
+                                                               class="btn btn-sm btn-outline-success"
+                                                               title="Lihat Galeri">
+                                                                <i class="bi bi-link-45deg"></i>
+                                                            </a>
+                                                        @endif
+                                                    @endif
                                                 @endif
                                             </div>
                                         </td>
@@ -193,7 +196,7 @@
 
     <!-- View Booking Modal -->
     <div class="modal fade" id="viewBookingModal" tabindex="-1" aria-labelledby="viewBookingModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="viewBookingModalLabel">Detail Booking</h5>
@@ -211,77 +214,54 @@
         </div>
     </div>
 
-    <!-- Confirm Booking Modal -->
-    <div class="modal fade" id="confirmBookingModal" tabindex="-1" aria-labelledby="confirmBookingModalLabel" aria-hidden="true">
+    {{-- Confirm Booking Modal removed - payment auto-confirms booking --}}
+
+    <!-- Mark Shooting Completed Modal -->
+    <div class="modal fade" id="markCompletedModal" tabindex="-1" aria-labelledby="markCompletedModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmBookingModalLabel">Konfirmasi Booking</h5>
+                    <h5 class="modal-title" id="markCompletedModalLabel">Tandai Shooting Selesai</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Anda yakin ingin mengkonfirmasi booking ini?</p>
+                    <p>Apakah sesi pemotretan sudah selesai? Setelah ditandai selesai, Anda dapat mengirim link galeri foto ke pelanggan.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" id="confirmBookingBtn">Ya, Konfirmasi</button>
+                    <button type="button" class="btn btn-warning" id="markCompletedBtn">Ya, Shooting Selesai</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Complete Booking Modal -->
-    <div class="modal fade" id="completeBookingModal" tabindex="-1" aria-labelledby="completeBookingModalLabel" aria-hidden="true">
+    <!-- Send Gallery Modal -->
+    <div class="modal fade" id="sendGalleryModal" tabindex="-1" aria-labelledby="sendGalleryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="completeBookingModalLabel">
-                        <i class="bi bi-check-circle text-success"></i> Selesaikan Pekerjaan Fotografi
-                    </h5>
+                    <h5 class="modal-title" id="sendGalleryModalLabel">Kirim Link Galeri Foto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="completeBookingForm">
+                <form id="sendGalleryForm">
                     <div class="modal-body">
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Info:</strong> Setelah mengirim link, status booking akan berubah menjadi "Selesai" dan email notifikasi akan dikirim ke pelanggan.
-                        </div>
-
                         <div class="mb-3">
-                            <label for="photoGalleryLink" class="form-label">
-                                <i class="bi bi-link-45deg"></i> Link Galeri Foto <span class="text-danger">*</span>
-                            </label>
+                            <label for="photoGalleryLink" class="form-label">Link Galeri Foto <span class="text-danger">*</span></label>
                             <input type="url" class="form-control" id="photoGalleryLink" name="photo_gallery_link"
-                                   placeholder="https://drive.google.com/... atau https://dropbox.com/..." required>
-                            <div class="form-text">
-                                Masukkan link ke galeri foto yang bisa diakses pelanggan (Google Drive, Dropbox, dll.)
-                            </div>
-                            <div class="invalid-feedback"></div>
+                                   placeholder="https://drive.google.com/... atau link lainnya" required>
+                            <div class="form-text">Masukkan link ke galeri foto yang dapat diakses pelanggan (Google Drive, Dropbox, dll.)</div>
                         </div>
-
                         <div class="mb-3">
-                            <label for="photographerNotes" class="form-label">
-                                <i class="bi bi-chat-text"></i> Pesan untuk Pelanggan (Opsional)
-                            </label>
-                            <textarea class="form-control" id="photographerNotes" name="photographer_notes"
-                                      rows="4" maxlength="1000"
-                                      placeholder="Tulis pesan khusus untuk pelanggan, misalnya instruksi download atau ucapan terima kasih..."></textarea>
-                            <div class="form-text">
-                                <span id="notesCounter">0</span>/1000 karakter
-                            </div>
-                        </div>
-
-                        <div class="bg-light p-3 rounded">
-                            <h6><i class="bi bi-person"></i> Detail Pelanggan:</h6>
-                            <div id="customerDetails"></div>
+                            <label for="photographerNotes" class="form-label">Pesan untuk Pelanggan (Opsional)</label>
+                            <textarea class="form-control" id="photographerNotes" name="photographer_notes" rows="4"
+                                      placeholder="Tambahkan pesan khusus untuk pelanggan Anda..."></textarea>
+                            <div class="form-text">Pesan ini akan disertakan dalam email yang dikirim ke pelanggan.</div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle"></i> Batal
-                        </button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-send"></i> Selesaikan & Kirim Link
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Kirim ke Pelanggan
                         </button>
                     </div>
                 </form>
@@ -289,16 +269,18 @@
         </div>
     </div>
 
-    <!-- CSS Dependencies -->
-    <link rel="stylesheet" href="{{ asset('assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
     <!-- JS Dependencies -->
     <script src="{{ asset('assets/extensions/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/extensions/datatables.net/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
+
+    <!-- FullCalendar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
@@ -332,26 +314,22 @@
                 responsive: true,
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json'
-                },
-                order: [[2, 'asc']], // Sort by date
-                columnDefs: [
-                    { orderable: false, targets: -1 } // Disable sorting on action column
-                ]
+                }
             });
 
             // Toggle between List and Calendar views
             $('#listViewBtn').click(function() {
                 $('#calendarView').hide();
                 $('#listView').show();
-                $(this).removeClass('btn-outline-primary').addClass('btn-primary');
-                $('#calendarViewBtn').removeClass('btn-primary').addClass('btn-outline-primary');
+                $('#calendarViewBtn').removeClass('btn-outline-primary').addClass('btn-primary');
+                $('#listViewBtn').removeClass('btn-primary').addClass('btn-outline-primary');
             });
 
             $('#calendarViewBtn').click(function() {
                 $('#listView').hide();
                 $('#calendarView').show();
-                $(this).removeClass('btn-outline-primary').addClass('btn-primary');
-                $('#listViewBtn').removeClass('btn-primary').addClass('btn-outline-primary');
+                $('#listViewBtn').removeClass('btn-outline-primary').addClass('btn-primary');
+                $('#calendarViewBtn').removeClass('btn-primary').addClass('btn-outline-primary');
 
                 // Initialize calendar if not already initialized
                 if (!calendarInitialized) {
@@ -386,11 +364,13 @@
 
                 // Filter by month (this is more complex and might need custom filtering)
                 if (month) {
+                    // Create a custom filter function
                     $.fn.dataTable.ext.search.push(
                         function(settings, data, dataIndex) {
                             var dateStr = data[2]; // column index of date
                             if (!dateStr) return true;
 
+                            // Parse date from format "dd MMM YYYY"
                             var dateParts = dateStr.split(' ');
                             var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                             var monthIndex = monthNames.indexOf(dateParts[1]) + 1;
@@ -399,6 +379,7 @@
                         }
                     );
                     table.draw();
+                    // Remove our custom filter function
                     $.fn.dataTable.ext.search.pop();
                 }
 
@@ -415,6 +396,7 @@
             function initializeCalendar() {
                 var calendarEl = document.getElementById('bookingCalendar');
 
+                // Menambahkan CSS kustom untuk tombol
                 var customCSS = document.createElement('style');
                 customCSS.innerHTML = `
                     .fc-button {
@@ -442,10 +424,12 @@
                         day: 'Hari'
                     },
                     events: function(info, successCallback, failureCallback) {
+                        // Convert all bookings to calendar events
                         var events = [];
                         @foreach ($allBookings as $booking)
                             var color = '{{ $booking['type'] }}' === 'photographer' ? '#3788d8' : '#28a745';
 
+                            // Change color based on status
                             @if ($booking['status'] == 'pending')
                                 color = '#ffc107';
                             @elseif ($booking['status'] == 'confirmed')
@@ -479,15 +463,18 @@
                             events = events.filter(function(event) {
                                 let monthMatch = true, typeMatch = true, statusMatch = true;
 
+                                // Month filter
                                 if (month) {
                                     var eventMonth = new Date(event.start).getMonth() + 1;
                                     monthMatch = (eventMonth == month);
                                 }
 
+                                // Type filter
                                 if (type) {
                                     typeMatch = (event.extendedProps.type === type);
                                 }
 
+                                // Status filter
                                 if (status) {
                                     statusMatch = (event.extendedProps.status === status);
                                 }
@@ -499,6 +486,7 @@
                         successCallback(events);
                     },
                     eventClick: function(info) {
+                        // Show booking details modal
                         showBookingDetails(info.event.id, info.event.extendedProps.type);
                     }
                 });
@@ -506,18 +494,6 @@
                 calendar.render();
                 calendarInitialized = true;
             }
-
-            // Character counter untuk textarea
-            $('#photographerNotes').on('input', function() {
-                const length = $(this).val().length;
-                $('#notesCounter').text(length);
-
-                if (length > 950) {
-                    $('#notesCounter').addClass('text-warning');
-                } else {
-                    $('#notesCounter').removeClass('text-warning');
-                }
-            });
 
             // View Booking Details
             $(document).on('click', '.view-booking', function() {
@@ -527,10 +503,12 @@
             });
 
             function showBookingDetails(bookingId, bookingType) {
+                // Fetch booking details via AJAX
                 $.ajax({
                     url: '{{ url("photographers/booking-details") }}/' + bookingId + '/' + bookingType,
                     type: 'GET',
                     success: function(response) {
+                        // Populate modal with booking details
                         var html = '';
                         if (response.success) {
                             var booking = response.data;
@@ -560,7 +538,7 @@
                             html += '</div><hr>';
 
                             html += '<div class="row">';
-                            html += '<div class="col-md-6"><strong>Email Pelanggan:</strong></div>';
+                            html += '<div class="col-md-6"><strong>Email:</strong></div>';
                             html += '<div class="col-md-6">' + booking.user_email + '</div>';
                             html += '</div><hr>';
 
@@ -584,54 +562,47 @@
                             html += '</div>';
                             html += '</div><hr>';
 
-                            // Tambahkan info completion untuk photographer booking
-                            if (booking.type === 'photographer') {
+                            // Show completion status for photographer bookings
+                            if (booking.type === 'photographer' && booking.completion_status) {
                                 html += '<div class="row">';
-                                html += '<div class="col-md-6"><strong>Status Pekerjaan:</strong></div>';
+                                html += '<div class="col-md-6"><strong>Status Progress:</strong></div>';
                                 html += '<div class="col-md-6">';
                                 switch(booking.completion_status) {
                                     case 'pending':
                                         html += '<span class="badge bg-secondary">Belum Dimulai</span>';
                                         break;
                                     case 'confirmed':
-                                        html += '<span class="badge bg-primary">Dikonfirmasi</span>';
+                                        html += '<span class="badge bg-primary">Siap Shooting</span>';
                                         break;
                                     case 'shooting_completed':
-                                        html += '<span class="badge bg-info">Pemotretan Selesai</span>';
+                                        html += '<span class="badge bg-warning">Editing Foto</span>';
                                         break;
                                     case 'delivered':
-                                        html += '<span class="badge bg-success">Sudah Dikirim</span>';
+                                        html += '<span class="badge bg-success">Foto Dikirim</span>';
                                         break;
                                 }
                                 html += '</div>';
                                 html += '</div><hr>';
-
-                                if (booking.photo_gallery_link) {
-                                    html += '<div class="row">';
-                                    html += '<div class="col-md-6"><strong>Link Galeri:</strong></div>';
-                                    html += '<div class="col-md-6"><a href="' + booking.photo_gallery_link + '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-link"></i> Lihat Galeri</a></div>';
-                                    html += '</div><hr>';
-                                }
-
-                                if (booking.photographer_notes) {
-                                    html += '<div class="row">';
-                                    html += '<div class="col-md-6"><strong>Catatan Fotografer:</strong></div>';
-                                    html += '<div class="col-md-6">' + booking.photographer_notes + '</div>';
-                                    html += '</div><hr>';
-                                }
-
-                                if (booking.completed_at) {
-                                    html += '<div class="row">';
-                                    html += '<div class="col-md-6"><strong>Selesai Pada:</strong></div>';
-                                    html += '<div class="col-md-6">' + booking.completed_at + '</div>';
-                                    html += '</div><hr>';
-                                }
                             }
 
                             if (booking.notes) {
                                 html += '<div class="row">';
                                 html += '<div class="col-md-6"><strong>Catatan:</strong></div>';
                                 html += '<div class="col-md-6">' + booking.notes + '</div>';
+                                html += '</div><hr>';
+                            }
+
+                            if (booking.photographer_notes) {
+                                html += '<div class="row">';
+                                html += '<div class="col-md-6"><strong>Pesan Fotografer:</strong></div>';
+                                html += '<div class="col-md-6">' + booking.photographer_notes + '</div>';
+                                html += '</div><hr>';
+                            }
+
+                            if (booking.photo_gallery_link) {
+                                html += '<div class="row">';
+                                html += '<div class="col-md-6"><strong>Link Galeri:</strong></div>';
+                                html += '<div class="col-md-6"><a href="' + booking.photo_gallery_link + '" target="_blank" class="btn btn-sm btn-outline-primary">Lihat Galeri</a></div>';
                                 html += '</div><hr>';
                             }
 
@@ -654,23 +625,25 @@
                 });
             }
 
-            // Confirm Booking
-            $(document).on('click', '.confirm-booking', function() {
+            // Confirm Booking functionality removed - payment auto-confirms
+
+            // Mark Shooting Completed
+            $(document).on('click', '.mark-completed', function() {
                 var bookingId = $(this).data('id');
-                var bookingType = $(this).data('type');
 
-                $('#confirmBookingBtn').data('id', bookingId);
-                $('#confirmBookingBtn').data('type', bookingType);
+                // Set mark completed button data attributes
+                $('#markCompletedBtn').data('id', bookingId);
 
-                $('#confirmBookingModal').modal('show');
+                // Show confirmation modal
+                $('#markCompletedModal').modal('show');
             });
 
-            $('#confirmBookingBtn').click(function() {
+            $('#markCompletedBtn').click(function() {
                 var bookingId = $(this).data('id');
-                var bookingType = $(this).data('type');
 
+                // Mark shooting completed via AJAX
                 $.ajax({
-                    url: '{{ url("photographers/confirm-booking") }}/' + bookingId + '/' + bookingType,
+                    url: '{{ url("photographers/mark-shooting-completed") }}/' + bookingId,
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}'
@@ -678,8 +651,11 @@
                     success: function(response) {
                         if (response.success) {
                             toastr.success(response.message, 'Berhasil');
-                            $('#confirmBookingModal').modal('hide');
 
+                            // Close modal
+                            $('#markCompletedModal').modal('hide');
+
+                            // Reload page after short delay
                             setTimeout(function() {
                                 location.reload();
                             }, 1500);
@@ -688,112 +664,71 @@
                         }
                     },
                     error: function(xhr) {
-                        toastr.error('Terjadi kesalahan saat mengkonfirmasi booking.', 'Error');
+                        toastr.error('Terjadi kesalahan saat menandai shooting selesai.', 'Error');
                     }
                 });
             });
 
-            // Complete Booking
-            $(document).on('click', '.complete-booking', function() {
-                const bookingId = $(this).data('id');
-                const bookingType = $(this).data('type');
+            // Send Gallery
+            $(document).on('click', '.send-gallery', function() {
+                var bookingId = $(this).data('id');
 
-                $.ajax({
-                    url: '{{ url("photographers/booking-details") }}/' + bookingId + '/' + bookingType,
-                    type: 'GET',
-                    success: function(response) {
-                        if (response.success) {
-                            const booking = response.data;
+                // Set form data attribute
+                $('#sendGalleryForm').data('booking-id', bookingId);
 
-                            $('#customerDetails').html(`
-                                <div class="row">
-                                    <div class="col-sm-4"><strong>Nama:</strong></div>
-                                    <div class="col-sm-8">${booking.user_name}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-4"><strong>Email:</strong></div>
-                                    <div class="col-sm-8">${booking.user_email}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-4"><strong>Tanggal:</strong></div>
-                                    <div class="col-sm-8">${booking.date}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-4"><strong>Waktu:</strong></div>
-                                    <div class="col-sm-8">${booking.time_range}</div>
-                                </div>
-                            `);
+                // Clear form
+                $('#photoGalleryLink').val('');
+                $('#photographerNotes').val('');
 
-                            $('#completeBookingForm').data('booking-id', bookingId);
-
-                            $('#photoGalleryLink').val('').removeClass('is-invalid');
-                            $('#photographerNotes').val('');
-                            $('#notesCounter').text('0');
-
-                            $('#completeBookingModal').modal('show');
-                        }
-                    },
-                    error: function() {
-                        toastr.error('Gagal mengambil detail booking', 'Error');
-                    }
-                });
+                // Show send gallery modal
+                $('#sendGalleryModal').modal('show');
             });
 
-            // Submit complete booking form
-            $('#completeBookingForm').on('submit', function(e) {
+            $('#sendGalleryForm').submit(function(e) {
                 e.preventDefault();
 
-                const bookingId = $(this).data('booking-id');
-                const formData = {
-                    photo_gallery_link: $('#photoGalleryLink').val(),
-                    photographer_notes: $('#photographerNotes').val(),
-                    _token: '{{ csrf_token() }}'
-                };
+                var bookingId = $(this).data('booking-id');
+                var galleryLink = $('#photoGalleryLink').val();
+                var notes = $('#photographerNotes').val();
 
-                // Validate URL
-                const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-                if (!urlPattern.test(formData.photo_gallery_link)) {
-                    $('#photoGalleryLink').addClass('is-invalid');
-                    $('.invalid-feedback').text('Format URL tidak valid');
-                    return;
-                }
-
-                const submitBtn = $(this).find('button[type="submit"]');
-                const originalText = submitBtn.html();
-                submitBtn.html('<i class="bi bi-hourglass-split"></i> Mengirim...').prop('disabled', true);
-
+                // Send gallery via AJAX
                 $.ajax({
-                    url: '{{ url("photographers/complete-with-link") }}/' + bookingId,
+                    url: '{{ url("photographers/send-photo-gallery") }}/' + bookingId,
                     type: 'POST',
-                    data: formData,
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        photo_gallery_link: galleryLink,
+                        photographer_notes: notes
+                    },
                     success: function(response) {
                         if (response.success) {
                             toastr.success(response.message, 'Berhasil');
-                            $('#completeBookingModal').modal('hide');
 
+                            // Close modal
+                            $('#sendGalleryModal').modal('hide');
+
+                            // Reload page after short delay
                             setTimeout(function() {
                                 location.reload();
-                            }, 2000);
+                            }, 1500);
                         } else {
                             toastr.error(response.message, 'Error');
                         }
                     },
                     error: function(xhr) {
-                        let errorMessage = 'Terjadi kesalahan saat menyelesaikan pekerjaan';
+                        if (xhr.status === 422) {
+                            // Validation errors
+                            var errors = xhr.responseJSON.errors;
+                            var errorMessage = '';
 
-                        if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            const errors = xhr.responseJSON.errors;
-                            if (errors.photo_gallery_link) {
-                                $('#photoGalleryLink').addClass('is-invalid');
-                                $('.invalid-feedback').text(errors.photo_gallery_link[0]);
-                            }
-                            errorMessage = Object.values(errors).flat().join(', ');
+                            $.each(errors, function(key, value) {
+                                errorMessage += value[0] + '\n';
+                            });
+
+                            toastr.error(errorMessage, 'Validation Error');
+                        } else {
+                            toastr.error('Terjadi kesalahan saat mengirim galeri foto.', 'Error');
                         }
-
-                        toastr.error(errorMessage, 'Error');
-                    },
-                    complete: function() {
-                        submitBtn.html(originalText).prop('disabled', false);
                     }
                 });
             });

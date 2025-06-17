@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Photographer;
 
-use App\Http\Controllers\Controller;
-use App\Models\PhotographerBooking;
+use Carbon\Carbon;
 use App\Models\FieldBooking;
-use App\Mail\PhotoGalleryLinkMail;
 use Illuminate\Http\Request;
+use App\Mail\BookingConfirmedMail;
+use App\Models\PhotographerBooking;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Carbon\Carbon;
+use App\Mail\PhotoGalleryDeliveredMail;
 
 class ScheduleController extends Controller
 {
@@ -73,7 +75,8 @@ class ScheduleController extends Controller
                 'end_time' => $booking->end_time,
                 'user' => $booking->user->name,
                 'status' => $booking->status,
-                'completion_status' => $booking->completion_status ?? 'pending',
+                'completion_status' => $booking->completion_status,
+                'photo_gallery_link' => $booking->photo_gallery_link,
             ];
         }
 
@@ -85,7 +88,6 @@ class ScheduleController extends Controller
                 'end_time' => $booking->end_time,
                 'user' => $booking->user->name,
                 'status' => $booking->status,
-                'completion_status' => 'not_applicable', // Field booking tidak butuh completion status
             ];
         }
 
@@ -95,110 +97,6 @@ class ScheduleController extends Controller
         });
 
         return view('photographers.schedule', compact('photographer', 'allBookings'));
-    }
-
-    /**
-     * Konfirmasi booking oleh fotografer
-     */
-    public function confirmBooking(Request $request, $bookingId, $bookingType)
-    {
-        try {
-            $photographer = Auth::user()->photographer;
-
-            if ($bookingType === 'photographer') {
-                $booking = PhotographerBooking::where('id', $bookingId)
-                    ->where('photographer_id', $photographer->id)
-                    ->where('status', 'pending')
-                    ->firstOrFail();
-
-                $booking->update([
-                    'status' => 'confirmed',
-                    'completion_status' => 'confirmed'
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Booking fotografer berhasil dikonfirmasi!'
-                ]);
-
-            } elseif ($bookingType === 'field') {
-                // Untuk booking lapangan, pastikan fotografer memiliki akses
-                $field = $photographer->assignedField;
-
-                if (!$field) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Anda tidak ditugaskan ke lapangan manapun'
-                    ], 403);
-                }
-
-                $booking = FieldBooking::where('id', $bookingId)
-                    ->where('field_id', $field->id)
-                    ->where('status', 'pending')
-                    ->firstOrFail();
-
-                $booking->update(['status' => 'confirmed']);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Booking lapangan berhasil dikonfirmasi!'
-                ]);
-            }
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengkonfirmasi booking'
-            ], 500);
-        }
-    }
-
-    /**
-     * Tandai pekerjaan selesai dan kirim link foto
-     */
-    public function completeWithLink(Request $request, $bookingId)
-    {
-        $request->validate([
-            'photo_gallery_link' => 'required|url',
-            'photographer_notes' => 'nullable|string|max:1000'
-        ], [
-            'photo_gallery_link.required' => 'Link galeri foto wajib diisi',
-            'photo_gallery_link.url' => 'Format link tidak valid'
-        ]);
-
-        try {
-            $photographer = Auth::user()->photographer;
-
-            $booking = PhotographerBooking::where('id', $bookingId)
-                ->where('photographer_id', $photographer->id)
-                ->where('status', 'confirmed')
-                ->firstOrFail();
-
-            // Update booking dengan link dan status completion
-            $booking->update([
-                'photo_gallery_link' => $request->photo_gallery_link,
-                'photographer_notes' => $request->photographer_notes,
-                'completed_at' => now(),
-                'completion_status' => 'delivered',
-                'status' => 'completed'
-            ]);
-
-            // Kirim email ke user dengan link foto
-            Mail::to($booking->user->email)->send(
-                new PhotoGalleryLinkMail($booking, $request->photo_gallery_link)
-            );
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Pekerjaan selesai! Link foto telah dikirim ke pelanggan.'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyelesaikan pekerjaan'
-            ], 500);
-        }
     }
 
     /**
@@ -223,11 +121,10 @@ class ScheduleController extends Controller
                     'user_name' => $booking->user->name,
                     'user_email' => $booking->user->email,
                     'status' => $booking->status,
-                    'completion_status' => $booking->completion_status ?? 'pending',
+                    'completion_status' => $booking->completion_status,
                     'notes' => $booking->notes,
                     'photographer_notes' => $booking->photographer_notes,
                     'photo_gallery_link' => $booking->photo_gallery_link,
-                    'completed_at' => $booking->completed_at ? Carbon::parse($booking->completed_at)->format('d M Y H:i') : null,
                     'cancellation_reason' => $booking->cancellation_reason,
                 ];
             } elseif ($bookingType === 'field') {
@@ -271,6 +168,150 @@ class ScheduleController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Booking tidak ditemukan atau Anda tidak memiliki akses',
+            ], 404);
+        }
+    }
+
+    /**
+     * Konfirmasi booking
+     */
+    public function confirmBooking($bookingId, $bookingType)
+    {
+        try {
+            $photographer = Auth::user()->photographer;
+
+            if ($bookingType === 'photographer') {
+                $booking = PhotographerBooking::where('id', $bookingId)
+                    ->where('photographer_id', $photographer->id)
+                    ->where('status', 'pending')
+                    ->firstOrFail();
+
+                $booking->update([
+                    'status' => 'confirmed',
+                    'completion_status' => 'confirmed'
+                ]);
+
+                // Kirim email konfirmasi ke user
+                try {
+                    Mail::to($booking->user->email)->send(new BookingConfirmedMail($booking));
+                } catch (\Exception $e) {
+                    // Log error tapi jangan gagalkan proses konfirmasi
+                    Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking berhasil dikonfirmasi dan email notifikasi telah dikirim ke pelanggan.'
+                ]);
+
+            } elseif ($bookingType === 'field') {
+                $field = $photographer->assignedField;
+
+                if (!$field) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda tidak ditugaskan ke lapangan manapun',
+                    ], 403);
+                }
+
+                $booking = FieldBooking::where('id', $bookingId)
+                    ->where('field_id', $field->id)
+                    ->where('status', 'pending')
+                    ->firstOrFail();
+
+                $booking->update(['status' => 'confirmed']);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking lapangan berhasil dikonfirmasi.'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking tidak ditemukan atau tidak dapat dikonfirmasi.'
+            ], 404);
+        }
+    }
+
+    /**
+     * Tandai shooting selesai
+     */
+    public function markShootingCompleted($bookingId)
+    {
+        try {
+            $photographer = Auth::user()->photographer;
+
+            $booking = PhotographerBooking::where('id', $bookingId)
+                ->where('photographer_id', $photographer->id)
+                ->where('status', 'confirmed')
+                ->firstOrFail();
+
+            $booking->update([
+                'completion_status' => 'shooting_completed',
+                'completed_at' => Carbon::now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Shooting berhasil ditandai selesai. Silakan kirim link galeri foto.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking tidak ditemukan atau tidak dapat diperbarui.'
+            ], 404);
+        }
+    }
+
+    /**
+     * Kirim link galeri foto
+     */
+    public function sendPhotoGallery(Request $request, $bookingId)
+    {
+        $request->validate([
+            'photo_gallery_link' => 'required|url',
+            'photographer_notes' => 'nullable|string|max:1000'
+        ]);
+
+        try {
+            $photographer = Auth::user()->photographer;
+
+            $booking = PhotographerBooking::where('id', $bookingId)
+                ->where('photographer_id', $photographer->id)
+                ->where('completion_status', 'shooting_completed')
+                ->firstOrFail();
+
+            $booking->update([
+                'photo_gallery_link' => $request->photo_gallery_link,
+                'photographer_notes' => $request->photographer_notes,
+                'completion_status' => 'delivered'
+            ]);
+
+            // Kirim email dengan link galeri foto
+            try {
+                Mail::to($booking->user->email)->send(new PhotoGalleryDeliveredMail($booking));
+            } catch (\Exception $e) {
+                // Log error tapi jangan gagalkan proses
+                Log::error('Failed to send photo gallery email: ' . $e->getMessage());
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Link galeri berhasil disimpan tetapi email gagal dikirim. Silakan hubungi pelanggan secara manual.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Link galeri foto berhasil dikirim ke pelanggan melalui email.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking tidak ditemukan atau tidak dapat diperbarui.'
             ], 404);
         }
     }

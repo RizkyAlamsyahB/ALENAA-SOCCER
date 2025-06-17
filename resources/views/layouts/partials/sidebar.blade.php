@@ -67,33 +67,37 @@
                     </li>
 
 
-{{-- Schedule Management --}}
-<li class="sidebar-item has-sub {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-    <a href="#" class="sidebar-link">
-        <i class="bi bi-calendar3"></i>
-        <span>Jadwal</span>
-    </a>
-    <ul class="submenu {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-        <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
-            <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Kalender Jadwal</a>
-        </li>
-        <li class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
-            <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Semua Booking</a>
-        </li>
-        <li class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
-            <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal Membership</a>
-        </li>
-    </ul>
-</li>
+                    {{-- Schedule Management --}}
+                    <li class="sidebar-item has-sub {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+                        <a href="#" class="sidebar-link">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Jadwal</span>
+                        </a>
+                        <ul class="submenu {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+                            <li class="submenu-item {{ request()->routeIs('admin.schedule.index') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.index') }}" class="submenu-link">Kalender Jadwal</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.schedule.all-bookings') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.all-bookings') }}" class="submenu-link">Semua
+                                    Booking</a>
+                            </li>
+                            <li
+                                class="submenu-item {{ request()->routeIs('admin.schedule.membership') ? 'active' : '' }}">
+                                <a href="{{ route('admin.schedule.membership') }}" class="submenu-link">Jadwal
+                                    Membership</a>
+                            </li>
+                        </ul>
+                    </li>
 
 
-{{-- Lapangan (Field Management) --}}
-<li class="sidebar-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
-    <a href="{{ route('admin.fields.index') }}" class="sidebar-link">
-        <i class="bi bi-geo-alt"></i>
-        <span>Lapangan</span>
-    </a>
-</li>
+                    {{-- Lapangan (Field Management) --}}
+                    <li class="sidebar-item {{ request()->routeIs('admin.fields.index') ? 'active' : '' }}">
+                        <a href="{{ route('admin.fields.index') }}" class="sidebar-link">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Lapangan</span>
+                        </a>
+                    </li>
 
 
                     {{-- Fotografer --}}
@@ -121,27 +125,44 @@
                             </li>
                         </ul>
                     </li>
-{{-- Membership Management --}}
-<li class="sidebar-item {{ request()->routeIs('admin.memberships.index') ? 'active' : '' }}">
-    <a href="{{ route('admin.memberships.index') }}" class="sidebar-link">
-        <i class="bi bi-person-badge"></i>
-        <span>Membership</span>
-    </a>
-</li>
-
+                    {{-- Membership Management --}}
+                    <li class="sidebar-item {{ request()->routeIs('admin.memberships.index') ? 'active' : '' }}">
+                        <a href="{{ route('admin.memberships.index') }}" class="sidebar-link">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Membership</span>
+                        </a>
+                    </li>
                 @endif
 
-                @if (auth()->user()->hasRole('owner'))
+@if (auth()->user()->hasRole('owner'))
                     {{-- Owner Section --}}
                     <li class="sidebar-title">Manajemen (Owner)</li>
 
-{{-- Reports & Statistics --}}
-<li class="sidebar-item {{ request()->routeIs('owner.reports.index') ? 'active' : '' }}">
-    <a href="{{ route('owner.reports.index') }}" class="sidebar-link">
-        <i class="bi bi-bar-chart-fill"></i>
-        <span>Laporan & Statistik</span>
-    </a>
-</li>
+                    {{-- Reports & Statistics --}}
+                    <li class="sidebar-item {{ request()->routeIs('owner.reports.index') ? 'active' : '' }}">
+                        <a href="{{ route('owner.reports.index') }}" class="sidebar-link">
+                            <i class="bi bi-bar-chart-fill"></i>
+                            <span>Laporan & Statistik</span>
+                        </a>
+                    </li>
+
+                    {{-- NEW: Tugas Fotografer --}}
+                    <li class="sidebar-item {{ request()->routeIs('owner.photographer-tasks.*') ? 'active' : '' }}">
+                        <a href="{{ route('owner.photographer-tasks.index') }}" class="sidebar-link">
+                            <i class="bi bi-camera-reels-fill"></i>
+                            <span>Tugas Fotografer</span>
+                            @php
+                                // Count urgent tasks for badge
+                                $urgentCount = \App\Models\PhotographerBooking::where('status', 'confirmed')
+                                    ->whereDate('start_time', '<=', \Carbon\Carbon::today())
+                                    ->whereIn('completion_status', ['confirmed', 'shooting_completed'])
+                                    ->count();
+                            @endphp
+                            @if($urgentCount > 0)
+                                <span class="badge bg-danger ms-auto">{{ $urgentCount }}</span>
+                            @endif
+                        </a>
+                    </li>
 
                     {{-- Kelola Diskon --}}
                     <li class="sidebar-item {{ request()->routeIs('owner.discounts.*') ? 'active' : '' }}">
