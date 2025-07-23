@@ -22,6 +22,9 @@ class MembershipSession extends Model
         'status', // scheduled, upcoming, ongoing, completed, cancelled
         'session_number',
         'field_booking_id',
+        'reminder_sent_24hours',
+        'reminder_sent_1hour',
+        'reminder_sent_30minutes',
     ];
 
     protected $casts = [

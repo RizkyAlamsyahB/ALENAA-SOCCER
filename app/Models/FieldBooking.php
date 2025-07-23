@@ -15,7 +15,20 @@ class FieldBooking extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'field_id', 'start_time', 'end_time', 'total_price', 'status', 'payment_id', 'is_membership', 'membership_session_id'];
+    protected $fillable = [
+        'user_id',
+        'field_id',
+        'start_time',
+        'end_time',
+        'total_price',
+        'status',
+        'payment_id',
+        'is_membership',
+        'membership_session_id',
+        'reminder_sent_24hours',
+        'reminder_sent_1hour',
+        'reminder_sent_30minutes'
+    ];
 
     protected $casts = [
         'start_time' => 'datetime',

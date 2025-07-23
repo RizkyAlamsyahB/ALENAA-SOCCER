@@ -14,10 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withCommands([
-        // Daftarkan custom commands
+        // Daftarkan custom commands yang sudah ada
         \App\Console\Commands\ScheduleMembershipRenewalInvoices::class,
         \App\Console\Commands\CheckExpiredMembershipRenewals::class,
         \App\Console\Commands\UpdateCompletedSessions::class,
+
+        // TAMBAHAN BARU: Command untuk booking reminders
+        \App\Console\Commands\SendBookingReminders::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
         // Alias Middleware
@@ -36,6 +39,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Menangani error secara custom jika diperlukan
     })
     ->withSchedule(function (Schedule $schedule) {
+        // ============================================
+        // EXISTING SCHEDULES (yang sudah ada)
+        // ============================================
+
         // Jalankan command setiap menit untuk memeriksa pembayaran yang kedaluwarsa
         $schedule->command('payments:update-expired')
                  ->everyMinute()
@@ -60,5 +67,46 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->hourly()
                  ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/sessions-completed.log'));
+
+        // ============================================
+        // NEW BOOKING REMINDER SCHEDULES
+        // ============================================
+
+        // Kirim reminder 24 jam sebelum booking (cek setiap jam)
+        $schedule->command('bookings:send-reminders 24hours')
+                 ->hourly()
+                 ->between('8:00', '22:00')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/booking-reminders-24h.log'))
+                 ->emailOutputOnFailure('admin@yourapp.com'); // Opsional: kirim email jika gagal
+
+        // Kirim reminder 1 jam sebelum booking (cek setiap 15 menit)
+        $schedule->command('bookings:send-reminders 1hour')
+                 ->everyFifteenMinutes()
+                 ->between('7:00', '23:00')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/booking-reminders-1h.log'))
+                 ->emailOutputOnFailure('admin@yourapp.com');
+
+        // Kirim reminder 30 menit sebelum booking (cek setiap 5 menit)
+        $schedule->command('bookings:send-reminders 30minutes')
+                 ->everyFiveMinutes()
+                 ->between('7:30', '23:30')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/booking-reminders-30m.log'))
+                 ->emailOutputOnFailure('admin@yourapp.com');
+
+        // TAMBAHAN: Command untuk cleanup reminder flags yang sudah kadaluarsa (opsional)
+        $schedule->command('bookings:cleanup-reminder-flags')
+                 ->daily()
+                 ->at('02:00')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/booking-reminder-cleanup.log'));
+
+        // TAMBAHAN: Generate laporan reminder harian untuk admin (opsional)
+        $schedule->command('bookings:reminder-report')
+                 ->dailyAt('23:55')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/booking-reminder-reports.log'));
     })
     ->create();

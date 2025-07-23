@@ -31,6 +31,9 @@ class RentalBooking extends Model
         'field_booking_id',
         'membership_session_id',
         'is_membership',
+        'reminder_sent_24hours',
+        'reminder_sent_1hour',
+        'reminder_sent_30minutes',
     ];
 
     /**

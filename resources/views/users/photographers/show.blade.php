@@ -47,12 +47,7 @@
                         @else
                             <img src="/api/placeholder/800/500" class="img-fluid w-100" alt="{{ $photographer->name }}">
                         @endif
-                        <div class="gallery-overlay">
-                            <button class="view-btn">
-                                <i class="fas fa-expand-alt"></i>
-                                View Full Image
-                            </button>
-                        </div>
+
                     </div>
                     <div class="status-badge">
                         <span class="badge-content">
@@ -68,26 +63,24 @@
                     <div class="col-12">
                         <div class="gallery-card">
                             <div class="gallery-img">
-                                <img src="/api/placeholder/400/250" class="img-fluid w-100" alt="Sample Photo 1">
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
+                        @if ($photographer->image)
+                            <img src="{{ Storage::url($photographer->image) }}" class="img-fluid w-100"
+                                alt="{{ $photographer->name }}">
+                        @else
+                            <img src="/api/placeholder/800/500" class="img-fluid w-100" alt="{{ $photographer->name }}">
+                        @endif
                             </div>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="gallery-card">
                             <div class="gallery-img">
-                                <img src="/api/placeholder/400/250" class="img-fluid w-100" alt="Sample Photo 2">
-                                <div class="gallery-overlay">
-                                    <button class="view-btn">
-                                        <i class="fas fa-expand-alt"></i>
-                                        View Full Image
-                                    </button>
-                                </div>
+                                                       @if ($photographer->image)
+                            <img src="{{ Storage::url($photographer->image) }}" class="img-fluid w-100"
+                                alt="{{ $photographer->name }}">
+                        @else
+                            <img src="/api/placeholder/800/500" class="img-fluid w-100" alt="{{ $photographer->name }}">
+                        @endif
                             </div>
                         </div>
                     </div>

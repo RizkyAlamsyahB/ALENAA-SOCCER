@@ -113,18 +113,20 @@ class SchedulesController extends Controller
         $events = [];
 
         foreach ($bookings as $booking) {
-            // Tentukan warna berdasarkan status
-            $color = $booking->status === 'confirmed' ? '#28a745' : '#ffc107';
-
-            // Warna khusus untuk booking dari membership
+            // Tentukan warna berdasarkan status dengan warna baru
             if ($booking->is_membership) {
-                $color = '#007bff';
-            }
-
-            // Tentukan label berdasarkan status
-            $statusLabel = $booking->status === 'confirmed' ? 'Confirmed' : 'Pending';
-            if ($booking->is_membership) {
+                // Warna untuk booking membership
+                $color = '#435EBE';
                 $statusLabel = 'Membership';
+            } else {
+                // Warna untuk booking reguler berdasarkan status
+                if ($booking->status === 'confirmed') {
+                    $color = '#198754'; // Hijau untuk booking reguler confirmed
+                    $statusLabel = 'Confirmed';
+                } else {
+                    $color = '#FFC107'; // Kuning untuk booking pending
+                    $statusLabel = 'Pending';
+                }
             }
 
             $events[] = [

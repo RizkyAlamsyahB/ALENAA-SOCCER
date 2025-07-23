@@ -56,16 +56,16 @@
                         <div class="form-group">
                             <label class="form-label">Keterangan Warna</label>
                             <div class="d-flex align-items-center mb-2">
-                                <div class="color-box bg-success me-2"></div>
-                                <span>Booking Confirmed</span>
+                                <div class="color-box me-2" style="background-color: #198754;"></div>
+                                <span>Booking Reguler</span>
                             </div>
                             <div class="d-flex align-items-center mb-2">
-                                <div class="color-box bg-warning me-2"></div>
+                                <div class="color-box me-2" style="background-color: #FFC107;"></div>
                                 <span>Booking Pending</span>
                             </div>
                             <div class="d-flex align-items-center mb-2">
-                                <div class="color-box bg-primary me-2"></div>
-                                <span>Membership</span>
+                                <div class="color-box me-2" style="background-color: #435EBE;"></div>
+                                <span>Booking Membership</span>
                             </div>
                         </div>
                     </div>

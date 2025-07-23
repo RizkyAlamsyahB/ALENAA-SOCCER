@@ -227,7 +227,7 @@
                                 </button>
                             </form>
 
-                            <!-- Divider -->
+                            {{-- <!-- Divider -->
                             <div class="divider mb-4">
                                 <span>atau lanjutkan dengan</span>
                             </div>
@@ -242,7 +242,7 @@
                                     <img src="assets/icons8-facebook-48.png" width="24" alt="Facebook">
                                     <span>Facebook</span>
                                 </button>
-                            </div>
+                            </div> --}}
 
                             <!-- Register Link -->
                             <p class="text-center mb-0">

@@ -25,7 +25,10 @@ class PhotographerBooking extends Model
         'photographer_notes',
         'completed_at',
         'completion_status',
-        'is_membership' // Tambahkan field ini juga
+        'is_membership', // Tambahkan field ini juga
+        'reminder_sent_24hours',
+        'reminder_sent_1hour',
+        'reminder_sent_30minutes'
     ];
 
     protected $casts = [

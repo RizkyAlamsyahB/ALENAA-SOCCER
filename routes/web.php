@@ -27,6 +27,7 @@ use App\Http\Controllers\User\PhotographerController;
 use App\Http\Controllers\Admin\PhotoPackageController;
 use App\Http\Controllers\Owner\PointVoucherController;
 use App\Http\Controllers\Owner\UserManagementController;
+use App\Http\Controllers\User\BookingReminderController;
 use App\Http\Controllers\Photographer\ScheduleController;
 use App\Http\Controllers\Photographer\PhotographerDashboardController;
 
@@ -193,11 +194,11 @@ Route::middleware(['auth', 'verified', 'checkRole:user'])->group(function () {
             Route::get('/redemption/{id}', [PointController::class, 'showRedemption'])->name('redemption-detail');
 
             // Routes untuk modal cart:
-Route::get('/available-for-cart', [PointController::class, 'getAvailableVouchersForCart'])->name('available.for.cart');
-Route::post('/redeem-from-cart/{id}', [PointController::class, 'redeemVoucherFromCart'])->name('redeem.from.cart');
+            Route::get('/available-for-cart', [PointController::class, 'getAvailableVouchersForCart'])->name('available.for.cart');
+            Route::post('/redeem-from-cart/{id}', [PointController::class, 'redeemVoucherFromCart'])->name('redeem.from.cart');
 
-// TAMBAHAN BARU - untuk apply voucher yang sudah dimiliki:
-Route::post('/apply-owned-voucher/{redemptionId}', [PointController::class, 'applyOwnedVoucherToCart'])->name('apply.owned.voucher');
+            // TAMBAHAN BARU - untuk apply voucher yang sudah dimiliki:
+            Route::post('/apply-owned-voucher/{redemptionId}', [PointController::class, 'applyOwnedVoucherToCart'])->name('apply.owned.voucher');
         });
 
     Route::prefix('mabar')
@@ -237,7 +238,12 @@ Route::post('/apply-owned-voucher/{redemptionId}', [PointController::class, 'app
 
             Route::delete('/{id}/delete', [OpenMabarController::class, 'destroy'])->name('delete');
         });
-
+Route::prefix('bookings')
+    ->name('user.bookings.')
+    ->group(function () {
+        Route::get('/upcoming', [BookingReminderController::class, 'upcomingBookings'])->name('upcoming');
+        Route::post('/update-reminder-preferences', [BookingReminderController::class, 'updateReminderPreferences'])->name('update.reminder.preferences');
+    });
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -330,20 +336,21 @@ Route::middleware(['auth', 'checkRole:owner'])
     ->prefix('owner')
     ->name('owner.')
     ->group(function () {
-
         // Dashboard Owner
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('dashboard');
 
         // Photographer Tasks Monitoring - NEW FEATURE
-        Route::prefix('photographer-tasks')->name('photographer-tasks.')->group(function () {
-            Route::get('/', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'index'])->name('index');
-            Route::get('/{task}', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'show'])->name('show');
-            Route::get('/data/tasks', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'getTasksData'])->name('data');
-            Route::get('/analytics/performance', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'photographerPerformance'])->name('performance');
-            Route::post('/{task}/reminder', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'sendReminder'])->name('reminder');
-        });
+        Route::prefix('photographer-tasks')
+            ->name('photographer-tasks.')
+            ->group(function () {
+                Route::get('/', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'index'])->name('index');
+                Route::get('/{task}', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'show'])->name('show');
+                Route::get('/data/tasks', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'getTasksData'])->name('data');
+                Route::get('/analytics/performance', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'photographerPerformance'])->name('performance');
+                Route::post('/{task}/reminder', [App\Http\Controllers\Owner\PhotographerTasksController::class, 'sendReminder'])->name('reminder');
+            });
 
         // Diskon
         Route::resource('discounts', App\Http\Controllers\Owner\DiscountsController::class);
@@ -363,33 +370,33 @@ Route::middleware(['auth', 'checkRole:owner'])
         Route::patch('point-vouchers/{pointVoucher}/toggle-status', [App\Http\Controllers\Owner\PointVoucherController::class, 'toggleStatus'])->name('point_vouchers.toggle-status');
 
         // Reports & Analytics - Grouped for better organization
-        Route::prefix('reports')->name('reports.')->group(function () {
-            // Main reports page
-            Route::get('/', [App\Http\Controllers\Owner\ReportsController::class, 'index'])->name('index');
+        Route::prefix('reports')
+            ->name('reports.')
+            ->group(function () {
+                // Main reports page
+                Route::get('/', [App\Http\Controllers\Owner\ReportsController::class, 'index'])->name('index');
 
-            // Legacy revenue report routes (if needed)
-            Route::get('/revenue', [App\Http\Controllers\Owner\ReportsController::class, 'revenueReport'])->name('revenue');
-            Route::get('/field-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'fieldRevenueReport'])->name('field-revenue');
-            Route::get('/rental-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'rentalRevenueReport'])->name('rental-revenue');
-            Route::get('/photographer-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'photographerRevenueReport'])->name('photographer-revenue');
-            Route::get('/membership-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'membershipRevenueReport'])->name('membership-revenue');
-            Route::get('/product-sales', [App\Http\Controllers\Owner\ReportsController::class, 'productSalesRevenueReport'])->name('product-sales-revenue');
-            Route::get('/transactions', [App\Http\Controllers\Owner\ReportsController::class, 'transactionHistory'])->name('transactions');
+                // Legacy revenue report routes (if needed)
+                Route::get('/revenue', [App\Http\Controllers\Owner\ReportsController::class, 'revenueReport'])->name('revenue');
+                Route::get('/field-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'fieldRevenueReport'])->name('field-revenue');
+                Route::get('/rental-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'rentalRevenueReport'])->name('rental-revenue');
+                Route::get('/photographer-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'photographerRevenueReport'])->name('photographer-revenue');
+                Route::get('/membership-revenue', [App\Http\Controllers\Owner\ReportsController::class, 'membershipRevenueReport'])->name('membership-revenue');
+                Route::get('/product-sales', [App\Http\Controllers\Owner\ReportsController::class, 'productSalesRevenueReport'])->name('product-sales-revenue');
+                Route::get('/transactions', [App\Http\Controllers\Owner\ReportsController::class, 'transactionHistory'])->name('transactions');
 
-            // API endpoints for charts and data
-            Route::get('/dashboard-stats', [App\Http\Controllers\Owner\ReportsController::class, 'dashboardStats'])->name('dashboard-stats');
+                // API endpoints for charts and data
+                Route::get('/dashboard-stats', [App\Http\Controllers\Owner\ReportsController::class, 'dashboardStats'])->name('dashboard-stats');
 
-            // NEW: Table data and export endpoints
-            Route::get('/table-data', [App\Http\Controllers\Owner\ReportsController::class, 'getTableData'])->name('table-data');
-            Route::get('/export', [App\Http\Controllers\Owner\ReportsController::class, 'exportToExcel'])->name('export');
-        });
+                // NEW: Table data and export endpoints
+                Route::get('/table-data', [App\Http\Controllers\Owner\ReportsController::class, 'getTableData'])->name('table-data');
+                Route::get('/export', [App\Http\Controllers\Owner\ReportsController::class, 'exportToExcel'])->name('export');
+            });
 
         // User Management
         Route::resource('users', App\Http\Controllers\Owner\UserManagementController::class);
         Route::get('customers', [App\Http\Controllers\Owner\UserManagementController::class, 'customers'])->name('users.customers');
     });
-
-
 
 Route::middleware(['auth', 'checkRole:photographer'])
     ->prefix('photographers')
