@@ -1,0 +1,282 @@
+    /* Modern Navbar Variables */
+    :root {
+        --navbar-primary: #9E0620;
+        --navbar-text: #2a2a2a;
+        --navbar-bg: rgba(255, 255, 255, 0.98);
+        --navbar-hover: #fff1f2;
+        --navbar-shadow: rgba(0, 0, 0, 0.08);
+        --btn-outline-danger: #9E0620;
+        --btn-outline-danger-hover: rgba(158, 6, 32, 0.1);
+        /* 10% opacity dari #9E0620 */
+    }
+    .bg-primary {
+        background-color: var(--primary-color) !important;
+    }
+
+    .btn-outline-danger {
+        color: var(--btn-outline-danger);
+        border-color: var(--btn-outline-danger);
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+        color: var(--btn-outline-danger);
+        background-color: var(--btn-outline-danger-hover);
+        border-color: var(--btn-outline-danger);
+        box-shadow: 0 4px 12px rgba(158, 6, 32, 0.15);
+    }
+
+    /* Base Navbar Styles */
+    .navbar {
+        background: var(--navbar-bg);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .navbar.scrolled {
+        box-shadow: 0 2px 15px var(--navbar-shadow);
+    }
+
+   /* Brand/Logo */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 2.2rem;
+        letter-spacing: -0.5px;
+    color: var(--navbar-text); /* Base color */
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Style for the first part (ALENA) */
+.navbar-brand > span.fw-bold > span:not(.text-dark) {
+    color: var(--navbar-primary);
+}
+
+/* Or alternatively, add a class specifically for ALENA */
+.brand-primary {
+    color: var(--navbar-primary);
+}
+.navbar-brand .fw-bold {
+    font-size: 24px;
+}
+
+    /* Navigation Items */
+    .navbar-nav {
+        gap: 0.5rem;
+    }
+
+    .nav-item {
+        position: relative;
+    }
+
+    .nav-link {
+        position: relative;
+        padding: 0.5rem 1rem;
+        color: var(--navbar-text);
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+    }
+
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: var(--navbar-primary);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+
+    .nav-link:hover {
+        color: var(--navbar-primary);
+    }
+
+    .nav-link:hover::after {
+        width: 70%;
+    }
+
+    .nav-link i {
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+        margin-right: 0.5rem;
+    }
+
+    .nav-link:hover i {
+        transform: translateY(-2px);
+    }
+
+    /* Cart Button */
+    .cart-btn {
+        background: #f8f9fa;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .cart-btn:hover {
+        background: var(--navbar-hover);
+        transform: translateY(-2px);
+    }
+
+    .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--navbar-primary);
+        color: white;
+        border-radius: 8px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    /* User Menu */
+    .user-menu-btn {
+        background: #f8f9fa;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+        padding: 0.5rem 1.25rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .user-menu-btn:hover {
+        background: var(--navbar-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--navbar-shadow);
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: var(--navbar-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    /* Dropdown Menu */
+    .dropdown-menu {
+        margin-top: 0.75rem;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px var(--navbar-shadow);
+        padding: 0.5rem;
+    }
+
+    .dropdown-header {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .dropdown-item:hover {
+        background: var(--navbar-hover);
+        color: var(--navbar-primary);
+    }
+
+    .dropdown-item i {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+
+    /* Cart Sidebar */
+    .cart-sidebar {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -5px 0 25px var(--navbar-shadow);
+        transition: all 0.3s ease-in-out;
+        z-index: 1050;
+    }
+
+    .cart-sidebar.active {
+        right: 0;
+    }
+
+    .cart-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background: #f8f9fa;
+    }
+
+    .cart-body {
+        height: calc(100vh - 180px);
+        overflow-y: auto;
+    }
+
+    .cart-item {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .cart-item:hover {
+        background: var(--navbar-hover);
+    }
+
+    .cart-summary {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 991.98px) {
+        .navbar-collapse {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--navbar-shadow);
+            margin-top: 1rem;
+        }
+
+        .nav-link {
+            padding: 0.75rem 1rem;
+        }
+
+        .cart-sidebar {
+            width: 100%;
+            right: -100%;
+        }
+    }
+
+    /* Animation Utilities */
+    .hover-scale {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-scale:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Add this JavaScript for scroll effect */
